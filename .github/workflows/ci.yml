@@ -52,8 +52,12 @@ jobs:
           /tmp/smoke/bin/openconnect serve --port 8123 &
           sleep 4
           curl -fsS http://127.0.0.1:8123/healthz
-          curl -fsS http://127.0.0.1:8123/ | grep -q "OPENCONNECT"
-          curl -fsS http://127.0.0.1:8123/static/openconnect.css | grep -q "phosphor"
+          # Save responses first: `grep -q` in a pipe closes early and curl then
+          # fails with SIGPIPE under `pipefail`.
+          curl -fsS http://127.0.0.1:8123/ -o /tmp/page.html
+          grep -q "OpenConnect" /tmp/page.html
+          curl -fsS http://127.0.0.1:8123/static/openconnect.css -o /tmp/openconnect.css
+          grep -q "phosphor" /tmp/openconnect.css
       - uses: actions/upload-artifact@v4
         with:
           name: dist
