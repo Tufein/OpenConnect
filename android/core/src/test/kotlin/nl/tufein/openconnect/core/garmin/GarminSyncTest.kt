@@ -72,7 +72,7 @@ class GarminSyncTest {
 
         val eleven = repo.listDaily(d11, d11).single()
         assertEquals(10_234, eleven.steps)
-        assertEquals(49, eleven.hrvMs) // from the HRV answer; the night's 48 comes later in the order of preference
+        assertEquals(49, eleven.hrvMs) // from the HRV answer
         assertEquals(88, eleven.bodyBatteryHigh)
         assertEquals(40, eleven.bodyBatteryLow)
         assertEquals(51, eleven.restingHr)

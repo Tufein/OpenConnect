@@ -225,8 +225,6 @@ class GarminSyncService(
                 val night = SleepMapping.night(date, facts) ?: return@count false
                 val seen = into.nights[date]
                 if (seen == null || seen.durationS <= night.durationS) into.nights[date] = night
-                // The night's own numbers (resting heart rate, HRV) also belong to that day.
-                DailyPatch.from(facts).let { patch -> if (!patch.isEmpty) into.patches.merge(date, patch) { a, b -> a.and(b) } }
                 true
             }
             Kind.BODY_BATTERY -> DayLeaves.bodyBattery(json).filterKeys(::inRange).count { (date, range) ->

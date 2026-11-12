@@ -12,9 +12,9 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * The JSON in resources/garmin is modelled on the layouts of Garmin Connect's own services as community clients
- * show them. Garmin does not publish the exact layouts of the Personal API, so these tests pin down what the
- * mapping does with such layouts, not that Garmin's real answers look exactly like this.
+ * The JSON in resources/garmin has the layouts that Garmin's Personal API answered with on 2026-11-12 (observed with a
+ * real account, field names and nesting only), filled with invented values. Garmin does not publish these layouts,
+ * so a few tests also feed the mapping layouts that differ, to pin down that it then gives less instead of failing.
  */
 class MappingTest {
     private val d10 = LocalDate.parse("2026-11-10")
@@ -31,7 +31,8 @@ class MappingTest {
         val day = patches("dailysummaries.json").getValue(d10)
         assertEquals(8421, day.steps)
         assertEquals(6310.5, day.distanceM)
-        assertEquals(13, day.floors) // 12.6 floors, rounded
+        assertEquals(13, day.floors)
+        assertEquals(10_000, day.stepsGoal)
         assertEquals(410, day.activeKcal)
         assertEquals(52, day.restingHr)
         assertEquals(47, day.minHr)
@@ -44,13 +45,38 @@ class MappingTest {
         assertEquals(18, day.bodyBatteryLow)
         assertEquals(96, day.spo2Avg)
         assertEquals(90, day.spo2Min)
-        assertEquals(14.2, day.respiration)
+        assertEquals(14.0, day.respiration)
         assertEquals(51, patches("dailysummaries.json").getValue(d11).restingHr)
     }
 
     @Test
+    fun `a day with only some sections gives only those values`() {
+        val day = patches("dailysummaries.json").getValue(d11)
+        assertEquals(10_234, day.steps)
+        assertEquals(9, day.floors)
+        assertEquals(46, day.minHr)
+        assertNull(day.avgStress)
+        assertNull(day.bodyBatteryHigh)
+        assertNull(day.spo2Avg)
+        assertNull(day.respiration)
+        assertFalse(day.isEmpty)
+    }
+
+    @Test
+    fun `today with every counter at zero is not worth a row`() {
+        val today = patches("dailysummaries.json").getValue(d12)
+        assertEquals(0, today.floors)
+        assertEquals(0, today.moderateMin)
+        assertTrue(today.isEmpty)
+    }
+
+    @Test
     fun `the layout does not matter, sections that list days work as well as days that hold sections`() {
-        val bySection = patches("dailysummaries-by-section.json")
+        val json = Json.parseToJsonElement(
+            """{"movement":[{"calendarDate":"2026-11-10","steps":{"value":8421}},{"calendarDate":"2026-11-11","steps":{"value":10234}}],
+               "heartRate":[{"calendarDate":"2026-11-10","restingValue":52}]}""",
+        )
+        val bySection = DayLeaves.collect(json).mapValues { DailyPatch.from(it.value) }
         assertEquals(8421, bySection.getValue(d10).steps)
         assertEquals(52, bySection.getValue(d10).restingHr) // from the other section's list
         assertEquals(10234, bySection.getValue(d11).steps)
@@ -75,7 +101,7 @@ class MappingTest {
     }
 
     @Test
-    fun `a night is read from the sleep answer and its scores come along`() {
+    fun `a night is read from the sleep answer and its score comes along`() {
         val facts = DayLeaves.collect(fixture("sleep.json"))
         val night = assertNotNull(SleepMapping.night(d11, facts.getValue(d11)))
         assertEquals(27_000, night.durationS)
@@ -83,13 +109,9 @@ class MappingTest {
         assertEquals(15_000, night.lightS)
         assertEquals(6_600, night.remS)
         assertEquals(900, night.awakeS)
-        assertEquals(84, night.score)
-        // restingHeartRate and avgOvernightHrv sit next to the sleep object, and belong to the same morning
-        val patch = DailyPatch.from(facts.getValue(d11))
-        assertEquals(51, patch.restingHr)
-        assertEquals(48, patch.hrvMs)
-        // a night without sleep time is not a night
-        assertNull(facts[d10]?.let { SleepMapping.night(d10, it) })
+        assertEquals(84, night.score) // the overall score, not the 24 of the REM percentage next to it
+        // a night with sleep time zero is not a night
+        assertNull(SleepMapping.night(d10, facts.getValue(d10)))
     }
 
     @Test
@@ -104,7 +126,21 @@ class MappingTest {
     fun `body battery gives the day's high and low and skips unmeasured moments`() {
         val result = DayLeaves.bodyBattery(fixture("bodybattery.json"))
         assertEquals(92 to 18, result.getValue(d10)) // the null reading is ignored
-        assertEquals(88 to 40, result.getValue(d11)) // readings with a status text in between
+        assertEquals(88 to 40, result.getValue(d11))
+    }
+
+    @Test
+    fun `body battery uses the position the day names for the level, and guesses without it`() {
+        val named = Json.parseToJsonElement(
+            """[{"date":"2026-11-10","bodyBatteryValuesArray":[[1762761600000,"MEASURED",35,1.0],[1762765200000,"MEASURED",60,1.0]],
+               "bodyBatteryValueDescriptorDTOList":[{"bodyBatteryValueDescriptorIndex":0,"bodyBatteryValueDescriptorKey":"timestamp"},
+               {"bodyBatteryValueDescriptorIndex":2,"bodyBatteryValueDescriptorKey":"bodyBatteryLevel"}]}]""",
+        )
+        assertEquals(60 to 35, DayLeaves.bodyBattery(named).getValue(d10)) // the 1.0 at index 3 is not a level
+        val unnamed = Json.parseToJsonElement("""[{"date":"2026-11-10","bodyBatteryValuesArray":[[1762761600000,"MEASURED",40,1.0],[1762765200000,"MEASURED",88,1.0]]}]""")
+        assertEquals(88 to 40, DayLeaves.bodyBattery(unnamed).getValue(d10)) // first number from 0 to 100 after the time
+        val outOfRange = Json.parseToJsonElement("""[{"date":"2026-11-10","bodyBatteryValuesArray":[[1,150],[2,null]]}]""")
+        assertTrue(DayLeaves.bodyBattery(outOfRange).isEmpty())
     }
 
     @Test
@@ -139,7 +175,7 @@ class MappingTest {
     @Test
     fun `json shape shows the layout and no values`() {
         val shape = JsonShape.describe(fixture("sleep.json"))
-        assertTrue("dailySleepDTO" in shape && "sleepTimeSeconds: number" in shape && "calendarDate: string" in shape, shape)
+        assertTrue("sleepTimeSeconds: number" in shape && "calendarDate: string" in shape && "overall: {value: number" in shape && shape.endsWith(" x 2"), shape)
         assertFalse("27000" in shape || "2026-11-11" in shape || "GOOD" in shape, shape)
         assertEquals("number x 3", JsonShape.describe(Json.parseToJsonElement("[1,2,3]")))
         assertEquals("empty", JsonShape.describe(null))

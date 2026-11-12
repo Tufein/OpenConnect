@@ -1,9 +1,0 @@
-{
-  "movement": [
-    {"calendarDate": "2026-11-10", "totalSteps": 8421, "floorsAscended": 12.6},
-    {"calendarDate": "2026-11-11", "totalSteps": 10234}
-  ],
-  "heartRate": [
-    {"calendarDate": "2026-11-10", "restingHeartRate": 52}
-  ]
-}

@@ -1,20 +1,43 @@
-{
-  "nights": [
-    {
-      "dailySleepDTO": {
-        "calendarDate": "2026-11-11",
-        "sleepTimeSeconds": 27000,
-        "deepSleepSeconds": 5400,
-        "lightSleepSeconds": 15000,
-        "remSleepSeconds": 6600,
-        "awakeSleepSeconds": 900,
-        "sleepScores": {"overall": {"value": 84, "qualifierKey": "GOOD"}}
-      },
-      "restingHeartRate": 51,
-      "avgOvernightHrv": 48
+[
+  {
+    "id": 1762851000000,
+    "userProfilePK": 1,
+    "calendarDate": "2026-11-11",
+    "sleepTimeSeconds": 27000,
+    "napTimeSeconds": 0,
+    "sleepWindowConfirmed": true,
+    "sleepStartTimestampGMT": 1762826400000,
+    "sleepEndTimestampGMT": 1762854300000,
+    "unmeasurableSleepSeconds": 0,
+    "deepSleepSeconds": 5400,
+    "lightSleepSeconds": 15000,
+    "remSleepSeconds": 6600,
+    "awakeSleepSeconds": 900,
+    "averageSpO2Value": 95.0,
+    "lowestSpO2Value": 88,
+    "averageRespirationValue": 13.0,
+    "awakeCount": 2,
+    "avgSleepStress": 18.5,
+    "avgHeartRate": 52.0,
+    "sleepScoreFeedback": "POSITIVE_LONG_AND_DEEP",
+    "sleepScores": {
+      "totalDuration": {"qualifierKey": "GOOD", "optimalStart": 28800.0, "optimalEnd": 28800.0},
+      "overall": {"value": 84, "qualifierKey": "GOOD"},
+      "remPercentage": {"value": 24, "qualifierKey": "GOOD", "optimalStart": 21.0, "optimalEnd": 31.0},
+      "deepPercentage": {"value": 20, "qualifierKey": "GOOD", "optimalStart": 16.0, "optimalEnd": 33.0}
     },
-    {
-      "dailySleepDTO": {"calendarDate": "2026-11-10", "sleepTimeSeconds": null}
-    }
-  ]
-}
+    "sleepNeed": {"calendarDate": "2026-11-11", "baseline": 480, "actual": 450}
+  },
+  {
+    "id": 1762764000000,
+    "userProfilePK": 1,
+    "calendarDate": "2026-11-10",
+    "sleepTimeSeconds": 0,
+    "napTimeSeconds": 0,
+    "deepSleepSeconds": 0,
+    "lightSleepSeconds": 0,
+    "remSleepSeconds": 0,
+    "awakeSleepSeconds": 0,
+    "sleepScores": {"overall": {"qualifierKey": "UNKNOWN"}}
+  }
+]

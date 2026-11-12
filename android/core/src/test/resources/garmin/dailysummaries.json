@@ -1,20 +1,53 @@
 {
   "data": [
     {
+      "uuid": "00000000-0000-0000-0000-000000000010",
+      "userProfilePk": 1,
       "calendarDate": "2026-11-10",
-      "movement": {"totalSteps": 8421, "totalDistanceMeters": 6310.5, "floorsAscended": 12.6},
-      "calories": {"activeKilocalories": 410},
-      "heartRate": {"restingHeartRate": 52, "minHeartRate": 47, "maxHeartRate": 171},
-      "intensityMinutes": {"moderateIntensityMinutes": 25, "vigorousIntensityMinutes": 10},
-      "stress": {"averageStressLevel": 31, "maxStressLevel": 88},
-      "bodyBattery": {"bodyBatteryHighestValue": 92, "bodyBatteryLowestValue": 18},
-      "pulseOx": {"averageSpo2": 96, "lowestSpo2": 90},
-      "respiration": {"avgWakingRespirationValue": 14.2}
+      "source": "GARMIN",
+      "includesWellnessData": true,
+      "includesActivityData": false,
+      "wellnessChronology": {"startTimestampGmt": "2026-11-09T23:00:00.0", "totalDurationInMillis": 86400000},
+      "movement": {
+        "steps": {"goal": 10000, "value": 8421, "distanceInMeters": 6310.5},
+        "pushes": {},
+        "floorsAscended": {"goal": 10, "value": 13, "distanceInMeters": 39.6},
+        "floorsDescended": {"value": 11, "distanceInMeters": 33.5}
+      },
+      "calories": {"burnedResting": 1700, "burnedActive": 410, "burnedTotal": 2110},
+      "heartRate": {"minValue": 47, "maxValue": 171, "restingValue": 52},
+      "intensityMinutes": {"goal": 150, "moderate": 25, "vigorous": 10},
+      "stress": {"avgLevel": 31, "maxLevel": 88, "restProportion": 0.4, "qualifier": "balanced", "totalDurationInMillis": 86400000},
+      "bodyBattery": {
+        "minValue": 18, "maxValue": 92, "chargedValue": 74, "drainedValue": 70, "latestValue": 45,
+        "featureVersion": "3.0",
+        "dynamicFeedbackEvent": {"eventTimestampGmt": "2026-11-10T20:00:00.0", "bodyBatteryLevel": "MODERATE", "feedbackShortType": "DAY_RECOVERING_AND_INACTIVE"},
+        "activityEvents": [{"eventType": "RECOVERY", "durationInMilliseconds": 600000, "bodyBatteryImpact": 4}, {"eventType": "SLEEP", "durationInMilliseconds": 27000000, "bodyBatteryImpact": 60}]
+      },
+      "hydration": {},
+      "respiration": {"avgValue": 14, "maxValue": 22, "minValue": 8, "latestValue": 13},
+      "pulseOx": {"avgValue": 96, "minValue": 90, "latestValue": 95, "avgAltitudeInMeters": 12.0},
+      "jetLag": {}
     },
     {
+      "uuid": "00000000-0000-0000-0000-000000000011",
+      "userProfilePk": 1,
       "calendarDate": "2026-11-11",
-      "movement": {"totalSteps": 10234, "totalDistanceMeters": 7800, "floorsAscended": 9},
-      "heartRate": {"restingHeartRate": 51, "minHeartRate": 46, "maxHeartRate": 160}
+      "movement": {
+        "steps": {"goal": 10000, "value": 10234, "distanceInMeters": 7800.0},
+        "floorsAscended": {"goal": 10, "value": 9, "distanceInMeters": 27.4}
+      },
+      "heartRate": {"minValue": 46, "maxValue": 160, "restingValue": 51},
+      "intensityMinutes": {"goal": 150, "moderate": 0, "vigorous": 0},
+      "hydration": {},
+      "jetLag": {}
+    },
+    {
+      "uuid": "00000000-0000-0000-0000-000000000012",
+      "userProfilePk": 1,
+      "calendarDate": "2026-11-12",
+      "movement": {"steps": {"goal": 10000, "value": 0, "distanceInMeters": 0.0}, "floorsAscended": {"goal": 10, "value": 0}},
+      "intensityMinutes": {"goal": 150, "moderate": 0, "vigorous": 0}
     }
   ]
 }

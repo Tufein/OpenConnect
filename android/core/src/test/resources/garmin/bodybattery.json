@@ -3,10 +3,23 @@
     "date": "2026-11-10",
     "charged": 55,
     "drained": 60,
-    "bodyBatteryValuesArray": [[1762761600000, 35], [1762765200000, null], [1762768800000, 92], [1762790400000, 18]]
+    "startTimestampGMT": "2026-11-09T23:00:00.0",
+    "endTimestampGMT": "2026-11-10T23:00:00.0",
+    "bodyBatteryValuesArray": [[1762761600000, 35], [1762765200000, null], [1762768800000, 92], [1762790400000, 18]],
+    "bodyBatteryValueDescriptorDTOList": [
+      {"bodyBatteryValueDescriptorIndex": 0, "bodyBatteryValueDescriptorKey": "timestamp"},
+      {"bodyBatteryValueDescriptorIndex": 1, "bodyBatteryValueDescriptorKey": "bodyBatteryLevel"}
+    ],
+    "bodyBatteryActivityEvent": [{"eventType": "SLEEP", "durationInMilliseconds": 27000000, "bodyBatteryImpact": 60}]
   },
   {
     "date": "2026-11-11",
-    "bodyBatteryValuesArray": [[1762848000000, "MEASURED", 40, 1.0], [1762851600000, "MEASURED", 88, 1.0]]
+    "charged": 40,
+    "drained": 52,
+    "bodyBatteryValuesArray": [[1762848000000, 40], [1762851600000, 88]],
+    "bodyBatteryValueDescriptorDTOList": [
+      {"bodyBatteryValueDescriptorIndex": 0, "bodyBatteryValueDescriptorKey": "timestamp"},
+      {"bodyBatteryValueDescriptorIndex": 1, "bodyBatteryValueDescriptorKey": "bodyBatteryLevel"}
+    ]
   }
 ]

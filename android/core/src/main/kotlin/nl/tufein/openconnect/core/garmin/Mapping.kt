@@ -7,6 +7,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.intOrNull
 import nl.tufein.openconnect.core.DailySummary
 import nl.tufein.openconnect.core.SleepSummary
 import java.time.LocalDate
@@ -16,10 +17,11 @@ import kotlin.math.roundToInt
 /**
  * Turns the answers of Garmin's Personal API into the app's own day summaries.
  *
- * Garmin does not publish the exact response layouts, so nothing here depends on how an answer is nested. Every
- * object that carries a calendar date (`calendarDate`, or `date`) claims all the plain values below it, and the
- * values are then picked by their names (`totalSteps`, `restingHeartRate`, ...). A layout that differs from the
- * expected one then gives fewer values instead of a crash, and [JsonShape] tells what the layout was.
+ * Garmin does not publish the response layouts. The ones the names below come from were observed with a real
+ * account on 2026-11-12 (see docs/GARMIN.md), but nothing here depends on how an answer is nested: every object that
+ * carries a calendar date (`calendarDate`, or `date`) claims all the plain values below it, and the values are then
+ * picked by their own name or by `parent.name` (`heartRate.restingValue`, `steps.value`). A layout that differs from
+ * the expected one then gives fewer values instead of a crash, and [JsonShape] tells what the layout was.
  */
 internal object DayLeaves {
     private val DATE = Regex("""\d{4}-\d{2}-\d{2}""")
@@ -71,11 +73,16 @@ internal object DayLeaves {
     }
 
     /**
-     * Body Battery comes as a list of readings per day. Each reading is `[time, level]`, or has a status text between
-     * the two; the level is the number after the time that lies between 0 and 100. Unmeasured moments are null.
+     * Body Battery comes as a list of readings per day, each reading `[time, level]`. The day says which position
+     * holds the level (`bodyBatteryValueDescriptorDTOList`); without that, the level is the first number after the
+     * time that lies between 0 and 100 (this also covers readings with a status text in between). Unmeasured moments
+     * are null.
      */
     fun bodyBattery(root: JsonElement?): Map<LocalDate, Pair<Int, Int>> {
         val result = LinkedHashMap<LocalDate, Pair<Int, Int>>()
+
+        fun level(value: JsonElement?): Int? =
+            (value as? JsonPrimitive)?.takeIf { !it.isString }?.doubleOrNull?.takeIf { it in 0.0..100.0 }?.roundToInt()
 
         fun visit(element: JsonElement) {
             when (element) {
@@ -84,10 +91,10 @@ internal object DayLeaves {
                     val date = ownDate(element)
                     val readings = element["bodyBatteryValuesArray"] as? JsonArray
                     if (date != null && readings != null) {
+                        val position = levelPosition(element)
                         val levels = readings.mapNotNull { reading ->
-                            (reading as? JsonArray)?.drop(1)
-                                ?.mapNotNull { (it as? JsonPrimitive)?.takeIf { p -> !p.isString }?.doubleOrNull }
-                                ?.firstOrNull { it in 0.0..100.0 }?.roundToInt()
+                            val values = reading as? JsonArray ?: return@mapNotNull null
+                            if (position != null) level(values.getOrNull(position)) else values.drop(1).firstNotNullOfOrNull(::level)
                         }
                         if (levels.isNotEmpty()) result[date] = levels.max() to levels.min()
                     } else {
@@ -100,6 +107,13 @@ internal object DayLeaves {
         if (root != null) visit(root)
         return result
     }
+
+    private fun levelPosition(day: JsonObject): Int? =
+        (day["bodyBatteryValueDescriptorDTOList"] as? JsonArray)?.firstNotNullOfOrNull { entry ->
+            val descriptor = entry as? JsonObject ?: return@firstNotNullOfOrNull null
+            if ((descriptor["bodyBatteryValueDescriptorKey"] as? JsonPrimitive)?.contentOrNull != "bodyBatteryLevel") return@firstNotNullOfOrNull null
+            (descriptor["bodyBatteryValueDescriptorIndex"] as? JsonPrimitive)?.intOrNull
+        }
 }
 
 /** The plain values of one calendar day. */
@@ -133,9 +147,20 @@ internal data class DailyPatch(
     val spo2Min: Int? = null,
     val respiration: Double? = null,
 ) {
-    /** True when there is nothing worth storing: no values, or only zero counters and a step goal (days that have not happened or were not worn). */
+    /**
+     * True when there is nothing worth storing: no values, or only zero counters and a step goal. Garmin answers for
+     * today and for days the watch was not worn with all counters at zero, and those are not worth a row.
+     */
     val isEmpty: Boolean
-        get() = copy(steps = steps?.takeIf { it > 0 }, distanceM = distanceM?.takeIf { it > 0 }, stepsGoal = null) == DailyPatch()
+        get() = copy(
+            steps = steps?.takeIf { it > 0 },
+            distanceM = distanceM?.takeIf { it > 0 },
+            activeKcal = activeKcal?.takeIf { it > 0 },
+            floors = floors?.takeIf { it > 0 },
+            moderateMin = moderateMin?.takeIf { it > 0 },
+            vigorousMin = vigorousMin?.takeIf { it > 0 },
+            stepsGoal = null,
+        ) == DailyPatch()
 
     /** Combine two patches about the same day: counters take the larger, other values the first one that is known. */
     fun and(other: DailyPatch) = DailyPatch(
@@ -191,26 +216,29 @@ internal data class DailyPatch(
     }
 
     companion object {
+        /**
+         * The names are tried in order: first the ones of the day summary (`movement.steps.value` arrives as
+         * `steps.value`), then the ones of the separate step, stress and HRV lists.
+         */
         fun from(facts: DayFacts) = DailyPatch(
-            steps = facts.reading("totalSteps", "steps"),
-            stepsGoal = facts.reading("stepGoal", "dailyStepGoal", "totalStepGoal")?.takeIf { it > 0 },
-            distanceM = facts.number("totalDistanceMeters", "totalDistance")?.takeIf { it >= 0 },
-            activeKcal = facts.reading("activeKilocalories"),
-            floors = facts.reading("floorsAscended", "floorsClimbed"),
-            moderateMin = facts.reading("moderateIntensityMinutes"),
-            vigorousMin = facts.reading("vigorousIntensityMinutes"),
-            restingHr = facts.reading("restingHeartRate")?.takeIf { it > 0 },
-            minHr = facts.reading("minHeartRate")?.takeIf { it > 0 },
-            maxHr = facts.reading("maxHeartRate")?.takeIf { it > 0 },
-            avgStress = facts.reading("averageStressLevel", "overallStressLevel"),
-            maxStress = facts.reading("maxStressLevel"),
-            bodyBatteryHigh = facts.reading("bodyBatteryHighestValue"),
-            bodyBatteryLow = facts.reading("bodyBatteryLowestValue"),
+            steps = facts.reading("steps.value", "totalSteps", "steps"),
+            stepsGoal = facts.reading("steps.goal", "stepGoal", "dailyStepGoal", "totalStepGoal")?.takeIf { it > 0 },
+            distanceM = facts.number("steps.distanceInMeters", "totalDistance", "totalDistanceMeters")?.takeIf { it >= 0 },
+            activeKcal = facts.reading("calories.burnedActive", "activeKilocalories"),
+            floors = facts.reading("floorsAscended.value", "floorsAscended", "floorsClimbed"),
+            moderateMin = facts.reading("intensityMinutes.moderate", "moderateIntensityMinutes"),
+            vigorousMin = facts.reading("intensityMinutes.vigorous", "vigorousIntensityMinutes"),
+            restingHr = facts.reading("heartRate.restingValue", "restingHeartRate")?.takeIf { it > 0 },
+            minHr = facts.reading("heartRate.minValue", "minHeartRate")?.takeIf { it > 0 },
+            maxHr = facts.reading("heartRate.maxValue", "maxHeartRate")?.takeIf { it > 0 },
+            avgStress = facts.reading("stress.avgLevel", "overallStressLevel", "averageStressLevel"),
+            maxStress = facts.reading("stress.maxLevel", "maxStressLevel"),
+            bodyBatteryHigh = facts.reading("bodyBattery.maxValue", "bodyBatteryHighestValue"),
+            bodyBatteryLow = facts.reading("bodyBattery.minValue", "bodyBatteryLowestValue"),
             hrvMs = facts.reading("lastNightAvg", "avgOvernightHrv"),
-            spo2Avg = facts.reading("averageSpO2", "averageSpo2", "avgSpo2"),
-            spo2Min = facts.reading("lowestSpO2", "lowestSpo2"),
-            respiration = facts.number("avgWakingRespirationValue", "averageRespirationValue", "avgSleepRespirationValue")
-                ?.takeIf { it > 0 },
+            spo2Avg = facts.reading("pulseOx.avgValue", "averageSpO2", "averageSpo2", "avgSpo2"),
+            spo2Min = facts.reading("pulseOx.minValue", "lowestSpO2", "lowestSpo2"),
+            respiration = facts.number("respiration.avgValue", "avgWakingRespirationValue")?.takeIf { it > 0 },
         )
     }
 }
