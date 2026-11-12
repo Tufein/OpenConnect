@@ -95,6 +95,15 @@ proxy with authentication if exposed. What it does enforce:
 
 OAuth tokens are stored in the SQLite file in plain text; protect the file like a password.
 
+## Known simplifications
+
+* **Time zones**: activity timestamps are stored in UTC and weeks/days are cut at UTC midnight, while
+  Garmin's daily health summaries carry the user's local `calendarDate`. Per-user time zones
+  (Garmin provides `startTimeOffsetInSeconds`) are a planned refinement.
+* **De-duplication**: an activity imported from a file and the same activity synced from Garmin
+  have different ids and are not merged.
+* **Single user**: one SQLite connection, one set of tokens.
+
 ## Test strategy
 
 Tests were written before the code for each layer.
