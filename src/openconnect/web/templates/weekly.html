@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_macros.html" import activity_table, report_block %}
+{% block title %}Week of {{ monday }} · OpenConnect{% endblock %}
+{% block content %}
+<div class="row">
+  <h1>Week of {{ monday }}</h1>
+  <nav class="pager"><a href="/weekly?week={{ previous }}">← Previous</a> <a href="/weekly?week={{ following }}">Next →</a></nav>
+</div>
+<section class="grid two">
+  <div class="card">
+    <dl class="facts">
+      <dt>Activities</dt><dd>{{ w.activity_count }}</dd>
+      <dt>Distance</dt><dd>{{ w.total_distance_m|km }}</dd>
+      <dt>Time</dt><dd>{{ w.total_duration_s|duration }}</dd>
+      <dt>Climbing</dt><dd>{{ w.total_elevation_m|round|int }} m</dd>
+      <dt>Calories</dt><dd>{{ w.total_calories }}</dd>
+      <dt>Steps</dt><dd>{{ "{:,}".format(w.total_steps) }}{% if w.avg_steps %} ({{ w.avg_steps|round|int }}/day){% endif %}</dd>
+      <dt>Step goal reached</dt><dd>{{ w.goal_days }} of {{ w.days_with_data }} days</dd>
+      <dt>Intensity minutes</dt><dd>{{ w.intensity_minutes }}</dd>
+      <dt>Avg resting HR</dt><dd>{{ w.avg_resting_hr|round|int if w.avg_resting_hr else "–" }}</dd>
+      <dt>Avg sleep</dt><dd>{{ w.avg_sleep_hours|hours }}</dd>
+    </dl>
+  </div>
+  <div class="card">
+    <h2>By sport</h2>
+    <table>
+      <thead><tr><th>Sport</th><th>Count</th><th>Distance</th><th>Time</th></tr></thead>
+      <tbody>
+      {% for name, t in w.by_sport.items() %}
+        <tr><td>{{ name }}</td><td>{{ t.count }}</td><td>{{ t.distance_m|km }}</td><td>{{ t.duration_s|duration }}</td></tr>
+      {% else %}
+        <tr><td colspan="4" class="muted">No activities this week.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+<section class="card"><h2>Activities</h2>{{ activity_table(activities) }}</section>
+{{ report_block(report, "/ui/reports/weekly", "week", monday, error) }}
+{% endblock %}

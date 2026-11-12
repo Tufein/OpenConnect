@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from "_macros.html" import stat %}
+{% block title %}Health · OpenConnect{% endblock %}
+{% block content %}
+<h1>Health, last 30 days</h1>
+<section class="grid stats">
+  {{ stat("Steps", "", "daily", steps) }}
+  {{ stat("Resting HR", "", "bpm", resting) }}
+  {{ stat("Sleep", "", "hours per night", sleep_hours) }}
+  {{ stat("Body Battery", "", "daily high", battery) }}
+  {{ stat("Stress", "", "daily average", stress) }}
+</section>
+<section class="card">
+  <h2>Sleep, last 14 nights</h2>
+  {{ bar_chart(sleep_bars, 560, 140) }}
+  <table>
+    <thead><tr><th>Night ending</th><th>Total</th><th>Deep</th><th>Light</th><th>REM</th><th>Awake</th><th>Score</th></tr></thead>
+    <tbody>
+    {% for s in sleeps %}
+      <tr><td>{{ s.date }}</td><td>{{ s.duration_s|duration }}</td><td>{{ s.deep_s|duration }}</td>
+          <td>{{ s.light_s|duration }}</td><td>{{ s.rem_s|duration }}</td><td>{{ s.awake_s|duration }}</td>
+          <td>{{ s.score or "–" }}</td></tr>
+    {% else %}
+      <tr><td colspan="7" class="muted">No sleep data yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+<section class="card">
+  <h2>Daily summaries</h2>
+  <table>
+    <thead><tr><th>Date</th><th>Steps</th><th>Resting HR</th><th>Stress</th><th>Body Battery</th><th>Sleep</th></tr></thead>
+    <tbody>
+    {% for r in trend|reverse %}{% if r.steps is not none %}
+      <tr><td>{{ r.date }}</td><td>{{ "{:,}".format(r.steps) }}</td><td>{{ r.resting_hr or "–" }}</td>
+          <td>{{ r.avg_stress if r.avg_stress is not none else "–" }}</td>
+          <td>{{ r.body_battery_high if r.body_battery_high is not none else "–" }}</td>
+          <td>{{ r.sleep_hours|hours }}</td></tr>
+    {% endif %}{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

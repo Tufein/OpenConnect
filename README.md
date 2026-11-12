@@ -1,2 +1,154 @@
 # OpenConnect
-Competitor for Garmin Connect
+
+An open-source, **self-hosted alternative to Garmin Connect**, built on the official
+[Garmin Connect Developer Program](https://developer.garmin.com/gc-developer-program/overview/) APIs
+and developed test-first. Your activities and daily health data live in one SQLite file on your own
+machine, with a dashboard, FIT/GPX/TCX import and export, and optional AI-written reports by Claude.
+
+![OpenConnect dashboard](docs/img/dashboard.png)
+
+> **Status: v0.1.0, an early foundation.** It runs end to end on demo data with no credentials.
+> Live Garmin access needs Garmin Developer Program credentials (see [Garmin access](#garmin-access)).
+> Not affiliated with or endorsed by Garmin.
+
+## What is in the box
+
+| Area | v0.1.0 |
+|------|--------|
+| **Activities** | List and detail, GPS route map, HR and elevation charts, kilometre splits, personal records |
+| **Daily health** | Steps, intensity minutes, resting HR, sleep stages and score, stress, Body Battery |
+| **Dashboard** | Today's cards with 30-day sparklines, weekly report with totals by sport and previous-week comparison |
+| **Files** | Import and export **FIT, GPX and TCX** (CRC-checked FIT, safe XML parsing, idempotent re-import) |
+| **AI reports** | Per activity and per week, written by Claude, or by an offline template when no key is set |
+| **Achievements** | Local badges ("Player One", "Seven-Day Streak", "Everest Climber", …) computed from your data |
+| **Garmin** | OAuth 2.0 + PKCE, pull sync, push webhook, backfill client, and an offline fake Garmin for demos and tests |
+| **Interfaces** | Web UI, JSON API with OpenAPI docs (`/api/docs`), CLI |
+
+The full inventory of Garmin Connect functions, which ones the Developer API exposes, and what is
+planned is in **[docs/FEATURES.md](docs/FEATURES.md)**. How it is built is in
+**[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)**.
+
+## Quick start
+
+Requires Python 3.11 or newer.
+
+```bash
+git clone https://github.com/Tufein/OpenConnect.git
+cd OpenConnect
+python -m venv .venv && . .venv/bin/activate
+pip install -e ".[dev]"
+
+openconnect sync --days 60     # loads demo data (mock mode is the default)
+openconnect serve              # http://127.0.0.1:8000
+```
+
+Or with Docker (published on localhost only; OpenConnect has no login, see [Security](#security)):
+
+```bash
+docker compose up --build
+```
+
+### Command line
+
+```bash
+openconnect sync [--days N]                    # pull from Garmin (or the demo source)
+openconnect activities [--limit N]             # list stored activities with their ids
+openconnect export ID --format fit|gpx|tcx [-o FILE]
+openconnect import run.fit ride.gpx ...        # FIT, GPX or TCX
+openconnect report weekly [--week YYYY-MM-DD]  # AI (or template) report
+openconnect report activity ID [--force]
+openconnect serve [--host H] [--port P]
+```
+
+## Configuration
+
+Everything is optional; see [`.env.example`](.env.example). Settings come from environment variables.
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `OPENCONNECT_DB` | `data/openconnect.db` | SQLite file |
+| `OPENCONNECT_HOST` / `OPENCONNECT_PORT` | `127.0.0.1` / `8000` | Listen address |
+| `OPENCONNECT_BASE_URL` | `http://localhost:8000` | Public URL (OAuth redirect URI, Host allow-list) |
+| `OPENCONNECT_ALLOWED_HOSTS` | | Extra accepted `Host` names, comma separated |
+| `OPENCONNECT_GARMIN_MODE` | `mock` | `mock` (offline demo data) or `live` |
+| `GARMIN_CLIENT_ID` / `GARMIN_CLIENT_SECRET` | | Required in `live` mode |
+| `OPENCONNECT_WEBHOOK_TOKEN` | | Shared secret for `POST /api/garmin/webhook?token=…` |
+| `OPENCONNECT_AI_PROVIDER` | `auto` | `auto`, `anthropic` or `template` |
+| `ANTHROPIC_API_KEY` | | Enables Claude-written reports in `auto` mode |
+| `OPENCONNECT_AI_MODEL` / `OPENCONNECT_AI_EFFORT` | `claude-opus-5-5` / `medium` | Model and effort for reports |
+| `OPENCONNECT_LANGUAGE` | `en` | Report language (`en`, `nl`; Claude supports more) |
+
+## Garmin access
+
+Garmin's data APIs are not open to everyone. In short (details and sources in
+[docs/FEATURES.md](docs/FEATURES.md)):
+
+* **Personal API**: your own data, pull only, key created on the Garmin Connect website.
+  *Support is the first roadmap item.*
+* **Starter / Enterprise** (business tiers): OAuth 2.0 with PKCE. Starter is push only, so register
+  `https://<your-host>/api/garmin/webhook?token=<secret>` with Garmin. **This is what live mode
+  implements today.**
+* Register `<base-url>/api/garmin/callback` as the redirect URI, set
+  `OPENCONNECT_GARMIN_MODE=live`, then use *Settings → Connect to Garmin*.
+
+The Garmin endpoints and field names were taken from Garmin's public documentation and a few
+third-party references because the full specification sits behind the developer portal login. They
+are configurable and marked **verify** in the docs until they have been exercised against real
+credentials.
+
+## AI reports and privacy
+
+Press *Generate report* on an activity or a week. OpenConnect builds a small structured summary
+(distance, pace, splits, HR trend, weekly totals, comparison with previous data) and sends **only
+that** to the model. Free text such as activity names travels inside a JSON data block that the
+system prompt marks as data, not instructions. Reports are cached by a hash of their inputs, so
+unchanged data never costs a second call. Without `ANTHROPIC_API_KEY` the built-in offline template
+is used and nothing leaves your machine.
+
+Check Garmin's Developer Program Agreement before sending Garmin-derived data to any third party.
+
+## Security
+
+OpenConnect v0.1.0 has **no login**. Keep it on `localhost` or a trusted network, or put a reverse
+proxy with authentication in front of it. Built in: loopback bind by default, `Host` allow-list,
+refusal of cross-origin POSTs, strict Content-Security-Policy, size-limited and validated uploads,
+XXE-safe XML parsing, and an optional webhook secret. OAuth tokens are stored in the SQLite file in
+plain text, so protect that file. More in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Development
+
+The project is developed test first: each layer's tests were written before its code, and nothing
+in the suite needs the network, a Garmin account or an API key.
+
+```bash
+pytest                                  # unit + integration tests
+pytest --cov=openconnect                # with coverage
+ruff check src tests && ruff format --check src tests
+```
+
+```
+src/openconnect/
+  domain.py        models and pure helpers
+  garmin/          OAuth/PKCE, HTTP source, mapper, ingest, offline fake
+  formats/         FIT, GPX, TCX
+  services/        sync, dashboard, records, achievements
+  ai/              facts, prompts, providers (Claude + template), report service
+  web/             FastAPI app, JSON API, HTML UI, SVG charts
+  storage/         SQLite repository
+  cli.py           command line
+tests/             unit/ and integration/
+```
+
+CI (GitHub Actions) runs lint, format check and the tests on Python 3.11 to 3.13, builds and
+smoke-tests the wheel, and builds the Docker image. Pushing a `v*` tag publishes a GitHub release.
+
+## Roadmap
+
+Personal API support, the rest of the Health API data types (HRV, Pulse Ox, respiration, body
+composition, …), laps and interactive charts, Ping/Pull callbacks and backfill UI, Training and
+Courses API publishing, monthly reports, and optional authentication. See
+[docs/FEATURES.md](docs/FEATURES.md#7-roadmap).
+
+## License
+
+[MIT](LICENSE). Garmin and Garmin Connect are trademarks of Garmin Ltd.
