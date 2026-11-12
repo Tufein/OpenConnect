@@ -7,13 +7,23 @@ machine, with a dashboard, FIT/GPX/TCX import and export, and optional AI-writte
 
 ![OpenConnect dashboard](docs/img/dashboard.png)
 
-> **Status: v0.1.0, an early foundation.** It runs end to end on demo data with no credentials.
+> **Status: v0.2.0, an early foundation.** It runs end to end on demo data with no credentials.
 > Live Garmin access needs Garmin Developer Program credentials (see [Garmin access](#garmin-access)).
 > Not affiliated with or endorsed by Garmin.
 
+## Android app
+
+OpenConnect also comes as a **standalone Android app** (Android 8+), with no server needed: your data
+stays on the phone, you import FIT, GPX or TCX files, and reports are written offline or by Claude with
+your own API key. Download the APK from the [releases page](https://github.com/Tufein/OpenConnect/releases).
+Garmin account sync is not in the app yet. Details, limits and what has been verified:
+**[docs/ANDROID.md](docs/ANDROID.md)**.
+
+![OpenConnect on Android](docs/img/android.png)
+
 ## What is in the box
 
-| Area | v0.1.0 |
+| Area (server) | v0.1.0 |
 |------|--------|
 | **Activities** | List and detail, GPS route map, HR and elevation charts, kilometre splits, personal records |
 | **Daily health** | Steps, intensity minutes, resting HR, sleep stages and score, stress, Body Battery |
@@ -140,11 +150,16 @@ tests/             unit/ and integration/
 ```
 
 CI (GitHub Actions) runs lint, format check and the tests on Python 3.11 to 3.13, builds and
-smoke-tests the wheel, and builds the Docker image. Pushing a `v*` tag publishes a GitHub release.
+smoke-tests the wheel, and builds the Docker image. A second workflow tests, lints and builds the Android
+app. A release (pushing a `v*` tag, or running the Release workflow on `main`) builds the APK, the wheel
+and the sdist and publishes them together.
+
+The Android project lives in `android/` (`core/` is plain Kotlin, `app/` is the Compose app); see
+[docs/ANDROID.md](docs/ANDROID.md) for how to build and test it.
 
 ## Roadmap
 
-Personal API support, the rest of the Health API data types (HRV, Pulse Ox, respiration, body
+Garmin Personal API sync in the Android app, Personal API support in the server, the rest of the Health API data types (HRV, Pulse Ox, respiration, body
 composition, …), laps and interactive charts, Ping/Pull callbacks and backfill UI, Training and
 Courses API publishing, monthly reports, and optional authentication. See
 [docs/FEATURES.md](docs/FEATURES.md#7-roadmap).
