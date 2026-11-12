@@ -89,6 +89,18 @@ class WatchScreenTest : AppTestBase() {
     }
 
     @Test
+    fun theWatchScreenOffersToReadAFolderAndExplainsWhatBluetoothCanDo() {
+        launchWithFakes()
+        waitForText("Connect watch")
+        rule.onNodeWithText("Connect watch").performClick()
+        waitForText("Read a folder with watch files")
+        scrollToText("Pick a folder")
+        assertTrue(hasText("Pick a folder", substring = false))
+        shot("12b-watch-folder")
+        scrollToText("The watch itself talks Bluetooth only", substring = true)
+    }
+
+    @Test
     fun liveHeartRateFromASensorCanBeSavedAsAnActivity() {
         launchWithFakes()
         shadowOf(ApplicationProvider.getApplicationContext<Context>() as android.app.Application)

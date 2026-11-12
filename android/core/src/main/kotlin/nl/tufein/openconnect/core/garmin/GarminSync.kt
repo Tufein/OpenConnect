@@ -60,6 +60,22 @@ data class GarminSyncReport(
 }
 
 /**
+ * A text to paste into a bug report: what each data type answered and, where the answer was not understood, its
+ * layout. It holds names and counts only, never values, the key or a token.
+ */
+fun GarminSyncReport.diagnostics(): String = buildString {
+    appendLine("OpenConnect Garmin sync, $days days")
+    for (e in endpoints) {
+        append(e.id).append(": ").append(e.status).append(" (").append(e.records).append(")")
+        e.detail?.let { append(" - ").append(it) }
+        appendLine()
+    }
+    stopped?.let { appendLine("stopped: ${it.kind}" + (it.status?.let { s -> " (HTTP $s)" } ?: "")) }
+    if (cancelled) appendLine("cancelled")
+    appendLine("days updated $daysUpdated, nights $nightsUpdated, activities new $activitiesAdded, known $activitiesKnown, without file $activitiesWithoutFile, pending $activitiesPending")
+}
+
+/**
  * Pulls the owner's own data from Garmin's Personal API into the app's storage: the all-day numbers of the last
  * [sync] days (steps, stress, Body Battery, sleep, HRV, ...) and the activities with their original files.
  *

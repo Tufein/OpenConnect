@@ -9,14 +9,15 @@ The Python server from v0.1.0 is unchanged and stays available for people who pr
 *These images are rendered on a computer by the app's own UI tests (Robolectric), not captured on a
 phone, so fonts and spacing on a real device can differ slightly.*
 
-## What the app does (v0.3.0)
+## What the app does (v0.4.0)
 
 | Screen | Contents |
 |--------|----------|
-| **Home** | Today's steps, resting heart rate, Body Battery and stress; last 7 days; 30-day steps chart; recent activities; a card that opens the Watch screen |
+| **Home** | Today's steps, resting heart rate, Body Battery and stress; last 7 days; 30-day steps chart; recent activities; a card that opens the Watch and Garmin account screens |
 | **Activities** | List with a sport filter, import button; detail with route map, heart-rate and elevation charts, kilometre splits, AI report, export as FIT, GPX or TCX, delete |
 | **Health** | Steps, sleep, resting heart rate, Body Battery, HRV, blood oxygen and respiration trends |
-| **Watch** | Read a Garmin watch over a USB cable (activities, steps, sleep, heart rate, stress, Body Battery, SpO2, HRV, ...) and follow live heart rate over Bluetooth. See [WATCH.md](WATCH.md) |
+| **Watch** | Read a Garmin watch over a USB cable or a folder of watch files (activities, steps, sleep, heart rate, stress, Body Battery, SpO2, HRV, ...) and follow live heart rate over Bluetooth, which reconnects by itself. See [WATCH.md](WATCH.md) |
+| **Garmin account** | Paste your personal Garmin key and pull steps, heart rate, stress, Body Battery, sleep, HRV and activities (with their original FIT files) from your Garmin account. See [GARMIN.md](GARMIN.md) |
 | **Reports** | Week picker with totals, an AI report for the week, personal records per sport |
 | **Settings** | Import files, load or delete all data, report provider (automatic, offline, Claude), report language, API key, model |
 
@@ -29,7 +30,7 @@ English and Dutch, a phosphor-green dark theme and a light theme that follows th
    Importing the same file again does not create a duplicate (the activity id is derived from the content).
 3. **A Garmin watch, directly** (new in v0.3.0): USB cable for everything the watch stores, Bluetooth for live
    heart rate. No server and no Garmin account. How it works and what is not tested yet: **[WATCH.md](WATCH.md)**.
-4. **Garmin account sync: not implemented yet.** See [Garmin](#garmin) below.
+4. **Your Garmin account** (new in v0.4.0): with a personal key that you make yourself, no server in between. **[GARMIN.md](GARMIN.md)**.
 
 ### AI reports and privacy
 
@@ -115,26 +116,28 @@ The key is **not in this repository**.
 
 The app cannot reuse the server's Garmin integration: Garmin's business-tier APIs push data to a server
 endpoint and use a client secret, which cannot live inside an APK. What fits a standalone app is Garmin's
-**Personal API** (your own data, your own key, pulled by the app), which needs Garmin's approval.
-That is planned and **not implemented**. The way in without any Garmin account is the **Watch screen** (USB
-cable, see [WATCH.md](WATCH.md)), file import, Garmin Connect's own export, or any app that writes FIT,
-GPX or TCX. Garmin's Health SDK would read the watch over Bluetooth but is limited to approved enterprise
-partners. Reading from Android Health Connect is a candidate extra source (it needs Garmin Connect on the
-phone to fill it); it is described in WATCH.md and not built yet.
+**Personal API** (your own data, your own key, pulled by the app, no approval needed), and that is what the
+**Garmin account** screen uses since v0.4.0. The key is entered by the person using the app and kept encrypted on the
+phone; it is never part of the APK. Besides that there is the **Watch screen** (USB cable, a folder of watch files,
+live heart rate over Bluetooth), file import, Garmin Connect's own export, or any app that writes FIT, GPX or TCX.
+Garmin's Health SDK would read the watch over Bluetooth but is limited to approved enterprise partners. Reading from
+Android Health Connect is a candidate extra source (it needs Garmin Connect on the phone to fill it). All of it, with
+what is verified, is in [GARMIN.md](GARMIN.md) and [WATCH.md](WATCH.md).
 
 ## What has and has not been verified
 
 | Verified by automated tests | Not verified (needs a real phone or credentials) |
 |-----------------------------|--------------------------------------------------|
-| Core logic, formats, reports and the watch readers (109 core tests) | Behaviour on real devices and Android versions other than the emulated API 34 |
+| Core logic, formats, reports, the watch readers and the Garmin account client (175 core tests) | Behaviour on real devices and Android versions other than the emulated API 34 |
 | SQLite storage on the JVM (Robolectric), including the upgrade from v0.2.0 | File pickers, share and open-with intents, the save dialog |
-| The real app driven through every tab: demo data, activity detail, offline reports, English dark and Dutch light, and the Watch screen with a fake USB link and a fake Bluetooth sensor (36 app tests) | Android Keystore encryption of the API key (the JVM tests have no Keystore) |
+| The real app driven through every tab: demo data, activity detail, offline reports, English dark and Dutch light, the Watch screen with a fake USB link, folder and Bluetooth sensor, and the Garmin screen with a fake Garmin (72 app tests) | Android Keystore encryption of the API key (the JVM tests have no Keystore) |
 | Watch FIT files written by Garmin's own encoder: steps, distance, calories, heart rate, stress, Body Battery, SpO2, respiration, HRV, sleep stages | Live Claude calls from the phone (no key was available) |
 | The release APK builds, is not debuggable, and is signed with the release key from v0.2.0 on | **USB permission and `MtpDevice` on a real phone, and real Garmin files** (only synthetic files so far) |
-| Lint is clean | **Bluetooth scan and connection to a real watch or strap**; Garmin account sync (not built) |
+| Lint has no errors | **Bluetooth scan and connection to a real watch or strap**, the folder picker on a phone |
+| The Garmin account sync ran live against a real account on 2026-11-12 (token, all data types, one activity download) | Other accounts and watch models, the key's storage in Android Keystore |
 
 ## Roadmap
 
 Trying the watch routes on real devices and fixing what that turns up, the watch's `Metrics` folder (VO2 max,
-training status), Health Connect as a source, Garmin Personal API pull, a home-screen widget, laps and zoomable
+training status), background sync and a foreground service for live heart rate, Health Connect as a source, a home-screen widget, laps and zoomable
 charts, achievements (they exist in the server but not yet in the app), and a signed Play Store build.

@@ -1,8 +1,9 @@
 package nl.tufein.openconnect.watch
 
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +21,7 @@ import java.time.Instant
 import java.time.ZoneId
 import kotlin.math.roundToInt
 
-enum class SyncFailure { NOT_FOUND, NO_PERMISSION, CANNOT_OPEN, NO_FILES, OTHER }
+enum class SyncFailure { NOT_FOUND, NO_PERMISSION, CANNOT_OPEN, NO_FILES, NO_FILES_IN_FOLDER, OTHER }
 
 sealed interface SyncStatus {
     data object Idle : SyncStatus
@@ -32,7 +33,8 @@ sealed interface SyncStatus {
     data class Failed(val reason: SyncFailure, val detail: String? = null) : SyncStatus
 }
 
-enum class LivePhase { IDLE, SCANNING, CONNECTING, STREAMING, STOPPED }
+/** [RECONNECTING]: the sensor went away and the phone is trying to reach it again; the recording goes on. */
+enum class LivePhase { IDLE, SCANNING, CONNECTING, STREAMING, RECONNECTING, STOPPED }
 
 data class LiveUi(
     val phase: LivePhase = LivePhase.IDLE,
@@ -47,6 +49,8 @@ data class LiveUi(
     val hasData: Boolean = false,
     val saved: Boolean = false,
     val error: String? = null,
+    /** How many times in a row the phone has tried to reach the sensor again; 0 while it is connected. */
+    val reconnectAttempt: Int = 0,
 )
 
 data class WatchUi(
@@ -56,9 +60,11 @@ data class WatchUi(
 )
 
 /**
- * Everything the Watch screen does: find a watch on USB and copy its data, and show a live heart rate
- * from a Bluetooth sensor (a Garmin watch in "broadcast heart rate" mode, or a chest strap).
- * It has no Android types in it: the phone's USB and Bluetooth sit behind [WatchLink] and [HeartRateLink].
+ * Everything the Watch screen does: find a watch on USB (or read a folder of watch files) and copy its data, and
+ * show a live heart rate from a Bluetooth sensor (a Garmin watch in "broadcast heart rate" mode, or a chest strap).
+ * A sensor that drops out is reconnected a few times, and what was recorded so far is kept.
+ * It has no Android types in it: the phone's USB, folders and Bluetooth sit behind [WatchLink], [FolderLink] and
+ * [HeartRateLink].
  */
 class WatchController(
     private val repo: Repository,
@@ -70,6 +76,11 @@ class WatchController(
     private val now: () -> Instant = { Instant.now() },
     /** Called after something was written to the repository, so screens can reload. */
     private val onDataChanged: () -> Unit = {},
+    private val folder: FolderLink = FolderLink { throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN) },
+    /** How many times a lost sensor is tried again before the recording is stopped. */
+    private val maxReconnects: Int = 5,
+    /** Waits before reconnect attempt number [attempt] (1, 2, ...). Tests replace it. */
+    private val reconnectDelay: suspend (attempt: Int) -> Unit = { attempt -> delay(minOf(2_000L * attempt, 10_000L)) },
 ) {
     private val _state = MutableStateFlow(WatchUi())
     val state: StateFlow<WatchUi> = _state.asStateFlow()
@@ -80,20 +91,25 @@ class WatchController(
         _state.update { it.copy(watches = usb.attached()) }
     }
 
-    fun syncUsb(info: WatchInfo) {
+    fun syncUsb(info: WatchInfo) = startSync(info.name, SyncFailure.NO_FILES, refreshAfter = true) { usb.open(info) }
+
+    /** Reads the watch files in a folder the user picked ([treeUri] is what the folder picker returned). */
+    fun syncFolder(treeUri: String) = startSync("", SyncFailure.NO_FILES_IN_FOLDER, refreshAfter = false) { folder.open(treeUri) }
+
+    private fun startSync(name: String, whenEmpty: SyncFailure, refreshAfter: Boolean, open: suspend () -> OpenedWatch) {
         if (_state.value.sync is SyncStatus.Running) return
-        _state.update { it.copy(sync = SyncStatus.Running(info.name, 0, 0, "")) }
+        _state.update { it.copy(sync = SyncStatus.Running(name, 0, 0, "")) }
         scope.launch(io) {
             // Not inside update { }: that lambda is run again when another thread changed the state meanwhile.
-            val result = runSync(info)
+            val result = runSync(whenEmpty, open)
             _state.update { it.copy(sync = result) }
-            refreshUsb()
+            if (refreshAfter) refreshUsb()
         }
     }
 
-    private suspend fun runSync(info: WatchInfo): SyncStatus {
+    private suspend fun runSync(whenEmpty: SyncFailure, open: suspend () -> OpenedWatch): SyncStatus {
         val opened = try {
-            usb.open(info)
+            open()
         } catch (e: WatchLinkException) {
             return SyncStatus.Failed(
                 when (e.reason) {
@@ -114,7 +130,10 @@ class WatchController(
                     },
                 )
                 when {
-                    report.filesFound == 0 -> SyncStatus.Failed(SyncFailure.NO_FILES)
+                    report.filesFound == 0 -> SyncStatus.Failed(whenEmpty)
+                    // Everything that was tried failed to read: the cable came out or the folder went away, nothing was read.
+                    report.filesRead == 0 && report.filesSkipped == 0 && report.errors.isNotEmpty() ->
+                        SyncStatus.Failed(SyncFailure.OTHER, report.errors.first())
                     else -> {
                         onDataChanged()
                         SyncStatus.Done(name, report)
@@ -134,6 +153,10 @@ class WatchController(
     private var connection: AutoCloseable? = null
     private var recording = LiveHeartRate()
     private var recordingStart: Instant? = null
+
+    /** Bumped for every connection attempt and when the user stops, so late answers of an old connection are ignored. */
+    private var generation = 0
+    private val lock = Any()
 
     fun startScan() {
         stopScan()
@@ -163,24 +186,66 @@ class WatchController(
     fun connect(sensor: BleSensor) {
         scan?.close()
         scan = null
-        connection?.close()
+        synchronized(lock) {
+            generation++
+            connection?.close()
+            connection = null
+        }
         recording = LiveHeartRate()
         recordingStart = null
         _state.update { it.copy(live = LiveUi(phase = LivePhase.CONNECTING, sensorName = sensor.name)) }
-        connection = ble.connect(
+        open(sensor, attempt = 0)
+    }
+
+    /** One connection attempt; [attempt] is 0 for the first and counts the retries after a lost connection. */
+    private fun open(sensor: BleSensor, attempt: Int) {
+        val mine = synchronized(lock) { ++generation }
+        val link = ble.connect(
             sensor,
             object : HeartRateListener {
+                /** A connection that worked before it dropped starts the count of failed attempts over. */
+                private var worked = false
+
                 override fun onConnected() {
-                    _state.update { it.copy(live = it.live.copy(phase = LivePhase.STREAMING)) }
+                    if (!current(mine)) return
+                    worked = true
+                    _state.update { it.copy(live = it.live.copy(phase = LivePhase.STREAMING, error = null, reconnectAttempt = 0)) }
                 }
 
-                override fun onMeasurement(measurement: HeartRateMeasurement) = record(measurement)
+                override fun onMeasurement(measurement: HeartRateMeasurement) {
+                    if (current(mine)) record(measurement)
+                }
 
                 override fun onDisconnected(error: String?) {
-                    _state.update { it.copy(live = it.live.copy(phase = LivePhase.STOPPED, error = error)) }
+                    if (!current(mine)) return
+                    val next = if (worked) 1 else attempt + 1
+                    // A null error is a connection closed on purpose; anything else is a sensor that went away.
+                    if (error != null && next <= maxReconnects) reconnectLater(sensor, next) else stopWith(error)
                 }
             },
         )
+        synchronized(lock) {
+            if (generation == mine) connection = link else link.close()
+        }
+    }
+
+    private fun current(mine: Int) = synchronized(lock) { generation == mine }
+
+    private fun stopWith(error: String?) {
+        _state.update { it.copy(live = it.live.copy(phase = LivePhase.STOPPED, error = error, reconnectAttempt = 0)) }
+    }
+
+    private fun reconnectLater(sensor: BleSensor, attempt: Int) {
+        val waiting = synchronized(lock) {
+            connection?.close() // the lost connection is dead already; let the radio go
+            connection = null
+            ++generation
+        }
+        _state.update { it.copy(live = it.live.copy(phase = LivePhase.RECONNECTING, error = null, reconnectAttempt = attempt)) }
+        scope.launch {
+            reconnectDelay(attempt)
+            if (current(waiting)) open(sensor, attempt) // otherwise the user stopped, or started another connection
+        }
     }
 
     @Synchronized
@@ -206,10 +271,13 @@ class WatchController(
     fun stopLive() {
         scan?.close()
         scan = null
-        connection?.close()
-        connection = null
+        synchronized(lock) {
+            generation++ // answers of the connection that is being closed, and any waiting retry, no longer count
+            connection?.close()
+            connection = null
+        }
         _state.update { ui ->
-            if (ui.live.phase == LivePhase.IDLE) ui else ui.copy(live = ui.live.copy(phase = LivePhase.STOPPED))
+            if (ui.live.phase == LivePhase.IDLE) ui else ui.copy(live = ui.live.copy(phase = LivePhase.STOPPED, reconnectAttempt = 0))
         }
     }
 

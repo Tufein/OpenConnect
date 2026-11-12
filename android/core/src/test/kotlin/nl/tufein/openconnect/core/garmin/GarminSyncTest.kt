@@ -160,6 +160,19 @@ class GarminSyncTest {
         assertNotNull(repo.listDaily(d11, d11).firstOrNull())
     }
 
+    @Test
+    fun `the diagnostics text names layouts and counts and never values or the key`() {
+        answerEverything()
+        http.json("/usersummary-service/stats/stress/daily", """{"surprise": {"list": [{"level": 5, "secret": "value-should-not-show"}]}}""")
+        http.status("GET", "/hrv-service/hrv/daily", 403)
+        val text = service().sync(days = 7).diagnostics()
+
+        assertTrue("stress: UNRECOGNISED" in text && "level: number" in text, text)
+        assertTrue("hrv: FAILED" in text && "403" in text, text)
+        assertTrue("dailySummaries: OK (2)" in text, text) // 10 and 11 November; today has only zero counters
+        assertFalse("value-should-not-show" in text || "KEY-1234567890" in text, text)
+    }
+
     // ---------------------------------------------------------------------------------------- problems
 
     @Test

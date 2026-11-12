@@ -29,6 +29,7 @@ import nl.tufein.openconnect.core.personalRecords
 import nl.tufein.openconnect.core.reports.ReportError
 import nl.tufein.openconnect.core.reports.kilometreSplits
 import nl.tufein.openconnect.core.weekStart
+import nl.tufein.openconnect.garmin.GarminUi
 import nl.tufein.openconnect.watch.BleSensor
 import nl.tufein.openconnect.watch.WatchInfo
 import nl.tufein.openconnect.watch.WatchUi
@@ -71,6 +72,7 @@ data class ReportsState(
 private const val MAX_IMPORT_BYTES = 25 * 1024 * 1024
 
 const val WATCH_ROUTE = "watch"
+const val GARMIN_ROUTE = "garmin"
 
 /** Holds screen state and does all disk and network work off the main thread. */
 class AppViewModel(application: Application) : AndroidViewModel(application) {
@@ -104,6 +106,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /** The watch screen's state and actions live in [AppContainer.watch], which outlives the activity. */
     val watch: StateFlow<WatchUi> get() = container.watch.state
+
+    /** The Garmin account screen's state and actions live in [AppContainer.garmin], which outlives the activity. */
+    val garmin: StateFlow<GarminUi> get() = container.garmin.state
 
     private val _navigation = Channel<String>(Channel.BUFFERED)
 
@@ -139,6 +144,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     init {
         refreshAll()
         viewModelScope.launch { container.dataChanged.collect { refreshAll() } }
+        container.garmin.autoSyncIfDue()
     }
 
     // ---------------------------------------------------------------------------------- watch
@@ -146,6 +152,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun refreshWatches() = container.watch.refreshUsb()
 
     fun readWatch(info: WatchInfo) = container.watch.syncUsb(info)
+
+    /** [tree] is the address the folder picker returned. */
+    fun readFolder(tree: Uri) = container.watch.syncFolder(tree.toString())
 
     fun scanSensors() = container.watch.startScan()
 
@@ -162,6 +171,20 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         container.watch.refreshUsb()
         _navigation.trySend(WATCH_ROUTE)
     }
+
+    // ---------------------------------------------------------------------------------- garmin
+
+    fun saveGarminKey(pasted: String) = container.garmin.saveKey(pasted)
+
+    fun forgetGarminKey() = container.garmin.forgetKey()
+
+    fun setGarminDays(days: Int) = container.garmin.setDays(days)
+
+    fun setGarminAutoSync(on: Boolean) = container.garmin.setAutoSync(on)
+
+    fun syncGarmin() = container.garmin.sync()
+
+    fun cancelGarmin() = container.garmin.cancel()
 
     // ------------------------------------------------------------------------------- loading
 

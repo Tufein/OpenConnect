@@ -126,6 +126,21 @@ class PersonalApiClientTest {
     }
 
     @Test
+    fun `verify only asks for a token and reports a rejected key`() {
+        tokenAnswers(jwt(now.plusSeconds(86_400)))
+        client.verify()
+        client.verify() // the token is still good
+        assertEquals(listOf("POST"), http.calls.map { it.method })
+        assertEquals(1, http.calls.size)
+
+        http.status("POST", tokenPath, 401)
+        client.invalidate()
+        assertEquals(GarminApiException.Kind.KEY_REJECTED, kind { client.verify() })
+        key = null
+        assertEquals(GarminApiException.Kind.NO_KEY, kind { client.verify() })
+    }
+
+    @Test
     fun `a key with spaces around it is trimmed`() {
         key = "  SECRET-KEY-123\n"
         tokenAnswers(jwt(now.plusSeconds(86_400)))

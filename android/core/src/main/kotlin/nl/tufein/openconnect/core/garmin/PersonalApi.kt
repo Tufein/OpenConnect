@@ -79,6 +79,14 @@ class PersonalApiClient(
 
     private var token: Token? = null
 
+    /**
+     * Asks Garmin for a token without reading any data: the cheapest way to learn whether the saved key is accepted.
+     * Throws [GarminApiException] (KEY_REJECTED, NETWORK, ...) when it is not.
+     */
+    fun verify() {
+        bearer()
+    }
+
     /** Forget the token: the next call asks Garmin for a new one. */
     @Synchronized
     fun invalidate() {

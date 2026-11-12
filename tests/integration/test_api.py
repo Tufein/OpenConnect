@@ -6,7 +6,7 @@ from tests.fakes import FakeAnthropic
 
 
 def test_healthz(app):
-    assert app.client.get("/healthz").json() == {"status": "ok", "version": "0.3.0"}
+    assert app.client.get("/healthz").json() == {"status": "ok", "version": "0.4.0"}
 
 
 # --------------------------------------------------------------------- sync and activities

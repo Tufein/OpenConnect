@@ -7,7 +7,7 @@ machine, with a dashboard, FIT/GPX/TCX import and export, and optional AI-writte
 
 ![OpenConnect dashboard](docs/img/dashboard.png)
 
-> **Status: v0.3.0, an early foundation.** It runs end to end on demo data with no credentials.
+> **Status: v0.4.0, an early foundation.** It runs end to end on demo data with no credentials.
 > Live Garmin access needs Garmin Developer Program credentials (see [Garmin access](#garmin-access)).
 > Not affiliated with or endorsed by Garmin.
 
@@ -17,9 +17,11 @@ OpenConnect also comes as a **standalone Android app** (Android 8+), with no ser
 stays on the phone, you import FIT, GPX or TCX files, and reports are written offline or by Claude with
 your own API key. Download the APK from the [releases page](https://github.com/Tufein/OpenConnect/releases).
 Since v0.3.0 it can also **read a Garmin watch directly**: over a USB cable (activities, steps, sleep, heart rate,
-stress, Body Battery, SpO2, HRV) and over Bluetooth (live heart rate), with no server and no Garmin account. That
-part has been tested with files from Garmin's own encoder but not yet on a real watch, see
-**[docs/WATCH.md](docs/WATCH.md)** for what works and what is unverified. Garmin account sync is not in the app.
+stress, Body Battery, SpO2, HRV) and over Bluetooth (live heart rate), with no server and no Garmin account. Since
+v0.4.0 it can also **pull your own data from your Garmin account** with a personal key you make yourself (no approval,
+no server of ours), and read a folder of watch files; Bluetooth reconnects by itself. The account route has been run
+live against a real account; the USB and Bluetooth parts have not yet been tried on a real watch. See
+**[docs/GARMIN.md](docs/GARMIN.md)** and **[docs/WATCH.md](docs/WATCH.md)** for what works and what is unverified.
 More about the app, its limits and what has been verified: **[docs/ANDROID.md](docs/ANDROID.md)**.
 
 ![OpenConnect on Android](docs/img/android.png)
