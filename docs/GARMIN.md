@@ -116,8 +116,7 @@ failing. A few of the tests were checked by breaking the code on purpose to see 
 
 On 2026-11-12, with the owner's own personal key and one real account, the real app code (`UrlConnectionGarminHttp`,
 `PersonalApiClient`, `GarminSyncService`) ran against Garmin: the token exchange, all six day-level data types for 130
-days (daily summaries, steps, stress and Body Battery for all 130 days, HRV and sleep for 129, the one missing night being
-one without data) and the activity list, then one activity with its ZIP download. The real FIT file was also read by the app's FIT importer, and a replay of the
+days (daily summaries, steps, stress and Body Battery for all 130 days, HRV and sleep for 129, one day had none) and the activity list, then one activity with its ZIP download. The real FIT file was also read by the app's FIT importer, and a replay of the
 real answers through the sync filled every field the app has for each day. This is how the layouts in `Mapping.kt`
 were found.
 
