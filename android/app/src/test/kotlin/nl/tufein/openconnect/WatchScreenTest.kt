@@ -52,8 +52,11 @@ class WatchScreenTest : AppTestBase() {
     }
     private val ble = FakeBle()
 
-    private fun launchWithFakes() = launchFresh { app ->
-        app.containerOverride = AppContainer(SqliteRepository(app), SettingsStore(app), usb, ble)
+    /** [seed] fills the database before the first screen starts, so no screen can load before the data is there. */
+    private fun launchWithFakes(seed: (SqliteRepository) -> Unit = {}) = launchFresh { app ->
+        val container = AppContainer(SqliteRepository(app), SettingsStore(app), usb, ble)
+        seed(container.repository)
+        app.containerOverride = container
     }
 
     private fun repo() = ApplicationProvider.getApplicationContext<OpenConnectApp>().container.repository
@@ -125,10 +128,11 @@ class WatchScreenTest : AppTestBase() {
 
     @Test
     fun healthShowsWatchOnlyValuesOnceTheyExist() {
-        launchWithFakes()
         val today = LocalDate.now(ZoneOffset.UTC)
-        repo().upsertDaily(DailySummary(date = today, steps = 4000, hrvMs = 52, spo2Avg = 96, respirationAvg = 14.5))
-        repo().upsertDaily(DailySummary(date = today.minusDays(1), steps = 5000, hrvMs = 48))
+        launchWithFakes { repo ->
+            repo.upsertDaily(DailySummary(date = today, steps = 4000, hrvMs = 52, spo2Avg = 96, respirationAvg = 14.5))
+            repo.upsertDaily(DailySummary(date = today.minusDays(1), steps = 5000, hrvMs = 48))
+        }
         waitForText("Health")
         tab("Health").performClick()
         waitForText("HRV (last night)")

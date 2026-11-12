@@ -7,7 +7,7 @@ machine, with a dashboard, FIT/GPX/TCX import and export, and optional AI-writte
 
 ![OpenConnect dashboard](docs/img/dashboard.png)
 
-> **Status: v0.2.0, an early foundation.** It runs end to end on demo data with no credentials.
+> **Status: v0.3.0, an early foundation.** It runs end to end on demo data with no credentials.
 > Live Garmin access needs Garmin Developer Program credentials (see [Garmin access](#garmin-access)).
 > Not affiliated with or endorsed by Garmin.
 
@@ -16,8 +16,11 @@ machine, with a dashboard, FIT/GPX/TCX import and export, and optional AI-writte
 OpenConnect also comes as a **standalone Android app** (Android 8+), with no server needed: your data
 stays on the phone, you import FIT, GPX or TCX files, and reports are written offline or by Claude with
 your own API key. Download the APK from the [releases page](https://github.com/Tufein/OpenConnect/releases).
-Garmin account sync is not in the app yet. Details, limits and what has been verified:
-**[docs/ANDROID.md](docs/ANDROID.md)**.
+Since v0.3.0 it can also **read a Garmin watch directly**: over a USB cable (activities, steps, sleep, heart rate,
+stress, Body Battery, SpO2, HRV) and over Bluetooth (live heart rate), with no server and no Garmin account. That
+part has been tested with files from Garmin's own encoder but not yet on a real watch, see
+**[docs/WATCH.md](docs/WATCH.md)** for what works and what is unverified. Garmin account sync is not in the app.
+More about the app, its limits and what has been verified: **[docs/ANDROID.md](docs/ANDROID.md)**.
 
 ![OpenConnect on Android](docs/img/android.png)
 
@@ -159,7 +162,7 @@ The Android project lives in `android/` (`core/` is plain Kotlin, `app/` is the 
 
 ## Roadmap
 
-Garmin Personal API sync in the Android app, Personal API support in the server, the rest of the Health API data types (HRV, Pulse Ox, respiration, body
+Trying the watch routes on real devices, Health Connect as a source, Garmin Personal API sync in the Android app, Personal API support in the server, the rest of the Health API data types (HRV, Pulse Ox, respiration, body
 composition, …), laps and interactive charts, Ping/Pull callbacks and backfill UI, Training and
 Courses API publishing, monthly reports, and optional authentication. See
 [docs/FEATURES.md](docs/FEATURES.md#7-roadmap).
