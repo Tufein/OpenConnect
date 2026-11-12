@@ -1,0 +1,46 @@
+{% macro stat(label, value, sub="", series=None) -%}
+<div class="card stat">
+  <div class="label">{{ label }}</div>
+  <div class="value">{{ value }}</div>
+  {% if sub %}<div class="sub">{{ sub }}</div>{% endif %}
+  {% if series is not none %}{{ sparkline(series) }}{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro activity_table(activities) -%}
+<table>
+  <thead><tr><th>Date</th><th>Activity</th><th>Sport</th><th>Distance</th><th>Time</th><th>Avg HR</th></tr></thead>
+  <tbody>
+  {% for a in activities %}
+    <tr>
+      <td>{{ a.start_time.strftime("%Y-%m-%d %H:%M") }}</td>
+      <td><a href="/activities/{{ a.id }}">{{ a.name or a.sport.value|title }}</a></td>
+      <td>{{ a.sport.value }}</td>
+      <td>{{ a.distance_m|km }}</td>
+      <td>{{ a.duration_s|duration }}</td>
+      <td>{{ a.avg_hr or "–" }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="6" class="muted">No activities.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{%- endmacro %}
+
+{% macro report_block(report, action, hidden_name=None, hidden_value=None, error=None) -%}
+<section class="card report">
+  <h2>AI report</h2>
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+  {% if report %}
+    <div class="prose">{{ report.text|markdown }}</div>
+    <p class="muted">Written by {{ report.model or report.provider }} · {{ report.created_at.strftime("%Y-%m-%d %H:%M") }} UTC</p>
+  {% else %}
+    <p class="muted">No report yet.</p>
+  {% endif %}
+  <form method="post" action="{{ action }}">
+    {% if hidden_name %}<input type="hidden" name="{{ hidden_name }}" value="{{ hidden_value }}">{% endif %}
+    {% if report %}<input type="hidden" name="force" value="true">{% endif %}
+    <button type="submit">{{ "Regenerate" if report else "Generate report" }}</button>
+  </form>
+</section>
+{%- endmacro %}

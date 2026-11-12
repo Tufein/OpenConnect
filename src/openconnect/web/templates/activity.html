@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_macros.html" import report_block %}
+{% block title %}{{ a.name or a.sport.value|title }} · OpenConnect{% endblock %}
+{% block content %}
+<h1>{{ a.name or a.sport.value|title }}</h1>
+<p class="muted">{{ a.sport.value }} · {{ a.start_time.strftime("%A %Y-%m-%d %H:%M") }} UTC
+  {% if a.device_name %}· {{ a.device_name }}{% endif %} · source: {{ a.source }}</p>
+
+<section class="grid two">
+  <div class="card">{{ route_svg(a.track) }}</div>
+  <div class="card">
+    <dl class="facts">
+      <dt>Distance</dt><dd>{{ a.distance_m|km }}</dd>
+      <dt>Time</dt><dd>{{ a.duration_s|duration }}</dd>
+      {% if a.sport.value in ("running", "walking", "hiking") %}
+      <dt>Pace</dt><dd>{{ a.pace_s_per_km|pace }}</dd>
+      {% elif a.avg_speed_mps %}
+      <dt>Avg speed</dt><dd>{{ "%.1f"|format(a.avg_speed_mps * 3.6) }} km/h</dd>
+      {% endif %}
+      <dt>Elevation gain</dt><dd>{{ a.elevation_gain_m|round|int }} m</dd>
+      <dt>Heart rate</dt><dd>{{ a.avg_hr or "–" }} avg / {{ a.max_hr or "–" }} max</dd>
+      <dt>Calories</dt><dd>{{ a.calories or "–" }}</dd>
+    </dl>
+    {% if hr|select|list %}<h3>Heart rate</h3>{{ sparkline(hr, 320, 40) }}{% endif %}
+    {% if elevation|select|list %}<h3>Elevation</h3>{{ sparkline(elevation, 320, 40) }}{% endif %}
+    <p class="exports">Export:
+      <a href="/api/activities/{{ a.id }}/export?format=fit">FIT</a> ·
+      <a href="/api/activities/{{ a.id }}/export?format=gpx">GPX</a> ·
+      <a href="/api/activities/{{ a.id }}/export?format=tcx">TCX</a>
+    </p>
+  </div>
+</section>
+
+{{ report_block(report, "/ui/reports/activity/" ~ a.id, error=error) }}
+{% endblock %}

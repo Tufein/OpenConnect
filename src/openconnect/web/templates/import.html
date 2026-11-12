@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Import · OpenConnect{% endblock %}
+{% block content %}
+<h1>Import an activity</h1>
+<section class="card">
+  <form method="post" action="/ui/import" enctype="multipart/form-data">
+    <p><input type="file" name="file" accept=".fit,.gpx,.tcx" required></p>
+    <p class="muted">FIT, GPX or TCX, up to 25 MB. Importing the same file twice updates the
+    existing activity instead of duplicating it.</p>
+    <button type="submit">Import</button>
+  </form>
+</section>
+{% endblock %}

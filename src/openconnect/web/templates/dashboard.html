@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% from "_macros.html" import stat, activity_table %}
+{% block content %}
+<div class="row">
+  <h1>Dashboard</h1>
+  <form method="post" action="/ui/sync"><button type="submit">Sync Garmin data</button></form>
+</div>
+
+{% if not has_data %}
+<section class="card empty">
+  <h2>No data yet</h2>
+  <p>Press <strong>Sync Garmin data</strong> to load activities and daily health data
+  (demo data in mock mode), or <a href="/import">import a FIT, GPX or TCX file</a>.</p>
+</section>
+{% else %}
+<section class="grid stats">
+  {{ stat("Steps", "{:,}".format(ov.today.steps) if ov.today else "–",
+          "goal " ~ ov.today.steps_goal if ov.today and ov.today.steps_goal else "", steps) }}
+  {{ stat("Resting HR", (ov.today.resting_hr ~ " bpm") if ov.today and ov.today.resting_hr else "–", "", resting) }}
+  {{ stat("Sleep", (last_sleep.sleep_hours|hours) if last_sleep else "–",
+          ("score " ~ last_sleep.sleep_score) if last_sleep and last_sleep.sleep_score else "", sleep) }}
+  {{ stat("Body Battery", ov.today.body_battery_high if ov.today and ov.today.body_battery_high is not none else "–",
+          ("low " ~ ov.today.body_battery_low) if ov.today and ov.today.body_battery_low is not none else "", battery) }}
+  {{ stat("Stress", ov.today.avg_stress if ov.today and ov.today.avg_stress is not none else "–", "daily average", stress) }}
+</section>
+
+<section class="grid two">
+  <div class="card">
+    <h2>This week</h2>
+    {% set w = ov.this_week %}
+    <dl class="facts">
+      <dt>Activities</dt><dd>{{ w.activity_count }}</dd>
+      <dt>Distance</dt><dd>{{ w.total_distance_m|km }}</dd>
+      <dt>Time</dt><dd>{{ w.total_duration_s|duration }}</dd>
+      <dt>Climbing</dt><dd>{{ w.total_elevation_m|round|int }} m</dd>
+      <dt>Intensity minutes</dt><dd>{{ w.intensity_minutes }}</dd>
+    </dl>
+    <p><a href="/weekly">Weekly details and report →</a></p>
+  </div>
+  <div class="card">
+    <h2>Steps, last 7 days</h2>
+    {{ bar_chart(week_bars) }}
+    {% if ov.steps_change_pct is not none %}
+    <p class="muted">{{ "%+.0f"|format(ov.steps_change_pct) }}% vs the 7 days before</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="card">
+  <h2>Recent activities</h2>
+  {{ activity_table(ov.recent_activities) }}
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import activity_table %}
+{% block title %}Activities · OpenConnect{% endblock %}
+{% block content %}
+<div class="row">
+  <h1>Activities <span class="muted">({{ total }})</span></h1>
+  <form method="get" action="/activities" class="inline">
+    <label>Sport
+      <select name="sport">
+        <option value="">all</option>
+        {% for s in sports %}<option value="{{ s }}"{% if s == selected %} selected{% endif %}>{{ s }}</option>{% endfor %}
+      </select>
+    </label>
+    <button type="submit">Filter</button>
+  </form>
+</div>
+<section class="card">{{ activity_table(activities) }}</section>
+<nav class="pager">
+  {% if page > 1 %}<a href="/activities?page={{ page - 1 }}&sport={{ selected }}">← Newer</a>{% endif %}
+  <span>Page {{ page }} of {{ pages }}</span>
+  {% if page < pages %}<a href="/activities?page={{ page + 1 }}&sport={{ selected }}">Older →</a>{% endif %}
+</nav>
+{% endblock %}

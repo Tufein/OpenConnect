@@ -58,3 +58,13 @@ def test_invalid_configuration_is_rejected_with_a_clear_error(env):
 def test_empty_values_count_as_unset():
     s = Settings.from_env({"ANTHROPIC_API_KEY": "", "OPENCONNECT_WEBHOOK_TOKEN": ""})
     assert s.anthropic_api_key is None and s.webhook_token is None
+
+
+def test_allowed_hosts_include_the_public_hostname_and_extras():
+    s = Settings.from_env(
+        {
+            "OPENCONNECT_BASE_URL": "https://oc.example.org",
+            "OPENCONNECT_ALLOWED_HOSTS": "nas, oc.lan",
+        }
+    )
+    assert {"localhost", "127.0.0.1", "oc.example.org", "nas", "oc.lan"} <= set(s.allowed_hosts)

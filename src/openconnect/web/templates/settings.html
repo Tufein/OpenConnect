@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Settings · OpenConnect{% endblock %}
+{% block content %}
+<h1>Settings</h1>
+{% if just_connected %}<p class="notice">Garmin connected.</p>{% endif %}
+
+<section class="card">
+  <h2>Garmin</h2>
+  <dl class="facts">
+    <dt>Mode</dt><dd>{{ mode }}</dd>
+    <dt>Status</dt><dd>{{ "connected" if connected else "not connected" }}</dd>
+    <dt>Last sync</dt><dd>{{ last_sync or "never" }}</dd>
+  </dl>
+  {% if mode == "mock" %}
+  <p>Running in <strong>mock</strong> mode with generated demo data, so no Garmin credentials are
+  needed. Set <code>OPENCONNECT_GARMIN_MODE=live</code>, <code>GARMIN_CLIENT_ID</code> and
+  <code>GARMIN_CLIENT_SECRET</code> to use the real Garmin Connect Developer API.</p>
+  {% else %}
+    {% if connected %}
+    <form method="post" action="/api/garmin/disconnect"><button type="submit">Disconnect</button></form>
+    {% else %}
+    <p><a class="button" href="/api/garmin/connect">Connect to Garmin</a></p>
+    <p class="muted">Redirect URI to register with Garmin: <code>{{ s.redirect_uri }}</code></p>
+    {% endif %}
+    <p class="muted">Push endpoint for the Garmin developer portal:
+    <code>{{ s.base_url }}/api/garmin/webhook{% if s.webhook_token %}?token=…{% endif %}</code></p>
+  {% endif %}
+  <form method="post" action="/ui/sync"><button type="submit">Sync now</button></form>
+</section>
+
+<section class="card">
+  <h2>AI reports</h2>
+  <dl class="facts">
+    <dt>Provider</dt><dd>{{ provider.name }}</dd>
+    {% if provider.name == "anthropic" %}<dt>Model</dt><dd>{{ provider.model }}</dd>
+    <dt>Effort</dt><dd>{{ provider.effort }}</dd>{% endif %}
+    <dt>Language</dt><dd>{{ s.language }}</dd>
+  </dl>
+  {% if provider.name == "template" %}
+  <p class="muted">Using the built-in offline template. Set <code>ANTHROPIC_API_KEY</code> to have
+  Claude write the reports. Only the structured summary of the chosen activity or week is sent.</p>
+  {% else %}
+  <p class="muted">Reports send a structured summary of the chosen activity or week to the
+  Anthropic API, and only when you press <em>Generate report</em>.</p>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Storage</h2>
+  <dl class="facts"><dt>Database</dt><dd>{{ s.db_path }}</dd></dl>
+</section>
+{% endblock %}

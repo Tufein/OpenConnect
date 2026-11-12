@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Records · OpenConnect{% endblock %}
+{% set labels = {"longest_distance": "Longest distance", "longest_duration": "Longest duration",
+                 "most_elevation": "Most climbing", "fastest_pace": "Fastest pace"} %}
+{% block content %}
+<h1>Personal records</h1>
+{% for sport, entries in records.items() %}
+<section class="card">
+  <h2>{{ sport|title }}</h2>
+  <table>
+    <tbody>
+    {% for key, e in entries.items() %}
+      <tr>
+        <td>{{ labels[key] }}</td>
+        <td>
+          {% if key == "longest_distance" %}{{ e.value|km }}
+          {% elif key == "longest_duration" %}{{ e.value|duration }}
+          {% elif key == "most_elevation" %}{{ e.value|round|int }} m
+          {% else %}{{ e.value|pace }}{% endif %}
+        </td>
+        <td><a href="/activities/{{ e.activity_id }}">{{ e.name or e.date }}</a></td>
+        <td>{{ e.date }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% else %}
+<section class="card empty"><p>No records yet. Sync or import some activities first.</p></section>
+{% endfor %}
+
+<h1>Achievements</h1>
+<section class="grid badges">
+  {% for a in achievements %}
+  <div class="card badge {{ 'unlocked' if a.unlocked else 'locked' }}">
+    <h3>{{ a.name }}</h3>
+    <p>{{ a.description }}</p>
+    {% if a.unlocked %}<p class="muted">Achievement unlocked · {{ a.unlocked_on }}</p>
+    {% else %}<progress max="100" value="{{ (a.progress * 100)|round|int }}"></progress>
+      <p class="muted">locked · {{ (a.progress * 100)|round|int }}%</p>{% endif %}
+  </div>
+  {% endfor %}
+</section>
+
+<h1>Devices</h1>
+<section class="card">
+  <table>
+    <thead><tr><th>Device</th><th>Activities</th><th>Last used</th></tr></thead>
+    <tbody>
+    {% for d in devices %}<tr><td>{{ d.name }}</td><td>{{ d.activities }}</td><td>{{ d.last_used[:10] }}</td></tr>
+    {% else %}<tr><td colspan="3" class="muted">No devices seen yet.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  <p class="muted">Devices are derived from your activities; Garmin's API does not expose device settings.</p>
+</section>
+{% endblock %}

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 import random
+from collections.abc import Callable
 from datetime import UTC, date, datetime, time, timedelta
 
 # weekday (Mon=0) -> (activityType, name, device, target minutes)
@@ -21,10 +22,20 @@ SAMPLE_EVERY_S = 10
 
 
 class FakeGarminSource:
-    def __init__(self, seed: int = 42, today: datetime | None = None, days: int = 120) -> None:
+    def __init__(
+        self,
+        seed: int = 42,
+        today: datetime | Callable[[], datetime] | None = None,
+        days: int = 120,
+    ) -> None:
         self.seed = seed
-        self.today = (today or datetime.now(UTC)).astimezone(UTC)
+        self._today = today
         self.days = days
+
+    @property
+    def today(self) -> datetime:
+        value = self._today() if callable(self._today) else self._today
+        return (value or datetime.now(UTC)).astimezone(UTC)
 
     def _rng(self, *parts: object) -> random.Random:
         return random.Random(f"{self.seed}:" + ":".join(str(p) for p in parts))
@@ -69,11 +80,16 @@ class FakeGarminSource:
             }
             if has_gps:
                 angle = 2 * math.pi * frac
+                wobble = 1 + 0.28 * math.sin(2 * angle + day.day) + 0.12 * math.sin(5 * angle)
                 lat0 = _CENTRE[0] + 0.01 * (day.weekday() - 3) / 3
-                sample["latitudeInDegree"] = round(lat0 + radius * math.sin(angle) / 111_320, 6)
+                sample["latitudeInDegree"] = round(
+                    lat0 + radius * wobble * math.sin(angle) / 111_320, 6
+                )
                 sample["longitudeInDegree"] = round(
                     _CENTRE[1]
-                    + radius * (math.cos(angle) - 1) / (111_320 * math.cos(math.radians(lat0))),
+                    + radius
+                    * (wobble * math.cos(angle) - 1)
+                    / (111_320 * math.cos(math.radians(lat0))),
                     6,
                 )
                 sample["elevationInMeters"] = round(ele, 1)

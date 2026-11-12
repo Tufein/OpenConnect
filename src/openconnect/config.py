@@ -4,6 +4,7 @@ import os
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlparse
 
 GARMIN_MODES = ("mock", "live")
 AI_PROVIDERS = ("auto", "anthropic", "template")
@@ -39,6 +40,15 @@ class Settings:
     ai_model: str = "claude-opus-5-5"
     ai_effort: str = "medium"
     anthropic_api_key: str | None = None
+    extra_hosts: tuple[str, ...] = ()
+
+    @property
+    def allowed_hosts(self) -> list[str]:
+        """Host headers we answer to; anything else is refused (DNS-rebinding defence)."""
+        hosts = {"localhost", "127.0.0.1", "[::1]", "::1", *self.extra_hosts}
+        if urlparse(self.base_url).hostname:
+            hosts.add(urlparse(self.base_url).hostname)  # type: ignore[arg-type]
+        return sorted(hosts)
 
     @property
     def redirect_uri(self) -> str:
@@ -73,6 +83,11 @@ class Settings:
             ai_model=env.get("OPENCONNECT_AI_MODEL") or "claude-opus-5-5",
             ai_effort=_choice(env, "OPENCONNECT_AI_EFFORT", AI_EFFORTS, "medium"),
             anthropic_api_key=get("ANTHROPIC_API_KEY"),
+            extra_hosts=tuple(
+                h.strip()
+                for h in (env.get("OPENCONNECT_ALLOWED_HOSTS") or "").split(",")
+                if h.strip()
+            ),
         )
         if settings.garmin_mode == "live" and not (
             settings.garmin_client_id and settings.garmin_client_secret
