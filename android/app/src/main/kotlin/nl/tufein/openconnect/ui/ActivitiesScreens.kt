@@ -1,0 +1,212 @@
+package nl.tufein.openconnect.ui
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import nl.tufein.openconnect.R
+import nl.tufein.openconnect.core.Activity
+import nl.tufein.openconnect.core.Sport
+
+@Composable
+fun ActivitiesScreen(
+    state: ActivitiesState,
+    onSport: (Sport?) -> Unit,
+    onOpenActivity: (String) -> Unit,
+    onDemo: () -> Unit,
+    onImport: () -> Unit,
+    contentPadding: PaddingValues = PaddingValues(),
+) {
+    LazyColumn(
+        contentPadding = PaddingValues(
+            start = 16.dp, end = 16.dp,
+            top = contentPadding.calculateTopPadding() + 16.dp,
+            bottom = contentPadding.calculateBottomPadding() + 16.dp,
+        ),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        item {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(stringResource(R.string.tab_activities), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
+                OutlinedButton(onClick = onImport) { Text(stringResource(R.string.action_import_short)) }
+            }
+        }
+        if (!state.loaded) return@LazyColumn
+        if (state.sports.isEmpty()) {
+            item { EmptyState(onDemo, onImport) }
+            return@LazyColumn
+        }
+        item {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                item {
+                    FilterChip(selected = state.sport == null, onClick = { onSport(null) }, label = { Text(stringResource(R.string.filter_all)) })
+                }
+                items(state.sports) { sport ->
+                    FilterChip(
+                        selected = state.sport == sport,
+                        onClick = { onSport(sport) },
+                        label = { Text(stringResource(sportLabel(sport))) },
+                    )
+                }
+            }
+        }
+        items(state.items, key = { it.id }) { ActivityRow(it, onOpenActivity) }
+    }
+}
+
+@Composable
+fun ActivityDetailScreen(
+    state: DetailState,
+    busy: Boolean,
+    usingClaude: Boolean,
+    onBack: () -> Unit,
+    onGenerate: (force: Boolean) -> Unit,
+    onExport: (format: String) -> Unit,
+    onDelete: () -> Unit,
+    contentPadding: PaddingValues = PaddingValues(),
+) {
+    var confirmDelete by remember { mutableStateOf(false) }
+    LazyColumn(
+        contentPadding = PaddingValues(
+            start = 16.dp, end = 16.dp,
+            top = contentPadding.calculateTopPadding() + 8.dp,
+            bottom = contentPadding.calculateBottomPadding() + 16.dp,
+        ),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        item {
+            IconButton(onClick = onBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+            }
+        }
+        val activity = state.activity
+        if (activity == null) {
+            if (state.loaded) item { Text(stringResource(R.string.activity_not_found)) }
+            return@LazyColumn
+        }
+        item {
+            Text(activity.name, style = MaterialTheme.typography.headlineMedium)
+            Text(
+                stringResource(sportLabel(activity.sport)) + " · " + Fmt.dateTime(activity.startTime),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        item { SummaryTiles(activity) }
+
+        val positions = activity.track.filter { it.hasPosition }.map { it.lat!! to it.lon!! }
+        if (positions.size >= 2) {
+            item {
+                SectionTitle(stringResource(R.string.route))
+                SurfaceCard { RouteMap(downsample(positions, 400), description = stringResource(R.string.route)) }
+            }
+        }
+        val hr = activity.track.map { it.hr?.toDouble() }
+        if (hr.count { it != null } >= 2) {
+            item {
+                SectionTitle(stringResource(R.string.heart_rate))
+                SurfaceCard { LineChart(downsample(hr), description = stringResource(R.string.heart_rate), color = MaterialTheme.colorScheme.error) }
+            }
+        }
+        val ele = activity.track.map { it.ele }
+        if (ele.count { it != null } >= 2) {
+            item {
+                SectionTitle(stringResource(R.string.elevation))
+                SurfaceCard { LineChart(downsample(ele), description = stringResource(R.string.elevation), color = MaterialTheme.colorScheme.tertiary) }
+            }
+        }
+        if (state.splits.isNotEmpty()) {
+            item {
+                SectionTitle(stringResource(R.string.splits))
+                SurfaceCard {
+                    state.splits.forEachIndexed { i, seconds ->
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("km ${i + 1}", style = MaterialTheme.typography.bodyMedium)
+                            Text(Fmt.duration(seconds.toDouble()), style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+            }
+        }
+        item { ReportCard(state.report, busy, onGenerate, usingClaude) }
+        item {
+            SectionTitle(stringResource(R.string.export))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                for (format in listOf("fit", "gpx", "tcx")) {
+                    OutlinedButton(onClick = { onExport(format) }, enabled = format != "gpx" || positions.isNotEmpty()) {
+                        Text(format.uppercase())
+                    }
+                }
+            }
+        }
+        item {
+            TextButton(onClick = { confirmDelete = true }) {
+                Text(stringResource(R.string.delete_activity), color = MaterialTheme.colorScheme.error)
+            }
+        }
+    }
+    if (confirmDelete) {
+        AlertDialog(
+            onDismissRequest = { confirmDelete = false },
+            title = { Text(stringResource(R.string.delete_activity)) },
+            text = { Text(stringResource(R.string.delete_activity_body)) },
+            confirmButton = {
+                Button(onClick = { confirmDelete = false; onDelete() }) { Text(stringResource(R.string.delete)) }
+            },
+            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.cancel)) } },
+        )
+    }
+}
+
+@Composable
+private fun SummaryTiles(activity: Activity) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        TileRow(
+            { StatTile(stringResource(R.string.distance), Fmt.km(activity.distanceM), it, unit = "km") },
+            { StatTile(stringResource(R.string.duration), Fmt.duration(activity.durationS), it) },
+        )
+        TileRow(
+            {
+                if (activity.sport.usesPace()) {
+                    StatTile(stringResource(R.string.pace), Fmt.pace(activity.paceSPerKm), it, unit = "/km")
+                } else {
+                    StatTile(stringResource(R.string.speed), Fmt.speedKmh(activity.avgSpeedMps), it, unit = "km/h")
+                }
+            },
+            { StatTile(stringResource(R.string.elevation_gain), Math.rint(activity.elevationGainM).toInt().toString(), it, unit = "m") },
+        )
+        TileRow(
+            { StatTile(stringResource(R.string.avg_hr), activity.avgHr?.toString() ?: "–", it, unit = "bpm") },
+            { StatTile(stringResource(R.string.max_hr), activity.maxHr?.toString() ?: "–", it, unit = "bpm") },
+        )
+        TileRow(
+            { StatTile(stringResource(R.string.calories), activity.calories?.toString() ?: "–", it, unit = "kcal") },
+            { StatTile(stringResource(R.string.device), activity.deviceName ?: "–", it) },
+        )
+    }
+}
