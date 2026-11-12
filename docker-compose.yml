@@ -1,0 +1,20 @@
+services:
+  openconnect:
+    build: .
+    image: openconnect:latest
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      OPENCONNECT_HOST: 0.0.0.0
+      OPENCONNECT_DB: /data/openconnect.db
+    volumes:
+      - openconnect-data:/data
+    ports:
+      # Published on localhost only. OpenConnect has no login: put a reverse proxy with
+      # authentication in front of it before exposing it to a network.
+      - "127.0.0.1:8000:8000"
+
+volumes:
+  openconnect-data:
