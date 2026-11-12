@@ -29,6 +29,9 @@ import nl.tufein.openconnect.core.personalRecords
 import nl.tufein.openconnect.core.reports.ReportError
 import nl.tufein.openconnect.core.reports.kilometreSplits
 import nl.tufein.openconnect.core.weekStart
+import nl.tufein.openconnect.watch.BleSensor
+import nl.tufein.openconnect.watch.WatchInfo
+import nl.tufein.openconnect.watch.WatchUi
 import java.io.IOException
 import java.io.InputStream
 import java.time.LocalDate
@@ -67,6 +70,8 @@ data class ReportsState(
 
 private const val MAX_IMPORT_BYTES = 25 * 1024 * 1024
 
+const val WATCH_ROUTE = "watch"
+
 /** Holds screen state and does all disk and network work off the main thread. */
 class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val container = (application as OpenConnectApp).container
@@ -97,6 +102,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val _messages = Channel<String>(Channel.BUFFERED)
     val messages = _messages.receiveAsFlow()
 
+    /** The watch screen's state and actions live in [AppContainer.watch], which outlives the activity. */
+    val watch: StateFlow<WatchUi> get() = container.watch.state
+
+    private val _navigation = Channel<String>(Channel.BUFFERED)
+
+    /** Routes the UI should open, for example when a watch is plugged in. */
+    val navigation = _navigation.receiveAsFlow()
+
     private var currentActivityId: String? = null
 
     private fun text(id: Int, vararg args: Any) = getApplication<Application>().getString(id, *args)
@@ -125,6 +138,29 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         refreshAll()
+        viewModelScope.launch { container.dataChanged.collect { refreshAll() } }
+    }
+
+    // ---------------------------------------------------------------------------------- watch
+
+    fun refreshWatches() = container.watch.refreshUsb()
+
+    fun readWatch(info: WatchInfo) = container.watch.syncUsb(info)
+
+    fun scanSensors() = container.watch.startScan()
+
+    fun connectSensor(sensor: BleSensor) = container.watch.connect(sensor)
+
+    fun stopLive() = container.watch.stopLive()
+
+    fun saveLive(name: String) {
+        if (container.watch.saveLive(name, Sport.OTHER)) tell(text(R.string.watch_live_saved))
+    }
+
+    /** A watch was plugged in: show the watch screen. */
+    fun onWatchAttached() {
+        container.watch.refreshUsb()
+        _navigation.trySend(WATCH_ROUTE)
     }
 
     // ------------------------------------------------------------------------------- loading

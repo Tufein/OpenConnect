@@ -51,6 +51,7 @@ fun SettingsScreen(
     onDemo: () -> Unit,
     onImport: () -> Unit,
     onClear: () -> Unit,
+    onWatch: () -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     var confirmClear by remember { mutableStateOf(false) }
@@ -71,7 +72,8 @@ fun SettingsScreen(
             SectionTitle(stringResource(R.string.settings_data))
             SurfaceCard {
                 Text(stringResource(R.string.settings_data_body), style = MaterialTheme.typography.bodyMedium)
-                Button(onClick = onImport, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_import)) }
+                Button(onClick = onWatch, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_watch)) }
+                OutlinedButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_import)) }
                 OutlinedButton(onClick = onDemo, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_demo)) }
                 TextButton(onClick = { confirmClear = true }) {
                     Text(stringResource(R.string.action_clear), color = MaterialTheme.colorScheme.error)

@@ -65,6 +65,22 @@ fun HealthScreen(
                 LineChart(battery, description = stringResource(R.string.body_battery), color = MaterialTheme.colorScheme.secondary)
             }
         }
+        // Values only the watch provides: shown once there is at least one reading in the last 30 days.
+        val byDay = state.dailies.associateBy { it.date }
+        val watchCards = listOf(
+            R.string.hrv to trend.map { byDay[it.date]?.hrvMs?.toDouble() },
+            R.string.spo2 to trend.map { byDay[it.date]?.spo2Avg?.toDouble() },
+            R.string.respiration to trend.map { byDay[it.date]?.respirationAvg },
+        )
+        for ((title, values) in watchCards) {
+            if (values.all { it == null }) continue
+            item {
+                val latest = values.filterNotNull().lastOrNull()
+                MetricCard(title = stringResource(title), subtitle = latest?.let { Fmt.oneDecimal(it) }) {
+                    LineChart(values, description = stringResource(title), color = MaterialTheme.colorScheme.tertiary)
+                }
+            }
+        }
         item {
             val stress = trend.map { it.avgStress?.toDouble() }
             MetricCard(title = stringResource(R.string.stress), subtitle = null) {

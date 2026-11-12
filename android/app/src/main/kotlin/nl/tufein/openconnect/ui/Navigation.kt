@@ -56,6 +56,11 @@ fun OpenConnectRoot(
     val nav = rememberNavController()
     val snackbar = remember { SnackbarHostState() }
     LaunchedEffect(vm) { vm.messages.collect { snackbar.showSnackbar(it) } }
+    LaunchedEffect(vm) {
+        vm.navigation.collect { target ->
+            nav.navigate(target) { launchSingleTop = true }
+        }
+    }
 
     val entry by nav.currentBackStackEntryAsState()
     val route = entry?.destination?.route
@@ -67,10 +72,16 @@ fun OpenConnectRoot(
     val health by vm.health.collectAsState()
     val reports by vm.reports.collectAsState()
     val busy by vm.busy.collectAsState()
+    val watch by vm.watch.collectAsState()
     val settings = vm.settings
     var refreshKey by remember { mutableIntStateOf(0) }
     val usingClaude = remember(refreshKey, settings.providerChoice, settings.hasApiKey) {
         settings.reportProvider().name == "anthropic"
+    }
+
+    fun openWatch() {
+        vm.refreshWatches()
+        nav.navigate(WATCH_ROUTE) { launchSingleTop = true }
     }
 
     fun openActivity(id: String) {
@@ -117,7 +128,7 @@ fun OpenConnectRoot(
     ) { padding ->
         NavHost(nav, startDestination = Tab.Home.route) {
             composable(Tab.Home.route) {
-                HomeScreen(home, ::openActivity, vm::loadDemo, onImport, padding)
+                HomeScreen(home, ::openActivity, vm::loadDemo, onImport, ::openWatch, padding)
             }
             composable(Tab.Activities.route) {
                 ActivitiesScreen(activities, vm::loadActivities, ::openActivity, vm::loadDemo, onImport, padding)
@@ -144,6 +155,24 @@ fun OpenConnectRoot(
                     onDemo = vm::loadDemo,
                     onImport = onImport,
                     onClear = vm::clearAll,
+                    onWatch = ::openWatch,
+                    contentPadding = padding,
+                )
+            }
+            composable(WATCH_ROUTE) {
+                // The list of watches goes stale when the cable moves, so look again whenever the screen opens.
+                LaunchedEffect(Unit) { vm.refreshWatches() }
+                // Leaving the screen, by the back button or the arrow, ends a live heart-rate connection.
+                androidx.compose.runtime.DisposableEffect(Unit) { onDispose { vm.stopLive() } }
+                WatchScreen(
+                    ui = watch,
+                    onBack = { nav.popBackStack() },
+                    onSearchUsb = vm::refreshWatches,
+                    onRead = vm::readWatch,
+                    onScan = vm::scanSensors,
+                    onConnect = vm::connectSensor,
+                    onStopLive = vm::stopLive,
+                    onSaveLive = vm::saveLive,
                     contentPadding = padding,
                 )
             }

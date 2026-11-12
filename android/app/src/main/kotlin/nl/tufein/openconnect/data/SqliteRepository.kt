@@ -12,6 +12,8 @@ import nl.tufein.openconnect.core.SleepSummary
 import nl.tufein.openconnect.core.Sport
 import nl.tufein.openconnect.core.StoredReport
 import nl.tufein.openconnect.core.TrackCodec
+import nl.tufein.openconnect.core.watch.Metric
+import nl.tufein.openconnect.core.watch.MetricSample
 import java.time.Instant
 import java.time.LocalDate
 
@@ -34,7 +36,8 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
                 date TEXT PRIMARY KEY, steps INTEGER NOT NULL, steps_goal INTEGER, distance_m REAL NOT NULL,
                 active_kcal INTEGER NOT NULL, floors INTEGER NOT NULL, moderate_min INTEGER NOT NULL,
                 vigorous_min INTEGER NOT NULL, resting_hr INTEGER, min_hr INTEGER, max_hr INTEGER,
-                avg_stress INTEGER, max_stress INTEGER, bb_high INTEGER, bb_low INTEGER)""",
+                avg_stress INTEGER, max_stress INTEGER, bb_high INTEGER, bb_low INTEGER,
+                hrv_ms INTEGER, spo2_avg INTEGER, spo2_min INTEGER, resp_avg REAL)""",
         )
         db.execSQL(
             """CREATE TABLE sleep (
@@ -47,10 +50,28 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
                 model TEXT, facts_hash TEXT NOT NULL, created_ms INTEGER NOT NULL,
                 PRIMARY KEY (kind, subject))""",
         )
+        createWatchTables(db)
+    }
+
+    /** Readings from a watch, one row per metric and moment, and the watch files that were already read. */
+    private fun createWatchTables(db: SQLiteDatabase) {
+        db.execSQL(
+            """CREATE TABLE samples (
+                metric INTEGER NOT NULL, ts INTEGER NOT NULL, day TEXT NOT NULL, value REAL NOT NULL,
+                PRIMARY KEY (metric, ts)) WITHOUT ROWID""",
+        )
+        db.execSQL("CREATE INDEX idx_samples_day ON samples(day)")
+        db.execSQL("CREATE TABLE watch_files (path TEXT PRIMARY KEY, size INTEGER NOT NULL)")
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // Version 1 is the first schema; migrations go here.
+        if (oldVersion < 2) {
+            // v0.3.0: watch data. Existing rows keep working: the new daily columns are nullable.
+            for (column in listOf("hrv_ms INTEGER", "spo2_avg INTEGER", "spo2_min INTEGER", "resp_avg REAL")) {
+                db.execSQL("ALTER TABLE daily ADD COLUMN $column")
+            }
+            createWatchTables(db)
+        }
     }
 
     override fun onConfigure(db: SQLiteDatabase) {
@@ -157,6 +178,10 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
             put("max_stress", daily.maxStress)
             put("bb_high", daily.bodyBatteryHigh)
             put("bb_low", daily.bodyBatteryLow)
+            put("hrv_ms", daily.hrvMs)
+            put("spo2_avg", daily.spo2Avg)
+            put("spo2_min", daily.spo2Min)
+            put("resp_avg", daily.respirationAvg)
         }
         writableDatabase.insertWithOnConflict("daily", null, values, SQLiteDatabase.CONFLICT_REPLACE)
     }
@@ -183,6 +208,10 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
                             maxStress = c.intOrNull("max_stress"),
                             bodyBatteryHigh = c.intOrNull("bb_high"),
                             bodyBatteryLow = c.intOrNull("bb_low"),
+                            hrvMs = c.intOrNull("hrv_ms"),
+                            spo2Avg = c.intOrNull("spo2_avg"),
+                            spo2Min = c.intOrNull("spo2_min"),
+                            respirationAvg = c.doubleOrNull("resp_avg"),
                         ),
                     )
                 }
@@ -222,6 +251,61 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
                 out
             }
 
+    // ---------------------------------------------------------------------------- watch data
+
+    override fun upsertSamples(samples: List<MetricSample>) {
+        if (samples.isEmpty()) return
+        inTransaction {
+            val db = writableDatabase
+            val statement = db.compileStatement("INSERT OR REPLACE INTO samples (metric, ts, day, value) VALUES (?, ?, ?, ?)")
+            for (sample in samples) {
+                statement.clearBindings()
+                statement.bindLong(1, sample.metric.code.toLong())
+                statement.bindLong(2, sample.time.epochSecond)
+                statement.bindString(3, sample.day.toString())
+                statement.bindDouble(4, sample.value)
+                statement.executeInsert()
+            }
+        }
+    }
+
+    override fun listSamples(start: LocalDate, end: LocalDate, metric: Metric?): List<MetricSample> {
+        val where = StringBuilder("day >= ? AND day <= ?")
+        val args = arrayListOf(start.toString(), end.toString())
+        if (metric != null) {
+            where.append(" AND metric = ?")
+            args.add(metric.code.toString())
+        }
+        readableDatabase.query("samples", null, where.toString(), args.toTypedArray(), null, null, "ts ASC, metric ASC").use { c ->
+            val out = ArrayList<MetricSample>(c.count)
+            while (c.moveToNext()) {
+                val kind = Metric.fromCode(c.getInt(c.getColumnIndexOrThrow("metric"))) ?: continue
+                out.add(
+                    MetricSample(
+                        metric = kind,
+                        time = Instant.ofEpochSecond(c.getLong(c.getColumnIndexOrThrow("ts"))),
+                        day = LocalDate.parse(c.getString(c.getColumnIndexOrThrow("day"))),
+                        value = c.getDouble(c.getColumnIndexOrThrow("value")),
+                    ),
+                )
+            }
+            return out
+        }
+    }
+
+    override fun watchFileSize(path: String): Long? =
+        readableDatabase.query("watch_files", arrayOf("size"), "path = ?", arrayOf(path), null, null, null).use {
+            if (it.moveToFirst()) it.getLong(0) else null
+        }
+
+    override fun markWatchFile(path: String, size: Long) {
+        val values = ContentValues().apply {
+            put("path", path)
+            put("size", size)
+        }
+        writableDatabase.insertWithOnConflict("watch_files", null, values, SQLiteDatabase.CONFLICT_REPLACE)
+    }
+
     // ------------------------------------------------------------------------------ reports
 
     override fun getReport(kind: String, subject: String): StoredReport? =
@@ -257,7 +341,7 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
     override fun clearAll() {
         writableDatabase.beginTransaction()
         try {
-            for (table in listOf("activities", "daily", "sleep", "reports")) writableDatabase.delete(table, null, null)
+            for (table in listOf("activities", "daily", "sleep", "reports", "samples", "watch_files")) writableDatabase.delete(table, null, null)
             writableDatabase.setTransactionSuccessful()
         } finally {
             writableDatabase.endTransaction()
@@ -278,12 +362,15 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
     }
 
     private companion object {
-        const val VERSION = 1
+        const val VERSION = 2
     }
 }
 
 private fun Cursor.intOrNull(column: String): Int? =
     getColumnIndexOrThrow(column).let { if (isNull(it)) null else getInt(it) }
+
+private fun Cursor.doubleOrNull(column: String): Double? =
+    getColumnIndexOrThrow(column).let { if (isNull(it)) null else getDouble(it) }
 
 private fun Cursor.stringOrNull(column: String): String? =
     getColumnIndexOrThrow(column).let { if (isNull(it)) null else getString(it) }

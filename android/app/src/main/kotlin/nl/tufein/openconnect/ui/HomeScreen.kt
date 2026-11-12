@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +24,7 @@ fun HomeScreen(
     onOpenActivity: (String) -> Unit,
     onDemo: () -> Unit,
     onImport: () -> Unit,
+    onWatch: () -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     LazyColumn(
@@ -36,8 +38,9 @@ fun HomeScreen(
         item {
             Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
         }
-        val overview = state.overview
         if (!state.loaded) return@LazyColumn
+        item { WatchCard(onWatch) }
+        val overview = state.overview
         if (!state.hasData || overview == null) {
             item { EmptyState(onDemo, onImport) }
             return@LazyColumn
@@ -90,6 +93,19 @@ fun HomeScreen(
         }
         item { SectionTitle(stringResource(R.string.recent_activities)) }
         items(overview.recentActivities, key = { it.id }) { ActivityRow(it, onOpenActivity) }
+    }
+}
+
+@Composable
+private fun WatchCard(onWatch: () -> Unit) {
+    SurfaceCard {
+        Text(stringResource(R.string.watch_card_title), style = MaterialTheme.typography.titleMedium)
+        Text(
+            stringResource(R.string.watch_card_body),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Button(onClick = onWatch) { Text(stringResource(R.string.action_watch)) }
     }
 }
 

@@ -1,0 +1,235 @@
+package nl.tufein.openconnect.ui
+
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import nl.tufein.openconnect.R
+import nl.tufein.openconnect.watch.BleSensor
+import nl.tufein.openconnect.watch.LivePhase
+import nl.tufein.openconnect.watch.LiveUi
+import nl.tufein.openconnect.watch.SyncFailure
+import nl.tufein.openconnect.watch.SyncStatus
+import nl.tufein.openconnect.watch.WatchInfo
+import nl.tufein.openconnect.watch.WatchUi
+import nl.tufein.openconnect.watch.bluetoothPermissions
+import nl.tufein.openconnect.watch.hasBluetoothPermissions
+
+@Composable
+fun WatchScreen(
+    ui: WatchUi,
+    onBack: () -> Unit,
+    onSearchUsb: () -> Unit,
+    onRead: (WatchInfo) -> Unit,
+    onScan: () -> Unit,
+    onConnect: (BleSensor) -> Unit,
+    onStopLive: () -> Unit,
+    onSaveLive: (name: String) -> Unit,
+    contentPadding: PaddingValues = PaddingValues(),
+) {
+    val context = LocalContext.current
+    var permissionDenied by remember { mutableStateOf(false) }
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+        permissionDenied = !granted.values.all { it }
+        if (!permissionDenied) onScan()
+    }
+    val liveName = stringResource(R.string.watch_live_name)
+
+    LazyColumn(
+        contentPadding = PaddingValues(
+            start = 16.dp, end = 16.dp,
+            top = contentPadding.calculateTopPadding() + 8.dp,
+            bottom = contentPadding.calculateBottomPadding() + 16.dp,
+        ),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        item {
+            IconButton(onClick = onBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+            }
+            Text(stringResource(R.string.watch_title), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
+        }
+        item {
+            SectionTitle(stringResource(R.string.watch_usb_title))
+            SurfaceCard {
+                Text(stringResource(R.string.watch_usb_body), style = MaterialTheme.typography.bodyMedium)
+                UsbControls(ui, onSearchUsb, onRead)
+            }
+        }
+        item {
+            SectionTitle(stringResource(R.string.watch_live_title))
+            SurfaceCard {
+                Text(stringResource(R.string.watch_live_body), style = MaterialTheme.typography.bodyMedium)
+                LiveControls(
+                    live = ui.live,
+                    permissionDenied = permissionDenied,
+                    onScan = {
+                        if (hasBluetoothPermissions(context)) onScan() else permissionLauncher.launch(bluetoothPermissions())
+                    },
+                    onConnect = onConnect,
+                    onStop = onStopLive,
+                    onSave = { onSaveLive(liveName) },
+                )
+            }
+        }
+        item {
+            Text(
+                stringResource(R.string.watch_note),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun UsbControls(ui: WatchUi, onSearch: () -> Unit, onRead: (WatchInfo) -> Unit) {
+    val running = ui.sync is SyncStatus.Running
+    if (ui.watches.isEmpty()) {
+        Text(stringResource(R.string.watch_usb_none), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+    for (watch in ui.watches) {
+        Button(onClick = { onRead(watch) }, enabled = !running, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.watch_read_button, watch.name))
+        }
+    }
+    OutlinedButton(onClick = onSearch, enabled = !running, modifier = Modifier.fillMaxWidth()) {
+        Text(stringResource(R.string.watch_usb_search))
+    }
+    when (val sync = ui.sync) {
+        SyncStatus.Idle -> Unit
+        is SyncStatus.Running -> Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            if (sync.total == 0) {
+                Text(stringResource(R.string.watch_sync_opening), style = MaterialTheme.typography.bodyMedium)
+                LinearProgressIndicator(Modifier.fillMaxWidth())
+            } else {
+                Text(stringResource(R.string.watch_sync_progress, minOf(sync.done + 1, sync.total), sync.total), style = MaterialTheme.typography.bodyMedium)
+                LinearProgressIndicator(progress = { sync.done / sync.total.toFloat() }, modifier = Modifier.fillMaxWidth())
+                Text(sync.current, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        is SyncStatus.Done -> Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            val r = sync.report
+            Text(stringResource(R.string.watch_done_title, sync.device), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.watch_done_files, r.filesRead, r.filesSkipped), style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.watch_done_activities, r.activitiesAdded, r.activitiesKnown), style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.watch_done_days, r.daysUpdated, r.nightsUpdated), style = MaterialTheme.typography.bodyMedium)
+            if (r.errors.isNotEmpty()) {
+                Text(stringResource(R.string.watch_done_errors, r.errors.size), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
+                Text(r.errors.take(3).joinToString("\n"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        is SyncStatus.Failed -> Text(
+            when (sync.reason) {
+                SyncFailure.NOT_FOUND -> stringResource(R.string.watch_fail_not_found)
+                SyncFailure.NO_PERMISSION -> stringResource(R.string.watch_fail_permission)
+                SyncFailure.CANNOT_OPEN -> stringResource(R.string.watch_fail_open)
+                SyncFailure.NO_FILES -> stringResource(R.string.watch_fail_files)
+                SyncFailure.OTHER -> stringResource(R.string.watch_fail_other, sync.detail ?: "")
+            },
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.error,
+        )
+    }
+}
+
+@Composable
+private fun LiveControls(
+    live: LiveUi,
+    permissionDenied: Boolean,
+    onScan: () -> Unit,
+    onConnect: (BleSensor) -> Unit,
+    onStop: () -> Unit,
+    onSave: () -> Unit,
+) {
+    val busy = live.phase == LivePhase.SCANNING || live.phase == LivePhase.CONNECTING || live.phase == LivePhase.STREAMING
+    if (live.phase == LivePhase.IDLE || live.phase == LivePhase.SCANNING || live.phase == LivePhase.STOPPED) {
+        Button(
+            onClick = if (live.phase == LivePhase.SCANNING) onStop else onScan,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(if (live.phase == LivePhase.SCANNING) R.string.watch_live_stop else R.string.watch_live_search))
+        }
+    }
+    if (permissionDenied) {
+        Text(stringResource(R.string.watch_live_permission), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+    }
+    if (live.phase == LivePhase.SCANNING) {
+        Text(
+            stringResource(if (live.sensors.isEmpty()) R.string.watch_live_none else R.string.watch_live_searching),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        for (sensor in live.sensors) {
+            OutlinedButton(onClick = { onConnect(sensor) }, modifier = Modifier.fillMaxWidth()) { Text(sensor.name) }
+        }
+    }
+    if (live.phase == LivePhase.CONNECTING) {
+        Text(stringResource(R.string.watch_live_connecting, live.sensorName.orEmpty()), style = MaterialTheme.typography.bodyMedium)
+        LinearProgressIndicator(Modifier.fillMaxWidth())
+    }
+    if (live.phase == LivePhase.STREAMING || live.hasData) {
+        Text(
+            if (live.phase == LivePhase.STREAMING) {
+                stringResource(R.string.watch_live_connected, live.sensorName.orEmpty())
+            } else {
+                stringResource(R.string.watch_live_stopped)
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(verticalAlignment = androidx.compose.ui.Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(live.bpm?.toString() ?: "–", style = MaterialTheme.typography.displayLarge, color = MaterialTheme.colorScheme.primary)
+            Text("bpm", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 10.dp))
+        }
+        TileRow(
+            { StatTile(stringResource(R.string.watch_live_min), live.min?.toString() ?: "–", it) },
+            { StatTile(stringResource(R.string.watch_live_avg), live.avg?.toString() ?: "–", it) },
+        )
+        TileRow(
+            { StatTile(stringResource(R.string.watch_live_max), live.max?.toString() ?: "–", it) },
+            { StatTile(stringResource(R.string.watch_live_hrv), live.rmssdMs?.toString() ?: "–", it, unit = "ms") },
+        )
+        Text(
+            stringResource(R.string.watch_live_time) + ": " + Fmt.duration(live.seconds.toDouble()),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+    if (live.error != null && live.phase == LivePhase.STOPPED) {
+        Text(stringResource(R.string.watch_live_disconnected, live.error), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+    }
+    if (busy && live.phase != LivePhase.SCANNING) {
+        OutlinedButton(onClick = onStop, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.watch_live_stop)) }
+    }
+    if (live.phase == LivePhase.STOPPED && live.hasData) {
+        if (live.saved) {
+            Text(stringResource(R.string.watch_live_saved), style = MaterialTheme.typography.bodyMedium)
+        } else {
+            Button(onClick = onSave, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.watch_live_save)) }
+        }
+    }
+}
