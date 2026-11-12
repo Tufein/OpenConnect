@@ -1,16 +1,32 @@
 name: Release
 
 on:
+  # Pushing a tag publishes a release. Running the workflow by hand on main
+  # does the same and creates the tag at that commit.
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to create (must equal v<version> in pyproject.toml)"
+        required: true
+        default: "v0.1.0"
 
 permissions:
   contents: write
+
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Only release from main when started by hand
+        if: github.event_name == 'workflow_dispatch' && github.ref_name != 'main'
+        run: |
+          echo "Manual releases must run on main (this run is on ${GITHUB_REF_NAME})."
+          exit 1
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
@@ -18,7 +34,7 @@ jobs:
       - name: Verify the tag matches the package version
         run: |
           version="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
-          test "v${version}" = "${GITHUB_REF_NAME}" || { echo "Tag ${GITHUB_REF_NAME} does not match version v${version}"; exit 1; }
+          test "v${version}" = "${TAG}" || { echo "Tag ${TAG} does not match version v${version}"; exit 1; }
       - name: Run the test suite
         run: |
           pip install -e ".[dev]"
@@ -31,9 +47,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          notes="docs/releases/${GITHUB_REF_NAME}.md"
+          notes="docs/releases/${TAG}.md"
           if [ -f "$notes" ]; then
-            gh release create "$GITHUB_REF_NAME" dist/* --title "OpenConnect ${GITHUB_REF_NAME}" --notes-file "$notes"
+            gh release create "$TAG" dist/* --target "$GITHUB_SHA" --title "OpenConnect ${TAG}" --notes-file "$notes"
           else
-            gh release create "$GITHUB_REF_NAME" dist/* --title "OpenConnect ${GITHUB_REF_NAME}" --generate-notes
+            gh release create "$TAG" dist/* --target "$GITHUB_SHA" --title "OpenConnect ${TAG}" --generate-notes
           fi
