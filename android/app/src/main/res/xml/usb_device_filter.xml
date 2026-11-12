@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Garmin's USB vendor id (0x091E). -->
+    <usb-device vendor-id="2334" />
+</resources>

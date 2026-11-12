@@ -1,6 +1,7 @@
 package nl.tufein.openconnect
 
 import android.content.Intent
+import android.hardware.usb.UsbManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -55,6 +56,10 @@ class MainActivity : ComponentActivity() {
 
     /** A GPX/TCX/FIT file shared or opened with OpenConnect is imported straight away. */
     private fun handleIncoming(intent: Intent?) {
+        if (intent?.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) {
+            viewModel.onWatchAttached()
+            return
+        }
         val uris = when (intent?.action) {
             Intent.ACTION_VIEW -> listOfNotNull(intent.data)
             Intent.ACTION_SEND -> listOfNotNull(

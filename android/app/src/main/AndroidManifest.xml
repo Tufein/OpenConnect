@@ -1,8 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Only used to ask Claude for reports, and only when you add your own API key. -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Live heart rate from a watch or chest strap over Bluetooth Low Energy. Android 12 and newer ask for the two
+         Bluetooth permissions (scanning is declared as not used to find the phone's location); older versions
+         only let an app scan when it may also see the location. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission
+        android:name="android.permission.ACCESS_FINE_LOCATION"
+        android:maxSdkVersion="30"
+        tools:ignore="CoarseFineLocation" /> <!-- only asked on Android 11 and older, where it is needed to scan -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+
+    <!-- Reading a watch over a USB cable needs USB host support, but the app works without it. -->
+    <uses-feature android:name="android.hardware.usb.host" android:required="false" />
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
 
     <application
         android:name=".OpenConnectApp"
@@ -23,6 +41,13 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- A Garmin watch plugged into the phone: offer to open the Watch screen. -->
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/usb_device_filter" />
             <!-- Share or open a GPX/TCX/FIT file with OpenConnect. -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />

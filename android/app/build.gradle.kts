@@ -12,8 +12,8 @@ android {
         applicationId = "nl.tufein.openconnect"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.2.0"
+        versionCode = 3
+        versionName = "0.3.0"
     }
 
     // Release signing. The key is never stored in this repository: a release build reads it from
@@ -59,6 +59,9 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+
+    // The watch test files (and the activity fixtures) live with the core tests; the app tests read the same ones.
+    sourceSets.getByName("test").resources.srcDir("../core/src/test/resources")
 
     lint {
         abortOnError = true
