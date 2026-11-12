@@ -1,0 +1,20 @@
+{
+  "data": [
+    {
+      "calendarDate": "2026-11-10",
+      "movement": {"totalSteps": 8421, "totalDistanceMeters": 6310.5, "floorsAscended": 12.6},
+      "calories": {"activeKilocalories": 410},
+      "heartRate": {"restingHeartRate": 52, "minHeartRate": 47, "maxHeartRate": 171},
+      "intensityMinutes": {"moderateIntensityMinutes": 25, "vigorousIntensityMinutes": 10},
+      "stress": {"averageStressLevel": 31, "maxStressLevel": 88},
+      "bodyBattery": {"bodyBatteryHighestValue": 92, "bodyBatteryLowestValue": 18},
+      "pulseOx": {"averageSpo2": 96, "lowestSpo2": 90},
+      "respiration": {"avgWakingRespirationValue": 14.2}
+    },
+    {
+      "calendarDate": "2026-11-11",
+      "movement": {"totalSteps": 10234, "totalDistanceMeters": 7800, "floorsAscended": 9},
+      "heartRate": {"restingHeartRate": 51, "minHeartRate": 46, "maxHeartRate": 160}
+    }
+  ]
+}

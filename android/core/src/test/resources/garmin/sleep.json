@@ -1,0 +1,20 @@
+{
+  "nights": [
+    {
+      "dailySleepDTO": {
+        "calendarDate": "2026-11-11",
+        "sleepTimeSeconds": 27000,
+        "deepSleepSeconds": 5400,
+        "lightSleepSeconds": 15000,
+        "remSleepSeconds": 6600,
+        "awakeSleepSeconds": 900,
+        "sleepScores": {"overall": {"value": 84, "qualifierKey": "GOOD"}}
+      },
+      "restingHeartRate": 51,
+      "avgOvernightHrv": 48
+    },
+    {
+      "dailySleepDTO": {"calendarDate": "2026-11-10", "sleepTimeSeconds": null}
+    }
+  ]
+}
