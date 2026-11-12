@@ -85,9 +85,9 @@ abstract class AppTestBase {
     }
 
     /** Scroll the first scrollable list until [text] has been composed. */
-    protected fun scrollToText(text: String) {
-        if (!hasText(text, substring = false)) {
-            rule.onAllNodes(hasScrollAction())[0].performScrollToNode(hasText(text))
+    protected fun scrollToText(text: String, substring: Boolean = false) {
+        if (!hasText(text, substring)) {
+            rule.onAllNodes(hasScrollAction())[0].performScrollToNode(androidx.compose.ui.test.hasText(text, substring))
         }
     }
 

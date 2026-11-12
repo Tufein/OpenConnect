@@ -1,5 +1,6 @@
 package nl.tufein.openconnect.ui
 
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -48,6 +49,7 @@ fun WatchScreen(
     onConnect: (BleSensor) -> Unit,
     onStopLive: () -> Unit,
     onSaveLive: (name: String) -> Unit,
+    onReadFolder: (Uri) -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     val context = LocalContext.current
@@ -55,6 +57,9 @@ fun WatchScreen(
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
         permissionDenied = !granted.values.all { it }
         if (!permissionDenied) onScan()
+    }
+    val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { tree ->
+        if (tree != null) onReadFolder(tree)
     }
     val liveName = stringResource(R.string.watch_live_name)
 
@@ -77,6 +82,17 @@ fun WatchScreen(
             SurfaceCard {
                 Text(stringResource(R.string.watch_usb_body), style = MaterialTheme.typography.bodyMedium)
                 UsbControls(ui, onSearchUsb, onRead)
+            }
+        }
+        item {
+            SectionTitle(stringResource(R.string.watch_folder_title))
+            SurfaceCard {
+                Text(stringResource(R.string.watch_folder_body), style = MaterialTheme.typography.bodyMedium)
+                OutlinedButton(
+                    onClick = { folderPicker.launch(null) },
+                    enabled = ui.sync !is SyncStatus.Running,
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text(stringResource(R.string.watch_folder_pick)) }
             }
         }
         item {
@@ -148,6 +164,7 @@ private fun UsbControls(ui: WatchUi, onSearch: () -> Unit, onRead: (WatchInfo) -
                 SyncFailure.NO_PERMISSION -> stringResource(R.string.watch_fail_permission)
                 SyncFailure.CANNOT_OPEN -> stringResource(R.string.watch_fail_open)
                 SyncFailure.NO_FILES -> stringResource(R.string.watch_fail_files)
+                SyncFailure.NO_FILES_IN_FOLDER -> stringResource(R.string.watch_fail_folder_files)
                 SyncFailure.OTHER -> stringResource(R.string.watch_fail_other, sync.detail ?: "")
             },
             style = MaterialTheme.typography.bodyMedium,
@@ -165,7 +182,8 @@ private fun LiveControls(
     onStop: () -> Unit,
     onSave: () -> Unit,
 ) {
-    val busy = live.phase == LivePhase.SCANNING || live.phase == LivePhase.CONNECTING || live.phase == LivePhase.STREAMING
+    val busy = live.phase == LivePhase.SCANNING || live.phase == LivePhase.CONNECTING || live.phase == LivePhase.STREAMING ||
+        live.phase == LivePhase.RECONNECTING
     if (live.phase == LivePhase.IDLE || live.phase == LivePhase.SCANNING || live.phase == LivePhase.STOPPED) {
         Button(
             onClick = if (live.phase == LivePhase.SCANNING) onStop else onScan,
@@ -191,12 +209,16 @@ private fun LiveControls(
         Text(stringResource(R.string.watch_live_connecting, live.sensorName.orEmpty()), style = MaterialTheme.typography.bodyMedium)
         LinearProgressIndicator(Modifier.fillMaxWidth())
     }
-    if (live.phase == LivePhase.STREAMING || live.hasData) {
+    if (live.phase == LivePhase.RECONNECTING) {
+        Text(stringResource(R.string.watch_live_reconnecting, live.reconnectAttempt), style = MaterialTheme.typography.bodyMedium)
+        LinearProgressIndicator(Modifier.fillMaxWidth())
+    }
+    if (live.phase == LivePhase.STREAMING || live.phase == LivePhase.RECONNECTING || live.hasData) {
         Text(
-            if (live.phase == LivePhase.STREAMING) {
-                stringResource(R.string.watch_live_connected, live.sensorName.orEmpty())
-            } else {
-                stringResource(R.string.watch_live_stopped)
+            when (live.phase) {
+                LivePhase.STREAMING -> stringResource(R.string.watch_live_connected, live.sensorName.orEmpty())
+                LivePhase.RECONNECTING -> stringResource(R.string.watch_live_connected, live.sensorName.orEmpty())
+                else -> stringResource(R.string.watch_live_stopped)
             },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

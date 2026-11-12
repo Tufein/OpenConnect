@@ -107,6 +107,23 @@ class WatchSyncTest {
     }
 
     @Test
+    fun `a file that cannot be read is reported and the others still sync`() {
+        val repo = InMemoryRepository()
+        val inner = watch()
+        val flaky = object : WatchSource by inner {
+            override fun read(file: WatchFileInfo): ByteArray =
+                if (file.name == "46DC0001.FIT") throw java.io.IOException("cable pulled") else inner.read(file)
+        }
+        val report = service.sync(flaky, repo)
+
+        assertEquals(1, report.errors.size)
+        assertTrue("Sleep/46DC0001.FIT" in report.errors.single() && "cable pulled" in report.errors.single())
+        assertEquals(3, report.filesRead)
+        assertEquals(10_200, repo.listDaily(d10, d10).single().steps)
+        assertEquals(1, service.sync(inner, repo).filesRead, "only the file that failed is read the next time")
+    }
+
+    @Test
     fun `the broken file is tried again next time`() {
         val repo = InMemoryRepository()
         val broken = bytes("/watch/monitoring.fit").also { it[40] = (it[40].toInt() xor 0x55).toByte() }

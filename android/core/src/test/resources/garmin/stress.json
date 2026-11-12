@@ -1,0 +1,5 @@
+[
+  {"calendarDate": "2026-11-10", "values": {"highStressDuration": 3600, "lowStressDuration": 10800, "overallStressLevel": 32, "restStressDuration": 25200}},
+  {"calendarDate": "2026-11-11", "values": {"overallStressLevel": 28}},
+  {"calendarDate": "2026-11-12", "values": {"overallStressLevel": -1}}
+]

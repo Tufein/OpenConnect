@@ -23,6 +23,16 @@ interface WatchLink {
     suspend fun open(info: WatchInfo): OpenedWatch
 }
 
+/**
+ * A folder the user picked, read as if it were a watch: a copy of the watch's `GARMIN` folder, a folder another app
+ * exports watch files to, or the watch itself when Android's file picker shows it as a storage device.
+ * [treeUri] is what the picker returned. The real one is [SafFolderLink]; tests use a fake.
+ */
+fun interface FolderLink {
+    /** Throws [WatchLinkException]. */
+    suspend fun open(treeUri: String): OpenedWatch
+}
+
 data class BleSensor(val address: String, val name: String)
 
 interface HeartRateListener {

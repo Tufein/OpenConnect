@@ -3,6 +3,7 @@ package nl.tufein.openconnect.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -10,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -25,6 +27,7 @@ fun HomeScreen(
     onDemo: () -> Unit,
     onImport: () -> Unit,
     onWatch: () -> Unit,
+    onGarmin: () -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     LazyColumn(
@@ -39,7 +42,7 @@ fun HomeScreen(
             Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
         }
         if (!state.loaded) return@LazyColumn
-        item { WatchCard(onWatch) }
+        item { WatchCard(onWatch, onGarmin) }
         val overview = state.overview
         if (!state.hasData || overview == null) {
             item { EmptyState(onDemo, onImport) }
@@ -97,7 +100,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun WatchCard(onWatch: () -> Unit) {
+private fun WatchCard(onWatch: () -> Unit, onGarmin: () -> Unit) {
     SurfaceCard {
         Text(stringResource(R.string.watch_card_title), style = MaterialTheme.typography.titleMedium)
         Text(
@@ -105,7 +108,10 @@ private fun WatchCard(onWatch: () -> Unit) {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Button(onClick = onWatch) { Text(stringResource(R.string.action_watch)) }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = onWatch) { Text(stringResource(R.string.action_watch)) }
+            OutlinedButton(onClick = onGarmin) { Text(stringResource(R.string.action_garmin)) }
+        }
     }
 }
 

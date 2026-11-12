@@ -125,6 +125,9 @@ class WatchSyncService(private val zone: ZoneId = ZoneId.systemDefault()) {
                 read++
             } catch (e: FormatError) {
                 errors.add("${file.path}: ${e.message}")
+            } catch (e: java.io.IOException) {
+                // One file that cannot be read (a folder entry that vanished, a flaky cable) must not end the sync.
+                errors.add("${file.path}: ${e.message ?: "could not be read"}")
             }
         }
         if (files.isNotEmpty() && !cancelled) onProgress(WatchSyncProgress(files.size, files.size, ""))

@@ -1,3 +1,3 @@
 """OpenConnect: an open-source, self-hosted alternative to Garmin Connect."""
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"

@@ -1,0 +1,242 @@
+package nl.tufein.openconnect.garmin
+
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import nl.tufein.openconnect.core.Repository
+import nl.tufein.openconnect.core.garmin.GarminApiException
+import nl.tufein.openconnect.core.garmin.GarminHttp
+import nl.tufein.openconnect.core.garmin.GarminProgress
+import nl.tufein.openconnect.core.garmin.GarminSyncReport
+import nl.tufein.openconnect.core.garmin.GarminSyncService
+import nl.tufein.openconnect.core.garmin.PersonalApiClient
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneId
+import java.util.concurrent.atomic.AtomicBoolean
+
+/** What the Garmin screen remembers between visits. The key is kept encrypted by the real implementation. */
+interface GarminSettings {
+    /** False when this phone cannot keep a secret safely; then no key is accepted at all. */
+    val canStoreKey: Boolean
+
+    var key: String?
+
+    /** How many days a manual sync covers: 7, 30 or 90. */
+    var days: Int
+
+    var autoSync: Boolean
+
+    /** Epoch milliseconds of the last sync that ran to the end, 0 when there was none. */
+    var lastSyncMs: Long
+}
+
+enum class KeyCheck {
+    /** Nothing known: no key, or it was saved earlier and not tried since. */
+    UNKNOWN,
+    CHECKING,
+    ACCEPTED,
+    REJECTED,
+
+    /** Garmin could not be reached, so the key is neither accepted nor refused. */
+    UNREACHABLE,
+}
+
+/** Why a pasted key was not saved. */
+enum class KeyProblem { MALFORMED, CANNOT_STORE }
+
+sealed interface GarminSyncUi {
+    data object Idle : GarminSyncUi
+
+    data class Running(val done: Int, val total: Int, val label: String, val cancelling: Boolean = false) : GarminSyncUi
+
+    data class Done(val report: GarminSyncReport) : GarminSyncUi
+
+    data class Failed(val detail: String?) : GarminSyncUi
+}
+
+data class GarminUi(
+    val hasKey: Boolean = false,
+    val canStoreKey: Boolean = true,
+    val keyCheck: KeyCheck = KeyCheck.UNKNOWN,
+    val keyProblem: KeyProblem? = null,
+    val days: Int = 30,
+    val autoSync: Boolean = false,
+    val lastSync: Instant? = null,
+    val sync: GarminSyncUi = GarminSyncUi.Idle,
+)
+
+/**
+ * Everything the Garmin screen does: keep the owner's Personal API key, check it, and pull their data from Garmin
+ * into the app. It has no Android types in it: the network sits behind [GarminHttp], the key behind [GarminSettings].
+ */
+class GarminController(
+    private val settings: GarminSettings,
+    private val repo: Repository,
+    http: GarminHttp,
+    private val scope: CoroutineScope,
+    private val io: CoroutineDispatcher,
+    private val zone: () -> ZoneId = { ZoneId.systemDefault() },
+    private val now: () -> Instant = { Instant.now() },
+    /** Called after something was written to the repository, so screens can reload. */
+    private val onDataChanged: () -> Unit = {},
+) {
+    companion object {
+        val DAY_CHOICES = listOf(7, 30, 90)
+
+        /** A sync in the background (when the app opens) covers this many days: the recent ones are what changes. */
+        const val AUTO_SYNC_DAYS = 7
+
+        /** The app syncs by itself at most this often. */
+        val AUTO_SYNC_EVERY: Duration = Duration.ofHours(6)
+
+        private val KEY_SHAPE = Regex("[A-Za-z0-9._~+/=-]{20,512}")
+
+        /**
+         * The key as Garmin shows it, or null when what was pasted cannot be one: spaces and line breaks from the
+         * clipboard are removed, as are quotes and a leading `ApiKey`, since all of those get pasted along sometimes.
+         */
+        fun normalizeKey(pasted: String): String? {
+            var text = pasted.trim().trim('"', '\'')
+            if (text.startsWith("ApiKey ", ignoreCase = true)) text = text.substring(7)
+            text = text.filterNot(Char::isWhitespace)
+            return text.takeIf { KEY_SHAPE.matches(it) }
+        }
+    }
+
+    private val client = PersonalApiClient(http, apiKey = { settings.key }, clock = now)
+    private val running = AtomicBoolean(false)
+    private val cancelRequested = AtomicBoolean(false)
+
+    private val _state = MutableStateFlow(snapshot())
+    val state: StateFlow<GarminUi> = _state.asStateFlow()
+
+    private fun snapshot() = GarminUi(
+        hasKey = !settings.key.isNullOrBlank(),
+        canStoreKey = settings.canStoreKey,
+        days = settings.days.takeIf { it in DAY_CHOICES } ?: 30,
+        autoSync = settings.autoSync,
+        lastSync = settings.lastSyncMs.takeIf { it > 0 }?.let(Instant::ofEpochMilli),
+    )
+
+    // ------------------------------------------------------------------------------------------ the key
+
+    /** Saves a pasted key and, in the background, asks Garmin whether it is accepted. */
+    fun saveKey(pasted: String) {
+        if (!settings.canStoreKey) {
+            _state.update { it.copy(keyProblem = KeyProblem.CANNOT_STORE) }
+            return
+        }
+        val key = normalizeKey(pasted)
+        if (key == null) {
+            _state.update { it.copy(keyProblem = KeyProblem.MALFORMED) }
+            return
+        }
+        settings.key = key
+        client.invalidate()
+        _state.update { it.copy(hasKey = true, keyProblem = null, keyCheck = KeyCheck.CHECKING) }
+        scope.launch(io) { checkKey() }
+    }
+
+    /** Asks Garmin again whether the saved key is accepted. */
+    fun recheckKey() {
+        if (!_state.value.hasKey) return
+        _state.update { it.copy(keyCheck = KeyCheck.CHECKING) }
+        scope.launch(io) { checkKey() }
+    }
+
+    private fun checkKey() {
+        val result = try {
+            client.verify()
+            KeyCheck.ACCEPTED
+        } catch (e: GarminApiException) {
+            if (e.kind == GarminApiException.Kind.KEY_REJECTED) KeyCheck.REJECTED else KeyCheck.UNREACHABLE
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            KeyCheck.UNREACHABLE
+        }
+        _state.update { it.copy(keyCheck = result) }
+    }
+
+    fun forgetKey() {
+        settings.key = null
+        client.invalidate()
+        _state.update { it.copy(hasKey = false, keyCheck = KeyCheck.UNKNOWN, keyProblem = null) }
+    }
+
+    // --------------------------------------------------------------------------------------- settings
+
+    fun setDays(days: Int) {
+        if (days !in DAY_CHOICES) return
+        settings.days = days
+        _state.update { it.copy(days = days) }
+    }
+
+    fun setAutoSync(on: Boolean) {
+        settings.autoSync = on
+        _state.update { it.copy(autoSync = on) }
+    }
+
+    // ------------------------------------------------------------------------------------------- sync
+
+    fun sync() = start(_state.value.days)
+
+    /** Called when the app opens: syncs when the user switched that on and the last sync is long enough ago. */
+    fun autoSyncIfDue() {
+        val ui = _state.value
+        if (!ui.autoSync || !ui.hasKey) return
+        val last = ui.lastSync
+        if (last == null || Duration.between(last, now()) >= AUTO_SYNC_EVERY) start(AUTO_SYNC_DAYS)
+    }
+
+    fun cancel() {
+        cancelRequested.set(true)
+        _state.update { ui -> (ui.sync as? GarminSyncUi.Running)?.let { ui.copy(sync = it.copy(cancelling = true)) } ?: ui }
+    }
+
+    private fun start(days: Int) {
+        if (!_state.value.hasKey) return
+        if (!running.compareAndSet(false, true)) return
+        cancelRequested.set(false)
+        _state.update { it.copy(sync = GarminSyncUi.Running(0, 1, "")) }
+        scope.launch(io) {
+            val outcome = try {
+                val report = GarminSyncService(client, repo, zone(), now).sync(
+                    days,
+                    onProgress = { p: GarminProgress ->
+                        _state.update { ui -> ui.copy(sync = GarminSyncUi.Running(p.done, p.total, p.label, cancelRequested.get())) }
+                    },
+                    isCancelled = { cancelRequested.get() },
+                )
+                finish(report)
+                GarminSyncUi.Done(report)
+            } catch (e: CancellationException) {
+                running.set(false)
+                throw e
+            } catch (e: Exception) {
+                GarminSyncUi.Failed(e.message)
+            }
+            _state.update { it.copy(sync = outcome, lastSync = settings.lastSyncMs.takeIf { ms -> ms > 0 }?.let(Instant::ofEpochMilli)) }
+            running.set(false)
+        }
+    }
+
+    private fun finish(report: GarminSyncReport) {
+        val stopped = report.stopped?.kind
+        if (stopped == null && !report.cancelled) settings.lastSyncMs = now().toEpochMilli()
+        val check = when {
+            stopped == GarminApiException.Kind.KEY_REJECTED -> KeyCheck.REJECTED
+            stopped == GarminApiException.Kind.NETWORK -> KeyCheck.UNREACHABLE
+            report.endpoints.any { it.records > 0 } -> KeyCheck.ACCEPTED
+            else -> null
+        }
+        if (check != null) _state.update { it.copy(keyCheck = check) }
+        if (report.daysUpdated + report.nightsUpdated + report.activitiesAdded > 0) onDataChanged()
+    }
+}

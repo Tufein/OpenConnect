@@ -18,12 +18,15 @@ Garmin's FIT encoder. It is not a capture from a real phone or watch.*
 | Garmin Health SDK (Standard / Companion) | Yes | Not possible | Only for approved enterprise partners: request form, licence, minimum device order. Not available to a hobby project. |
 | Android Health Connect | No (it needs Garmin Connect to write into it) | Not built | Garmin Connect can write steps, sleep, heart rate and activities into Health Connect, but that needs the Garmin Connect app and account, has no Body Battery or stress, and is not real time. Worth adding later as an *extra* source. |
 | Garmin's own Bluetooth protocol (what Gadgetbridge does) | Yes | Not built | It is reverse engineered, differs per watch model, and Gadgetbridge is AGPL-3.0, which cannot be copied into this MIT project. Writing a second reverse-engineered implementation blind, with no watch to test on, would be irresponsible. |
-| Garmin Personal API / Health API | No (cloud) | Not built | Needs Garmin's approval and an API key; see [ANDROID.md](ANDROID.md#garmin). |
+| Garmin Personal API | No (cloud) | **Built in v0.4.0** | Your own data through a personal key you make yourself, no approval. See [GARMIN.md](GARMIN.md). |
+| Garmin Health API (business tier) | No (cloud) | Not in the app | Needs Garmin's approval and a server; the Python server has a client for it. |
 
 **What this means for you:** plug the watch into the phone with a USB cable (the phone must support USB
 OTG / host mode), open the *Watch* screen in the app, and press *Sync*. For live heart rate, no cable is needed.
 
 ## What can be read
+
+*Since v0.4.0 there is also the Garmin account route and reading a folder of watch files, see [GARMIN.md](GARMIN.md). Bluetooth reconnects by itself when the sensor drops out.*
 
 From the FIT files in the watch's `GARMIN` folder:
 
@@ -118,7 +121,7 @@ is on.
 
 ## Honest limits: what is and is not tested
 
-**Tested automatically (109 core tests, 36 app tests):**
+**Tested automatically (175 core tests, 72 app tests, the Garmin account and the folder and reconnect logic included):**
 
 - Decoding of monitoring, sleep and all-day-health FIT files, including 16-bit time rollover, midnight
   boundaries, invalid values and corrupt files. The fixtures were **written by Garmin's own FIT SDK encoder**,
@@ -169,5 +172,6 @@ shipped in the app.
 ## Where this can go next
 
 Health Connect as an extra source (for watches or apps that do not expose files), the `Metrics` folder for VO2 max
-and training status, an export for people who already run Gadgetbridge, and, once Garmin approves a key, the
-Personal API for data that never touches the phone.
+and training status, an export for people who already run Gadgetbridge, a foreground service so a live heart rate
+recording survives the screen switching off, and syncing in the background. The Personal API route is built, see
+[GARMIN.md](GARMIN.md).

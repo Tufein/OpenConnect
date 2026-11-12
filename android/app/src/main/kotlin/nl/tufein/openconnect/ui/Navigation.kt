@@ -84,6 +84,10 @@ fun OpenConnectRoot(
         nav.navigate(WATCH_ROUTE) { launchSingleTop = true }
     }
 
+    fun openGarmin() {
+        nav.navigate(GARMIN_ROUTE) { launchSingleTop = true }
+    }
+
     fun openActivity(id: String) {
         vm.openActivity(id)
         nav.navigate("activity/" + Uri.encode(id))
@@ -128,7 +132,7 @@ fun OpenConnectRoot(
     ) { padding ->
         NavHost(nav, startDestination = Tab.Home.route) {
             composable(Tab.Home.route) {
-                HomeScreen(home, ::openActivity, vm::loadDemo, onImport, ::openWatch, padding)
+                HomeScreen(home, ::openActivity, vm::loadDemo, onImport, ::openWatch, ::openGarmin, padding)
             }
             composable(Tab.Activities.route) {
                 ActivitiesScreen(activities, vm::loadActivities, ::openActivity, vm::loadDemo, onImport, padding)
@@ -156,6 +160,21 @@ fun OpenConnectRoot(
                     onImport = onImport,
                     onClear = vm::clearAll,
                     onWatch = ::openWatch,
+                    onGarmin = ::openGarmin,
+                    contentPadding = padding,
+                )
+            }
+            composable(GARMIN_ROUTE) {
+                val garmin by vm.garmin.collectAsState()
+                GarminScreen(
+                    ui = garmin,
+                    onBack = { nav.popBackStack() },
+                    onSaveKey = vm::saveGarminKey,
+                    onForgetKey = vm::forgetGarminKey,
+                    onDays = vm::setGarminDays,
+                    onAutoSync = vm::setGarminAutoSync,
+                    onSync = vm::syncGarmin,
+                    onCancel = vm::cancelGarmin,
                     contentPadding = padding,
                 )
             }
@@ -173,6 +192,7 @@ fun OpenConnectRoot(
                     onConnect = vm::connectSensor,
                     onStopLive = vm::stopLive,
                     onSaveLive = vm::saveLive,
+                    onReadFolder = vm::readFolder,
                     contentPadding = padding,
                 )
             }

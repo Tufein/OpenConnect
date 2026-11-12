@@ -52,6 +52,7 @@ fun SettingsScreen(
     onImport: () -> Unit,
     onClear: () -> Unit,
     onWatch: () -> Unit,
+    onGarmin: () -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     var confirmClear by remember { mutableStateOf(false) }
@@ -73,6 +74,7 @@ fun SettingsScreen(
             SurfaceCard {
                 Text(stringResource(R.string.settings_data_body), style = MaterialTheme.typography.bodyMedium)
                 Button(onClick = onWatch, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_watch)) }
+                Button(onClick = onGarmin, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_garmin)) }
                 OutlinedButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_import)) }
                 OutlinedButton(onClick = onDemo, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_demo)) }
                 TextButton(onClick = { confirmClear = true }) {

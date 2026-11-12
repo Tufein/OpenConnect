@@ -17,6 +17,12 @@ class FakeBle : HeartRateLink {
 
     @Volatile var connected: BleSensor? = null
 
+    /** How many times the controller asked for a connection, retries included. */
+    @Volatile var connectCalls = 0
+
+    /** Every listener it was given, oldest first: a test can play a late answer of an old connection. */
+    val listeners = java.util.concurrent.CopyOnWriteArrayList<HeartRateListener>()
+
     override fun scan(onFound: (BleSensor) -> Unit, onError: (String) -> Unit): AutoCloseable {
         this.onFound = onFound
         scanning = true
@@ -25,6 +31,8 @@ class FakeBle : HeartRateLink {
 
     override fun connect(sensor: BleSensor, listener: HeartRateListener): AutoCloseable {
         this.listener = listener
+        listeners.add(listener)
+        connectCalls++
         connected = sensor
         return AutoCloseable { connected = null }
     }

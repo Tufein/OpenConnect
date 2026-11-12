@@ -7,6 +7,7 @@ import androidx.security.crypto.MasterKey
 import nl.tufein.openconnect.core.reports.AnthropicReportProvider
 import nl.tufein.openconnect.core.reports.ReportProvider
 import nl.tufein.openconnect.core.reports.TemplateReportProvider
+import nl.tufein.openconnect.garmin.GarminSettings
 import java.util.Locale
 
 /**
@@ -60,6 +61,37 @@ class SettingsStore(private val context: Context) {
             store.edit().apply { if (value.isNullOrBlank()) remove(KEY_API) else putString(KEY_API, value.trim()) }.apply()
         }
 
+    /**
+     * The Garmin Personal API key (encrypted like the Anthropic key, and never written in plain text) and what the
+     * Garmin screen remembers about syncing.
+     */
+    val garmin: GarminSettings = object : GarminSettings {
+        override val canStoreKey: Boolean get() = secure != null
+
+        override var key: String?
+            get() = try {
+                secure?.getString(KEY_GARMIN, null)
+            } catch (_: Exception) {
+                null
+            }
+            set(value) {
+                val store = secure ?: return
+                store.edit().apply { if (value.isNullOrBlank()) remove(KEY_GARMIN) else putString(KEY_GARMIN, value.trim()) }.apply()
+            }
+
+        override var days: Int
+            get() = prefs.getInt(KEY_GARMIN_DAYS, 30)
+            set(value) = prefs.edit().putInt(KEY_GARMIN_DAYS, value).apply()
+
+        override var autoSync: Boolean
+            get() = prefs.getBoolean(KEY_GARMIN_AUTO, false)
+            set(value) = prefs.edit().putBoolean(KEY_GARMIN_AUTO, value).apply()
+
+        override var lastSyncMs: Long
+            get() = prefs.getLong(KEY_GARMIN_LAST, 0L)
+            set(value) = prefs.edit().putLong(KEY_GARMIN_LAST, value).apply()
+    }
+
     fun reportProvider(): ReportProvider {
         val key = apiKey
         val useClaude = when (providerChoice) {
@@ -75,5 +107,9 @@ class SettingsStore(private val context: Context) {
         const val KEY_PROVIDER = "provider"
         const val KEY_MODEL = "model"
         const val KEY_API = "anthropic_api_key"
+        const val KEY_GARMIN = "garmin_personal_api_key"
+        const val KEY_GARMIN_DAYS = "garmin_days"
+        const val KEY_GARMIN_AUTO = "garmin_auto_sync"
+        const val KEY_GARMIN_LAST = "garmin_last_sync"
     }
 }
