@@ -13,10 +13,16 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import nl.tufein.openconnect.OpenConnectApp
 import nl.tufein.openconnect.R
+import nl.tufein.openconnect.core.Achievements
+import nl.tufein.openconnect.core.AchievementsCalculator
 import nl.tufein.openconnect.core.Activity
+import nl.tufein.openconnect.core.Csv
 import nl.tufein.openconnect.core.DailySummary
 import nl.tufein.openconnect.core.DemoData
 import nl.tufein.openconnect.core.Overview
+import nl.tufein.openconnect.core.PlayerLevel
+import nl.tufein.openconnect.core.ReadinessCalculator
+import nl.tufein.openconnect.core.Readiness
 import nl.tufein.openconnect.core.RecordEntry
 import nl.tufein.openconnect.core.SleepSummary
 import nl.tufein.openconnect.core.Sport
@@ -26,19 +32,35 @@ import nl.tufein.openconnect.core.WeeklySummary
 import nl.tufein.openconnect.core.formats.FormatError
 import nl.tufein.openconnect.core.formats.Formats
 import nl.tufein.openconnect.core.personalRecords
+import nl.tufein.openconnect.core.reports.AiVendor
 import nl.tufein.openconnect.core.reports.ReportError
 import nl.tufein.openconnect.core.reports.kilometreSplits
 import nl.tufein.openconnect.core.weekStart
+import nl.tufein.openconnect.ai.AiUi
+import nl.tufein.openconnect.ai.CoachUi
 import nl.tufein.openconnect.garmin.GarminUi
 import nl.tufein.openconnect.watch.BleSensor
 import nl.tufein.openconnect.watch.WatchInfo
 import nl.tufein.openconnect.watch.WatchUi
 import java.io.IOException
 import java.io.InputStream
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.ZoneOffset
 
-data class HomeState(val loaded: Boolean = false, val overview: Overview? = null, val hasData: Boolean = false)
+data class HomeState(
+    val loaded: Boolean = false,
+    val overview: Overview? = null,
+    val hasData: Boolean = false,
+    /** OpenConnect's own 0 to 100 estimate for the day, null while fewer than two signals are known. */
+    val readiness: Readiness? = null,
+    /** The night that ended on the day shown, if the watch reported it. */
+    val sleep: SleepSummary? = null,
+    val level: PlayerLevel? = null,
+)
+
+data class TrophiesState(val loaded: Boolean = false, val achievements: Achievements? = null)
 
 data class ActivitiesState(
     val loaded: Boolean = false,
@@ -71,8 +93,13 @@ data class ReportsState(
 
 private const val MAX_IMPORT_BYTES = 25 * 1024 * 1024
 
+private val FIRST_DAY = LocalDate.of(1970, 1, 1)
+private val LAST_DAY = LocalDate.of(2100, 12, 31)
+
 const val WATCH_ROUTE = "watch"
 const val GARMIN_ROUTE = "garmin"
+const val CSV_DAILY = "daily"
+const val CSV_ACTIVITIES = "activities"
 
 /** Holds screen state and does all disk and network work off the main thread. */
 class AppViewModel(application: Application) : AndroidViewModel(application) {
@@ -96,6 +123,19 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val _reports = MutableStateFlow(ReportsState())
     val reports: StateFlow<ReportsState> = _reports.asStateFlow()
 
+    private val _trophies = MutableStateFlow(TrophiesState())
+    val trophies: StateFlow<TrophiesState> = _trophies.asStateFlow()
+
+    private val _theme = MutableStateFlow(container.settings.themeMode)
+
+    /** "system", "dark" or "light". */
+    val theme: StateFlow<String> = _theme.asStateFlow()
+
+    private val _now = MutableStateFlow(Instant.now())
+
+    /** The time the screens measure "5 min ago" against. It moves when the app opens and when a sync changes. */
+    val now: StateFlow<Instant> = _now.asStateFlow()
+
     private val _busy = MutableStateFlow(false)
 
     /** True while a report is being written. */
@@ -109,6 +149,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /** The Garmin account screen's state and actions live in [AppContainer.garmin], which outlives the activity. */
     val garmin: StateFlow<GarminUi> get() = container.garmin.state
+
+    /** The AI providers (Claude, Gemini) and the coach live in the container, which outlives the activity. */
+    val ai: StateFlow<AiUi> get() = container.ai.state
+
+    val coach: StateFlow<CoachUi> get() = container.coach.state
 
     private val _navigation = Channel<String>(Channel.BUFFERED)
 
@@ -144,7 +189,40 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     init {
         refreshAll()
         viewModelScope.launch { container.dataChanged.collect { refreshAll() } }
+        // A sync starting or ending moves the clock "last synced" is measured against.
+        viewModelScope.launch { container.garmin.state.collect { _now.value = Instant.now() } }
+        // A key added or removed changes whether the coach can answer.
+        viewModelScope.launch { container.ai.state.collect { container.coach.refresh() } }
         container.garmin.autoSyncIfDue()
+    }
+
+    /** The app came to the front: sync if the last sync is old enough, like Garmin Connect does. */
+    fun onResume() {
+        _now.value = Instant.now()
+        container.garmin.autoSyncIfDue()
+    }
+
+    // ------------------------------------------------------------------------------------ AI
+
+    fun saveAiKey(vendor: AiVendor, pasted: String) = container.ai.saveKey(vendor, pasted)
+
+    fun checkAiKey(vendor: AiVendor) = container.ai.checkKey(vendor)
+
+    fun forgetAiKey(vendor: AiVendor) = container.ai.forgetKey(vendor)
+
+    fun setAiModel(vendor: AiVendor, model: String) = container.ai.setModel(vendor, model)
+
+    fun setAiChoice(choice: String) = container.ai.setChoice(choice)
+
+    fun setAiLanguage(language: String) = container.ai.setLanguage(language)
+
+    fun askCoach(question: String) = container.coach.ask(question)
+
+    fun clearCoach() = container.coach.clear()
+
+    fun setTheme(mode: String) {
+        container.settings.themeMode = mode
+        _theme.value = container.settings.themeMode
     }
 
     // ---------------------------------------------------------------------------------- watch
@@ -193,12 +271,29 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadActivities(_activities.value.sport)
         loadHealth()
         loadReports(_reports.value.weekStart)
+        loadTrophies()
         currentActivityId?.let { openActivity(it) }
     }
 
     private fun loadHome() = io {
         val overview = container.stats.overview()
-        _home.value = HomeState(loaded = true, overview = overview, hasData = repo.countActivities() > 0 || overview.today != null)
+        val today = overview.today
+        val sleep = today?.let { repo.listSleep(it.date.minusDays(1), it.date).lastOrNull() }
+        val readiness = today?.let {
+            ReadinessCalculator.compute(it, sleep, repo.listDaily(it.date.minusDays(ReadinessCalculator.BASELINE_DAYS.toLong()), it.date.minusDays(1)))
+        }
+        _home.value = HomeState(
+            loaded = true,
+            overview = overview,
+            hasData = repo.countActivities() > 0 || today != null,
+            readiness = readiness,
+            sleep = sleep,
+            level = AchievementsCalculator.compute(repo, ZoneId.systemDefault()).player,
+        )
+    }
+
+    fun loadTrophies() = io {
+        _trophies.value = TrophiesState(loaded = true, achievements = AchievementsCalculator.compute(repo, ZoneId.systemDefault()))
     }
 
     fun loadActivities(sport: Sport?) = io {
@@ -295,6 +390,20 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         tell(text(R.string.exported_as, exported.filename))
     }
 
+    /** Writes every day of health data ("daily") or every activity ("activities") to the chosen file as CSV. */
+    fun exportCsv(kind: String, target: Uri) = io {
+        val csv = if (kind == CSV_ACTIVITIES) {
+            Csv.activities(repo.listActivities(limit = 100_000))
+        } else {
+            Csv.dailies(repo.listDaily(FIRST_DAY, LAST_DAY), repo.listSleep(FIRST_DAY, LAST_DAY))
+        }
+        val out = getApplication<Application>().contentResolver.openOutputStream(target) ?: throw IOException("unwritable")
+        out.use { it.write(csv.toByteArray(Charsets.UTF_8)) }
+        tell(text(R.string.exported_as, csvFileName(kind)))
+    }
+
+    fun csvFileName(kind: String): String = "openconnect-" + (if (kind == CSV_ACTIVITIES) "activities" else "daily") + "-" + LocalDate.now() + ".csv"
+
     /** The file name proposed in the save dialog; the activity is the one currently on screen. */
     fun exportFileName(id: String, format: String): String {
         val activity = _detail.value.activity?.takeIf { it.id == id }
@@ -312,7 +421,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         io {
             _busy.value = true
             try {
-                val report = container.reports.activityReport(id, settings.reportProvider(), settings.reportLanguage, force)
+                val report = container.reports.activityReport(id, container.ai.provider(), container.ai.language, force)
                 _detail.value = _detail.value.copy(report = report)
             } finally {
                 _busy.value = false
@@ -323,7 +432,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun generateWeeklyReport(force: Boolean) = io {
         _busy.value = true
         try {
-            val report = container.reports.weeklyReport(_reports.value.weekStart, settings.reportProvider(), settings.reportLanguage, force)
+            val report = container.reports.weeklyReport(_reports.value.weekStart, container.ai.provider(), container.ai.language, force)
             _reports.value = _reports.value.copy(report = report)
         } finally {
             _busy.value = false

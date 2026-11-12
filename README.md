@@ -1,13 +1,15 @@
+<p align="center"><img src="docs/img/logo.png" alt="OpenConnect logo" width="96"></p>
+
 # OpenConnect
 
 An open-source, **self-hosted alternative to Garmin Connect**, built on the official
 [Garmin Connect Developer Program](https://developer.garmin.com/gc-developer-program/overview/) APIs
 and developed test-first. Your activities and daily health data live in one SQLite file on your own
-machine, with a dashboard, FIT/GPX/TCX import and export, and optional AI-written reports by Claude.
+machine, with a dashboard, FIT/GPX/TCX import and export, and optional AI-written reports by Claude or Gemini.
 
 ![OpenConnect dashboard](docs/img/dashboard.png)
 
-> **Status: v0.4.0, an early foundation.** It runs end to end on demo data with no credentials.
+> **Status: v0.5.0, an early foundation.** It runs end to end on demo data with no credentials.
 > Live Garmin access needs Garmin Developer Program credentials (see [Garmin access](#garmin-access)).
 > Not affiliated with or endorsed by Garmin.
 
@@ -24,7 +26,19 @@ live against a real account; the USB and Bluetooth parts have not yet been tried
 **[docs/GARMIN.md](docs/GARMIN.md)** and **[docs/WATCH.md](docs/WATCH.md)** for what works and what is unverified.
 More about the app, its limits and what has been verified: **[docs/ANDROID.md](docs/ANDROID.md)**.
 
-![OpenConnect on Android](docs/img/android.png)
+**New in v0.5.0:** a new look and logo; sync that runs like Garmin Connect (when the app opens, in the background about
+every 3 hours, pull to refresh, and a status pill that says when it last synced); **Gemini next to Claude**, each with
+your own key entered in the app, for the reports and for a new **Coach** chat about your numbers; a readiness score, 17
+trophies with a level, activity search and sorting, and CSV export. See **[docs/AI.md](docs/AI.md)**,
+**[docs/INSIGHTS.md](docs/INSIGHTS.md)** and the [release notes](docs/releases/v0.5.0.md).
+
+<p>
+<img src="docs/img/v050-home.png" alt="Home with readiness, steps and the sync status" width="230">
+<img src="docs/img/v050-trophies.png" alt="Trophies and level" width="230">
+<img src="docs/img/v050-coach.png" alt="The AI coach" width="230">
+</p>
+
+*Rendered on a computer by the app's own UI tests, not captured on a phone.*
 
 ## What is in the box
 
@@ -34,7 +48,7 @@ More about the app, its limits and what has been verified: **[docs/ANDROID.md](d
 | **Daily health** | Steps, intensity minutes, resting HR, sleep stages and score, stress, Body Battery |
 | **Dashboard** | Today's cards with 30-day sparklines, weekly report with totals by sport and previous-week comparison |
 | **Files** | Import and export **FIT, GPX and TCX** (CRC-checked FIT, safe XML parsing, idempotent re-import) |
-| **AI reports** | Per activity and per week, written by Claude, or by an offline template when no key is set |
+| **AI reports** | Per activity and per week, written by Claude or Gemini, or by an offline template when no key is set |
 | **Achievements** | Local badges ("Player One", "Seven-Day Streak", "Everest Climber", …) computed from your data |
 | **Garmin** | OAuth 2.0 + PKCE, pull sync, push webhook, backfill client, and an offline fake Garmin for demos and tests |
 | **Interfaces** | Web UI, JSON API with OpenAPI docs (`/api/docs`), CLI |

@@ -27,7 +27,7 @@ fun HealthScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            Text(stringResource(R.string.tab_health), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
+            Text(stringResource(R.string.tab_health), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
         }
         if (!state.loaded) return@LazyColumn
         if (state.dailies.isEmpty() && state.sleeps.isEmpty()) {
@@ -41,7 +41,7 @@ fun HealthScreen(
             MetricCard(
                 title = stringResource(R.string.steps),
                 subtitle = average?.let { stringResource(R.string.avg_per_day, Fmt.thousands(Math.rint(it).toInt())) },
-            ) { BarChart(steps, goal = 10_000.0, description = stringResource(R.string.steps)) }
+            ) { BarChart(steps, goal = 10_000.0, color = OpenConnectColors.metrics.steps, description = stringResource(R.string.steps)) }
         }
         item {
             val sleep = trend.map { it.sleepHours }
@@ -49,7 +49,7 @@ fun HealthScreen(
             MetricCard(
                 title = stringResource(R.string.sleep),
                 subtitle = average?.let { stringResource(R.string.avg_hours_per_night, Fmt.oneDecimal(it)) },
-            ) { BarChart(sleep, goal = 8.0, color = MaterialTheme.colorScheme.tertiary, description = stringResource(R.string.sleep)) }
+            ) { BarChart(sleep, goal = 8.0, color = OpenConnectColors.metrics.sleep, description = stringResource(R.string.sleep)) }
         }
         item {
             val resting = trend.map { it.restingHr?.toDouble() }
@@ -57,12 +57,12 @@ fun HealthScreen(
             MetricCard(
                 title = stringResource(R.string.resting_hr),
                 subtitle = latest?.let { stringResource(R.string.latest_bpm, Math.rint(it).toInt()) },
-            ) { LineChart(resting, description = stringResource(R.string.resting_hr), color = MaterialTheme.colorScheme.error) }
+            ) { LineChart(resting, description = stringResource(R.string.resting_hr), color = OpenConnectColors.metrics.heart) }
         }
         item {
             val battery = trend.map { it.bodyBatteryHigh?.toDouble() }
             MetricCard(title = stringResource(R.string.body_battery), subtitle = null) {
-                LineChart(battery, description = stringResource(R.string.body_battery), color = MaterialTheme.colorScheme.secondary)
+                LineChart(battery, description = stringResource(R.string.body_battery), color = OpenConnectColors.metrics.battery)
             }
         }
         // Values only the watch provides: shown once there is at least one reading in the last 30 days.
@@ -77,14 +77,14 @@ fun HealthScreen(
             item {
                 val latest = values.filterNotNull().lastOrNull()
                 MetricCard(title = stringResource(title), subtitle = latest?.let { Fmt.oneDecimal(it) }) {
-                    LineChart(values, description = stringResource(title), color = MaterialTheme.colorScheme.tertiary)
+                    LineChart(values, description = stringResource(title), color = OpenConnectColors.metrics.distance)
                 }
             }
         }
         item {
             val stress = trend.map { it.avgStress?.toDouble() }
             MetricCard(title = stringResource(R.string.stress), subtitle = null) {
-                LineChart(stress, description = stringResource(R.string.stress), color = MaterialTheme.colorScheme.secondary)
+                LineChart(stress, description = stringResource(R.string.stress), color = OpenConnectColors.metrics.stress)
             }
         }
     }

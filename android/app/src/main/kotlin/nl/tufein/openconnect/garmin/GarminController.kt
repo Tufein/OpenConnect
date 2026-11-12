@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import nl.tufein.openconnect.core.Repository
 import nl.tufein.openconnect.core.garmin.GarminApiException
 import nl.tufein.openconnect.core.garmin.GarminHttp
@@ -50,6 +51,19 @@ enum class KeyCheck {
 /** Why a pasted key was not saved. */
 enum class KeyProblem { MALFORMED, CANNOT_STORE }
 
+/** How a sync that ran without the screen (from the background job) ended, in terms the job understands. */
+enum class BackgroundOutcome {
+    /** There was nothing to do: no key, auto-sync off, synced a moment ago, or a sync already running. */
+    SKIPPED,
+    SYNCED,
+
+    /** No connection, a busy Garmin or a crash: try again later. */
+    RETRY,
+
+    /** Garmin refuses the key, so trying again would only repeat it. */
+    KEY_REJECTED,
+}
+
 sealed interface GarminSyncUi {
     data object Idle : GarminSyncUi
 
@@ -85,15 +99,17 @@ class GarminController(
     private val now: () -> Instant = { Instant.now() },
     /** Called after something was written to the repository, so screens can reload. */
     private val onDataChanged: () -> Unit = {},
+    /** Told whether a background sync job is wanted, which is when there is a key and auto-sync is on. */
+    private val onBackgroundWanted: (Boolean) -> Unit = {},
 ) {
     companion object {
         val DAY_CHOICES = listOf(7, 30, 90)
 
-        /** A sync in the background (when the app opens) covers this many days: the recent ones are what changes. */
+        /** A sync in the background (when the app opens, or the job) covers this many days: the recent ones are what changes. */
         const val AUTO_SYNC_DAYS = 7
 
-        /** The app syncs by itself at most this often. */
-        val AUTO_SYNC_EVERY: Duration = Duration.ofHours(6)
+        /** The app syncs by itself at most this often, like Garmin Connect does when it is opened. */
+        val AUTO_SYNC_EVERY: Duration = Duration.ofMinutes(30)
 
         private val KEY_SHAPE = Regex("[A-Za-z0-9._~+/=-]{20,512}")
 
@@ -115,6 +131,12 @@ class GarminController(
 
     private val _state = MutableStateFlow(snapshot())
     val state: StateFlow<GarminUi> = _state.asStateFlow()
+
+    init {
+        notifyBackground()
+    }
+
+    private fun notifyBackground() = onBackgroundWanted(!settings.key.isNullOrBlank() && settings.autoSync)
 
     private fun snapshot() = GarminUi(
         hasKey = !settings.key.isNullOrBlank(),
@@ -140,6 +162,7 @@ class GarminController(
         settings.key = key
         client.invalidate()
         _state.update { it.copy(hasKey = true, keyProblem = null, keyCheck = KeyCheck.CHECKING) }
+        notifyBackground()
         scope.launch(io) { checkKey() }
     }
 
@@ -168,6 +191,7 @@ class GarminController(
         settings.key = null
         client.invalidate()
         _state.update { it.copy(hasKey = false, keyCheck = KeyCheck.UNKNOWN, keyProblem = null) }
+        notifyBackground()
     }
 
     // --------------------------------------------------------------------------------------- settings
@@ -181,6 +205,7 @@ class GarminController(
     fun setAutoSync(on: Boolean) {
         settings.autoSync = on
         _state.update { it.copy(autoSync = on) }
+        notifyBackground()
     }
 
     // ------------------------------------------------------------------------------------------- sync
@@ -191,8 +216,7 @@ class GarminController(
     fun autoSyncIfDue() {
         val ui = _state.value
         if (!ui.autoSync || !ui.hasKey) return
-        val last = ui.lastSync
-        if (last == null || Duration.between(last, now()) >= AUTO_SYNC_EVERY) start(AUTO_SYNC_DAYS)
+        if (due(ui)) start(AUTO_SYNC_DAYS)
     }
 
     fun cancel() {
@@ -200,31 +224,64 @@ class GarminController(
         _state.update { ui -> (ui.sync as? GarminSyncUi.Running)?.let { ui.copy(sync = it.copy(cancelling = true)) } ?: ui }
     }
 
+    private fun due(ui: GarminUi): Boolean {
+        val last = ui.lastSync
+        return last == null || Duration.between(last, now()) >= AUTO_SYNC_EVERY
+    }
+
+    /**
+     * A sync without the screen, for the background job: the same short sync as when the app opens, run to the end on
+     * the caller's thread, with the outcome the job needs to decide whether to try again.
+     */
+    suspend fun syncInBackground(): BackgroundOutcome {
+        val ui = _state.value
+        if (!ui.autoSync || !ui.hasKey || !due(ui)) return BackgroundOutcome.SKIPPED
+        if (!running.compareAndSet(false, true)) return BackgroundOutcome.SKIPPED
+        cancelRequested.set(false)
+        _state.update { it.copy(sync = GarminSyncUi.Running(0, 1, "")) }
+        val outcome = withContext(io) { execute(AUTO_SYNC_DAYS) }
+        val result = when (outcome) {
+            is GarminSyncUi.Done -> when (outcome.report.stopped?.kind) {
+                null -> if (outcome.report.cancelled) BackgroundOutcome.SKIPPED else BackgroundOutcome.SYNCED
+                GarminApiException.Kind.KEY_REJECTED -> BackgroundOutcome.KEY_REJECTED
+                else -> BackgroundOutcome.RETRY
+            }
+            else -> BackgroundOutcome.RETRY
+        }
+        // A key Garmin refuses is no use to a job that runs on its own: it stops until a new key is saved.
+        if (result == BackgroundOutcome.KEY_REJECTED) onBackgroundWanted(false)
+        return result
+    }
+
     private fun start(days: Int) {
         if (!_state.value.hasKey) return
         if (!running.compareAndSet(false, true)) return
         cancelRequested.set(false)
         _state.update { it.copy(sync = GarminSyncUi.Running(0, 1, "")) }
-        scope.launch(io) {
-            val outcome = try {
-                val report = GarminSyncService(client, repo, zone(), now).sync(
-                    days,
-                    onProgress = { p: GarminProgress ->
-                        _state.update { ui -> ui.copy(sync = GarminSyncUi.Running(p.done, p.total, p.label, cancelRequested.get())) }
-                    },
-                    isCancelled = { cancelRequested.get() },
-                )
-                finish(report)
-                GarminSyncUi.Done(report)
-            } catch (e: CancellationException) {
-                running.set(false)
-                throw e
-            } catch (e: Exception) {
-                GarminSyncUi.Failed(e.message)
-            }
-            _state.update { it.copy(sync = outcome, lastSync = settings.lastSyncMs.takeIf { ms -> ms > 0 }?.let(Instant::ofEpochMilli)) }
+        scope.launch(io) { execute(days) }
+    }
+
+    /** Runs one sync to the end and publishes the result. The caller has taken [running]; it is released here. */
+    private fun execute(days: Int): GarminSyncUi {
+        val outcome = try {
+            val report = GarminSyncService(client, repo, zone(), now).sync(
+                days,
+                onProgress = { p: GarminProgress ->
+                    _state.update { ui -> ui.copy(sync = GarminSyncUi.Running(p.done, p.total, p.label, cancelRequested.get())) }
+                },
+                isCancelled = { cancelRequested.get() },
+            )
+            finish(report)
+            GarminSyncUi.Done(report)
+        } catch (e: CancellationException) {
             running.set(false)
+            throw e
+        } catch (e: Exception) {
+            GarminSyncUi.Failed(e.message)
         }
+        _state.update { it.copy(sync = outcome, lastSync = settings.lastSyncMs.takeIf { ms -> ms > 0 }?.let(Instant::ofEpochMilli)) }
+        running.set(false)
+        return outcome
     }
 
     private fun finish(report: GarminSyncReport) {

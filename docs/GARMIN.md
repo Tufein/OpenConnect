@@ -66,8 +66,24 @@ repository**; every person makes their own.
 | Activities and their FIT files | `activitylist-service/activities/search/activities`, `download-service/files/activity/{id}` | paged by 50 |
 
 You choose 7, 30 or 90 days. Longer periods are cut into windows within Garmin's limits. At most 30 new
-activities are downloaded per sync; syncing again continues where it stopped. Optionally the app syncs by itself when
-it opens, at most every 6 hours, and then covers the last 7 days.
+activities are downloaded per sync; syncing again continues where it stopped.
+
+### Syncing by itself, like Garmin Connect (v0.5.0)
+
+With a key saved, **automatic syncing is on by default** (switch it off on the Garmin screen) and covers the last 7 days:
+
+- **When the app comes to the front**, if the last complete sync is more than **30 minutes** old (it was 6 hours in v0.4.0).
+- **In the background, about every 3 hours**, through Android's WorkManager, when there is a connection and the battery
+  is not low. Android picks the exact moment, so it can be later in battery saver or Doze, and the job survives a restart
+  of the phone. If Garmin refuses the key, the job stops until you save a new one instead of trying forever; no connection
+  or a busy Garmin means a few backed-off retries and then the next round.
+- **Pull down on Home** syncs right away (it opens the Garmin screen if there is no key yet).
+- **The pill at the top of Home** shows the state in one line: *Synced 5 min ago*, *Syncing… 3 of 7*, *Sync failed · last good
+  one 2 h ago*, *Garmin key rejected, tap to fix*, or *Connect your Garmin account*. Tapping it syncs, or opens the Garmin screen.
+
+The data still travels watch, then Garmin Connect app, then Garmin's cloud, then OpenConnect, so a sync here only shows
+what the watch has already handed to Garmin. The permissions WorkManager adds to the app are listed in
+[ANDROID.md](ANDROID.md).
 
 ### How it merges with what is already there
 
@@ -105,7 +121,7 @@ in the app.
 | `PersonalApi.kt` | `PersonalApiClient`: exchanges the key for a token (`POST ... /personal-api-key/token`, answer is the bare JWT), renews it before it ends and once on a 401, turns HTTP statuses into errors that say whether a sync should go on |
 | `Mapping.kt` | Reads Garmin's JSON. Every object that carries a `calendarDate` claims the plain values below it, and values are picked by name (`heartRate.restingValue`, `steps.value`). A layout that differs gives fewer values, never a crash. |
 | `GarminSync.kt` | `GarminSyncService`: the plan per data type, windows, merging, activity download (ZIP, then the FIT importer), the report |
-| `app/.../garmin/GarminController.kt` | Key handling and checking, sync state, cancel, the 6-hour auto sync |
+| `app/.../garmin/GarminController.kt` | Key handling and checking, sync state, cancel, the 30-minute auto sync and the background run |
 | `app/.../ui/GarminScreen.kt` | The screen |
 
 The core has 175 tests and the app 72. The Garmin parts use fixtures with the **real layouts** (names and nesting seen
