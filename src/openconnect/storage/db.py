@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS reports (
     text TEXT NOT NULL,
     provider TEXT NOT NULL,
     model TEXT,
+    facts_hash TEXT,
     created_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_reports_subject ON reports (kind, subject, created_at DESC);

@@ -126,6 +126,7 @@ class GeneratedReport(BaseModel):
     text: str
     provider: str
     model: str | None = None
+    facts_hash: str | None = None  # hash of the input data, to skip regenerating unchanged reports
     created_at: datetime
 
 

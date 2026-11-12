@@ -194,10 +194,11 @@ class Repository:
     def save_report(self, report: GeneratedReport) -> GeneratedReport:
         with self.db.transaction() as conn:
             cur = conn.execute(
-                "INSERT INTO reports (kind, subject, text, provider, model, created_at) "
-                "VALUES (?,?,?,?,?,?)",
+                "INSERT INTO reports "
+                "(kind, subject, text, provider, model, facts_hash, created_at) "
+                "VALUES (?,?,?,?,?,?,?)",
                 (report.kind, report.subject, report.text, report.provider, report.model,
-                 report.created_at.isoformat()),
+                 report.facts_hash, report.created_at.isoformat()),
             )  # fmt: skip
             return report.model_copy(update={"id": cur.lastrowid})
 
@@ -217,6 +218,7 @@ class Repository:
             text=row["text"],
             provider=row["provider"],
             model=row["model"],
+            facts_hash=row["facts_hash"],
             created_at=datetime.fromisoformat(row["created_at"]),
         )
 

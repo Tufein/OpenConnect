@@ -107,8 +107,21 @@ def test_reports_return_latest_for_subject(repo):
     )
     assert first.id is not None
     assert repo.get_report("weekly", "2026-04-27").text == "v2"
+    assert repo.get_report("weekly", "2026-04-27").facts_hash is None
     assert repo.get_report("weekly", "2026-05-04") is None
     assert repo.get_report("activity", "2026-04-27") is None
+
+
+def test_report_keeps_facts_hash_and_model(repo):
+    repo.save_report(GeneratedReport(kind="activity", subject="a", text="t", provider="anthropic",
+                                     model="claude-opus-5-5", facts_hash="abc",
+                                     created_at=datetime(2026, 5, 1, tzinfo=UTC)))  # fmt: skip
+    loaded = repo.get_report("activity", "a")
+    assert (loaded.facts_hash, loaded.model, loaded.provider) == (
+        "abc",
+        "claude-opus-5-5",
+        "anthropic",
+    )
 
 
 def test_oauth_tokens_and_state(repo):
