@@ -69,11 +69,11 @@ cd android
 ./gradlew :core:test                 # core unit tests
 ./gradlew :app:testDebugUnitTest     # app tests, incl. UI smoke tests with screenshots in app/build/screenshots
 ./gradlew :app:lintDebug
-./gradlew :app:assembleRelease       # app/build/outputs/apk/release/app-release.apk
+./gradlew :app:assembleRelease       # app/build/outputs/apk/release/app-release.apk (debug-signed unless a release key is set)
 ```
 
-CI runs the same on every pull request and attaches the APK. Release builds attach the APK to the
-GitHub release (`openconnect-vX.Y.Z.apk` with a `.sha256`).
+CI runs the same on every pull request and attaches a debug-signed APK. Release builds attach the APK, signed
+with the release key, to the GitHub release (`openconnect-vX.Y.Z.apk` with a `.sha256`).
 
 ## Install it (sideload)
 
@@ -83,13 +83,25 @@ GitHub release (`openconnect-vX.Y.Z.apk` with a `.sha256`).
 
 ### About the signing key
 
-The APK is signed with a key that is **committed to this repository on purpose** (`android/app/openconnect-sideload.jks`).
-It is not a secret. It exists so every build has the same signature, which lets a new version install over
-the old one and keep your data. The consequence: anyone could build an APK with this key, so only install
-APKs from this repository's releases and check the `.sha256`. For a real distribution (for example the
-Play Store) use your own key: set `OPENCONNECT_KEYSTORE`, `OPENCONNECT_KEYSTORE_PASSWORD`,
-`OPENCONNECT_KEY_ALIAS` and `OPENCONNECT_KEY_PASSWORD` in the build environment and the build uses it
-instead. Keep that key and its passwords out of the repository.
+Android only installs an update over an existing app when both APKs are signed with the same key, so the
+release key matters: lose it and everyone has to uninstall (losing their local data) before updating.
+The key is **not in this repository**.
+
+- The first release creates the key inside GitHub Actions (`android/scripts/signing-key.sh`), so nobody
+  ever has to see or paste it. It is kept in a **private draft release** named "Signing key (private, never
+  publish)". Draft releases and their assets are visible only to people with write access to the repository.
+  Later releases reuse it, and `verify-apk-signer.sh` checks that every released APK really is signed with it.
+- If the key is ever missing but an APK was released before, the release stops instead of silently making a
+  new key (set `ALLOW_NEW_SIGNING_KEY=true` to accept that on purpose).
+- **Back it up.** Open the draft release (Releases, then "Drafts"), download `openconnect-release.p12` and
+  save it with the `password=` line from the release text somewhere safe. Never publish that draft.
+- **Better home (recommended when convenient):** GitHub secrets. Add `OPENCONNECT_KEYSTORE_BASE64` (the
+  `.p12` as base64) and `OPENCONNECT_KEYSTORE_PASSWORD`; the release workflow prefers them over the draft
+  release. Then delete the draft. Alias is `openconnect` and the key password equals the store password.
+- Local builds and pull-request CI have no release key and sign with the throw-away Android debug key. Those
+  APKs are fine for trying out but are not releases, and cannot be updated by a release APK.
+- Using another key, for example for a Play Store build: set `OPENCONNECT_KEYSTORE` (path),
+  `OPENCONNECT_KEYSTORE_PASSWORD` and optionally `OPENCONNECT_KEY_ALIAS` in the build environment.
 
 ## Garmin
 
@@ -107,7 +119,7 @@ is another candidate source and has not been looked into yet.
 | Core logic, formats and reports (63 core tests) | Behaviour on real devices and Android versions other than the emulated API 34 |
 | SQLite storage on the JVM (Robolectric) | File pickers, share and open-with intents, the save dialog |
 | The real app driven through every tab: demo data, activity detail, offline reports, English dark and Dutch light | Android Keystore encryption of the API key (the JVM tests have no Keystore) |
-| Release APK builds, is signed (v2) and is not debuggable | Live Claude calls from the phone (no key was available) |
+| The release APK builds, is not debuggable, and a build signed with a release key verifies against that key (checked locally with a throw-away key; the first real run of the key bootstrap is the v0.2.0 release itself) | Live Claude calls from the phone (no key was available) |
 | Lint is clean | Garmin sync (not built) |
 
 ## Roadmap

@@ -31,13 +31,15 @@ jobs:
         run: ./gradlew :app:lintDebug --console=plain
       - name: Build the release APK
         run: ./gradlew :app:assembleRelease --console=plain
+      # Pull-request builds have no release key, so this APK is signed with the throw-away Android debug
+      # key: fine for trying it out, not for handing to anyone. Releases are signed in release.yml.
       - name: Check the APK signature
         run: |
           "${ANDROID_HOME}/build-tools/$(ls "${ANDROID_HOME}/build-tools" | sort -V | tail -1)/apksigner" \
             verify --print-certs app/build/outputs/apk/release/app-release.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: openconnect-apk
+          name: openconnect-apk-debug-signed
           path: android/app/build/outputs/apk/release/app-release.apk
       - uses: actions/upload-artifact@v4
         if: always()

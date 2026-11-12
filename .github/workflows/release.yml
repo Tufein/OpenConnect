@@ -39,9 +39,21 @@ jobs:
         run: |
           grep -q "versionName = \"${TAG#v}\"" android/app/build.gradle.kts || {
             echo "Tag ${TAG} does not match versionName in android/app/build.gradle.kts"; exit 1; }
-      - name: Test and build the APK
+      - name: Get the release signing key
+        # The key is not in the repository. It comes from GitHub secrets when they exist, otherwise from a
+        # private draft release that the first release creates (see android/scripts/signing-key.sh).
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OPENCONNECT_KEYSTORE_BASE64: ${{ secrets.OPENCONNECT_KEYSTORE_BASE64 }}
+          OPENCONNECT_KEYSTORE_PASSWORD: ${{ secrets.OPENCONNECT_KEYSTORE_PASSWORD }}
+        run: bash android/scripts/signing-key.sh "${RUNNER_TEMP}/signing"
+      - name: Test and build the signed APK
         working-directory: android
         run: ./gradlew :core:test :app:testDebugUnitTest :app:assembleRelease --console=plain
+      - name: Check the APK is signed with the release key
+        run: |
+          bash android/scripts/verify-apk-signer.sh android/app/build/outputs/apk/release/app-release.apk \
+            "$OPENCONNECT_KEYSTORE" "$OPENCONNECT_KEY_ALIAS" "$OPENCONNECT_KEYSTORE_PASSWORD"
       - name: Name the APK and write its checksum
         run: |
           mkdir -p apk

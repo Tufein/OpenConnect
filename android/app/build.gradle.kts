@@ -16,26 +16,26 @@ android {
         versionName = "0.2.0"
     }
 
-    // Sideload signing. The key below is committed on purpose and is NOT a secret: it only gives every build the
-    // same signature, so a new APK installs over the old one and keeps the data on the phone. Anyone could
-    // build an APK with this key, so only install APKs you got from this repository's releases. A real
-    // distribution key is supplied through the environment instead (see docs/ANDROID.md).
-    signingConfigs {
-        create("sideload") {
-            val external = System.getenv("OPENCONNECT_KEYSTORE")
-            storeFile = file(external ?: "openconnect-sideload.jks")
-            storePassword = System.getenv("OPENCONNECT_KEYSTORE_PASSWORD") ?: "openconnect"
+    // Release signing. The key is never stored in this repository: a release build reads it from
+    // OPENCONNECT_KEYSTORE (path), OPENCONNECT_KEYSTORE_PASSWORD and OPENCONNECT_KEY_ALIAS (see
+    // scripts/signing-key.sh and docs/ANDROID.md). Without it (local builds, pull-request CI) the APK is signed
+    // with the throw-away Android debug key, which is fine for trying it out but not for handing to anyone.
+    val releaseKeystore = System.getenv("OPENCONNECT_KEYSTORE")?.takeIf { it.isNotBlank() }
+    val releaseSigning = releaseKeystore?.let {
+        signingConfigs.create("release") {
+            storeFile = file(it)
+            storePassword = System.getenv("OPENCONNECT_KEYSTORE_PASSWORD")
             keyAlias = System.getenv("OPENCONNECT_KEY_ALIAS") ?: "openconnect"
-            keyPassword = System.getenv("OPENCONNECT_KEY_PASSWORD") ?: "openconnect"
+            keyPassword = System.getenv("OPENCONNECT_KEYSTORE_PASSWORD")
         }
+    }
+    if (releaseSigning == null && System.getenv("OPENCONNECT_REQUIRE_RELEASE_KEY") == "true") {
+        throw GradleException("OPENCONNECT_REQUIRE_RELEASE_KEY is set but OPENCONNECT_KEYSTORE is not")
     }
 
     buildTypes {
-        debug {
-            signingConfig = signingConfigs.getByName("sideload")
-        }
         release {
-            signingConfig = signingConfigs.getByName("sideload")
+            signingConfig = releaseSigning ?: signingConfigs.getByName("debug")
             // Kept unminified for the first releases: it is a debuggable-by-reading APK and R8 rules
             // for every library are one more thing that cannot be exercised without a device.
             isMinifyEnabled = false
