@@ -163,8 +163,17 @@ def test_fit_roundtrip_through_own_parser():
 
 
 @pytest.mark.parametrize(
-    "sport", [Sport.RUNNING, Sport.CYCLING, Sport.SWIMMING, Sport.WALKING, Sport.HIKING,
-              Sport.STRENGTH, Sport.YOGA, Sport.OTHER]
+    "sport",
+    [
+        Sport.RUNNING,
+        Sport.CYCLING,
+        Sport.SWIMMING,
+        Sport.WALKING,
+        Sport.HIKING,
+        Sport.STRENGTH,
+        Sport.YOGA,
+        Sport.OTHER,
+    ],
 )
 def test_fit_sport_roundtrip(sport):
     parsed = fitfmt.parse_fit(fitfmt.export_fit(make_activity(sport=sport, n=5)))

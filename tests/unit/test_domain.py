@@ -53,8 +53,13 @@ def test_activity_pace_is_none_without_distance():
 def test_finalize_derives_missing_metrics_from_track():
     start = datetime(2026, 5, 2, 7, 0, tzinfo=UTC)
     track = [
-        TrackPoint(time=start + timedelta(seconds=i * 10), lat=52.0 + i * 0.001, lon=5.0,
-                   ele=10 + i * 3, hr=140 + i)
+        TrackPoint(
+            time=start + timedelta(seconds=i * 10),
+            lat=52.0 + i * 0.001,
+            lon=5.0,
+            ele=10 + i * 3,
+            hr=140 + i,
+        )
         for i in range(6)
     ]
     act = Activity(id="x", start_time=start, sport=Sport.RUNNING, track=track)

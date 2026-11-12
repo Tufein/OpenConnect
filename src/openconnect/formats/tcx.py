@@ -30,9 +30,7 @@ def _text(parent: ET.Element, tag: str, value: object) -> ET.Element:
 def export_tcx(activity: Activity) -> bytes:
     root = ET.Element("TrainingCenterDatabase", {"xmlns": TCX_NS})
     activities = ET.SubElement(root, "Activities")
-    act = ET.SubElement(
-        activities, "Activity", Sport=_SPORT_TO_TCX.get(activity.sport, "Other")
-    )
+    act = ET.SubElement(activities, "Activity", Sport=_SPORT_TO_TCX.get(activity.sport, "Other"))
     _text(act, "Id", _iso(activity.start_time))
     lap = ET.SubElement(act, "Lap", StartTime=_iso(activity.start_time))
     _text(lap, "TotalTimeSeconds", f"{activity.duration_s:.1f}")
