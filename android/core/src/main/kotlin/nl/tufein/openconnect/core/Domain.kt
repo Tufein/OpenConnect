@@ -88,6 +88,12 @@ data class DailySummary(
     val maxStress: Int? = null,
     val bodyBatteryHigh: Int? = null,
     val bodyBatteryLow: Int? = null,
+    /** Heart-rate variability of the last night in milliseconds, as the watch reports it. */
+    val hrvMs: Int? = null,
+    val spo2Avg: Int? = null,
+    val spo2Min: Int? = null,
+    /** Breaths per minute, averaged over the day. */
+    val respirationAvg: Double? = null,
 ) {
     /** Garmin counts vigorous minutes double towards the weekly goal. */
     val intensityMinutes: Int get() = moderateIntensityMin + 2 * vigorousIntensityMin
@@ -96,6 +102,7 @@ data class DailySummary(
 data class SleepSummary(
     /** The calendar day the sleep ends on. */
     val date: LocalDate,
+    /** Time asleep (deep, light and REM) for sleep read from a watch; demo data includes the awake time. */
     val durationS: Int = 0,
     val deepS: Int = 0,
     val lightS: Int = 0,

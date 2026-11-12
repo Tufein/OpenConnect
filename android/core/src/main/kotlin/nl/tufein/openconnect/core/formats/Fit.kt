@@ -190,163 +190,48 @@ internal object Fit {
 
     // ----------------------------------------------------------------------------- decoding
 
-    private fun u(data: ByteArray, at: Int, size: Int, big: Boolean): Long {
-        var v = 0L
-        for (i in 0 until size) {
-            val b = (data[at + (if (big) i else size - 1 - i)].toLong() and 0xFF)
-            v = (v shl 8) or b
-        }
-        return v
-    }
-
-    private fun verify(data: ByteArray) {
-        if (data.size < 16 || String(data, 8, 4, Charsets.ISO_8859_1) != ".FIT") {
-            throw FormatError("Not a FIT file (missing .FIT signature)")
-        }
-        val headerSize = data[0].toInt() and 0xFF
-        if (headerSize != 12 && headerSize != 14) throw FormatError("Unsupported FIT header size $headerSize")
-        val dataSize = u(data, 4, 4, big = false)
-        val end = headerSize + dataSize + 2
-        if (data.size < end) throw FormatError("FIT file is truncated")
-        if (headerSize == 14) {
-            val stored = u(data, 12, 2, big = false).toInt()
-            if (stored != 0 && stored != crc16(data, 0, 12)) throw FormatError("FIT header CRC mismatch")
-        }
-        val endInt = end.toInt()
-        if (u(data, endInt - 2, 2, big = false).toInt() != crc16(data, 0, endInt - 2)) {
-            throw FormatError("FIT file CRC mismatch (file is corrupt)")
-        }
-    }
-
-    // base type number (code and 0x1F) -> element size; -1 for types we do not read as integers
-    private val TYPE_SIZE = intArrayOf(1, 1, 1, 2, 2, 4, 4, 1, 4, 8, 1, 2, 4, 1)
-    private val SIGNED_TYPES = setOf(1, 3, 5)
-    private val ZERO_INVALID_TYPES = setOf(10, 11, 12)
-
-    private class Definition(val global: Int, val big: Boolean, val fields: List<IntArray>, val devBytes: Int)
-
     private const val RECORD_MSG = 20
     private const val SESSION_MSG = 18
     private val RECORD_FIELDS = setOf(253, 0, 1, 2, 78, 3, 4, 5, 7)
     private val SESSION_FIELDS = setOf(2, 7, 8, 9, 5, 6, 11, 16, 17, 22)
 
-    /** Read one integer field; null when it holds the type's "invalid" marker or cannot be an integer. */
-    private fun readField(data: ByteArray, at: Int, size: Int, baseCode: Int, big: Boolean): Long? {
-        val type = baseCode and 0x1F
-        if (type >= TYPE_SIZE.size || type == 7 || type == 8 || type == 9) return null
-        val elem = TYPE_SIZE[type]
-        if (size < elem) return null
-        val raw = u(data, at, elem, big)
-        val bits = elem * 8
-        val signed = type in SIGNED_TYPES
-        val invalid = when {
-            type in ZERO_INVALID_TYPES -> 0L
-            signed -> (1L shl (bits - 1)) - 1
-            else -> (1L shl bits) - 1
-        }
-        if (raw == invalid) return null
-        return if (signed && raw >= (1L shl (bits - 1))) raw - (1L shl bits) else raw
-    }
-
     fun parse(data: ByteArray): Activity {
-        verify(data)
-        val headerSize = data[0].toInt() and 0xFF
-        val end = headerSize + u(data, 4, 4, big = false).toInt()
-        val definitions = arrayOfNulls<Definition>(16)
         val track = ArrayList<TrackPoint>()
         var session: Map<Int, Long>? = null
-        var lastTs = 0L
 
-        fun readMessage(def: Definition, startAt: Int, compressedTs: Long?): Int {
-            var at = startAt
-            val wanted = when (def.global) {
-                RECORD_MSG -> RECORD_FIELDS
-                SESSION_MSG -> SESSION_FIELDS
-                else -> emptySet()
-            }
-            val values = HashMap<Int, Long>()
-            if (compressedTs != null) values[253] = compressedTs
-            for (field in def.fields) {
-                val (num, size, base) = field
-                if (num in wanted) {
-                    readField(data, at, size, base, def.big)?.let { values[num] = it }
+        FitReader.read(
+            data,
+            wanted = {
+                when (it) {
+                    RECORD_MSG -> RECORD_FIELDS
+                    SESSION_MSG -> SESSION_FIELDS
+                    else -> null
                 }
-                at += size
-            }
-            at += def.devBytes
-            values[253]?.let { lastTs = it }
-            when (def.global) {
+            },
+        ) { global, v ->
+            when (global) {
                 RECORD_MSG -> {
-                    val ts = values[253]
+                    val ts = v[253]
                     if (ts != null) {
-                        val altRaw = values[78] ?: values[2]
+                        val altRaw = v[78] ?: v[2]
                         track.add(
                             TrackPoint(
                                 time = Instant.ofEpochSecond(ts + FIT_EPOCH_OFFSET),
-                                lat = values[0]?.let { it * 180.0 / (1L shl 31) },
-                                lon = values[1]?.let { it * 180.0 / (1L shl 31) },
+                                lat = v[0]?.let { it * 180.0 / (1L shl 31) },
+                                lon = v[1]?.let { it * 180.0 / (1L shl 31) },
                                 ele = altRaw?.let { it / 5.0 - 500.0 },
-                                hr = values[3]?.toInt(),
-                                cadence = values[4]?.toInt(),
-                                power = values[7]?.toInt(),
-                                distanceM = values[5]?.let { it / 100.0 },
+                                hr = v[3]?.toInt(),
+                                cadence = v[4]?.toInt(),
+                                power = v[7]?.toInt(),
+                                distanceM = v[5]?.let { it / 100.0 },
                             ),
                         )
                     }
                 }
-                SESSION_MSG -> if (session == null) session = values
-            }
-            return at
-        }
-
-        try {
-            var pos = headerSize
-            while (pos < end) {
-                val hdr = data[pos++].toInt() and 0xFF
-                when {
-                    hdr and 0x80 != 0 -> { // compressed timestamp header: a data message
-                        val def = definitions[(hdr shr 5) and 0x03] ?: throw FormatError("FIT data before its definition")
-                        val offset = hdr and 0x1F
-                        var ts = (lastTs and 0x1FL.inv()) + offset
-                        if (offset < (lastTs and 0x1F)) ts += 0x20
-                        pos = readMessage(def, pos, ts)
-                    }
-                    hdr and 0x40 != 0 -> { // definition message
-                        val hasDev = hdr and 0x20 != 0
-                        pos++ // reserved
-                        val big = data[pos++].toInt() == 1
-                        val global = u(data, pos, 2, big).toInt()
-                        pos += 2
-                        val count = data[pos++].toInt() and 0xFF
-                        val fields = ArrayList<IntArray>(count)
-                        repeat(count) {
-                            fields.add(
-                                intArrayOf(
-                                    data[pos].toInt() and 0xFF,
-                                    data[pos + 1].toInt() and 0xFF,
-                                    data[pos + 2].toInt() and 0xFF,
-                                ),
-                            )
-                            pos += 3
-                        }
-                        var devBytes = 0
-                        if (hasDev) {
-                            val devCount = data[pos++].toInt() and 0xFF
-                            repeat(devCount) {
-                                devBytes += data[pos + 1].toInt() and 0xFF
-                                pos += 3
-                            }
-                        }
-                        definitions[hdr and 0x0F] = Definition(global, big, fields, devBytes)
-                    }
-                    else -> { // data message
-                        val def = definitions[hdr and 0x0F] ?: throw FormatError("FIT data before its definition")
-                        pos = readMessage(def, pos, null)
-                    }
+                SESSION_MSG -> if (session == null) {
+                    session = SESSION_FIELDS.mapNotNull { num -> v[num]?.let { num to it } }.toMap()
                 }
             }
-        } catch (e: IndexOutOfBoundsException) {
-            throw FormatError("Could not decode FIT file: malformed or truncated record", e)
         }
 
         val s = session

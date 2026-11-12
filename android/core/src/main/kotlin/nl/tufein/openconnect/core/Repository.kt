@@ -1,5 +1,7 @@
 package nl.tufein.openconnect.core
 
+import nl.tufein.openconnect.core.watch.Metric
+import nl.tufein.openconnect.core.watch.MetricSample
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
@@ -40,6 +42,17 @@ interface Repository {
 
     fun listSleep(start: LocalDate, end: LocalDate): List<SleepSummary>
 
+    /** Readings from a watch, identified by metric and time: storing the same reading again changes nothing. */
+    fun upsertSamples(samples: List<MetricSample>)
+
+    /** Oldest first; [start] and [end] are calendar days on the watch's clock, both inclusive. */
+    fun listSamples(start: LocalDate, end: LocalDate, metric: Metric? = null): List<MetricSample>
+
+    /** The size a watch file had when it was last read completely, or null if it never was. */
+    fun watchFileSize(path: String): Long?
+
+    fun markWatchFile(path: String, size: Long)
+
     fun getReport(kind: String, subject: String): StoredReport?
 
     fun saveReport(report: StoredReport)
@@ -52,6 +65,8 @@ class InMemoryRepository : Repository {
     private val dailies = HashMap<LocalDate, DailySummary>()
     private val sleeps = HashMap<LocalDate, SleepSummary>()
     private val reports = HashMap<Pair<String, String>, StoredReport>()
+    private val samples = HashMap<Pair<Metric, Instant>, MetricSample>()
+    private val watchFiles = HashMap<String, Long>()
 
     override fun upsertActivity(activity: Activity) {
         activities[activity.id] = activity
@@ -87,6 +102,19 @@ class InMemoryRepository : Repository {
     override fun listSleep(start: LocalDate, end: LocalDate): List<SleepSummary> =
         sleeps.values.filter { it.date in start..end }.sortedBy { it.date }
 
+    override fun upsertSamples(samples: List<MetricSample>) {
+        for (sample in samples) this.samples[sample.metric to sample.time] = sample
+    }
+
+    override fun listSamples(start: LocalDate, end: LocalDate, metric: Metric?): List<MetricSample> =
+        samples.values.filter { it.day in start..end && (metric == null || it.metric == metric) }.sortedBy { it.time }
+
+    override fun watchFileSize(path: String): Long? = watchFiles[path]
+
+    override fun markWatchFile(path: String, size: Long) {
+        watchFiles[path] = size
+    }
+
     override fun getReport(kind: String, subject: String): StoredReport? = reports[kind to subject]
 
     override fun saveReport(report: StoredReport) {
@@ -98,6 +126,8 @@ class InMemoryRepository : Repository {
         dailies.clear()
         sleeps.clear()
         reports.clear()
+        samples.clear()
+        watchFiles.clear()
     }
 }
 
