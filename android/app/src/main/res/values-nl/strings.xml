@@ -451,4 +451,16 @@
     <string name="health_sent">%1$d activiteiten verstuurd (%2$d overgeslagen omdat ze geen duur hebben)</string>
     <string name="health_read_done">%1$d dagen stappen en %2$d nachten slaap aangevuld</string>
     <string name="health_failed">Health Connect nam het niet aan: %1$s</string>
+    <string name="period_week">Week</string>
+    <string name="period_month">Maand</string>
+    <string name="period_year">Jaar</string>
+    <string name="best_efforts">Beste prestaties</string>
+    <string name="best_efforts_here">Snelste stukken in deze run</string>
+    <string name="effort_half">Halve marathon</string>
+    <string name="effort_marathon">Marathon</string>
+    <string name="lap_km">Km</string>
+    <string name="lap_time">Tijd</string>
+    <string name="lap_pace">Tempo</string>
+    <string name="lap_hr">HS</string>
+    <string name="lap_climb">Stijging</string>
 </resources>

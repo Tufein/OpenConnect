@@ -101,6 +101,20 @@ data class WeeklyFacts(
     val activities: List<WeekActivity>,
 ) : ReportFacts
 
+/** A month or a year: the same totals as a week, against the period before it. [kind] is "month" or "year". */
+@Serializable
+data class PeriodFacts(
+    val kind: String,
+    @SerialName("period_start") val periodStart: String,
+    @SerialName("period_end") val periodEnd: String,
+    @SerialName("this_period") val thisPeriod: WeekTotals,
+    @SerialName("previous_period") val previousPeriod: WeekTotals,
+    /** The longest activities of the period (by duration), at most [PERIOD_ACTIVITIES]. */
+    val activities: List<WeekActivity>,
+) : ReportFacts
+
+const val PERIOD_ACTIVITIES = 15
+
 @Serializable
 data class CoachDay(
     val date: String,
@@ -143,6 +157,7 @@ val FactsJson = Json {
 fun ReportFacts.toJson(): String = when (this) {
     is ActivityFacts -> FactsJson.encodeToString(ActivityFacts.serializer(), this)
     is WeeklyFacts -> FactsJson.encodeToString(WeeklyFacts.serializer(), this)
+    is PeriodFacts -> FactsJson.encodeToString(PeriodFacts.serializer(), this)
     is CoachFacts -> FactsJson.encodeToString(CoachFacts.serializer(), this)
 }
 
@@ -160,7 +175,7 @@ fun formatPace(secondsPerKm: Double?): String? {
     return "${total / 60}:${(total % 60).toString().padStart(2, '0')}"
 }
 
-private fun cumulativeDistance(track: List<TrackPoint>): List<Double>? {
+internal fun cumulativeDistance(track: List<TrackPoint>): List<Double>? {
     if (track.isNotEmpty() && track.all { it.distanceM != null }) return track.map { it.distanceM!! }
     val positioned = track.filter { it.hasPosition }
     if (positioned.size < 2) return null
@@ -281,6 +296,33 @@ fun weeklyFacts(repo: Repository, stats: StatsService, anyDay: LocalDate): Weekl
         weekEnd = sunday.toString(),
         thisWeek = thisWeek.toTotals(),
         previousWeek = previous.toTotals(),
+        activities = activities.map {
+            WeekActivity(
+                name = it.name,
+                sport = it.sport.key,
+                date = it.startTime.atZone(ZoneOffset.UTC).toLocalDate().toString(),
+                distanceKm = round(it.distanceM / 1000, 2),
+                durationMin = round(it.durationS / 60, 1),
+                avgHr = it.avgHr,
+            )
+        },
+    )
+}
+
+fun periodFacts(repo: Repository, stats: StatsService, period: ReportPeriod, anyDay: LocalDate): PeriodFacts {
+    require(period != ReportPeriod.WEEK) { "weeks have their own facts" }
+    val start = period.start(anyDay)
+    val end = period.end(start)
+    val previousStart = period.shift(start, -1)
+    val lo = start.atStartOfDay().toInstant(ZoneOffset.UTC)
+    val hi = end.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
+    val activities = repo.listActivities(start = lo, end = hi, limit = 10_000).sortedByDescending { it.durationS }.take(PERIOD_ACTIVITIES).sortedBy { it.startTime }
+    return PeriodFacts(
+        kind = period.name.lowercase(),
+        periodStart = start.toString(),
+        periodEnd = end.toString(),
+        thisPeriod = stats.summary(start, end).toTotals(),
+        previousPeriod = stats.summary(previousStart, period.end(previousStart)).toTotals(),
         activities = activities.map {
             WeekActivity(
                 name = it.name,

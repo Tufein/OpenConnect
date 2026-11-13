@@ -76,6 +76,11 @@ private class Text(
     val steps: String,
     val sleep: String,
     val none: String,
+    val month: String,
+    val year: String,
+    val vsMonth: String,
+    val vsYear: String,
+    val nonePeriod: String,
 )
 
 private val TEXT = mapOf(
@@ -96,6 +101,11 @@ private val TEXT = mapOf(
         steps = "Steps: %.0f per day on average, goal reached on %d of %d days",
         sleep = "Sleep: %.1f h per night on average",
         none = "No activities recorded this week.",
+        month = "Month %s",
+        year = "Year %s",
+        vsMonth = "Distance vs previous month: %+.0f%%",
+        vsYear = "Distance vs previous year: %+.0f%%",
+        nonePeriod = "No activities recorded in this period.",
     ),
     "nl" to Text(
         activity = "%s (%s, %s)",
@@ -114,6 +124,11 @@ private val TEXT = mapOf(
         steps = "Stappen: gemiddeld %.0f per dag, doel gehaald op %d van %d dagen",
         sleep = "Slaap: gemiddeld %.1f u per nacht",
         none = "Geen activiteiten deze week.",
+        month = "Maand %s",
+        year = "Jaar %s",
+        vsMonth = "Afstand t.o.v. vorige maand: %+.0f%%",
+        vsYear = "Afstand t.o.v. vorig jaar: %+.0f%%",
+        nonePeriod = "Geen activiteiten in deze periode.",
     ),
 )
 
@@ -128,6 +143,7 @@ class TemplateReportProvider : ReportProvider {
         val text = when (val facts = request.facts) {
             is ActivityFacts -> activity(facts, t)
             is WeeklyFacts -> weekly(facts, t)
+            is PeriodFacts -> period(facts, t)
             is CoachFacts -> throw ReportError("The offline reports cannot answer questions: add an AI key (Claude or Gemini) in Settings")
         }
         return ReportResult(text = text, provider = name, model = null)
@@ -150,6 +166,27 @@ class TemplateReportProvider : ReportProvider {
         }
         if (fa.elevationGainM != 0) lines.add("- " + f(t.climb, fa.elevationGainM))
         if (fa.context.isLongestOfSport) lines.add("- " + f(t.longest, fa.sport))
+        return lines.joinToString("\n")
+    }
+
+    private fun period(fp: PeriodFacts, t: Text): String {
+        val w = fp.thisPeriod
+        val prev = fp.previousPeriod
+        val lines = ArrayList<String>()
+        val heading = if (fp.kind == "year") f(t.year, fp.periodStart.take(4)) else f(t.month, fp.periodStart.take(7))
+        lines.add("**$heading**")
+        if (w.activityCount == 0) {
+            lines.add("- ${t.nonePeriod}")
+        } else {
+            val noun = if (w.activityCount == 1) t.activityOne else t.activityMany
+            lines.add("- " + f(t.count, w.activityCount, noun, w.totalDistanceM / 1000, w.totalDurationS / 3600))
+            if (prev.totalDistanceM != 0.0) {
+                val pct = (w.totalDistanceM - prev.totalDistanceM) / prev.totalDistanceM * 100
+                lines.add("- " + f(if (fp.kind == "year") t.vsYear else t.vsMonth, pct))
+            }
+        }
+        if (w.avgSteps != null) lines.add("- " + f(t.steps, w.avgSteps, w.goalDays, w.daysWithData))
+        if (w.avgSleepHours != null) lines.add("- " + f(t.sleep, w.avgSleepHours))
         return lines.joinToString("\n")
     }
 

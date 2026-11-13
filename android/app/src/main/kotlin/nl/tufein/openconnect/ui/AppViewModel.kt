@@ -9,6 +9,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import nl.tufein.openconnect.OpenConnectApp
@@ -17,6 +18,9 @@ import nl.tufein.openconnect.core.Achievements
 import nl.tufein.openconnect.core.AchievementsCalculator
 import nl.tufein.openconnect.core.Activity
 import nl.tufein.openconnect.core.Backup
+import nl.tufein.openconnect.core.BestEfforts
+import nl.tufein.openconnect.core.Effort
+import nl.tufein.openconnect.core.Lap
 import nl.tufein.openconnect.core.BackupException
 import nl.tufein.openconnect.core.Csv
 import nl.tufein.openconnect.core.DataOverview
@@ -43,7 +47,7 @@ import nl.tufein.openconnect.core.formats.Formats
 import nl.tufein.openconnect.core.personalRecords
 import nl.tufein.openconnect.core.reports.AiVendor
 import nl.tufein.openconnect.core.reports.ReportError
-import nl.tufein.openconnect.core.reports.kilometreSplits
+import nl.tufein.openconnect.core.reports.ReportPeriod
 import nl.tufein.openconnect.core.weekStart
 import nl.tufein.openconnect.ai.AiUi
 import nl.tufein.openconnect.ai.CoachUi
@@ -87,7 +91,8 @@ data class ActivitiesState(
 data class DetailState(
     val loaded: Boolean = false,
     val activity: Activity? = null,
-    val splits: List<Int> = emptyList(),
+    val laps: List<Lap> = emptyList(),
+    val efforts: List<Effort> = emptyList(),
     val report: StoredReport? = null,
 )
 
@@ -103,10 +108,14 @@ data class HealthState(
 
 data class ReportsState(
     val loaded: Boolean = false,
+    /** The first day of the week, month or year on screen (the name is from when only weeks existed). */
     val weekStart: LocalDate = weekStart(LocalDate.now(ZoneOffset.UTC)),
+    val period: ReportPeriod = ReportPeriod.WEEK,
     val summary: WeeklySummary? = null,
     val report: StoredReport? = null,
     val records: Map<Sport, Map<String, RecordEntry>> = emptyMap(),
+    /** The best times over 1 km, 5 km, 10 km and up, over all runs. */
+    val efforts: List<Effort> = emptyList(),
 )
 
 private const val MAX_IMPORT_BYTES = 25 * 1024 * 1024
@@ -341,6 +350,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadActivities(_activities.value.sport)
         loadHealth()
         loadReports(_reports.value.weekStart)
+        loadEfforts()
         loadTrophies()
         currentActivityId?.let { openActivity(it) }
     }
@@ -387,7 +397,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             _detail.value = DetailState(
                 loaded = true,
                 activity = activity,
-                splits = activity?.let { kilometreSplits(it.track) }.orEmpty(),
+                laps = activity?.let { BestEfforts.laps(it.track) }.orEmpty(),
+                efforts = activity?.takeIf { it.sport == Sport.RUNNING }?.let { BestEfforts.efforts(it.track) }.orEmpty(),
                 report = container.reports.cached("activity", id),
             )
         }
@@ -406,18 +417,24 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
 
-    fun loadReports(week: LocalDate) = io {
-        val monday = weekStart(week)
-        _reports.value = ReportsState(
-            loaded = true,
-            weekStart = monday,
-            summary = container.stats.weeklySummary(monday),
-            report = container.reports.cached("weekly", monday.toString()),
-            records = personalRecords(repo),
-        )
+    fun loadReports(day: LocalDate, period: ReportPeriod = _reports.value.period) = io {
+        val start = period.start(day)
+        val summary = container.stats.summary(start, period.end(start))
+        val report = container.reports.cached(period.kind, start.toString())
+        val records = personalRecords(repo)
+        _reports.update { it.copy(loaded = true, weekStart = start, period = period, summary = summary, report = report, records = records) }
     }
 
-    fun shiftWeek(weeks: Long) = loadReports(_reports.value.weekStart.plusWeeks(weeks))
+    /** Moves to the previous (-1) or next (1) week, month or year, whichever is on screen. */
+    fun shiftWeek(by: Long) = loadReports(_reports.value.period.shift(_reports.value.weekStart, by))
+
+    /** Switches between week, month and year, starting at the current one. */
+    fun setReportPeriod(period: ReportPeriod) = loadReports(LocalDate.now(ZoneOffset.UTC), period)
+
+    private fun loadEfforts() = io {
+        val efforts = BestEfforts.personalBests(repo)
+        _reports.update { it.copy(efforts = efforts) }
+    }
 
     // ------------------------------------------------------------------------------- actions
 
@@ -532,8 +549,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun generateWeeklyReport(force: Boolean) = io {
         _busy.value = true
         try {
-            val report = container.reports.weeklyReport(_reports.value.weekStart, container.ai.provider(), container.ai.language, force)
-            _reports.value = _reports.value.copy(report = report)
+            val shown = _reports.value
+            val report = container.reports.periodReport(shown.period, shown.weekStart, container.ai.provider(), container.ai.language, force)
+            _reports.update { it.copy(report = report) }
         } finally {
             _busy.value = false
         }
