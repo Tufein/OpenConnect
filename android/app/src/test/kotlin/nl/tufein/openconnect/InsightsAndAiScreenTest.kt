@@ -79,7 +79,9 @@ class InsightsAndAiScreenTest : AppTestBase() {
         waitForText("Load demo data")
         tab("Settings").performClick()
         waitForText("Appearance")
-
+        // Claude is the default pick; choosing Gemini puts its card in place of Claude's.
+        clickText("Gemini")
+        rule.waitUntil(5_000) { !hasText("Claude key", substring = false) }
         typeInto("Gemini key", geminiKey)
         clickText("Save Gemini key")
         waitForText("Gemini accepted the key.")
@@ -112,7 +114,7 @@ class InsightsAndAiScreenTest : AppTestBase() {
     }
 
     @Test
-    fun aClaudeKeyIsKeptSeparatelyAndWinsInAutomaticMode() {
+    fun claudeIsTheDefaultPickAndItsKeyIsKeptSeparately() {
         launchWithAi()
         waitForText("Load demo data")
         tab("Settings").performClick()
@@ -132,6 +134,7 @@ class InsightsAndAiScreenTest : AppTestBase() {
         waitForText("Load demo data")
         tab("Settings").performClick()
         waitForText("Appearance")
+        clickText("Gemini")
         typeInto("Gemini key", geminiKey)
         clickText("Save Gemini key")
         waitForText("Gemini did not accept the key", substring = true)
@@ -239,7 +242,8 @@ class InsightsAndAiScreenTest : AppTestBase() {
         shot("nl-light-coach")
         tab("Instellingen").performClick()
         waitForText("Uiterlijk")
-        scrollToText("Gemini-key opslaan")
-        assertTrue(hasText("Gemini-key opslaan", substring = false))
+        scrollToText("Claude-key opslaan")
+        assertTrue(hasText("Claude-key opslaan", substring = false))
+        assertFalse(hasText("Gemini-key opslaan", substring = false), "only the AI that was picked is shown")
     }
 }

@@ -65,9 +65,9 @@ class GarminBackgroundTest {
         }
         assertEquals(BackgroundOutcome.SKIPPED, outcome { settings.key = null })
         assertEquals(BackgroundOutcome.SKIPPED, outcome { settings.autoSync = false })
-        assertEquals(BackgroundOutcome.SKIPPED, outcome { settings.lastSyncMs = now.minusSeconds(20 * 60).toEpochMilli() })
+        assertEquals(BackgroundOutcome.SKIPPED, outcome { settings.lastSyncMs = now.minusSeconds(5 * 60).toEpochMilli() })
         assertTrue(http.calls.isEmpty())
-        assertEquals(BackgroundOutcome.SYNCED, outcome { settings.lastSyncMs = now.minusSeconds(31 * 60).toEpochMilli() })
+        assertEquals(BackgroundOutcome.SYNCED, outcome { settings.lastSyncMs = now.minusSeconds(11 * 60).toEpochMilli() })
     }
 
     @Test
@@ -123,12 +123,12 @@ class GarminBackgroundTest {
     // ------------------------------------------------------------------- how often the app syncs
 
     @Test
-    fun `the app syncs when it opens if the last sync is half an hour old`() {
-        settings.lastSyncMs = now.minusSeconds(20 * 60).toEpochMilli()
+    fun `the app syncs when it opens if the last sync is ten minutes old`() {
+        settings.lastSyncMs = now.minusSeconds(5 * 60).toEpochMilli()
         controller().autoSyncIfDue()
         assertTrue(http.calls.isEmpty())
 
-        settings.lastSyncMs = now.minusSeconds(31 * 60).toEpochMilli()
+        settings.lastSyncMs = now.minusSeconds(11 * 60).toEpochMilli()
         controller().autoSyncIfDue()
         assertTrue(http.calls.isNotEmpty())
     }

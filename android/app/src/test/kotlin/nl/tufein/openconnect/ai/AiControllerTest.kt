@@ -48,9 +48,12 @@ class AiControllerTest {
     }
 
     @Test
-    fun `an unknown choice in the settings counts as auto`() {
+    fun `an unknown or old automatic choice becomes the AI that has a key, else Claude`() {
         settings.choice = "banana"
-        assertEquals("auto", controller().state.value.choice)
+        assertEquals("anthropic", controller().state.value.choice)
+        settings.choice = "auto"
+        settings.setKey(AiVendor.GEMINI, geminiKey)
+        assertEquals("gemini", controller().state.value.choice)
     }
 
     @Test
@@ -180,6 +183,7 @@ class AiControllerTest {
         assertEquals(ActiveAi.CLAUDE, active("auto", claude = true, gemini = false))
         assertEquals(ActiveAi.GEMINI, active("auto", claude = false, gemini = true))
         assertEquals(ActiveAi.CLAUDE, active("auto", claude = true, gemini = true), "Claude comes first when both are there")
+        assertEquals(ActiveAi.TEMPLATE, active("gemini", claude = true, gemini = false), "the other AI's key is never used")
         assertEquals(ActiveAi.GEMINI, active("gemini", claude = true, gemini = true))
         assertEquals(ActiveAi.CLAUDE, active("anthropic", claude = true, gemini = true))
         assertEquals(ActiveAi.TEMPLATE, active("template", claude = true, gemini = true))

@@ -119,7 +119,7 @@ class BackgroundSyncTest {
         assertEquals(WorkInfo.State.ENQUEUED, first.state)
         assertEquals(NetworkType.CONNECTED, first.constraints.requiredNetworkType)
         assertTrue(first.constraints.requiresBatteryNotLow())
-        assertEquals(TimeUnit.HOURS.toMillis(3), first.periodicityInfo!!.repeatIntervalMillis)
+        assertEquals(TimeUnit.MINUTES.toMillis(15), first.periodicityInfo!!.repeatIntervalMillis)
 
         sync.set(true) // again, for example at the next start of the app
         assertEquals(listOf(first.id), infos().map { it.id }, "the existing job is kept, not doubled or reset")

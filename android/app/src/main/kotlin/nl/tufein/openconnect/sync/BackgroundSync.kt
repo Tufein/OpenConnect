@@ -20,9 +20,10 @@ fun interface BackgroundSync {
 }
 
 /**
- * The job runs about every three hours when there is a connection and the battery is not low, which is how Garmin
- * Connect keeps itself up to date without being opened. Android decides the exact moment; it can be later in battery
- * saver or Doze, and it only runs while a Garmin key is saved and automatic syncing is on.
+ * The job runs about every 15 minutes (the shortest period Android allows for a background job; while the app is open
+ * it syncs every ten minutes itself) when there is a connection and the battery is not low. Android decides the exact
+ * moment; it can be much later in battery saver or Doze, and it only runs while a Garmin key is saved and automatic
+ * syncing is on.
  */
 class WorkManagerBackgroundSync(private val context: Context) : BackgroundSync {
     override fun set(enabled: Boolean) {
@@ -35,17 +36,18 @@ class WorkManagerBackgroundSync(private val context: Context) : BackgroundSync {
             manager.cancelUniqueWork(NAME)
             return
         }
-        val request = PeriodicWorkRequestBuilder<GarminSyncWorker>(INTERVAL_HOURS, TimeUnit.HOURS)
+        val request = PeriodicWorkRequestBuilder<GarminSyncWorker>(INTERVAL_MINUTES, TimeUnit.MINUTES)
             .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).setRequiresBatteryNotLow(true).build())
             .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 10, TimeUnit.MINUTES)
             .build()
-        // KEEP: setting it again at every start of the app must not push the next run further away.
-        manager.enqueueUniquePeriodicWork(NAME, ExistingPeriodicWorkPolicy.KEEP, request)
+        // UPDATE once to move a job of an older version (every three hours) to the new period; KEEP afterwards, so
+        // setting it again at every start of the app does not push the next run further away.
+        manager.enqueueUniquePeriodicWork(NAME, periodPolicy(context, NAME), request)
     }
 
     companion object {
         const val NAME = "garmin-sync"
-        const val INTERVAL_HOURS = 3L
+        const val INTERVAL_MINUTES = 15L
     }
 }
 
@@ -114,5 +116,45 @@ class GarminBleSyncWorker(context: Context, params: WorkerParameters) : Coroutin
 
     private companion object {
         const val MAX_RETRIES = 2
+    }
+}
+
+/** UPDATE the first time this version schedules [name] (an older version may have it at another period), KEEP after. */
+internal fun periodPolicy(context: Context, name: String): ExistingPeriodicWorkPolicy {
+    val prefs = context.getSharedPreferences("work-periods", Context.MODE_PRIVATE)
+    val mark = "$name-15min"
+    if (prefs.getBoolean(mark, false)) return ExistingPeriodicWorkPolicy.KEEP
+    prefs.edit().putBoolean(mark, true).apply()
+    return ExistingPeriodicWorkPolicy.UPDATE
+}
+
+/** The Oura ring's job: about every 15 minutes while a login is saved, when there is a connection. */
+class WorkManagerOuraSync(private val context: Context) : BackgroundSync {
+    override fun set(enabled: Boolean) {
+        val manager = try {
+            WorkManager.getInstance(context)
+        } catch (_: IllegalStateException) {
+            return
+        }
+        if (!enabled) {
+            manager.cancelUniqueWork(NAME)
+            return
+        }
+        val request = PeriodicWorkRequestBuilder<OuraSyncWorker>(15, TimeUnit.MINUTES)
+            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).setRequiresBatteryNotLow(true).build())
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 10, TimeUnit.MINUTES)
+            .build()
+        manager.enqueueUniquePeriodicWork(NAME, ExistingPeriodicWorkPolicy.KEEP, request)
+    }
+
+    companion object {
+        const val NAME = "oura-sync"
+    }
+}
+
+class OuraSyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+    override suspend fun doWork(): Result {
+        (applicationContext as OpenConnectApp).container.oura.syncInBackground(java.time.Duration.ofMinutes(10))
+        return Result.success() // the next run is a quarter of an hour away; no need to retry sooner
     }
 }

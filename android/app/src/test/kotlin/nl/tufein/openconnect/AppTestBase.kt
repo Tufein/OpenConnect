@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.printToString
 import androidx.test.core.app.ActivityScenario
@@ -70,7 +71,15 @@ abstract class AppTestBase {
         }
     }
 
-    protected fun tab(label: String): SemanticsNodeInteraction = rule.onNode(hasText(label) and hasClickAction())
+    /**
+     * A tab or chip by its label. Since v0.16.0 tiles can be tapped too (the "Activities" tile on Home), so when more than
+     * one tappable node has the label, the one in the navigation bar (role Tab) is meant.
+     */
+    protected fun tab(label: String): SemanticsNodeInteraction {
+        val tappable = hasText(label) and hasClickAction()
+        if (rule.onAllNodes(tappable).fetchSemanticsNodes().size <= 1) return rule.onNode(tappable)
+        return rule.onNode(tappable and androidx.compose.ui.test.SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.Role, androidx.compose.ui.semantics.Role.Tab))
+    }
 
     protected fun hasText(text: String, substring: Boolean): Boolean =
         rule.onAllNodesWithText(text, substring = substring).fetchSemanticsNodes().isNotEmpty()
@@ -96,6 +105,8 @@ abstract class AppTestBase {
         if (!hasText(text, substring = false)) {
             rule.onAllNodes(hasScrollAction())[0].performScrollToNode(hasText(text))
         }
-        rule.onNodeWithText(text).performScrollTo().performClick()
+        // The button's own click action, not a touch at its centre: after scrolling, a button can sit just behind the
+        // navigation bar, and a touch there would open a tab instead.
+        rule.onNodeWithText(text).performScrollTo().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
     }
 }

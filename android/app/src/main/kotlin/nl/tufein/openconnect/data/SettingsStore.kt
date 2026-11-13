@@ -122,6 +122,60 @@ class SettingsStore(
             set(value) = prefs.edit().putLong(KEY_GARMIN_LAST, value).apply()
     }
 
+    /**
+     * The Oura link: the owner's own Oura application and the login. The secret and the tokens are encrypted like the
+     * other keys and never written in plain text; the client id and the redirect address are not secret.
+     */
+    val oura: nl.tufein.openconnect.oura.OuraSettings = object : nl.tufein.openconnect.oura.OuraSettings {
+        private fun secret(name: String): String? = try {
+            securePrefs?.getString(name, null)
+        } catch (_: Exception) {
+            null
+        }
+
+        private fun putSecret(name: String, value: String?) {
+            val store = securePrefs ?: return
+            store.edit().apply { if (value.isNullOrBlank()) remove(name) else putString(name, value) }.apply()
+        }
+
+        override val canStoreSecrets: Boolean get() = securePrefs != null
+
+        override var clientId: String?
+            get() = prefs.getString(KEY_OURA_CLIENT, null)
+            set(value) = prefs.edit().apply { if (value.isNullOrBlank()) remove(KEY_OURA_CLIENT) else putString(KEY_OURA_CLIENT, value) }.apply()
+
+        override var clientSecret: String?
+            get() = secret(KEY_OURA_SECRET)
+            set(value) = putSecret(KEY_OURA_SECRET, value)
+
+        override var redirectUri: String
+            get() = prefs.getString(KEY_OURA_REDIRECT, null)?.takeIf { it.isNotBlank() } ?: nl.tufein.openconnect.core.oura.OuraAuth.DEFAULT_REDIRECT
+            set(value) = prefs.edit().putString(KEY_OURA_REDIRECT, value).apply()
+
+        override var tokens: nl.tufein.openconnect.core.oura.OuraTokens?
+            get() {
+                val access = secret(KEY_OURA_ACCESS) ?: return null
+                return nl.tufein.openconnect.core.oura.OuraTokens(access, secret(KEY_OURA_REFRESH), java.time.Instant.ofEpochMilli(prefs.getLong(KEY_OURA_EXPIRES, 0L)))
+            }
+            set(value) {
+                putSecret(KEY_OURA_ACCESS, value?.access)
+                putSecret(KEY_OURA_REFRESH, value?.refresh)
+                prefs.edit().putLong(KEY_OURA_EXPIRES, value?.expiresAt?.toEpochMilli() ?: 0L).apply()
+            }
+
+        override var pendingLogin: String?
+            get() = secret(KEY_OURA_PENDING)
+            set(value) = putSecret(KEY_OURA_PENDING, value)
+
+        override var lastSyncMs: Long
+            get() = prefs.getLong(KEY_OURA_LAST, 0L)
+            set(value) = prefs.edit().putLong(KEY_OURA_LAST, value).apply()
+
+        override var preferSleep: Boolean
+            get() = prefs.getBoolean(KEY_OURA_PREFER_SLEEP, false)
+            set(value) = prefs.edit().putBoolean(KEY_OURA_PREFER_SLEEP, value).apply()
+    }
+
     /** The watch that last synced over Bluetooth: its address and name, nothing secret. */
     val garminWatch: GarminWatchMemory = object : GarminWatchMemory {
         override fun load(): GarminBleWatch? {
@@ -186,6 +240,15 @@ class SettingsStore(
         private const val KEY_LANGUAGE = "report_language"
         private const val KEY_PROVIDER = "provider"
         private const val KEY_THEME = "theme_mode"
+        private const val KEY_OURA_CLIENT = "oura_client_id"
+        private const val KEY_OURA_SECRET = "oura_client_secret"
+        private const val KEY_OURA_REDIRECT = "oura_redirect"
+        private const val KEY_OURA_ACCESS = "oura_access"
+        private const val KEY_OURA_REFRESH = "oura_refresh"
+        private const val KEY_OURA_EXPIRES = "oura_expires"
+        private const val KEY_OURA_PENDING = "oura_pending"
+        private const val KEY_OURA_LAST = "oura_last_sync"
+        private const val KEY_OURA_PREFER_SLEEP = "oura_prefer_sleep"
         private const val KEY_PLAN = "training_plan"
         private const val KEY_APP_LOCK = "app_lock"
         private const val KEY_SYNC_LOG = "sync_log"

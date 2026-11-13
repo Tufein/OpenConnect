@@ -72,8 +72,9 @@ activities are downloaded per sync; syncing again continues where it stopped.
 
 With a key saved, **automatic syncing is on by default** (switch it off on the Garmin screen) and covers the last 7 days:
 
-- **When the app comes to the front**, if the last complete sync is more than **30 minutes** old (it was 6 hours in v0.4.0).
-- **In the background, about every 3 hours**, through Android's WorkManager, when there is a connection and the battery
+- **When the app comes to the front**, if the last complete sync is more than a minute old, and **every 10 minutes while
+  the app stays open** (since v0.16.0; it was 30 minutes before, and 6 hours in v0.4.0).
+- **In the background, about every 15 minutes** (Android's shortest period for a background job; every 3 hours before v0.16.0), through Android's WorkManager, when there is a connection and the battery
   is not low. Android picks the exact moment, so it can be later in battery saver or Doze, and the job survives a restart
   of the phone. If Garmin refuses the key, the job stops until you save a new one instead of trying forever; no connection
   or a busy Garmin means a few backed-off retries and then the next round.

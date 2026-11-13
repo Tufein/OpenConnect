@@ -125,8 +125,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Like Garmin Connect, look for new data whenever the app comes to the front (at most every 30 minutes).
+        // Look for new data whenever the app comes to the front, and every ten minutes while it stays there.
         viewModel.onResume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.onPause()
     }
 
     override fun onNewIntent(intent: Intent) {

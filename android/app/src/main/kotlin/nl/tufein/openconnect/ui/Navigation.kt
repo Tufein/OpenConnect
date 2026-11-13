@@ -89,12 +89,14 @@ fun OpenConnectRoot(
     val coach by vm.coach.collectAsState()
     val ai by vm.ai.collectAsState()
     val garmin by vm.garmin.collectAsState()
+    val oura by vm.oura.collectAsState()
     val theme by vm.theme.collectAsState()
     val goals by vm.goals.collectAsState()
     val now by vm.now.collectAsState()
     val busy by vm.busy.collectAsState()
     val watch by vm.watch.collectAsState()
     var insightsTab by rememberSaveable { mutableStateOf(InsightsTab.Week) }
+    var healthFocus by remember { mutableStateOf<nl.tufein.openconnect.core.ChartMetric?>(null) }
 
     fun openTab(tab: Tab) {
         nav.navigate(tab.route) {
@@ -116,6 +118,15 @@ fun OpenConnectRoot(
 
     fun openGarmin() {
         nav.navigate(GARMIN_ROUTE) { launchSingleTop = true }
+    }
+
+    fun openHealth(metric: nl.tufein.openconnect.core.ChartMetric) {
+        healthFocus = metric
+        openTab(Tab.Health)
+    }
+
+    fun openOura() {
+        nav.navigate(OURA_ROUTE) { launchSingleTop = true }
     }
 
     fun openActivity(id: String) {
@@ -169,12 +180,15 @@ fun OpenConnectRoot(
                     onTrophies = { openInsights(InsightsTab.Trophies) },
                     onCoach = { openInsights(InsightsTab.Coach) },
                     contentPadding = padding,
+                    onOpenHealth = ::openHealth,
+                    onOpenActivities = { openTab(Tab.Activities) },
+                    onOpenInsights = { openInsights(InsightsTab.Week) },
                 )
             }
             composable(Tab.Activities.route) {
                 ActivitiesScreen(activities, vm::loadActivities, ::openActivity, vm::loadDemo, onImport, padding)
             }
-            composable(Tab.Health.route) { HealthScreen(health, vm::loadDemo, onImport, padding) }
+            composable(Tab.Health.route) { HealthScreen(health, vm::loadDemo, onImport, padding, focus = healthFocus, onFocusDone = { healthFocus = null }) }
             composable(Tab.Insights.route) {
                 InsightsScreen(
                     tab = insightsTab,
@@ -195,6 +209,8 @@ fun OpenConnectRoot(
                     onClearCoach = vm::clearCoach,
                     onOpenAiSettings = { openTab(Tab.Settings) },
                     contentPadding = padding,
+                    onOpenHealth = ::openHealth,
+                    onOpenActivities = { openTab(Tab.Activities) },
                 )
             }
             composable(Tab.Settings.route) {
@@ -225,6 +241,21 @@ fun OpenConnectRoot(
                     onClear = vm::clearAll,
                     onWatch = ::openWatch,
                     onGarmin = ::openGarmin,
+                    onOura = ::openOura,
+                    contentPadding = padding,
+                )
+            }
+            composable(OURA_ROUTE) {
+                OuraScreen(
+                    ui = oura,
+                    onBack = { nav.popBackStack() },
+                    onSaveClient = vm::saveOuraClient,
+                    loginUrl = vm::ouraLoginUrl,
+                    onPasteRedirect = vm::finishOuraLogin,
+                    onSync = vm::syncOura,
+                    onDisconnect = vm::disconnectOura,
+                    onForget = vm::forgetOura,
+                    onPreferSleep = vm::setOuraPreferSleep,
                     contentPadding = padding,
                 )
             }

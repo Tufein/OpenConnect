@@ -9,7 +9,7 @@ machine, with a dashboard, FIT/GPX/TCX import and export, and optional AI-writte
 
 ![OpenConnect dashboard](docs/img/dashboard.png)
 
-> **Status: v0.15.0, an early foundation.** It runs end to end on demo data with no credentials.
+> **Status: v0.16.0, an early foundation.** It runs end to end on demo data with no credentials.
 > Live Garmin access needs Garmin Developer Program credentials (see [Garmin access](#garmin-access)).
 > Not affiliated with or endorsed by Garmin.
 
@@ -26,13 +26,14 @@ live against a real account; the USB and Bluetooth parts have not yet been tried
 **[docs/GARMIN.md](docs/GARMIN.md)** and **[docs/WATCH.md](docs/WATCH.md)** for what works and what is unverified.
 More about the app, its limits and what has been verified: **[docs/ANDROID.md](docs/ANDROID.md)**.
 
-**New in v0.15.0:** **plan and protect**. *Insights, Plan* builds a simple 5K or 10K plan from the distance you run now
-(2 to 4 runs a week, 6 to 12 weeks, at most 10% more a week, a lighter week every fourth week and a taper), shows the next
-run and checks each week against the runs you recorded. *Settings, App lock* asks for your fingerprint, face or screen lock
-when the app opens and blanks the recent-apps list. v0.14.0 added month and year reports, best efforts and a lap table. The
-plan for what comes next is in **[docs/ROADMAP.md](docs/ROADMAP.md)**; see the [release notes](docs/releases/v0.15.0.md).
+**New in v0.16.0:** **Oura Ring and livelier screens**. OpenConnect can read your Oura ring (days, nights and workouts)
+through Oura's login, filling only what your watch did not give ([docs/OURA.md](docs/OURA.md)). Settings now offers
+offline, Claude or Gemini, and only the chosen AI is shown and used. Accounts sync when the app opens and every 10 minutes
+while it is open. Tiles open their chart, and charts can be read by tapping or sliding a finger along them. v0.15.0 added
+a training plan and an app lock. The plan for what comes next is in **[docs/ROADMAP.md](docs/ROADMAP.md)**; see the
+[release notes](docs/releases/v0.16.0.md).
 
-<p><img src="docs/img/v0150-training-plan.png" alt="A 10K training plan" width="230"></p>
+<p><img src="docs/img/v0160-chart-touch.png" alt="Reading a chart by touch" width="230"> <img src="docs/img/v0160-oura.png" alt="Oura Ring connected" width="230"></p>
 
 **v0.8.0:** a **Scores** section on Health with four race-HUD tiles (readiness, sleep score, Body Battery, stress),
 30-day charts for readiness and the watch's sleep score with the same plain-language explanation, and a new **sporty look**:

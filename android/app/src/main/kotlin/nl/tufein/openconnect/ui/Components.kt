@@ -27,6 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -143,17 +145,21 @@ fun ScoreTile(
     color: Color,
     modifier: Modifier = Modifier,
     detail: String? = null,
+    onClick: (() -> Unit)? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     Card(
-        modifier = modifier,
+        modifier = modifier.tappable(onClick),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = colors.surfaceContainer),
         border = BorderStroke(1.dp, colors.outlineVariant),
     ) {
         Box(Modifier.background(Brush.linearGradient(listOf(color.copy(alpha = 0.16f), Color.Transparent)))) {
             Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(label, style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(label, style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant, modifier = Modifier.weight(1f))
+                    if (onClick != null) OpenHint()
+                }
                 Text(
                     value?.toString() ?: "–",
                     style = MaterialTheme.typography.displayMedium.copy(fontSize = 40.sp),
@@ -206,10 +212,10 @@ fun SurfaceCard(modifier: Modifier = Modifier, accent: Color? = null, content: @
 }
 
 @Composable
-fun StatTile(label: String, value: String, modifier: Modifier = Modifier, unit: String? = null, color: Color? = null) {
+fun StatTile(label: String, value: String, modifier: Modifier = Modifier, unit: String? = null, color: Color? = null, onClick: (() -> Unit)? = null) {
     val tint = color ?: MaterialTheme.colorScheme.onSurface
     Card(
-        modifier = modifier,
+        modifier = modifier.tappable(onClick),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
@@ -220,7 +226,8 @@ fun StatTile(label: String, value: String, modifier: Modifier = Modifier, unit: 
                     Box(Modifier.size(8.dp).background(color, RoundedCornerShape(50)))
                     Spacer(Modifier.width(6.dp))
                 }
-                Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f))
+                if (onClick != null) OpenHint()
             }
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(value, style = MaterialTheme.typography.titleLarge, color = tint)
@@ -246,9 +253,10 @@ fun MetricTile(
     modifier: Modifier = Modifier,
     unit: String? = null,
     series: List<Double?> = emptyList(),
+    onClick: (() -> Unit)? = null,
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.tappable(onClick),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
@@ -260,7 +268,8 @@ fun MetricTile(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(8.dp).background(color, RoundedCornerShape(50)))
                 Spacer(Modifier.width(6.dp))
-                Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, modifier = Modifier.weight(1f))
+                if (onClick != null) OpenHint()
             }
             Row(verticalAlignment = Alignment.Bottom) {
                 Text(value, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSurface)
@@ -435,4 +444,19 @@ fun ReportCard(
             }
         }
     }
+}
+
+/** Makes a card react to a tap (with the ripple) when [onClick] is given; leaves it as it is otherwise. */
+fun Modifier.tappable(onClick: (() -> Unit)?): Modifier =
+    if (onClick == null) this else this.clip(RoundedCornerShape(12.dp)).clickable(onClick = onClick)
+
+/** The small arrow that says "tap for more". */
+@Composable
+fun OpenHint() {
+    androidx.compose.material3.Icon(
+        androidx.compose.material.icons.Icons.AutoMirrored.Filled.KeyboardArrowRight,
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.size(16.dp),
+    )
 }

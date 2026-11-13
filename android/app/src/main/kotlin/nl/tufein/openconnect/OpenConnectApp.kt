@@ -82,6 +82,11 @@ class AppContainer(
     /** The phone's Health Connect. Tests pass a fake; the app passes the real one. */
     healthConnect: HealthConnectGateway = NoHealthConnect,
     healthSettings: HealthSettings = settings.health,
+    /** The network to Oura. Tests pass a fake. */
+    ouraHttp: nl.tufein.openconnect.core.oura.OuraHttp = nl.tufein.openconnect.core.oura.UrlConnectionOuraHttp(),
+    ouraSettings: nl.tufein.openconnect.oura.OuraSettings = settings.oura,
+    /** Starts and stops the Oura job. Tests pass a fake; the app passes WorkManager. */
+    ouraSync: BackgroundSync = BackgroundSync { },
 ) {
     val stats = StatsService(repository)
 
@@ -163,6 +168,18 @@ class AppContainer(
         onSynced = syncLog::record,
     )
 
+    /** The Oura Ring link. */
+    val oura = nl.tufein.openconnect.oura.OuraController(
+        settings = ouraSettings,
+        repo = repository,
+        http = ouraHttp,
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+        io = Dispatchers.IO,
+        onDataChanged = { dataChanged.tryEmit(Unit) },
+        onSynced = syncLog::record,
+        onBackgroundWanted = ouraSync::set,
+    )
+
     /** The keys, models and choice of AI provider (Claude, Gemini, or the offline reports). */
     val ai = AiController(
         settings = aiSettings,
@@ -202,6 +219,7 @@ class OpenConnectApp : Application() {
             nudgeSync = WorkManagerNudgeSync(this),
             healthConnect = AndroidHealthConnectGateway(this),
             widgetRefresh = { summary -> HomeWidget.refresh(this, summary) },
+            ouraSync = nl.tufein.openconnect.sync.WorkManagerOuraSync(this),
         ) }
     }
 }
