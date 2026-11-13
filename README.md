@@ -26,14 +26,13 @@ live against a real account; the USB and Bluetooth parts have not yet been tried
 **[docs/GARMIN.md](docs/GARMIN.md)** and **[docs/WATCH.md](docs/WATCH.md)** for what works and what is unverified.
 More about the app, its limits and what has been verified: **[docs/ANDROID.md](docs/ANDROID.md)**.
 
-**New in v0.16.0:** **Oura Ring and livelier screens**. OpenConnect can read your Oura ring (days, nights and workouts)
-through Oura's login, filling only what your watch did not give ([docs/OURA.md](docs/OURA.md)). Settings now offers
-offline, Claude or Gemini, and only the chosen AI is shown and used. Accounts sync when the app opens and every 10 minutes
-while it is open. Tiles open their chart, and charts can be read by tapping or sliding a finger along them. v0.15.0 added
-a training plan and an app lock. The plan for what comes next is in **[docs/ROADMAP.md](docs/ROADMAP.md)**; see the
-[release notes](docs/releases/v0.16.0.md).
+**New in v0.17.0:** **choose your devices**. The first start asks whether you use a Garmin, an Oura Ring, both or
+neither, and the app only shows what you chose. The Oura Ring has its own tab with its own scores, nights, charts and
+workouts, kept apart from the watch's data ([docs/OURA.md](docs/OURA.md)). v0.16.0 added the Oura link, one AI at a
+time, syncing every 10 minutes while the app is open, and tiles and charts you can tap. The plan for what comes next is
+in **[docs/ROADMAP.md](docs/ROADMAP.md)**; see the [release notes](docs/releases/v0.17.0.md).
 
-<p><img src="docs/img/v0160-chart-touch.png" alt="Reading a chart by touch" width="230"> <img src="docs/img/v0160-oura.png" alt="Oura Ring connected" width="230"></p>
+<p><img src="docs/img/v0170-onboarding.png" alt="First start: choose your devices" width="230"> <img src="docs/img/v0170-oura-tab.png" alt="The Oura tab (Dutch)" width="230"></p>
 
 **v0.8.0:** a **Scores** section on Health with four race-HUD tiles (readiness, sleep score, Body Battery, stress),
 30-day charts for readiness and the watch's sleep score with the same plain-language explanation, and a new **sporty look**:

@@ -17,6 +17,7 @@ import nl.tufein.openconnect.core.oura.OuraClient
 import nl.tufein.openconnect.core.oura.OuraException
 import nl.tufein.openconnect.core.oura.OuraHttp
 import nl.tufein.openconnect.core.oura.OuraStore
+import nl.tufein.openconnect.core.oura.OuraDay
 import nl.tufein.openconnect.core.oura.OuraSync
 import nl.tufein.openconnect.core.oura.OuraSyncReport
 import java.time.Duration
@@ -29,9 +30,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 interface OuraSettings : OuraStore {
     /** Epoch milliseconds of the last sync that ran to the end, 0 when there was none. */
     var lastSyncMs: Long
-
-    /** Let the ring's night replace the watch's. */
-    var preferSleep: Boolean
 }
 
 /** Why something on the Oura screen did not work, in terms the screen can explain. */
@@ -43,12 +41,13 @@ data class OuraUi(
     val connected: Boolean = false,
     val clientId: String = "",
     val redirectUri: String = OuraAuth.DEFAULT_REDIRECT,
-    val preferSleep: Boolean = false,
     val lastSync: Instant? = null,
     val busy: Boolean = false,
     val problem: OuraProblem? = null,
     /** What the last sync brought in, until the next one starts. */
     val last: OuraSyncReport? = null,
+    /** The ring's last 30 days, oldest first, as stored apart from the watch's data. */
+    val days: List<OuraDay> = emptyList(),
 )
 
 /**
@@ -58,7 +57,7 @@ data class OuraUi(
  */
 class OuraController(
     private val settings: OuraSettings,
-    repo: Repository,
+    private val repo: Repository,
     http: OuraHttp,
     private val scope: CoroutineScope,
     private val io: CoroutineDispatcher,
@@ -74,6 +73,9 @@ class OuraController(
         const val LONG_DAYS = 7
         const val SHORT_DAYS = 2
 
+        /** How many days the Oura tab shows. */
+        const val DAYS_SHOWN = 30L
+
         /** After this long without a sync, the next automatic one looks a week back instead of two days. */
         val LONG_AFTER: Duration = Duration.ofHours(12)
     }
@@ -81,11 +83,22 @@ class OuraController(
     private val auth = OuraAuth(http, settings, now)
     private val sync = OuraSync(OuraClient(http, auth), repo)
     private val running = AtomicBoolean(false)
+    @Volatile private var days: List<OuraDay> = emptyList()
     private val _state = MutableStateFlow(snapshot())
     val state: StateFlow<OuraUi> = _state.asStateFlow()
 
     init {
         onBackgroundWanted(auth.connected)
+        refreshDays()
+    }
+
+    /** Reads the stored days again, for the Oura tab (after a sync, a restore or clearing the data). */
+    fun refreshDays() {
+        scope.launch(io) {
+            val today = LocalDate.now(zone())
+            days = repo.listOuraDays(today.minusDays(DAYS_SHOWN - 1), today)
+            _state.update { it.copy(days = days) }
+        }
     }
 
     private fun snapshot(busy: Boolean = false, problem: OuraProblem? = null, last: OuraSyncReport? = null) = OuraUi(
@@ -94,11 +107,11 @@ class OuraController(
         connected = auth.connected,
         clientId = settings.clientId.orEmpty(),
         redirectUri = settings.redirectUri,
-        preferSleep = settings.preferSleep,
         lastSync = settings.lastSyncMs.takeIf { it > 0 }?.let(Instant::ofEpochMilli),
         busy = busy,
         problem = problem,
         last = last,
+        days = days,
     )
 
     /** Saves the application the owner made at Oura. A blank secret keeps the one already saved. */
@@ -165,11 +178,6 @@ class OuraController(
         onBackgroundWanted(false)
     }
 
-    fun setPreferSleep(on: Boolean) {
-        settings.preferSleep = on
-        _state.update { it.copy(preferSleep = on) }
-    }
-
     fun sync() = start(FIRST_SYNC_DAYS)
 
     /** For when the app opens and for the ten-minute timer: syncs when the last sync is at least [gap] ago. */
@@ -204,10 +212,10 @@ class OuraController(
     }
 
     /** Runs one sync to the end. The caller has taken [running]; it is released here. */
-    private fun execute(days: Int): Boolean {
+    private fun execute(daysBack: Int): Boolean {
         var report: OuraSyncReport? = null
         val problem = try {
-            report = sync.sync(days, LocalDate.now(zone()), settings.preferSleep)
+            report = sync.sync(daysBack, LocalDate.now(zone()))
             settings.lastSyncMs = now().toEpochMilli()
             null
         } catch (e: OuraException) {
@@ -227,6 +235,8 @@ class OuraController(
         onSynced(SyncLogEntry(now(), SyncLog.SOURCE_OURA, ok = problem == null, added = report?.total ?: 0, detail = problem?.name.orEmpty()))
         if ((report?.total ?: 0) > 0) onDataChanged()
         running.set(false)
+        val today = LocalDate.now(zone())
+        this.days = repo.listOuraDays(today.minusDays(DAYS_SHOWN - 1), today)
         _state.value = snapshot(problem = problem, last = report)
         onBackgroundWanted(auth.connected)
         return problem == null

@@ -57,6 +57,11 @@ interface Repository {
 
     fun saveReport(report: StoredReport)
 
+    /** A day as the Oura Ring saw it, kept apart from the watch's data (v0.17.0). */
+    fun upsertOuraDay(day: nl.tufein.openconnect.core.oura.OuraDay)
+
+    fun listOuraDays(start: LocalDate, end: LocalDate): List<nl.tufein.openconnect.core.oura.OuraDay>
+
     fun clearAll()
 }
 
@@ -67,6 +72,7 @@ class InMemoryRepository : Repository {
     private val reports = HashMap<Pair<String, String>, StoredReport>()
     private val samples = HashMap<Pair<Metric, Instant>, MetricSample>()
     private val watchFiles = HashMap<String, Long>()
+    private val ouraDays = HashMap<LocalDate, nl.tufein.openconnect.core.oura.OuraDay>()
 
     override fun upsertActivity(activity: Activity) {
         activities[activity.id] = activity
@@ -121,7 +127,15 @@ class InMemoryRepository : Repository {
         reports[report.kind to report.subject] = report
     }
 
+    override fun upsertOuraDay(day: nl.tufein.openconnect.core.oura.OuraDay) {
+        ouraDays[day.date] = day
+    }
+
+    override fun listOuraDays(start: LocalDate, end: LocalDate): List<nl.tufein.openconnect.core.oura.OuraDay> =
+        ouraDays.values.filter { it.date in start..end }.sortedBy { it.date }
+
     override fun clearAll() {
+        ouraDays.clear()
         activities.clear()
         dailies.clear()
         sleeps.clear()

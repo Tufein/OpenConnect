@@ -71,6 +71,12 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 19. **Sync on opening and every 10 minutes** while the app is open; background jobs every 15 minutes.
 20. **Tiles that open their chart**, and charts that can be read by touch.
 
+## v0.17.0: choose your devices ✅
+
+21. **First start asks which devices you use** (Garmin, Oura Ring, both or none); only those show up. Changeable under
+    *Settings, Your devices*.
+22. **Oura gets its own tab**, with its own scores, nights, charts and workouts, kept apart from the watch's data.
+
 ## Later 💡
 
 - Wear OS or a watch face is out of scope; the project is about the phone side.

@@ -69,13 +69,17 @@ fun HomeScreen(
     onOpenHealth: (ChartMetric) -> Unit = {},
     onOpenActivities: () -> Unit = {},
     onOpenInsights: () -> Unit = {},
+    /** False for someone who said at the first start that they have no Garmin: no sync status, no Garmin buttons. */
+    useGarmin: Boolean = true,
+    /** Opens the Oura tab; null for someone without a ring. */
+    onOura: (() -> Unit)? = null,
 ) {
-    val badge = syncBadge(garmin)
+    val badge = syncBadge(garmin).takeIf { useGarmin }
     val metrics = OpenConnectColors.metrics
     // Pulling down syncs the Garmin account, like in Garmin Connect; without one there is nothing to fetch.
     PullToRefreshBox(
-        isRefreshing = garmin.sync is GarminSyncUi.Running,
-        onRefresh = { if (garmin.hasKey) onSync() else onGarmin() },
+        isRefreshing = useGarmin && garmin.sync is GarminSyncUi.Running,
+        onRefresh = { if (!useGarmin) Unit else if (garmin.hasKey) onSync() else onGarmin() },
         modifier = Modifier.padding(top = contentPadding.calculateTopPadding()),
     ) {
         LazyColumn(
@@ -95,7 +99,7 @@ fun HomeScreen(
             if (!state.loaded) return@LazyColumn
             val overview = state.overview
             // With data on screen the sync pill and the buttons at the bottom already lead to Garmin and the watch.
-            if (!state.hasData || overview == null) item { ConnectCard(garmin.hasKey, onWatch, onGarmin) }
+            if (useGarmin && (!state.hasData || overview == null)) item { ConnectCard(garmin.hasKey, onWatch, onGarmin) }
             if (!state.hasData || overview == null) {
                 item { EmptyState(onDemo, onImport) }
                 return@LazyColumn
@@ -188,8 +192,13 @@ fun HomeScreen(
             }
             item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    OutlinedButton(onClick = onGarmin, Modifier.weight(1f)) { Text(stringResource(R.string.action_garmin_short), maxLines = 1) }
-                    OutlinedButton(onClick = onWatch, Modifier.weight(1f)) { Text(stringResource(R.string.action_watch_short), maxLines = 1) }
+                    if (useGarmin) {
+                        OutlinedButton(onClick = onGarmin, Modifier.weight(1f)) { Text(stringResource(R.string.action_garmin_short), maxLines = 1) }
+                        OutlinedButton(onClick = onWatch, Modifier.weight(1f)) { Text(stringResource(R.string.action_watch_short), maxLines = 1) }
+                    }
+                    if (onOura != null) {
+                        OutlinedButton(onClick = onOura, Modifier.weight(1f)) { Text(stringResource(R.string.tab_oura), maxLines = 1) }
+                    }
                     OutlinedButton(onClick = onCoach, Modifier.weight(1f)) { Text(stringResource(R.string.action_coach_short), maxLines = 1) }
                 }
             }
@@ -203,7 +212,7 @@ fun HomeScreen(
 private fun Header(
     now: Instant,
     zone: ZoneId,
-    badge: SyncBadge,
+    badge: SyncBadge?,
     level: PlayerLevel?,
     onPill: () -> Unit,
     onLevel: () -> Unit,
@@ -224,7 +233,7 @@ private fun Header(
             }
             if (level != null) LevelChip(level, onLevel)
         }
-        SyncPill(badge, now, onPill)
+        if (badge != null) SyncPill(badge, now, onPill)
     }
 }
 

@@ -148,68 +148,70 @@ class OuraTest {
     }
 
     @Test
-    fun `a sync fills days, nights and workouts and follows the next page`() {
+    fun `a sync stores the ring's days, scores and workouts apart and follows the next page`() {
         login()
         ouraData()
-        val report = sync.sync(7, today, preferSleep = false)
+        http.collections["daily_readiness"] = """{"data":[{"id":"r1","day":"2026-11-13","score":81,"temperature_deviation":-0.12}],"next_token":null}"""
+        http.collections["daily_activity"] = """{"data":[{"id":"a1","day":"2026-11-12","score":77,"steps":8123,"active_calories":410}],"next_token":"page2"}"""
+        val report = sync.sync(7, today)
         assertEquals(2, report.daysUpdated)
         assertEquals(1, report.nightsUpdated)
         assertEquals(1, report.activitiesAdded)
-        val day = repo.listDaily(LocalDate.parse("2026-11-12"), LocalDate.parse("2026-11-12")).single()
-        assertEquals(8123, day.steps)
-        assertEquals(410, day.activeKcal)
-        assertEquals(30, day.moderateIntensityMin)
-        assertEquals(10, day.vigorousIntensityMin)
-        val morning = repo.listDaily(today, today).single()
-        assertEquals(47, morning.restingHr)
-        assertEquals(62, morning.hrvMs)
-        assertEquals(97, morning.spo2Avg)
-        val night = repo.listSleep(today, today).single()
-        assertEquals(27000, night.durationS)
-        assertEquals(84, night.score)
-        val run = repo.getActivity("oura-w1")!!
-        assertEquals(Sport.RUNNING, run.sport)
-        assertEquals(Instant.parse("2026-11-12T06:00:00Z"), run.startTime)
-        assertEquals(2700.0, run.durationS)
+        val yesterday = repo.listOuraDays(LocalDate.parse("2026-11-12"), LocalDate.parse("2026-11-12")).single()
+        assertEquals(8123, yesterday.steps)
+        assertEquals(77, yesterday.activityScore)
+        val run = yesterday.workouts.single()
         assertEquals("Running", run.name)
+        assertEquals(Instant.parse("2026-11-12T06:00:00Z"), run.start)
+        assertEquals(2700, run.durationS)
+        assertEquals(520, run.calories)
+        val morning = repo.listOuraDays(today, today).single()
+        assertEquals(81, morning.readiness)
+        assertEquals(84, morning.sleepScore)
+        assertEquals(27000, morning.sleepS)
+        assertEquals(47, morning.lowestHr)
+        assertEquals(62, morning.averageHrv)
+        assertEquals(96.6, morning.spo2Avg)
+        assertEquals(-0.12, morning.temperatureDeviation)
+        assertEquals(morning, nl.tufein.openconnect.core.oura.OuraDay.fromJson(morning.toJson()), "it survives storage")
         assertTrue(http.calls.any { "next_token=page2" in it.url }, "the second page was asked for")
         val get = http.calls.first { it.method == "GET" }
         assertEquals("Bearer access-1", get.headers["Authorization"])
         assertTrue("start_date=2026-11-07" in get.url, get.url)
-        assertEquals(OuraSyncReport0, sync.sync(7, today, preferSleep = false), "a second sync changes nothing")
+        assertEquals(OuraSyncReport0, sync.sync(7, today), "a second sync changes nothing")
     }
 
     private val OuraSyncReport0 = nl.tufein.openconnect.core.oura.OuraSyncReport()
 
     @Test
-    fun `what the watch gave stays, unless the ring leads for sleep`() {
+    fun `the watch's data is never touched by the ring`() {
         login()
         ouraData()
-        repo.upsertDaily(DailySummary(date = LocalDate.parse("2026-11-12"), steps = 9999, restingHr = 50))
-        repo.upsertSleep(SleepSummary(date = today, durationS = 20000, score = 70))
-        repo.upsertActivity(Activity(id = "garmin-1", name = "Morning run", sport = Sport.RUNNING, startTime = Instant.parse("2026-11-12T06:01:00Z"), durationS = 2700.0))
-        val report = sync.sync(7, today, preferSleep = false)
-        assertEquals(9999, repo.listDaily(LocalDate.parse("2026-11-12"), LocalDate.parse("2026-11-12")).single().steps)
-        assertEquals(410, repo.listDaily(LocalDate.parse("2026-11-12"), LocalDate.parse("2026-11-12")).single().activeKcal, "gaps are filled")
-        assertEquals(20000, repo.listSleep(today, today).single().durationS)
-        assertEquals(0, report.activitiesAdded, "the same run from the watch is not added twice")
-        assertNull(repo.getActivity("oura-w1"))
-        assertEquals(1, sync.sync(7, today, preferSleep = true).nightsUpdated)
-        assertEquals(27000, repo.listSleep(today, today).single().durationS)
+        val watchDay = DailySummary(date = LocalDate.parse("2026-11-12"), steps = 9999, restingHr = 50)
+        val watchNight = SleepSummary(date = today, durationS = 20000, score = 70)
+        repo.upsertDaily(watchDay)
+        repo.upsertSleep(watchNight)
+        sync.sync(7, today)
+        assertEquals(listOf(watchDay), repo.listDaily(LocalDate.parse("2026-11-01"), today))
+        assertEquals(listOf(watchNight), repo.listSleep(LocalDate.parse("2026-11-01"), today))
+        assertTrue(repo.listActivities().isEmpty(), "a ring workout is not added to the activities")
+        assertEquals(2, repo.listOuraDays(LocalDate.parse("2026-11-01"), today).size)
+        repo.clearAll()
+        assertTrue(repo.listOuraDays(LocalDate.parse("2026-11-01"), today).isEmpty(), "clearing everything clears the ring's days too")
     }
 
     @Test
     fun `refusals from Oura are told apart`() {
         login()
         http.apiStatus = { 403 }
-        assertEquals(OuraException.Kind.FORBIDDEN, assertFailsWith<OuraException> { sync.sync(7, today, false) }.kind)
+        assertEquals(OuraException.Kind.FORBIDDEN, assertFailsWith<OuraException> { sync.sync(7, today) }.kind)
         http.apiStatus = { 429 }
-        assertEquals(OuraException.Kind.RATE_LIMITED, assertFailsWith<OuraException> { sync.sync(7, today, false) }.kind)
+        assertEquals(OuraException.Kind.RATE_LIMITED, assertFailsWith<OuraException> { sync.sync(7, today) }.kind)
         var first = true
         http.apiStatus = { if (first) { first = false; 401 } else 200 }
-        sync.sync(7, today, false)
+        sync.sync(7, today)
         assertEquals("access-2", store.tokens?.access, "a 401 gets one fresh token and a second try")
         store.tokens = null
-        assertEquals(OuraException.Kind.NOT_CONNECTED, assertFailsWith<OuraException> { sync.sync(7, today, false) }.kind)
+        assertEquals(OuraException.Kind.NOT_CONNECTED, assertFailsWith<OuraException> { sync.sync(7, today) }.kind)
     }
 }

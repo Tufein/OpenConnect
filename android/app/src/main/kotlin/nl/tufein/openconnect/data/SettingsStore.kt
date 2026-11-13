@@ -73,6 +73,21 @@ class SettingsStore(
         get() = prefs.getString(KEY_PLAN, "") ?: ""
         set(value) = prefs.edit().putString(KEY_PLAN, value).apply()
 
+    /** Whether the first-start questions (which devices do you use) were answered. */
+    var onboarded: Boolean
+        get() = prefs.getBoolean(KEY_ONBOARDED, false)
+        set(value) = prefs.edit().putBoolean(KEY_ONBOARDED, value).apply()
+
+    /** Whether the Garmin parts (account, watch, sync status) are shown. On unless the person said no. */
+    var useGarmin: Boolean
+        get() = prefs.getBoolean(KEY_USE_GARMIN, true)
+        set(value) = prefs.edit().putBoolean(KEY_USE_GARMIN, value).apply()
+
+    /** Whether the Oura tab is shown and the ring is synced. Off unless the person chose it. */
+    var useOura: Boolean
+        get() = prefs.getBoolean(KEY_USE_OURA, false)
+        set(value) = prefs.edit().putBoolean(KEY_USE_OURA, value).apply()
+
     /** Whether the app asks for the fingerprint, face or screen lock when it opens. */
     var appLock: Boolean
         get() = prefs.getBoolean(KEY_APP_LOCK, false)
@@ -171,9 +186,6 @@ class SettingsStore(
             get() = prefs.getLong(KEY_OURA_LAST, 0L)
             set(value) = prefs.edit().putLong(KEY_OURA_LAST, value).apply()
 
-        override var preferSleep: Boolean
-            get() = prefs.getBoolean(KEY_OURA_PREFER_SLEEP, false)
-            set(value) = prefs.edit().putBoolean(KEY_OURA_PREFER_SLEEP, value).apply()
     }
 
     /** The watch that last synced over Bluetooth: its address and name, nothing secret. */
@@ -248,7 +260,9 @@ class SettingsStore(
         private const val KEY_OURA_EXPIRES = "oura_expires"
         private const val KEY_OURA_PENDING = "oura_pending"
         private const val KEY_OURA_LAST = "oura_last_sync"
-        private const val KEY_OURA_PREFER_SLEEP = "oura_prefer_sleep"
+        private const val KEY_ONBOARDED = "onboarded"
+        private const val KEY_USE_GARMIN = "use_garmin"
+        private const val KEY_USE_OURA = "use_oura"
         private const val KEY_PLAN = "training_plan"
         private const val KEY_APP_LOCK = "app_lock"
         private const val KEY_SYNC_LOG = "sync_log"

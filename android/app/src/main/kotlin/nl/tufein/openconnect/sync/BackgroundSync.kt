@@ -154,7 +154,8 @@ class WorkManagerOuraSync(private val context: Context) : BackgroundSync {
 
 class OuraSyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        (applicationContext as OpenConnectApp).container.oura.syncInBackground(java.time.Duration.ofMinutes(10))
+        val container = (applicationContext as OpenConnectApp).container
+        if (container.settings.useOura) container.oura.syncInBackground(java.time.Duration.ofMinutes(10))
         return Result.success() // the next run is a quarter of an hour away; no need to retry sooner
     }
 }

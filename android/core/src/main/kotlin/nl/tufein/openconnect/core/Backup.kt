@@ -51,6 +51,8 @@ object Backup {
             put("daily", JsonArray(repo.listDaily(FAR_PAST, FAR_FUTURE).map(::dailyJson)))
             put("sleep", JsonArray(repo.listSleep(FAR_PAST, FAR_FUTURE).map(::sleepJson)))
             put("samples", buildJsonArray { repo.listSamples(FAR_PAST, FAR_FUTURE).forEach { add(sampleJson(it)) } })
+            // v0.17.0: the Oura Ring's days, in their own list. Older app versions simply skip it.
+            put("oura", JsonArray(repo.listOuraDays(FAR_PAST, FAR_FUTURE).map { kotlinx.serialization.json.Json.parseToJsonElement(it.toJson()) }))
         }
         val out = ByteArrayOutputStream()
         GZIPOutputStream(out).use { it.write(root.toString().toByteArray(Charsets.UTF_8)) }
@@ -69,11 +71,13 @@ object Backup {
         val daily: List<DailySummary>
         val sleep: List<SleepSummary>
         val samples: List<MetricSample>
+        val oura: List<nl.tufein.openconnect.core.oura.OuraDay>
         try {
             activities = root.list("activities").map { activityOf(it.jsonObject) }
             daily = root.list("daily").map { dailyOf(it.jsonObject) }
             sleep = root.list("sleep").map { sleepOf(it.jsonObject) }
             samples = root.list("samples").map { sampleOf(it.jsonArray) }
+            oura = root.list("oura").map { nl.tufein.openconnect.core.oura.OuraDay.fromJson(it.toString()) }
         } catch (e: BackupException) {
             throw e
         } catch (e: Exception) {
@@ -83,6 +87,7 @@ object Backup {
         daily.forEach(repo::upsertDaily)
         sleep.forEach(repo::upsertSleep)
         repo.upsertSamples(samples)
+        oura.forEach(repo::upsertOuraDay)
         return RestoreReport(activities.size, daily.size, sleep.size, samples.size, createdAt)
     }
 

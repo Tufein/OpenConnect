@@ -51,6 +51,12 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
                 PRIMARY KEY (kind, subject))""",
         )
         createWatchTables(db)
+        createOuraTable(db)
+    }
+
+    /** v0.17.0: the Oura Ring's days, one JSON row per day, kept apart from the watch's tables. */
+    private fun createOuraTable(db: SQLiteDatabase) {
+        db.execSQL("CREATE TABLE oura_days (date TEXT PRIMARY KEY, json TEXT NOT NULL)")
     }
 
     /** Readings from a watch, one row per metric and moment, and the watch files that were already read. */
@@ -71,6 +77,12 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
                 db.execSQL("ALTER TABLE daily ADD COLUMN $column")
             }
             createWatchTables(db)
+        }
+        if (oldVersion < 3) {
+            createOuraTable(db)
+            // v0.16.0 put ring workouts among the activities; from now on the ring keeps its own data. The ring's
+            // numbers it filled into empty fields of the watch's days cannot be told apart and stay.
+            db.delete("activities", "source = ?", arrayOf("oura"))
         }
     }
 
@@ -338,10 +350,27 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
         writableDatabase.insertWithOnConflict("reports", null, values, SQLiteDatabase.CONFLICT_REPLACE)
     }
 
+    override fun upsertOuraDay(day: nl.tufein.openconnect.core.oura.OuraDay) {
+        val values = ContentValues().apply {
+            put("date", day.day)
+            put("json", day.toJson())
+        }
+        writableDatabase.insertWithOnConflict("oura_days", null, values, SQLiteDatabase.CONFLICT_REPLACE)
+    }
+
+    override fun listOuraDays(start: LocalDate, end: LocalDate): List<nl.tufein.openconnect.core.oura.OuraDay> =
+        readableDatabase.query("oura_days", arrayOf("json"), "date >= ? AND date <= ?", arrayOf(start.toString(), end.toString()), null, null, "date").use { c ->
+            buildList {
+                while (c.moveToNext()) {
+                    runCatching { nl.tufein.openconnect.core.oura.OuraDay.fromJson(c.getString(0)) }.getOrNull()?.let(::add)
+                }
+            }
+        }
+
     override fun clearAll() {
         writableDatabase.beginTransaction()
         try {
-            for (table in listOf("activities", "daily", "sleep", "reports", "samples", "watch_files")) writableDatabase.delete(table, null, null)
+            for (table in listOf("activities", "daily", "sleep", "reports", "samples", "watch_files", "oura_days")) writableDatabase.delete(table, null, null)
             writableDatabase.setTransactionSuccessful()
         } finally {
             writableDatabase.endTransaction()
@@ -362,7 +391,7 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
     }
 
     private companion object {
-        const val VERSION = 2
+        const val VERSION = 3
     }
 }
 
