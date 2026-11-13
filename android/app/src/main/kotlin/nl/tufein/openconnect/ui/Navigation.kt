@@ -76,6 +76,7 @@ fun OpenConnectRoot(
     val health by vm.health.collectAsState()
     val reports by vm.reports.collectAsState()
     val overview by vm.overview.collectAsState()
+    val nudges by vm.nudges.collectAsState()
     val syncLog by vm.syncLog.collectAsState()
     val trophies by vm.trophies.collectAsState()
     val coach by vm.coach.collectAsState()
@@ -187,7 +188,8 @@ fun OpenConnectRoot(
             }
             composable(Tab.Settings.route) {
                 SettingsScreen(
-                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog),
+                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges),
+                    onNudges = vm::setNudges,
                     onBackup = onBackup,
                     onRestore = onRestore,
                     onClearLog = vm::clearSyncLog,

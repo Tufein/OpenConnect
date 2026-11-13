@@ -420,4 +420,24 @@
     <string name="watch_ble_archive_note">Zoals Garmin Connect, nadat de bestanden hier zijn opgeslagen. Het horloge kan die bestanden daarna wissen om ruimte te maken, dus houd een back-up. Zet dit alleen aan als deze app het horloge uitleest.</string>
     <string name="watch_ble_background">Op de achtergrond naar het horloge zoeken (experimenteel)</string>
     <string name="watch_ble_background_note">Ongeveer elke drie uur, met de app dicht, alleen voor het horloge hierboven. Android kan het uitstellen. Nog niet op een echt horloge geprobeerd.</string>
+    <string name="widget_description">Gereedheid, stappen en je weekdoel voor activiteiten</string>
+    <string name="widget_readiness">Gereedheid</string>
+    <string name="widget_none">–</string>
+    <string name="widget_steps_none">Nog geen stappen</string>
+    <string name="widget_steps">%1$s stappen</string>
+    <string name="widget_steps_goal">%1$s van %2$s stappen</string>
+    <string name="widget_week">%1$d van %2$d activiteiten deze week</string>
+    <string name="widget_week_free">%1$d activiteiten deze week</string>
+    <string name="settings_nudges">Meldingen</string>
+    <string name="settings_nudges_body">Een duwtje als een weekdoel dichtbij is (in de avond), een samenvatting van vorige week op maandagochtend en een bericht als je trainingsbelasting springt. Elke melding komt één keer. Ongeveer elke drie uur gecontroleerd.</string>
+    <string name="settings_nudges_switch">Stuur me deze meldingen</string>
+    <string name="nudge_channel">Doelen en weekoverzicht</string>
+    <string name="nudge_goal_intensity">Bijna: nog %1$d intensiteitsminuten en je weekdoel is gehaald.</string>
+    <string name="nudge_goal_distance">Bijna: nog %1$d km en je weekdoel is gehaald.</string>
+    <plurals name="nudge_goal_activities">
+        <item quantity="one">Nog één activiteit en je weekdoel is gehaald.</item>
+        <item quantity="other">Nog %1$d activiteiten en je weekdoel is gehaald.</item>
+    </plurals>
+    <string name="nudge_weekly">Vorige week: %1$d activiteiten, %2$d km, %3$d van 3 doelen gehaald.</string>
+    <string name="nudge_load">Je trainingsbelasting sprong deze week omhoog. Plan wat rustige dagen.</string>
 </resources>

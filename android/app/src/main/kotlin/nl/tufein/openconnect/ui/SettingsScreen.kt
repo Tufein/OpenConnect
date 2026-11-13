@@ -1,6 +1,15 @@
 package nl.tufein.openconnect.ui
 
 import android.content.ActivityNotFoundException
+import androidx.core.content.ContextCompat
+import androidx.compose.material3.Switch
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Spacer
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.rememberLauncherForActivityResult
+import android.os.Build
+import android.content.pm.PackageManager
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -59,6 +68,7 @@ data class SettingsUi(
     val goals: WeeklyGoals = WeeklyGoals(),
     val overview: DataOverview? = null,
     val syncLog: List<SyncLogEntry> = emptyList(),
+    val nudges: Boolean = false,
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -83,6 +93,7 @@ fun SettingsScreen(
     onBackup: () -> Unit = {},
     onRestore: () -> Unit = {},
     onClearLog: () -> Unit = {},
+    onNudges: (Boolean) -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     var confirmClear by remember { mutableStateOf(false) }
@@ -136,6 +147,26 @@ fun SettingsScreen(
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     OutlinedButton(onClick = onExportDaily) { Text(stringResource(R.string.export_daily)) }
                     OutlinedButton(onClick = onExportActivities) { Text(stringResource(R.string.export_activities)) }
+                }
+            }
+        }
+        item {
+            SectionTitle(stringResource(R.string.settings_nudges))
+            SurfaceCard {
+                Text(stringResource(R.string.settings_nudges_body), style = MaterialTheme.typography.bodyMedium)
+                val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> if (granted) onNudges(true) }
+                val context = LocalContext.current
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Switch(
+                        checked = ui.nudges,
+                        onCheckedChange = { on ->
+                            val needsAsk = on && Build.VERSION.SDK_INT >= 33 &&
+                                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                            if (needsAsk) permission.launch(Manifest.permission.POST_NOTIFICATIONS) else onNudges(on)
+                        },
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Text(stringResource(R.string.settings_nudges_switch), style = MaterialTheme.typography.bodyMedium)
                 }
             }
         }

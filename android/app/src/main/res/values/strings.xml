@@ -420,4 +420,24 @@
     <string name="watch_ble_archive_note">Like Garmin Connect, after the files are stored here. The watch may then delete those files to make room, so keep a backup. Only turn it on if this app is the one that reads the watch.</string>
     <string name="watch_ble_background">Look for the watch in the background (experimental)</string>
     <string name="watch_ble_background_note">About every three hours, with the app closed, for the watch above only. Android may delay it. Not tried on a real watch yet.</string>
+    <string name="widget_description">Readiness, steps and your weekly activity goal</string>
+    <string name="widget_readiness">Readiness</string>
+    <string name="widget_none">–</string>
+    <string name="widget_steps_none">No steps yet</string>
+    <string name="widget_steps">%1$s steps</string>
+    <string name="widget_steps_goal">%1$s of %2$s steps</string>
+    <string name="widget_week">%1$d of %2$d activities this week</string>
+    <string name="widget_week_free">%1$d activities this week</string>
+    <string name="settings_nudges">Notifications</string>
+    <string name="settings_nudges_body">A nudge when a weekly goal is close (in the evening), a summary of last week on Monday morning, and a note when your training load jumps. Each is sent once. Checked about every three hours.</string>
+    <string name="settings_nudges_switch">Send me these notifications</string>
+    <string name="nudge_channel">Goals and weekly summary</string>
+    <string name="nudge_goal_intensity">Almost there: %1$d more intensity minutes reach your weekly goal.</string>
+    <string name="nudge_goal_distance">Almost there: %1$d km more reaches your weekly goal.</string>
+    <plurals name="nudge_goal_activities">
+        <item quantity="one">One more activity reaches your weekly goal.</item>
+        <item quantity="other">%1$d more activities reach your weekly goal.</item>
+    </plurals>
+    <string name="nudge_weekly">Last week: %1$d activities, %2$d km, %3$d of 3 goals reached.</string>
+    <string name="nudge_load">Your training load jumped this week. Plan some easy days.</string>
 </resources>

@@ -114,6 +114,9 @@ class AppSmokeTest : AppTestBase() {
 
         tab("Settings").performClick()
         rule.waitForIdle()
+        scrollToText("Notifications")
+        assertTrue(hasText("Send me these notifications", substring = false))
+        shot("41-settings-notifications")
         scrollToText("Back up and restore")
         assertTrue(hasText("Back up", substring = false))
         assertTrue(hasText("Restore", substring = false))
