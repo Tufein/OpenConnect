@@ -30,6 +30,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import nl.tufein.openconnect.R
+import androidx.compose.foundation.layout.height
+import nl.tufein.openconnect.core.LoadStatus
+import nl.tufein.openconnect.core.TrainingLoad
+import nl.tufein.openconnect.core.WeeklyGoals
+import nl.tufein.openconnect.core.WeeklyGoalProgress
 import nl.tufein.openconnect.core.Activity
 import nl.tufein.openconnect.core.PlayerLevel
 import nl.tufein.openconnect.core.Readiness
@@ -92,6 +97,8 @@ fun HomeScreen(
             val today = overview.today
 
             item { ReadinessCard(state.readiness) }
+            state.goalProgress?.let { progress -> item { GoalsCard(progress, state.goals) } }
+            state.load?.let { load -> item { LoadCard(load) } }
 
             item {
                 val goal = (today?.stepsGoal ?: 10_000).coerceAtLeast(1)
@@ -352,3 +359,71 @@ fun nl.tufein.openconnect.core.Sport.usesPace(): Boolean = this in setOf(
     nl.tufein.openconnect.core.Sport.WALKING,
     nl.tufein.openconnect.core.Sport.HIKING,
 )
+
+@Composable
+private fun GoalsCard(progress: WeeklyGoalProgress, goals: WeeklyGoals) {
+    val metrics = OpenConnectColors.metrics
+    val rows = listOf(
+        Triple(R.string.goal_intensity, progress.intensity, metrics.calories),
+        Triple(R.string.goal_distance, progress.distance, metrics.distance),
+        Triple(R.string.goal_activities, progress.activities, metrics.steps),
+    ).filter { it.second.goal > 0 }
+    SurfaceCard {
+        SectionTitle(stringResource(R.string.goals_title))
+        if (rows.isEmpty()) {
+            Text(stringResource(R.string.goals_none), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            return@SurfaceCard
+        }
+        for ((label, goal, color) in rows) {
+            val unit = when (label) {
+                R.string.goal_intensity -> " min"
+                R.string.goal_distance -> " km"
+                else -> ""
+            }
+            val done = if (label == R.string.goal_distance) Fmt.oneDecimal(goal.done) else Math.rint(goal.done).toInt().toString()
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(stringResource(label), style = MaterialTheme.typography.labelLarge)
+                Text(
+                    stringResource(R.string.goal_value, done, "${goal.goal}$unit"),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = if (goal.reached) color else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            SegmentBar(goal.fraction.toFloat(), color, Modifier.fillMaxWidth().height(8.dp))
+        }
+        val active = rows.size
+        Text(
+            stringResource(R.string.goals_reached, progress.reachedCount, active),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun LoadCard(load: TrainingLoad) {
+    val colors = MaterialTheme.colorScheme
+    val (label, text, color) = when (load.status) {
+        LoadStatus.LIGHT -> Triple(R.string.load_light, R.string.load_light_text, OpenConnectColors.metrics.distance)
+        LoadStatus.STEADY -> Triple(R.string.load_steady, R.string.load_steady_text, OpenConnectColors.metrics.steps)
+        LoadStatus.HEAVY -> Triple(R.string.load_heavy, R.string.load_heavy_text, OpenConnectColors.metrics.stress)
+        LoadStatus.OVERREACHING -> Triple(R.string.load_overreaching, R.string.load_overreaching_text, colors.error)
+    }
+    SurfaceCard(accent = color) {
+        SectionTitle(stringResource(R.string.load_title))
+        Text(stringResource(label), style = MaterialTheme.typography.titleLarge, color = color)
+        BarChart(
+            values = load.weeks.map { it.second },
+            description = stringResource(R.string.load_title),
+            color = color,
+            goal = load.chronicWeekly,
+            height = 90.dp,
+        )
+        Text(
+            stringResource(R.string.load_summary, Fmt.thousands(Math.rint(load.acute).toInt()), Fmt.thousands(Math.rint(load.chronicWeekly).toInt())),
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Text(stringResource(text), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+        Text(stringResource(R.string.load_note), style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
+    }
+}

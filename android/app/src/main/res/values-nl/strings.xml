@@ -371,4 +371,25 @@
     <string name="insight_explain_readiness">De eigen schatting van OpenConnect van 0 tot 100, uit slaap, Body Battery, HRV, rusthartslag en stress, ten opzichte van jouw eigen normaal. 70 of meer is klaar voor een zware dag, onder 40 neem je het rustig aan.</string>
     <string name="insight_explain_sleep_score">De slaapscore die je horloge elke nacht geeft, van 0 tot 100: 80 of meer is goed, 60 tot 79 redelijk, onder 60 slecht. Hij weegt duur, diepe en REM-slaap en onrust mee.</string>
     <string name="score_out_of">van de 100</string>
+    <string name="settings_goals">Weekdoelen</string>
+    <string name="settings_goals_body">Wat je elke week wilt halen. De standaardwaarden volgen gangbare aanbevelingen; zet een doel uit met de min-knop.</string>
+    <string name="goal_intensity">Intensiteitsminuten</string>
+    <string name="goal_distance">Afstand</string>
+    <string name="goal_activities">Activiteiten</string>
+    <string name="goal_off">Uit</string>
+    <string name="goals_title">Doelen deze week</string>
+    <string name="goals_reached">%1$d van %2$d doelen gehaald</string>
+    <string name="goals_none">Alle doelen staan uit. Zet ze aan bij Instellingen.</string>
+    <string name="goal_value">%1$s van %2$s</string>
+    <string name="load_title">Trainingsbelasting</string>
+    <string name="load_summary">Deze week %1$s punten, je gebruikelijke week %2$s</string>
+    <string name="load_light">Lichte week</string>
+    <string name="load_steady">Stabiel</string>
+    <string name="load_heavy">Zware week</string>
+    <string name="load_overreaching">Grote sprong</string>
+    <string name="load_light_text">Duidelijk minder dan je recente norm. Prima om te herstellen; was het niet gepland, dan zet een rustige training je weer op gang.</string>
+    <string name="load_steady_text">Op één lijn met de afgelopen vier weken. In dit gebied bouw je conditie op met het minste risico.</string>
+    <string name="load_heavy_text">Meer dan gebruikelijk. Prima voor een korte periode, maar plan daarna een rustiger week.</string>
+    <string name="load_overreaching_text">Een grote sprong ten opzichte van wat je lichaam gewend is. Dit is het moment voor kwaaltjes en ziekte: neem even gas terug.</string>
+    <string name="load_note">Eigen schatting van OpenConnect: minuten maal een inspanningsgewicht uit je hartslag, deze week tegenover je gemiddelde van 4 weken. Niet de Training Load van Garmin en geen medisch advies.</string>
 </resources>

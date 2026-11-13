@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import nl.tufein.openconnect.ai.AiSettings
+import nl.tufein.openconnect.core.WeeklyGoals
 import nl.tufein.openconnect.core.reports.AiVendor
 import nl.tufein.openconnect.garmin.GarminSettings
 import nl.tufein.openconnect.watch.GarminBleWatch
@@ -58,6 +59,18 @@ class SettingsStore(
     var themeMode: String
         get() = prefs.getString(KEY_THEME, "system")?.takeIf { it in THEMES } ?: "system"
         set(value) = prefs.edit().putString(KEY_THEME, value.takeIf { it in THEMES } ?: "system").apply()
+
+    /** The weekly goals shown on Home; a goal of 0 is switched off. */
+    var weeklyGoals: WeeklyGoals
+        get() = WeeklyGoals(
+            intensityMinutes = prefs.getInt(KEY_GOAL_INTENSITY, WeeklyGoals().intensityMinutes),
+            distanceKm = prefs.getInt(KEY_GOAL_DISTANCE, WeeklyGoals().distanceKm),
+            activities = prefs.getInt(KEY_GOAL_ACTIVITIES, WeeklyGoals().activities),
+        ).coerced()
+        set(value) {
+            val g = value.coerced()
+            prefs.edit().putInt(KEY_GOAL_INTENSITY, g.intensityMinutes).putInt(KEY_GOAL_DISTANCE, g.distanceKm).putInt(KEY_GOAL_ACTIVITIES, g.activities).apply()
+        }
 
     /**
      * The Garmin Personal API key (encrypted like the AI keys, and never written in plain text) and what the Garmin
@@ -127,6 +140,9 @@ class SettingsStore(
         private const val KEY_LANGUAGE = "report_language"
         private const val KEY_PROVIDER = "provider"
         private const val KEY_THEME = "theme_mode"
+        private const val KEY_GOAL_INTENSITY = "goal_intensity_minutes"
+        private const val KEY_GOAL_DISTANCE = "goal_distance_km"
+        private const val KEY_GOAL_ACTIVITIES = "goal_activities"
         private const val KEY_CLAUDE = "anthropic_api_key"
         private const val KEY_CLAUDE_MODEL = "model"
         private const val KEY_GEMINI = "gemini_api_key"

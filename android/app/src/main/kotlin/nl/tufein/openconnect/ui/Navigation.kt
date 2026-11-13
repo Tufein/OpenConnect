@@ -78,6 +78,7 @@ fun OpenConnectRoot(
     val ai by vm.ai.collectAsState()
     val garmin by vm.garmin.collectAsState()
     val theme by vm.theme.collectAsState()
+    val goals by vm.goals.collectAsState()
     val now by vm.now.collectAsState()
     val busy by vm.busy.collectAsState()
     val watch by vm.watch.collectAsState()
@@ -182,8 +183,9 @@ fun OpenConnectRoot(
             }
             composable(Tab.Settings.route) {
                 SettingsScreen(
-                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME),
+                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals),
                     onTheme = vm::setTheme,
+                    onGoals = vm::setGoals,
                     onLanguage = vm::setAiLanguage,
                     onChoice = vm::setAiChoice,
                     onSaveKey = vm::saveAiKey,
