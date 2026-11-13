@@ -2,6 +2,7 @@
 package nl.tufein.openconnect.core.watch.ble
 
 import nl.tufein.openconnect.core.InMemoryRepository
+import nl.tufein.openconnect.core.watch.WatchFileInfo
 import nl.tufein.openconnect.core.watch.WatchFolder
 import nl.tufein.openconnect.core.watch.WatchSyncService
 import java.time.Instant
@@ -59,6 +60,28 @@ class GarminBleWatchSourceTest {
         val report = WatchSyncService(amsterdam).sync(connect(ArrayList(), archive = true), InMemoryRepository())
         assertEquals(4, report.archived)
         assertEquals(setOf(10, 11, 12, 13), watches.last().archived.toSet())
+    }
+
+    @Test
+    fun `a refused mark is skipped, a lost link stops the marking`() {
+        fun files(vararg handles: Long) = handles.map { WatchFileInfo(WatchFolder.MONITOR, "f$it.fit", 10, it) }
+        fun source(fail: (Int) -> GarminBleException.Reason?, marked: MutableList<Int>) = GarminBleWatchSource(
+            object : GarminFileAccess {
+                override fun listDirectory() = emptyList<GarminDirectoryEntry>()
+                override fun download(index: Int) = ByteArray(0)
+                override fun archive(index: Int) {
+                    fail(index)?.let { throw GarminBleException(it, "x") }
+                    marked += index
+                }
+            },
+            "w", archiveAfterRead = true,
+        )
+        val refused = ArrayList<Int>()
+        assertEquals(2, source({ if (it == 2) GarminBleException.Reason.REFUSED else null }, refused).archive(files(1, 2, 3)))
+        assertEquals(listOf(1, 3), refused)
+        val lost = ArrayList<Int>()
+        assertEquals(1, source({ if (it == 2) GarminBleException.Reason.TIMEOUT else null }, lost).archive(files(1, 2, 3)))
+        assertEquals(listOf(1), lost)
     }
 
     @Test

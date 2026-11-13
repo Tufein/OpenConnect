@@ -306,6 +306,7 @@ class GarminBleSession(
                 }
                 if (size == 0L) finishTransfer(current)
             }
+            GfdiType.SET_FILE_FLAG -> flagAck?.complete(status)
             else -> if (status != GfdiStatus.ACK) log("watch answered $status to message $original")
         }
     }
@@ -393,8 +394,33 @@ class GarminBleSession(
         }
     }
 
-    /** Marks a file as synced on the watch, as Garmin Connect does; the watch may then delete it to make room. */
-    fun archive(index: Int) = send(GfdiOut.archive(index))
+    @Volatile private var flagAck: CompletableFuture<Int>? = null
+
+    /**
+     * Marks a file as synced on the watch, as Garmin Connect does; the watch may then delete it to make room. Waits for
+     * the watch to confirm, so the link is not closed while marks are still on their way. One at a time.
+     */
+    fun archive(index: Int, timeoutMs: Long = 5_000) {
+        if (!ready) throw GarminBleException(GarminBleException.Reason.NOT_READY, "The watch is not ready")
+        val ack = CompletableFuture<Int>()
+        synchronized(lock) {
+            if (closed) throw GarminBleException(GarminBleException.Reason.CLOSED, "The connection is closed")
+            flagAck = ack
+        }
+        try {
+            send(GfdiOut.archive(index))
+            val status = try {
+                ack.get(timeoutMs, TimeUnit.MILLISECONDS)
+            } catch (e: TimeoutException) {
+                throw GarminBleException(GarminBleException.Reason.TIMEOUT, "The watch did not confirm file $index")
+            } catch (e: ExecutionException) {
+                throw GarminBleException(GarminBleException.Reason.BROKEN, e.cause?.message ?: "archive failed")
+            }
+            if (status != GfdiStatus.ACK) throw GarminBleException(GarminBleException.Reason.REFUSED, "The watch refused to mark file $index (status $status)")
+        } finally {
+            flagAck = null
+        }
+    }
 
     /** Tells the watch this sync is over (its sync icon stops). */
     fun finishSync() = send(GfdiOut.systemEvent(SystemEvent.SYNC_COMPLETE))

@@ -83,7 +83,8 @@ class GarminBleWatchSource(
                 this.files.archive(file.handle.toInt())
                 marked++
             } catch (e: GarminBleException) {
-                break // the link is gone; marking the rest would fail the same way
+                // a watch that refuses one file may still take the next; a lost link or silence would fail the same way again
+                if (e.reason != GarminBleException.Reason.REFUSED) break
             }
         }
         return marked
