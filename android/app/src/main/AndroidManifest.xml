@@ -4,6 +4,7 @@
 
     <!-- Only used to ask Claude for reports, and only when you add your own API key. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Live heart rate from a watch or chest strap over Bluetooth Low Energy. Android 12 and newer ask for the two
          Bluetooth permissions (scanning is declared as not used to find the phone's location); older versions
@@ -32,6 +33,17 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.OpenConnect">
+
+        <receiver
+            android:name=".widget.HomeWidget"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/home_widget_info" />
+        </receiver>
 
         <activity
             android:name=".MainActivity"

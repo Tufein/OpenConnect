@@ -13,6 +13,15 @@ import nl.tufein.openconnect.core.reports.HttpTransport
 import nl.tufein.openconnect.core.reports.ReportService
 import nl.tufein.openconnect.core.reports.UrlConnectionTransport
 import nl.tufein.openconnect.sync.BackgroundSync
+import nl.tufein.openconnect.notify.AndroidNudgeNotifier
+import nl.tufein.openconnect.notify.NudgeNotifier
+import nl.tufein.openconnect.notify.NudgeService
+import nl.tufein.openconnect.notify.NudgeSettings
+import nl.tufein.openconnect.notify.WorkManagerNudgeSync
+import nl.tufein.openconnect.widget.HomeWidget
+import nl.tufein.openconnect.core.WidgetSummary
+import java.time.LocalDate
+import kotlinx.coroutines.launch
 import nl.tufein.openconnect.sync.SyncLogKeeper
 import nl.tufein.openconnect.sync.WorkManagerBackgroundSync
 import nl.tufein.openconnect.sync.WorkManagerBleBackgroundSync
@@ -58,8 +67,28 @@ class AppContainer(
     /** Starts and stops the experimental background Bluetooth job. Tests pass a fake; the app passes WorkManager. */
     bleBackgroundSync: BackgroundSync = BackgroundSync { },
     bleOptions: nl.tufein.openconnect.watch.GarminBleOptions = settings.garminBle,
+    /** Shows a nudge. Tests pass a fake; the app posts an Android notification. */
+    nudgeNotifier: NudgeNotifier = NudgeNotifier { },
+    /** Starts and stops the job that checks for nudges. Tests pass a fake; the app passes WorkManager. */
+    private val nudgeSync: BackgroundSync = BackgroundSync { },
+    nudgeSettings: NudgeSettings = settings.nudges,
+    /** Redraws the home-screen widgets after new data arrived. */
+    private val widgetRefresh: ((summary: () -> WidgetSummary) -> Unit)? = null,
 ) {
     val stats = StatsService(repository)
+
+    /** The notifications that are due: the app's job calls [NudgeService.check]. */
+    val nudges = NudgeService(repository, stats, nudgeSettings, nudgeNotifier)
+
+    private val nudgeState = nudgeSettings
+
+    fun setNudges(on: Boolean) {
+        nudgeState.enabled = on
+        nudgeSync.set(on)
+    }
+
+    /** What the home-screen widget shows for [today]. */
+    fun widgetSummary(today: LocalDate): WidgetSummary = WidgetSummary.of(repository, stats, settings.weeklyGoals, today)
 
     /** What the last syncs did, for the Settings screen. */
     val syncLog = SyncLogKeeper(load = { settings.syncLogText }, save = { settings.syncLogText = it })
@@ -67,6 +96,16 @@ class AppContainer(
 
     /** Emits whenever the watch screen wrote data, so the other screens reload. */
     val dataChanged = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    init {
+        nudgeSync.set(nudgeState.enabled) // a switch left on keeps its job after an update or reboot
+        // Only the real app has widgets; the summary is worked out only when one is on the home screen.
+        widgetRefresh?.let { refresh ->
+            CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+                dataChanged.collect { runCatching { refresh { widgetSummary(LocalDate.now()) } } }
+            }
+        }
+    }
 
     val watch = WatchController(
         repo = repository,
@@ -127,6 +166,9 @@ class OpenConnectApp : Application() {
             backgroundSync = WorkManagerBackgroundSync(this),
             garminBle = AndroidGarminBleLink(this, archiveAfterRead = { settingsStore.garminBle.archiveAfterRead }),
             bleBackgroundSync = WorkManagerBleBackgroundSync(this),
+            nudgeNotifier = AndroidNudgeNotifier(this),
+            nudgeSync = WorkManagerNudgeSync(this),
+            widgetRefresh = { summary -> HomeWidget.refresh(this, summary) },
         ) }
     }
 }

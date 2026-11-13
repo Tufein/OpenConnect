@@ -19,6 +19,7 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 | v0.8.0 | Scores on Health, sporty look |
 | v0.9.0 | Weekly goals, training load, roadmap |
 | v0.10.0 | Backup and restore, sync log, data sources |
+| v0.11.0 | Archive on the watch, background Bluetooth (both optional) |
 
 ## v0.9.0: training, with goals ✅
 
@@ -35,7 +36,7 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 5. **Data sources view.** Activities counted per source with their period, plus the health totals. (The switch to prefer
    one source when two disagree is not built; the dedupe by start time already keeps the first copy.)
 
-## v0.11.0: more from the watch 🚧
+## v0.11.0: more from the watch ✅ (partly)
 
 6. **Bluetooth in the background.** ✅ Built as an optional WorkManager job (about every three hours). Not a foreground
    service that reconnects the moment the watch is in range. ❓ Needs a real watch to tune.
@@ -43,19 +44,28 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 8. **The newer Garmin file sync** (the protobuf one) for watches that no longer use the classic directory sync. ❓ Real watch.
 9. **Live heart rate as a foreground service**, so a workout keeps recording with the screen off.
 
-## v0.12.0: on your phone 💡
+## v0.12.0: on your phone ✅ (widget and notifications)
 
-10. **Home-screen widget** with readiness and today's steps.
-11. **Health Connect** as one more source (and as an output, so other apps see OpenConnect's activities).
+10. **Home-screen widget** with readiness, today's steps and the week's activity goal.
 12. **Notifications:** a nudge when a goal is close, a weekly summary on Monday, a note when load jumps.
+
+## v0.13.0: Health Connect 🔜
+
+11. **Health Connect** as one more source (and as an output, so other apps see OpenConnect's activities).
+
+## v0.14.0: more insight 🔜
+
+13. **Best efforts** from tracks (fastest 1K, 5K, 10K) and a lap table.
+14. **Monthly and yearly reports.**
+
+## v0.15.0: plan and protect 🔜
+
+15. **Training plans:** a simple 5K or 10K plan built from your goals and load.
+16. **App lock** (biometrics) for the health data.
 
 ## Later 💡
 
-- Best efforts from tracks (fastest 1K, 5K, 10K) and a lap table.
-- Monthly and yearly reports.
-- Training plans: a simple 5K or 10K plan built from your goals and load.
 - Wear OS or a watch face is out of scope; the project is about the phone side.
-- Optional app lock (biometrics) for the health data.
 
 ## Needs the owner ❓
 

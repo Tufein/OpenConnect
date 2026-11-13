@@ -285,6 +285,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun forgetGarmin() = container.watch.forgetGarmin()
 
+    private val _nudges = MutableStateFlow(container.settings.nudges.enabled)
+    val nudges: StateFlow<Boolean> = _nudges.asStateFlow()
+
+    fun setNudges(on: Boolean) {
+        container.setNudges(on)
+        _nudges.value = on
+    }
+
     fun setGarminArchive(on: Boolean) = container.watch.setGarminArchive(on)
 
     fun setGarminBackground(on: Boolean) = container.watch.setGarminBackground(on)
