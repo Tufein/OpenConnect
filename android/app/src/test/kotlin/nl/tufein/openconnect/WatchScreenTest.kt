@@ -133,6 +133,10 @@ class WatchScreenTest : AppTestBase() {
         waitForText("Sync a Garmin watch over Bluetooth")
         assertTrue(hasText("no longer sync with the Garmin Connect app", substring = true))
         shot("16-watch-ble-card")
+        scrollToText("Mark files as synced on the watch")
+        assertTrue(hasText("Look for the watch in the background (experimental)", substring = false))
+        assertTrue(hasText("Not tried on a real watch yet", substring = true))
+        shot("16b-watch-ble-switches")
 
         clickText("Find watch")
         waitForText("fenix 8 - 47mm")

@@ -187,6 +187,50 @@ class WatchSyncTest {
         assertEquals(10_200, repo.listDaily(d10, d10).single().steps)
     }
 
+    /** The in-memory watch plus a record of what was marked, with the failure the test asks for. */
+    private class Archiving(private val inner: InMemoryWatchSource, private val failWith: Exception? = null) : WatchSource by inner {
+        val marked = ArrayList<String>()
+
+        override fun archive(files: List<WatchFileInfo>): Int {
+            failWith?.let { throw it }
+            files.mapTo(marked) { it.path }
+            return files.size
+        }
+    }
+
+    @Test
+    fun `stored files are archived after the sync, files that failed are not`() {
+        val source = Archiving(watch(mapOf("Monitor/BAD.FIT" to byteArrayOf(1, 2, 3, 4))))
+        val report = service.sync(source, InMemoryRepository())
+        assertEquals(1, report.errors.size)
+        assertEquals(4, report.archived)
+        assertEquals(4, source.marked.size)
+        assertTrue("Monitor/BAD.FIT" !in source.marked)
+    }
+
+    @Test
+    fun `a cancelled sync archives nothing`() {
+        val source = Archiving(watch())
+        val report = service.sync(source, InMemoryRepository(), isCancelled = { true })
+        assertTrue(report.cancelled)
+        assertEquals(0, report.archived)
+        assertTrue(source.marked.isEmpty())
+    }
+
+    @Test
+    fun `files skipped because they were read before are archived too, and a failing archive does not fail the sync`() {
+        val repo = InMemoryRepository()
+        service.sync(watch(), repo)
+        val again = Archiving(watch())
+        assertEquals(4, service.sync(again, repo).archived)
+
+        val failing = Archiving(watch(), IllegalStateException("link lost"))
+        val report = service.sync(failing, InMemoryRepository())
+        assertEquals(4, report.filesRead)
+        assertEquals(0, report.archived)
+        assertTrue(report.errors.single().startsWith("archive:"))
+    }
+
     @Test
     fun `a watch without a garmin folder gives an empty report`() {
         val report = service.sync(InMemoryWatchSource("Empty", emptyMap()), InMemoryRepository())

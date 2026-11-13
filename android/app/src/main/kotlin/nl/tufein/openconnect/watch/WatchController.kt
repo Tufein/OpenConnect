@@ -5,6 +5,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -25,6 +26,9 @@ import kotlin.math.roundToInt
 
 enum class SyncFailure { NOT_FOUND, NO_PERMISSION, CANNOT_OPEN, NO_FILES, NO_FILES_IN_FOLDER, NOT_PAIRED, OTHER }
 
+/** How a background Bluetooth attempt ended, for the job to decide whether to try again. */
+enum class BleBackgroundOutcome { SKIPPED, SYNCED, RETRY, FAILED }
+
 /** Which card started the sync, so its result shows there. */
 enum class SyncSource { USB, FOLDER, GARMIN_BLE }
 
@@ -35,6 +39,10 @@ data class GarminBleUi(
     val remembered: GarminBleWatch? = null,
     val step: GarminStep? = null,
     val error: String? = null,
+    /** Switch: mark files as synced on the watch after they were stored. */
+    val archiveAfterRead: Boolean = false,
+    /** Switch (experimental): look for the watch in the background. */
+    val background: Boolean = false,
 )
 
 sealed interface SyncStatus {
@@ -100,10 +108,17 @@ class WatchController(
     private val garminMemory: GarminWatchMemory = InMemoryGarminWatchMemory(),
     /** Told how every sync ended, for the sync log. */
     private val onSynced: (SyncLogEntry) -> Unit = {},
+    private val garminOptions: GarminBleOptions = InMemoryGarminBleOptions(),
+    /** Told whether the background Bluetooth job is wanted, which is when the switch is on. */
+    private val onBleBackgroundWanted: (Boolean) -> Unit = {},
     /** Waits before reconnect attempt number [attempt] (1, 2, ...). Tests replace it. */
     private val reconnectDelay: suspend (attempt: Int) -> Unit = { attempt -> delay(minOf(2_000L * attempt, 10_000L)) },
 ) {
-    private val _state = MutableStateFlow(WatchUi(garmin = GarminBleUi(remembered = garminMemory.load())))
+    private val _state = MutableStateFlow(WatchUi(garmin = GarminBleUi(remembered = garminMemory.load(), archiveAfterRead = garminOptions.archiveAfterRead, background = garminOptions.background)))
+
+    init {
+        onBleBackgroundWanted(garminOptions.background)
+    }
     val state: StateFlow<WatchUi> = _state.asStateFlow()
 
     // ------------------------------------------------------------------------------------- USB
@@ -129,11 +144,14 @@ class WatchController(
         _state.update { it.copy(sync = SyncStatus.Running(name, 0, 0, ""), syncSource = source) }
         scope.launch(io) {
             // Not inside update { }: that lambda is run again when another thread changed the state meanwhile.
-            val result = runSync(whenEmpty, open)
-            onSynced(logEntry(source, result))
-            _state.update { it.copy(sync = result, garmin = it.garmin.copy(step = null)) }
-            if (refreshAfter) refreshUsb()
+            publish(source, runSync(whenEmpty, open), refreshAfter)
         }
+    }
+
+    private fun publish(source: SyncSource, result: SyncStatus, refreshAfter: Boolean) {
+        onSynced(logEntry(source, result))
+        _state.update { it.copy(sync = result, garmin = it.garmin.copy(step = null)) }
+        if (refreshAfter) refreshUsb()
     }
 
     private fun logEntry(source: SyncSource, result: SyncStatus): SyncLogEntry {
@@ -189,6 +207,37 @@ class WatchController(
             garminMemory.save(remembered)
             _state.update { it.copy(garmin = it.garmin.copy(remembered = remembered, step = null)) }
             opened
+        }
+    }
+
+    fun setGarminArchive(on: Boolean) {
+        garminOptions.archiveAfterRead = on
+        _state.update { it.copy(garmin = it.garmin.copy(archiveAfterRead = on)) }
+    }
+
+    /** Experimental: asks Android to look for the remembered watch about every three hours, with the app closed. */
+    fun setGarminBackground(on: Boolean) {
+        garminOptions.background = on
+        onBleBackgroundWanted(on)
+        _state.update { it.copy(garmin = it.garmin.copy(background = on)) }
+    }
+
+    /**
+     * One background attempt, for the job: the remembered watch only (nothing is searched for or paired without the
+     * person), run to the end on the caller's thread. A watch that is simply not in range is worth a retry later.
+     */
+    suspend fun syncGarminInBackground(): BleBackgroundOutcome {
+        val watch = garminMemory.load()
+        if (!garminOptions.background || watch == null) return BleBackgroundOutcome.SKIPPED
+        if (_state.value.sync is SyncStatus.Running) return BleBackgroundOutcome.SKIPPED
+        _state.update { it.copy(sync = SyncStatus.Running(watch.name, 0, 0, ""), syncSource = SyncSource.GARMIN_BLE) }
+        val result = withContext(io) { runSync(SyncFailure.NO_FILES) { garminBle.open(watch.copy(paired = true)) } }
+        publish(SyncSource.GARMIN_BLE, result, refreshAfter = false)
+        return when {
+            result is SyncStatus.Done -> BleBackgroundOutcome.SYNCED
+            result is SyncStatus.Failed && result.reason == SyncFailure.NOT_FOUND -> BleBackgroundOutcome.RETRY
+            result is SyncStatus.Failed && result.reason == SyncFailure.NO_FILES -> BleBackgroundOutcome.SYNCED // nothing new
+            else -> BleBackgroundOutcome.FAILED
         }
     }
 

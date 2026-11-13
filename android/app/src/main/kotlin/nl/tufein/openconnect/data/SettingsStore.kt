@@ -8,6 +8,7 @@ import nl.tufein.openconnect.ai.AiSettings
 import nl.tufein.openconnect.core.WeeklyGoals
 import nl.tufein.openconnect.core.reports.AiVendor
 import nl.tufein.openconnect.garmin.GarminSettings
+import nl.tufein.openconnect.watch.GarminBleOptions
 import nl.tufein.openconnect.watch.GarminBleWatch
 import nl.tufein.openconnect.watch.GarminWatchMemory
 import java.util.Locale
@@ -129,6 +130,16 @@ class SettingsStore(
         }
     }
 
+    /** The two Bluetooth switches (archive on the watch, background sync), both off by default. */
+    val garminBle: GarminBleOptions = object : GarminBleOptions {
+        override var archiveAfterRead: Boolean
+            get() = prefs.getBoolean(KEY_BLE_ARCHIVE, false)
+            set(value) = prefs.edit().putBoolean(KEY_BLE_ARCHIVE, value).apply()
+        override var background: Boolean
+            get() = prefs.getBoolean(KEY_BLE_BACKGROUND, false)
+            set(value) = prefs.edit().putBoolean(KEY_BLE_BACKGROUND, value).apply()
+    }
+
     private fun keyName(vendor: AiVendor) = when (vendor) {
         AiVendor.CLAUDE -> KEY_CLAUDE // the name v0.1 to v0.4 used, so an earlier key is still found
         AiVendor.GEMINI -> KEY_GEMINI
@@ -146,6 +157,8 @@ class SettingsStore(
         private const val KEY_PROVIDER = "provider"
         private const val KEY_THEME = "theme_mode"
         private const val KEY_SYNC_LOG = "sync_log"
+        private const val KEY_BLE_ARCHIVE = "ble_archive_after_read"
+        private const val KEY_BLE_BACKGROUND = "ble_background"
         private const val KEY_GOAL_INTENSITY = "goal_intensity_minutes"
         private const val KEY_GOAL_DISTANCE = "goal_distance_km"
         private const val KEY_GOAL_ACTIVITIES = "goal_activities"

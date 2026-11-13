@@ -71,6 +71,17 @@ interface GarminBleLink {
     suspend fun open(watch: GarminBleWatch, onStep: (GarminStep) -> Unit = {}): OpenedWatch
 }
 
+/**
+ * The two switches of the Bluetooth sync, both off until the person turns them on: tell the watch its files were
+ * synced (like Garmin Connect does), and look for the watch in the background about every three hours.
+ */
+interface GarminBleOptions {
+    var archiveAfterRead: Boolean
+    var background: Boolean
+}
+
+class InMemoryGarminBleOptions(override var archiveAfterRead: Boolean = false, override var background: Boolean = false) : GarminBleOptions
+
 /** Remembers the last watch that synced over Bluetooth, for a one-tap sync next time. */
 interface GarminWatchMemory {
     fun load(): GarminBleWatch?

@@ -241,6 +241,8 @@ fun OpenConnectRoot(
                     onStopFindGarmin = vm::stopFindGarmin,
                     onSyncGarmin = vm::syncGarmin,
                     onForgetGarmin = vm::forgetGarmin,
+                    onGarminArchive = vm::setGarminArchive,
+                    onGarminBackground = vm::setGarminBackground,
                     contentPadding = padding,
                 )
             }

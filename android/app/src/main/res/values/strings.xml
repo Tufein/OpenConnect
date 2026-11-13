@@ -416,4 +416,8 @@
     <string name="synclog_ok">%1$d new</string>
     <string name="synclog_failed">failed: %1$s</string>
     <string name="synclog_clear">Clear the log</string>
+    <string name="watch_ble_archive">Mark files as synced on the watch</string>
+    <string name="watch_ble_archive_note">Like Garmin Connect, after the files are stored here. The watch may then delete those files to make room, so keep a backup. Only turn it on if this app is the one that reads the watch.</string>
+    <string name="watch_ble_background">Look for the watch in the background (experimental)</string>
+    <string name="watch_ble_background_note">About every three hours, with the app closed, for the watch above only. Android may delay it. Not tried on a real watch yet.</string>
 </resources>
