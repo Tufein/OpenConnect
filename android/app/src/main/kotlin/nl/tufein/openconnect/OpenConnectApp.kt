@@ -177,8 +177,16 @@ class AppContainer(
         io = Dispatchers.IO,
         onDataChanged = { dataChanged.tryEmit(Unit) },
         onSynced = syncLog::record,
-        onBackgroundWanted = ouraSync::set,
+        // The background job runs only for someone who chose the Oura Ring and logged in.
+        onBackgroundWanted = { wanted -> ouraSync.set(wanted && settings.useOura) },
     )
+
+    private val ouraJob = ouraSync
+
+    /** Starts or stops the Oura background job after the choice of devices changed. */
+    fun applySources() {
+        ouraJob.set(settings.useOura && oura.state.value.connected)
+    }
 
     /** The keys, models and choice of AI provider (Claude, Gemini, or the offline reports). */
     val ai = AiController(

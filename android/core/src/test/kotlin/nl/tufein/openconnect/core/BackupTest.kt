@@ -45,6 +45,12 @@ class BackupTest {
                 MetricSample(Metric.STRESS, Instant.parse("2026-06-10T08:05:00Z"), day, 25.5),
             ),
         )
+        repo.upsertOuraDay(
+            nl.tufein.openconnect.core.oura.OuraDay(
+                day = day.toString(), readiness = 81, sleepS = 27000, spo2Avg = 96.6, temperatureDeviation = -0.1,
+                workouts = listOf(nl.tufein.openconnect.core.oura.OuraWorkout("w1", "running", null, 1_000L, 2_000_000L, 300, 5000.0)),
+            ),
+        )
         return repo
     }
 
@@ -53,6 +59,7 @@ class BackupTest {
         repo.listDaily(LocalDate.of(2000, 1, 1), LocalDate.of(2100, 1, 1)),
         repo.listSleep(LocalDate.of(2000, 1, 1), LocalDate.of(2100, 1, 1)),
         repo.listSamples(LocalDate.of(2000, 1, 1), LocalDate.of(2100, 1, 1)),
+        repo.listOuraDays(LocalDate.of(2000, 1, 1), LocalDate.of(2100, 1, 1)),
     )
 
     @Test

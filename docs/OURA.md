@@ -1,6 +1,8 @@
 # Oura Ring
 
-Since v0.16.0 OpenConnect can read an Oura ring through Oura's API (v2). **Not tried against the real Oura service yet**:
+Since v0.16.0 OpenConnect can read an Oura ring through Oura's API (v2). Since v0.17.0 the ring has **its own tab**, shown
+only to someone who switched the Oura Ring on (at the first start, or later under *Settings, Your devices*), and its data
+is **kept apart** from the watch's. **Not tried against the real Oura service yet**:
 the code follows Oura's published OpenAPI description (version 1.43) and is tested against a fake Oura.
 
 ## What you need
@@ -10,7 +12,7 @@ the code follows Oura's published OpenAPI description (version 1.43) and is test
   with OAuth2. Making one takes a minute:
   1. Sign in at <https://cloud.ouraring.com/oauth/applications> and create a new application.
   2. Enter `openconnect://oura` as its redirect address (exactly that; the app shows it too).
-  3. Copy the client ID and client secret into *Settings, Oura Ring* in OpenConnect.
+  3. Copy the client ID and client secret into the **Oura** tab in OpenConnect.
 
 ## The login
 
@@ -24,19 +26,25 @@ keys, and are only sent to `api.ouraring.com`. Oura's refresh tokens work once: 
 
 ## What is read
 
-| Oura collection | Goes into |
+| Oura collection | Shown on the Oura tab as |
 | --- | --- |
-| `daily_activity` | steps, active calories, walking distance, intensity minutes (medium and high activity time) |
-| `sleep` (the longest `long_sleep`/`sleep` of each day) | the night (total, deep, light, REM, awake), resting heart rate, HRV, breathing |
+| `daily_readiness` | the readiness score and the skin temperature difference |
 | `daily_sleep` | the sleep score |
+| `daily_activity` | the activity score, steps and active calories |
+| `sleep` (the longest `long_sleep`/`sleep` of each day) | last night (asleep, deep, light, REM, awake), lowest heart rate, HRV, breathing |
 | `daily_spo2` | average blood oxygen |
-| `workout` | activities (`oura-<id>`), skipped when the watch has one starting within 2 minutes |
+| `workout` | the ring's workouts |
 
-Oura only **fills gaps**: a value your watch gave is never overwritten. The switch *Use the ring's sleep instead of the
-watch's* lets the ring's night win. Oura's readiness and stress scores are not copied; OpenConnect works out its own.
+Everything goes into its own table (`oura_days`, one row per day) and is **never mixed** into the watch's days, nights
+or activities, so nothing is counted twice and the Health, Home and Insights screens stay the watch's. The tab shows the
+latest day's three scores (tap one to jump to its chart), last night, 30-day charts you can read by touch, and the last
+ten workouts. Backups include the ring's days.
+
+Coming from v0.16.0, which filled the ring's numbers into empty fields of the watch's days: the update removes the
+ring's workouts from the activity list. Numbers it filled into the watch's days cannot be told apart and stay.
 
 ## When it syncs
 
-When the app comes to the front, every 10 minutes while it is open, and about every 15 minutes in the background (the
+Only while the Oura Ring is switched on. When the app comes to the front, every 10 minutes while it is open, and about every 15 minutes in the background (the
 shortest period Android allows; it may be later in battery saver or Doze). An automatic sync reads the last 2 days, or
 7 days after a pause of 12 hours or more; *Sync now* and the first sync after the login read 30 days.

@@ -25,6 +25,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.res.stringResource
@@ -38,15 +40,30 @@ import androidx.navigation.navArgument
 import nl.tufein.openconnect.BuildConfig
 import nl.tufein.openconnect.R
 
-private enum class Tab(val route: String, val label: Int, val icon: ImageVector) {
+/** [compact] is the label when six tabs share the bar (with the Oura tab), so long Dutch words still fit. */
+private enum class Tab(val route: String, val label: Int, val icon: ImageVector, val compact: Int = label) {
     Home("home", R.string.tab_home, Icons.Filled.Home),
-    Activities("activities", R.string.tab_activities, Icons.Filled.LocationOn),
-    Health("health", R.string.tab_health, Icons.Filled.Favorite),
+    Activities("activities", R.string.tab_activities, Icons.Filled.LocationOn, R.string.tab_activities_compact),
+    Health("health", R.string.tab_health, Icons.Filled.Favorite, R.string.tab_health_compact),
     Insights("insights", R.string.tab_insights, Icons.Filled.Star),
-    Settings("settings", R.string.tab_settings, Icons.Filled.Settings),
+    /** Only for someone who chose the Oura Ring. */
+    Oura(OURA_ROUTE, R.string.tab_oura, RingIcon),
+    Settings("settings", R.string.tab_settings, Icons.Filled.Settings, R.string.tab_settings_compact),
 }
 
 private const val DETAIL = "activity/{id}"
+
+/** A plain ring for the Oura tab; the standard icon set has none. */
+private val RingIcon: ImageVector = ImageVector.Builder("Ring", 24.dp, 24.dp, 24f, 24f).apply {
+    path(fill = androidx.compose.ui.graphics.SolidColor(androidx.compose.ui.graphics.Color.Black), pathFillType = androidx.compose.ui.graphics.PathFillType.EvenOdd) {
+        moveTo(12f, 3f)
+        arcTo(9f, 9f, 0f, isMoreThanHalf = true, isPositiveArc = true, x1 = 11.99f, y1 = 3f)
+        close()
+        moveTo(12f, 7f)
+        arcTo(5f, 5f, 0f, isMoreThanHalf = true, isPositiveArc = false, x1 = 12.01f, y1 = 7f)
+        close()
+    }
+}.build()
 
 @Composable
 fun OpenConnectRoot(
@@ -61,6 +78,11 @@ fun OpenConnectRoot(
     /** Switches the lock on (after the person passed the check) or off. */
     onAppLock: (Boolean) -> Unit = {},
 ) {
+    val sources by vm.sources.collectAsState()
+    if (!sources.onboarded) {
+        OnboardingScreen(sources, vm::setSources)
+        return
+    }
     val nav = rememberNavController()
     val snackbar = remember { SnackbarHostState() }
     LaunchedEffect(vm) { vm.messages.collect { snackbar.showSnackbar(it) } }
@@ -72,7 +94,8 @@ fun OpenConnectRoot(
 
     val entry by nav.currentBackStackEntryAsState()
     val route = entry?.destination?.route
-    val showBar = Tab.entries.any { it.route == route }
+    val tabs = Tab.entries.filter { it != Tab.Oura || sources.oura }
+    val showBar = tabs.any { it.route == route }
 
     val home by vm.home.collectAsState()
     val activities by vm.activities.collectAsState()
@@ -125,9 +148,7 @@ fun OpenConnectRoot(
         openTab(Tab.Health)
     }
 
-    fun openOura() {
-        nav.navigate(OURA_ROUTE) { launchSingleTop = true }
-    }
+    fun openOura() = openTab(Tab.Oura)
 
     fun openActivity(id: String) {
         vm.openActivity(id)
@@ -140,7 +161,7 @@ fun OpenConnectRoot(
         bottomBar = {
             if (showBar) {
                 NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
-                    for (tab in Tab.entries) {
+                    for (tab in tabs) {
                         NavigationBarItem(
                             selected = route == tab.route,
                             onClick = { openTab(tab) },
@@ -149,7 +170,7 @@ fun OpenConnectRoot(
                             // must fit a fifth of a narrow phone without being cut off.
                             label = {
                                 Text(
-                                    stringResource(tab.label),
+                                    stringResource(if (tabs.size > 5) tab.compact else tab.label),
                                     maxLines = 1,
                                     softWrap = false,
                                     style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Default, fontSize = 11.sp),
@@ -183,6 +204,8 @@ fun OpenConnectRoot(
                     onOpenHealth = ::openHealth,
                     onOpenActivities = { openTab(Tab.Activities) },
                     onOpenInsights = { openInsights(InsightsTab.Week) },
+                    useGarmin = sources.garmin,
+                    onOura = if (sources.oura) ::openOura else null,
                 )
             }
             composable(Tab.Activities.route) {
@@ -215,7 +238,8 @@ fun OpenConnectRoot(
             }
             composable(Tab.Settings.route) {
                 SettingsScreen(
-                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable),
+                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources),
+                    onSources = vm::setSources,
                     onAppLock = onAppLock,
                     onNudges = vm::setNudges,
                     health = healthConnect,
@@ -245,17 +269,15 @@ fun OpenConnectRoot(
                     contentPadding = padding,
                 )
             }
-            composable(OURA_ROUTE) {
+            composable(Tab.Oura.route) {
                 OuraScreen(
                     ui = oura,
-                    onBack = { nav.popBackStack() },
                     onSaveClient = vm::saveOuraClient,
                     loginUrl = vm::ouraLoginUrl,
                     onPasteRedirect = vm::finishOuraLogin,
                     onSync = vm::syncOura,
                     onDisconnect = vm::disconnectOura,
                     onForget = vm::forgetOura,
-                    onPreferSleep = vm::setOuraPreferSleep,
                     contentPadding = padding,
                 )
             }

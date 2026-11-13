@@ -76,6 +76,7 @@ data class SettingsUi(
     val nudges: Boolean = false,
     val appLock: Boolean = false,
     val lockAvailable: Boolean = false,
+    val sources: SourcesUi = SourcesUi(),
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -98,6 +99,8 @@ fun SettingsScreen(
     onWatch: () -> Unit,
     onGarmin: () -> Unit,
     onOura: () -> Unit = {},
+    /** The choice of devices changed: Garmin on or off, Oura Ring on or off. */
+    onSources: (garmin: Boolean, oura: Boolean) -> Unit = { _, _ -> },
     onBackup: () -> Unit = {},
     onRestore: () -> Unit = {},
     onClearLog: () -> Unit = {},
@@ -142,12 +145,24 @@ fun SettingsScreen(
             }
         }
         item {
+            SectionTitle(stringResource(R.string.settings_devices))
+            SurfaceCard {
+                Text(stringResource(R.string.settings_devices_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                DeviceSwitch(stringResource(R.string.device_garmin), stringResource(R.string.device_garmin_body), ui.sources.garmin) { onSources(it, ui.sources.oura) }
+                if (ui.sources.garmin) {
+                    Button(onClick = onGarmin, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_garmin)) }
+                    Button(onClick = onWatch, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_watch)) }
+                }
+                DeviceSwitch(stringResource(R.string.device_oura), stringResource(R.string.device_oura_body), ui.sources.oura) { onSources(ui.sources.garmin, it) }
+                if (ui.sources.oura) {
+                    Button(onClick = onOura, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_oura)) }
+                }
+            }
+        }
+        item {
             SectionTitle(stringResource(R.string.settings_data))
             SurfaceCard {
                 Text(stringResource(R.string.settings_data_body), style = MaterialTheme.typography.bodyMedium)
-                Button(onClick = onGarmin, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_garmin)) }
-                Button(onClick = onWatch, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_watch)) }
-                Button(onClick = onOura, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_oura)) }
                 OutlinedButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_import)) }
                 OutlinedButton(onClick = onDemo, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_demo)) }
                 TextButton(onClick = { confirmClear = true }) {
@@ -507,5 +522,20 @@ private fun HealthConnectBody(
         is HealthMessage.Imported -> Text(stringResource(R.string.health_read_done, m.days, m.nights), style = MaterialTheme.typography.bodySmall)
         is HealthMessage.Failed -> Text(stringResource(R.string.health_failed, m.detail ?: "?"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
         null -> Unit
+    }
+}
+
+/** A device that can be switched on or off, with a line on what it brings. */
+@Composable
+fun DeviceSwitch(title: String, body: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+    androidx.compose.foundation.layout.Row(
+        Modifier.fillMaxWidth().tappable { onChange(!checked) }.padding(vertical = 6.dp),
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+    ) {
+        androidx.compose.foundation.layout.Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            Text(body, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        androidx.compose.material3.Switch(checked = checked, onCheckedChange = onChange, modifier = Modifier.padding(start = 12.dp))
     }
 }

@@ -36,9 +36,17 @@ abstract class AppTestBase {
     private val outDir = File("build/screenshots").also { it.mkdirs() }
 
     /** Start the activity on an empty database. [prepare] runs first, for example to install fake USB and Bluetooth. */
-    protected fun launchFresh(prepare: (OpenConnectApp) -> Unit = {}) {
+    /**
+     * Starts the app on an empty database. The first-start questions count as answered (Garmin on, Oura off) unless
+     * [onboarded] is false; [oura] switches the Oura Ring on as if it was chosen there.
+     */
+    protected fun launchFresh(onboarded: Boolean = true, oura: Boolean = false, prepare: (OpenConnectApp) -> Unit = {}) {
         val ctx = ApplicationProvider.getApplicationContext<Context>()
         ctx.deleteDatabase("openconnect.db")
+        ctx.getSharedPreferences("settings", Context.MODE_PRIVATE).edit()
+            .putBoolean("onboarded", onboarded)
+            .putBoolean("use_oura", oura)
+            .commit()
         resetStaticViewModelFactory()
         prepare(ctx as OpenConnectApp)
         scenario = ActivityScenario.launch(MainActivity::class.java)

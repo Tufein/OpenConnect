@@ -132,6 +132,9 @@ private val LAST_DAY = LocalDate.of(2100, 12, 31)
 const val WATCH_ROUTE = "watch"
 const val GARMIN_ROUTE = "garmin"
 const val OURA_ROUTE = "oura"
+
+/** Which devices the person uses. [onboarded] is false until the first-start questions are answered. */
+data class SourcesUi(val onboarded: Boolean = true, val garmin: Boolean = true, val oura: Boolean = false)
 const val CSV_DAILY = "daily"
 const val CSV_ACTIVITIES = "activities"
 
@@ -177,6 +180,24 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /** "system", "dark" or "light". */
     val theme: StateFlow<String> = _theme.asStateFlow()
+
+    private val _sources = MutableStateFlow(sourcesNow())
+
+    /** Which devices the person uses, as chosen at the first start or later in Settings. */
+    val sources: StateFlow<SourcesUi> = _sources.asStateFlow()
+
+    private fun sourcesNow() = container.settings.let { SourcesUi(it.onboarded, it.useGarmin, it.useOura) }
+
+    /** Saves the choice of devices (from the first start or Settings); the first-start questions are then done. */
+    fun setSources(garmin: Boolean, oura: Boolean) {
+        val settings = container.settings
+        settings.useGarmin = garmin
+        settings.useOura = oura
+        settings.onboarded = true
+        _sources.value = sourcesNow()
+        container.applySources()
+        if (oura) container.oura.syncIfDue(OPEN_GAP)
+    }
 
     private val _now = MutableStateFlow(Instant.now())
 
@@ -269,9 +290,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private var ticker: kotlinx.coroutines.Job? = null
 
+    /** Only the devices the person chose: someone without a ring never talks to Oura, and the same for Garmin. */
     private fun syncAccounts(gap: java.time.Duration) {
-        container.garmin.autoSyncIfDue(gap)
-        container.oura.syncIfDue(gap)
+        if (container.settings.useGarmin) container.garmin.autoSyncIfDue(gap)
+        if (container.settings.useOura) container.oura.syncIfDue(gap)
     }
 
     private companion object {
@@ -391,8 +413,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun forgetOura() = container.oura.forget()
 
-    fun setOuraPreferSleep(on: Boolean) = container.oura.setPreferSleep(on)
-
     fun cancelGarmin() = container.garmin.cancel()
 
     // ------------------------------------------------------------------------------- loading
@@ -406,6 +426,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadEfforts()
         loadPlan()
         loadTrophies()
+        container.oura.refreshDays()
         currentActivityId?.let { openActivity(it) }
     }
 
@@ -551,7 +572,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadDemo() = io {
         val data = DemoData.generate(LocalDate.now(ZoneOffset.UTC))
-        repo.inTransaction { DemoData.store(repo, data) }
+        repo.inTransaction {
+            DemoData.store(repo, data)
+            // Ring days too, for someone who chose the Oura Ring; they stay apart from the watch's demo days.
+            if (container.settings.useOura) nl.tufein.openconnect.core.oura.OuraDemo.days(LocalDate.now()).forEach(repo::upsertOuraDay)
+        }
         tell(text(R.string.demo_loaded, data.activities.size))
         refreshAll()
     }

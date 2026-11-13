@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.core.app.ApplicationProvider
@@ -57,7 +58,7 @@ class FakeOura : OuraHttp {
 class OuraAndTouchScreenTest : AppTestBase() {
     private val oura = FakeOura()
 
-    private fun launchWithOura() = launchFresh { app ->
+    private fun launchWithOura(onboarded: Boolean = true, ring: Boolean = true) = launchFresh(onboarded, ring) { app ->
         app.containerOverride = AppContainer(
             SqliteRepository(app),
             SettingsStore(app, secure = { app.getSharedPreferences("secure-test", Context.MODE_PRIVATE) }),
@@ -73,8 +74,7 @@ class OuraAndTouchScreenTest : AppTestBase() {
     fun anOuraApplicationIsSavedTheLoginFinishedAndTheRingSynced() {
         launchWithOura()
         waitForText("Load demo data")
-        tab("Settings").performClick()
-        clickText("Oura Ring")
+        tab("Oura").performClick()
         waitForText("1. Make an application at Oura")
         rule.onNode(hasText("Client ID") and hasSetTextAction()).performTextInput("client-1")
         rule.onNode(hasText("Client secret") and hasSetTextAction()).performTextInput("secret-FAKE")
@@ -89,15 +89,77 @@ class OuraAndTouchScreenTest : AppTestBase() {
         scrollToText("Address after the login")
         rule.onNode(hasText("Address after the login") and hasSetTextAction()).performTextInput("openconnect://oura?code=abc&state=${p["state"]}")
         clickText("Finish the login")
-        waitForText("Connected")
-        waitForText("1 days, 1 nights and 1 workouts updated")
-        shot("39-oura-connected")
+        // The ring's own dashboard on top of the tab, the link and what the sync brought below it.
+        waitForText("Readiness")
+        waitForText("7:13 asleep", substring = true)
+        shot("39-oura-tab")
+        scrollToText("1 days, 1 nights and 1 workouts updated")
         assertTrue(oura.forms.first()!!.contains("code_verifier="), "PKCE verifier sent with the code")
         val secure = ApplicationProvider.getApplicationContext<Context>().getSharedPreferences("secure-test", Context.MODE_PRIVATE)
         assertEquals("access-FAKE", secure.getString("oura_access", null), "the token is kept with the other secrets")
         val day = LocalDate.now().minusDays(1)
-        assertEquals(7777, container().repository.listDaily(day, day).single().steps)
-        assertNotNull(container().repository.getActivity("oura-w9"))
+        val stored = container().repository.listOuraDays(day, day).single()
+        assertEquals(7777, stored.steps)
+        assertEquals("w9", stored.workouts.single().id)
+        assertTrue(container().repository.listDaily(day, day).isEmpty(), "the ring is kept apart from the watch's days")
+        assertEquals(null, container().repository.getActivity("oura-w9"), "and from the activities")
+        scrollToText("Workouts from the ring")
+    }
+
+    @Test
+    fun theFirstStartAsksForTheDevicesAndShowsOnlyWhatWasChosen() {
+        launchWithOura(onboarded = false, ring = false)
+        waitForText("Welcome to OpenConnect")
+        shot("41-onboarding")
+        clickText("Garmin") // off: this person only has a ring
+        clickText("Oura Ring")
+        clickText("Start")
+        waitForText("Load demo data")
+        assertFalse(hasText("Connect your Garmin account", substring = true), "no Garmin prompts for someone without one")
+        assertFalse(hasText("Garmin", substring = false))
+        val settings = container().settings
+        assertTrue(settings.onboarded && settings.useOura && !settings.useGarmin)
+        tab("Oura").performClick()
+        waitForText("1. Make an application at Oura")
+        tab("Settings").performClick()
+        scrollToText("Your devices")
+        clickText("Oura Ring") // switch the ring off again
+        rule.waitUntil(5_000) { !hasText("Oura", substring = false) }
+        assertFalse(settings.useOura)
+    }
+
+    @Test
+    fun withoutTheRingThereIsNoOuraTabAndNoOuraCall() {
+        launchWithOura(ring = false)
+        waitForText("Load demo data")
+        assertFalse(hasText("Oura", substring = false), "no Oura tab for someone who did not choose the ring")
+        assertTrue(oura.urls.isEmpty())
+    }
+
+    @Test
+    @Config(qualifiers = "nl-w411dp-h891dp-notnight-xxhdpi")
+    fun theDemoRingDaysFillTheOuraTabAndSixTabsFitInDutch() {
+        launchWithOura()
+        waitForText("Demodata laden")
+        rule.onNodeWithText("Demodata laden").performClick()
+        rule.waitUntil(15_000) { !hasText("Demodata laden", substring = false) }
+        tab("Oura").performClick()
+        waitForText("Paraatheid")
+        waitForText("Afgelopen nacht")
+        rule.waitUntil(15_000) { !hasText("Demodata geladen", substring = true) }
+        shot("nl-42-oura-tab")
+        // With six tabs the bar uses short words, and none of them is cut off.
+        for (label in listOf("Overzicht", "Sport", "Gezond", "Inzichten", "Oura", "Opties")) {
+            tab(label).assertIsDisplayed()
+            val layout = ArrayList<androidx.compose.ui.text.TextLayoutResult>()
+            rule.onNode(hasText(label) and androidx.compose.ui.test.hasAnyAncestor(androidx.compose.ui.test.SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.Role, androidx.compose.ui.semantics.Role.Tab)), useUnmergedTree = true)
+                .fetchSemanticsNode().config[androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult].action!!.invoke(layout)
+            val l = layout.single()
+            assertTrue(l.multiParagraph.maxIntrinsicWidth <= l.layoutInput.constraints.maxWidth, "\"$label\" fits its tab")
+        }
+        tab("Opties").performClick()
+        scrollToText("Je toestellen")
+        shot("nl-43-settings-devices")
     }
 
     @Test
