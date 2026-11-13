@@ -35,6 +35,7 @@ import nl.tufein.openconnect.R
 import kotlin.math.roundToInt
 import nl.tufein.openconnect.ai.ActiveAi
 import nl.tufein.openconnect.core.Activity
+import nl.tufein.openconnect.core.Lap
 import nl.tufein.openconnect.core.ActivitySort
 import nl.tufein.openconnect.core.Sport
 import nl.tufein.openconnect.core.search
@@ -199,14 +200,20 @@ fun ActivityDetailScreen(
                 }
             }
         }
-        if (state.splits.isNotEmpty()) {
+        if (state.laps.isNotEmpty()) {
             item {
                 SectionTitle(stringResource(R.string.splits))
+                SurfaceCard { LapTable(state.laps) }
+            }
+        }
+        if (state.efforts.isNotEmpty()) {
+            item {
+                SectionTitle(stringResource(R.string.best_efforts_here))
                 SurfaceCard {
-                    state.splits.forEachIndexed { i, seconds ->
+                    for (e in state.efforts) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("km ${i + 1}", style = MaterialTheme.typography.bodyMedium)
-                            Text(Fmt.duration(seconds.toDouble()), style = MaterialTheme.typography.bodyMedium)
+                            Text(effortLabel(e.distanceM), style = MaterialTheme.typography.bodyMedium)
+                            Text(Fmt.duration(e.seconds), style = MaterialTheme.typography.bodyMedium)
                         }
                     }
                 }
@@ -267,5 +274,26 @@ private fun SummaryTiles(activity: Activity) {
             { StatTile(stringResource(R.string.calories), activity.calories?.toString() ?: "–", it, unit = "kcal") },
             { StatTile(stringResource(R.string.device), activity.deviceName ?: "–", it) },
         )
+    }
+}
+
+/** One row per kilometre: time, pace, heart rate and climbing. The last row may be a shorter lap. */
+@Composable
+private fun LapTable(laps: List<Lap>) {
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        for (h in listOf(R.string.lap_km, R.string.lap_time, R.string.lap_pace, R.string.lap_hr, R.string.lap_climb)) {
+            Text(stringResource(h), style = MaterialTheme.typography.labelSmall, color = muted, modifier = Modifier.weight(1f))
+        }
+    }
+    for (lap in laps) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            val label = if (lap.distanceM < 995) Fmt.km(lap.distanceM) else lap.index.toString()
+            Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            Text(Fmt.duration(lap.seconds), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            Text(Fmt.pace(lap.pace), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            Text(lap.avgHr?.toString() ?: "–", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            Text("${lap.climbM} m", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        }
     }
 }

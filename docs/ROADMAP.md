@@ -54,7 +54,7 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 
 11. **Health Connect** as one more source (and as an output, so other apps see OpenConnect's activities).
 
-## v0.14.0: more insight 🔜
+## v0.14.0: more insight ✅
 
 13. **Best efforts** from tracks (fastest 1K, 5K, 10K) and a lap table.
 14. **Monthly and yearly reports.**

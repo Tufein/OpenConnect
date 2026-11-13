@@ -27,6 +27,13 @@ class ReportService(
         return generate("weekly", facts.weekStart, facts, provider, language, force)
     }
 
+    /** A report on a week, a month or a year. Weeks keep their own facts and cache key. */
+    fun periodReport(period: ReportPeriod, anyDay: LocalDate, provider: ReportProvider, language: String, force: Boolean = false): StoredReport {
+        if (period == ReportPeriod.WEEK) return weeklyReport(anyDay, provider, language, force)
+        val facts = periodFacts(repo, stats, period, anyDay)
+        return generate(period.kind, facts.periodStart, facts, provider, language, force)
+    }
+
     fun cached(kind: String, subject: String): StoredReport? = repo.getReport(kind, subject)
 
     private fun generate(

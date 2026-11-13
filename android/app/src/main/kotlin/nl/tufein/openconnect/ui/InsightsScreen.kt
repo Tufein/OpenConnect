@@ -26,6 +26,7 @@ import nl.tufein.openconnect.R
 import nl.tufein.openconnect.ai.ActiveAi
 import nl.tufein.openconnect.ai.CoachUi
 import nl.tufein.openconnect.core.RecordEntry
+import nl.tufein.openconnect.core.reports.ReportPeriod
 import nl.tufein.openconnect.core.Sport
 
 /** The three things under the Insights tab. */
@@ -45,6 +46,7 @@ fun InsightsScreen(
     trophies: TrophiesState,
     coach: CoachUi,
     onShiftWeek: (Long) -> Unit,
+    onPeriod: (ReportPeriod) -> Unit,
     onGenerate: (force: Boolean) -> Unit,
     onOpenActivity: (String) -> Unit,
     onAsk: (String) -> Unit,
@@ -62,7 +64,7 @@ fun InsightsScreen(
             }
         }
         when (tab) {
-            InsightsTab.Week -> WeekContent(reports, busy, active, onShiftWeek, onGenerate, onOpenActivity, contentPadding)
+            InsightsTab.Week -> WeekContent(reports, busy, active, onShiftWeek, onPeriod, onGenerate, onOpenActivity, contentPadding)
             InsightsTab.Trophies -> TrophiesContent(trophies, contentPadding)
             InsightsTab.Coach -> CoachContent(coach, active, onAsk, onClearCoach, onOpenAiSettings, contentPadding)
         }
@@ -75,6 +77,7 @@ private fun WeekContent(
     busy: Boolean,
     active: ActiveAi,
     onShiftWeek: (Long) -> Unit,
+    onPeriod: (ReportPeriod) -> Unit,
     onGenerate: (force: Boolean) -> Unit,
     onOpenActivity: (String) -> Unit,
     contentPadding: PaddingValues,
@@ -86,11 +89,18 @@ private fun WeekContent(
     ) {
         if (!state.loaded) return@LazyColumn
         item {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                for ((p, label) in listOf(ReportPeriod.WEEK to R.string.period_week, ReportPeriod.MONTH to R.string.period_month, ReportPeriod.YEAR to R.string.period_year)) {
+                    FilterChip(selected = state.period == p, onClick = { onPeriod(p) }, label = { Text(stringResource(label)) })
+                }
+            }
+        }
+        item {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 IconButton(onClick = { onShiftWeek(-1) }) {
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = stringResource(R.string.previous_week))
                 }
-                Text(stringResource(R.string.week_of, Fmt.date(state.weekStart)), style = MaterialTheme.typography.titleMedium)
+                Text(periodTitle(state), style = MaterialTheme.typography.titleMedium)
                 IconButton(onClick = { onShiftWeek(1) }) {
                     Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = stringResource(R.string.next_week))
                 }
@@ -118,6 +128,22 @@ private fun WeekContent(
             }
         }
         item { ReportCard(state.report, busy, onGenerate, active) }
+        if (state.efforts.isNotEmpty()) {
+            item {
+                SectionTitle(stringResource(R.string.best_efforts))
+                SurfaceCard {
+                    for (e in state.efforts) {
+                        Row(
+                            Modifier.fillMaxWidth().clickable { e.activityId?.let(onOpenActivity) },
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(effortLabel(e.distanceM) + (e.date?.let { " · " + Fmt.date(it) } ?: ""), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(Fmt.duration(e.seconds), style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+            }
+        }
         if (state.records.isNotEmpty()) {
             item { SectionTitle(stringResource(R.string.records)) }
             for ((sport, entries) in state.records) {
@@ -150,4 +176,21 @@ private fun RecordsCard(sport: Sport, entries: Map<String, RecordEntry>, onOpenA
             }
         }
     }
+}
+
+@Composable
+private fun periodTitle(state: ReportsState): String = when (state.period) {
+    ReportPeriod.WEEK -> stringResource(R.string.week_of, Fmt.date(state.weekStart))
+    ReportPeriod.MONTH -> state.weekStart.format(java.time.format.DateTimeFormatter.ofPattern("LLLL yyyy", java.util.Locale.getDefault())).replaceFirstChar { it.uppercase() }
+    ReportPeriod.YEAR -> state.weekStart.year.toString()
+}
+
+@Composable
+internal fun effortLabel(distanceM: Double): String = when (distanceM) {
+    1000.0 -> "1 km"
+    5000.0 -> "5 km"
+    10_000.0 -> "10 km"
+    21_097.5 -> stringResource(R.string.effort_half)
+    42_195.0 -> stringResource(R.string.effort_marathon)
+    else -> Fmt.km(distanceM) + " km"
 }

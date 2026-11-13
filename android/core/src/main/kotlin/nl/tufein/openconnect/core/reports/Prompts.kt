@@ -17,6 +17,10 @@ private val KIND_GUIDANCE = mapOf(
         "effort versus the athlete's previous activities of the same sport.",
     "weekly" to "Write a report on this training week: volume and consistency, comparison with the " +
         "previous week, and how steps, sleep, stress and Body Battery looked.",
+    "monthly" to "Write a report on this training month: volume and consistency, comparison with the " +
+        "previous month, the longest activities, and how steps, sleep, stress and Body Battery looked on average.",
+    "yearly" to "Write a report on this training year: total volume and consistency, comparison with the " +
+        "previous year, the longest activities, and how steps, sleep, stress and Body Battery looked on average.",
 )
 
 fun buildUserPrompt(request: ReportRequest): String {

@@ -179,6 +179,7 @@ fun OpenConnectRoot(
                     trophies = trophies,
                     coach = coach,
                     onShiftWeek = vm::shiftWeek,
+                    onPeriod = vm::setReportPeriod,
                     onGenerate = vm::generateWeeklyReport,
                     onOpenActivity = ::openActivity,
                     onAsk = vm::askCoach,

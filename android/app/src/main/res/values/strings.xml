@@ -451,4 +451,16 @@
     <string name="health_sent">Sent %1$d activities (%2$d skipped because they have no duration)</string>
     <string name="health_read_done">Filled %1$d days of steps and %2$d nights of sleep</string>
     <string name="health_failed">Health Connect did not accept it: %1$s</string>
+    <string name="period_week">Week</string>
+    <string name="period_month">Month</string>
+    <string name="period_year">Year</string>
+    <string name="best_efforts">Best efforts</string>
+    <string name="best_efforts_here">Fastest stretches in this run</string>
+    <string name="effort_half">Half marathon</string>
+    <string name="effort_marathon">Marathon</string>
+    <string name="lap_km">Km</string>
+    <string name="lap_time">Time</string>
+    <string name="lap_pace">Pace</string>
+    <string name="lap_hr">HR</string>
+    <string name="lap_climb">Climb</string>
 </resources>
