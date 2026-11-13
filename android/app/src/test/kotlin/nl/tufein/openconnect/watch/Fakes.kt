@@ -37,3 +37,28 @@ class FakeBle : HeartRateLink {
         return AutoCloseable { connected = null }
     }
 }
+
+/** A phone with scriptable Garmin Bluetooth: the test decides what is found and what opening a watch does. */
+class FakeGarminBle(
+    var nearby: List<GarminBleWatch> = emptyList(),
+    var findError: String? = null,
+    var open: suspend (GarminBleWatch, (GarminStep) -> Unit) -> OpenedWatch,
+) : GarminBleLink {
+    @Volatile var searching = false
+    val opened = java.util.concurrent.CopyOnWriteArrayList<GarminBleWatch>()
+
+    override fun find(onFound: (GarminBleWatch) -> Unit, onError: (String) -> Unit): AutoCloseable {
+        findError?.let {
+            onError(it)
+            return AutoCloseable { }
+        }
+        searching = true
+        nearby.forEach(onFound)
+        return AutoCloseable { searching = false }
+    }
+
+    override suspend fun open(watch: GarminBleWatch, onStep: (GarminStep) -> Unit): OpenedWatch {
+        opened += watch
+        return open.invoke(watch, onStep)
+    }
+}

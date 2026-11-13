@@ -40,6 +40,7 @@ import nl.tufein.openconnect.ai.AiUi
 import nl.tufein.openconnect.ai.CoachUi
 import nl.tufein.openconnect.garmin.GarminUi
 import nl.tufein.openconnect.watch.BleSensor
+import nl.tufein.openconnect.watch.GarminBleWatch
 import nl.tufein.openconnect.watch.WatchInfo
 import nl.tufein.openconnect.watch.WatchUi
 import java.io.IOException
@@ -239,6 +240,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun connectSensor(sensor: BleSensor) = container.watch.connect(sensor)
 
     fun stopLive() = container.watch.stopLive()
+
+    fun findGarmin() = container.watch.findGarmin()
+
+    fun stopFindGarmin() = container.watch.stopFindGarmin()
+
+    fun syncGarmin(watch: GarminBleWatch) = container.watch.syncGarmin(watch)
+
+    fun forgetGarmin() = container.watch.forgetGarmin()
 
     fun saveLive(name: String) {
         if (container.watch.saveLive(name, Sport.OTHER)) tell(text(R.string.watch_live_saved))

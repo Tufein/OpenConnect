@@ -1,0 +1,15 @@
+OpenConnect
+Copyright (C) 2025-2026 Tufein and OpenConnect contributors
+
+Licensed under the GNU Affero General Public License, version 3 or later (see LICENSE).
+Releases up to and including v0.5.0 were published under the MIT licence.
+
+The Garmin Bluetooth sync (android/core/src/main/kotlin/nl/tufein/openconnect/core/watch/ble/)
+is ported from Gadgetbridge, https://codeberg.org/Freeyourgadget/Gadgetbridge,
+licensed under the GNU Affero General Public License v3.0:
+  Copyright (C) 2023-2026 Petr Kadlec, Daniele Gobbetti, José Rebelo, Thomas Kuehne
+  and other Gadgetbridge contributors.
+Protocol notes: https://gadgetbridge.org/internals/specifics/garmin-protocol/
+
+Garmin, Garmin Connect and fenix are trademarks of Garmin Ltd. or its subsidiaries.
+OpenConnect is not affiliated with or endorsed by Garmin.

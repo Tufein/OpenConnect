@@ -4,11 +4,11 @@ build-backend = "hatchling.build"
 
 [project]
 name = "openconnect"
-version = "0.5.0"
+version = "0.6.0"
 description = "Open-source, self-hosted alternative to Garmin Connect, built on the Garmin Connect Developer API."
 readme = "README.md"
 requires-python = ">=3.11"
-license = { text = "MIT" }
+license = { text = "AGPL-3.0-or-later" }
 authors = [{ name = "OpenConnect contributors" }]
 keywords = ["garmin", "fitness", "fit", "gpx", "tcx", "self-hosted", "health"]
 dependencies = [

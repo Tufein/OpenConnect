@@ -17,7 +17,7 @@ Garmin's FIT encoder. It is not a capture from a real phone or watch.*
 | **Bluetooth heart rate profile** | Yes | **Built** | Watches that can broadcast heart rate (and chest straps) speak the standard Bluetooth Heart Rate Service. Live heart rate and beat-to-beat intervals. |
 | Garmin Health SDK (Standard / Companion) | Yes | Not possible | Only for approved enterprise partners: request form, licence, minimum device order. Not available to a hobby project. |
 | Android Health Connect | No (it needs Garmin Connect to write into it) | Not built | Garmin Connect can write steps, sleep, heart rate and activities into Health Connect, but that needs the Garmin Connect app and account, has no Body Battery or stress, and is not real time. Worth adding later as an *extra* source. |
-| Garmin's own Bluetooth protocol (what Gadgetbridge does) | Yes | Not built | It is reverse engineered, differs per watch model, and Gadgetbridge is AGPL-3.0, which cannot be copied into this MIT project. Writing a second reverse-engineered implementation blind, with no watch to test on, would be irresponsible. |
+| Garmin's own Bluetooth protocol (what Gadgetbridge does) | Yes | **Built in v0.6.0** (untested on a real watch) | Ported from Gadgetbridge, which is why the project became AGPL-3.0. Downloads the watch's FIT files over Bluetooth. See [BLUETOOTH.md](BLUETOOTH.md). |
 | Garmin Personal API | No (cloud) | **Built in v0.4.0** | Your own data through a personal key you make yourself, no approval. See [GARMIN.md](GARMIN.md). |
 | Garmin Health API (business tier) | No (cloud) | Not in the app | Needs Garmin's approval and a server; the Python server has a client for it. |
 

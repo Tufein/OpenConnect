@@ -21,7 +21,19 @@ import java.time.Instant
 import java.time.ZoneId
 import kotlin.math.roundToInt
 
-enum class SyncFailure { NOT_FOUND, NO_PERMISSION, CANNOT_OPEN, NO_FILES, NO_FILES_IN_FOLDER, OTHER }
+enum class SyncFailure { NOT_FOUND, NO_PERMISSION, CANNOT_OPEN, NO_FILES, NO_FILES_IN_FOLDER, NOT_PAIRED, OTHER }
+
+/** Which card started the sync, so its result shows there. */
+enum class SyncSource { USB, FOLDER, GARMIN_BLE }
+
+/** The Bluetooth sync with a Garmin watch: looking for watches, the one remembered, and how far a connection is. */
+data class GarminBleUi(
+    val searching: Boolean = false,
+    val found: List<GarminBleWatch> = emptyList(),
+    val remembered: GarminBleWatch? = null,
+    val step: GarminStep? = null,
+    val error: String? = null,
+)
 
 sealed interface SyncStatus {
     data object Idle : SyncStatus
@@ -57,6 +69,8 @@ data class WatchUi(
     val watches: List<WatchInfo> = emptyList(),
     val sync: SyncStatus = SyncStatus.Idle,
     val live: LiveUi = LiveUi(),
+    val syncSource: SyncSource = SyncSource.USB,
+    val garmin: GarminBleUi = GarminBleUi(),
 )
 
 /**
@@ -79,10 +93,13 @@ class WatchController(
     private val folder: FolderLink = FolderLink { throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN) },
     /** How many times a lost sensor is tried again before the recording is stopped. */
     private val maxReconnects: Int = 5,
+    /** Garmin's own Bluetooth protocol, for syncing a watch without a cable. */
+    private val garminBle: GarminBleLink = NoGarminBleLink,
+    private val garminMemory: GarminWatchMemory = InMemoryGarminWatchMemory(),
     /** Waits before reconnect attempt number [attempt] (1, 2, ...). Tests replace it. */
     private val reconnectDelay: suspend (attempt: Int) -> Unit = { attempt -> delay(minOf(2_000L * attempt, 10_000L)) },
 ) {
-    private val _state = MutableStateFlow(WatchUi())
+    private val _state = MutableStateFlow(WatchUi(garmin = GarminBleUi(remembered = garminMemory.load())))
     val state: StateFlow<WatchUi> = _state.asStateFlow()
 
     // ------------------------------------------------------------------------------------- USB
@@ -91,20 +108,73 @@ class WatchController(
         _state.update { it.copy(watches = usb.attached()) }
     }
 
-    fun syncUsb(info: WatchInfo) = startSync(info.name, SyncFailure.NO_FILES, refreshAfter = true) { usb.open(info) }
+    fun syncUsb(info: WatchInfo) = startSync(info.name, SyncFailure.NO_FILES, SyncSource.USB, refreshAfter = true) { usb.open(info) }
 
     /** Reads the watch files in a folder the user picked ([treeUri] is what the folder picker returned). */
-    fun syncFolder(treeUri: String) = startSync("", SyncFailure.NO_FILES_IN_FOLDER, refreshAfter = false) { folder.open(treeUri) }
+    fun syncFolder(treeUri: String) =
+        startSync("", SyncFailure.NO_FILES_IN_FOLDER, SyncSource.FOLDER, refreshAfter = false) { folder.open(treeUri) }
 
-    private fun startSync(name: String, whenEmpty: SyncFailure, refreshAfter: Boolean, open: suspend () -> OpenedWatch) {
+    private fun startSync(
+        name: String,
+        whenEmpty: SyncFailure,
+        source: SyncSource,
+        refreshAfter: Boolean,
+        open: suspend () -> OpenedWatch,
+    ) {
         if (_state.value.sync is SyncStatus.Running) return
-        _state.update { it.copy(sync = SyncStatus.Running(name, 0, 0, "")) }
+        _state.update { it.copy(sync = SyncStatus.Running(name, 0, 0, ""), syncSource = source) }
         scope.launch(io) {
             // Not inside update { }: that lambda is run again when another thread changed the state meanwhile.
             val result = runSync(whenEmpty, open)
-            _state.update { it.copy(sync = result) }
+            _state.update { it.copy(sync = result, garmin = it.garmin.copy(step = null)) }
             if (refreshAfter) refreshUsb()
         }
+    }
+
+    // ------------------------------------------------------------------------ Garmin Bluetooth
+
+    private var garminSearch: AutoCloseable? = null
+
+    /** Looks for Garmin watches: the ones Android has paired first, then any nearby. */
+    fun findGarmin() {
+        stopFindGarmin()
+        _state.update { it.copy(garmin = it.garmin.copy(searching = true, found = emptyList(), error = null)) }
+        garminSearch = garminBle.find(
+            onFound = { watch ->
+                _state.update { ui ->
+                    val g = ui.garmin
+                    if (g.found.any { it.address == watch.address }) ui else ui.copy(garmin = g.copy(found = g.found + watch))
+                }
+            },
+            onError = { message ->
+                stopFindGarmin()
+                _state.update { it.copy(garmin = it.garmin.copy(error = message)) }
+            },
+        )
+    }
+
+    fun stopFindGarmin() {
+        garminSearch?.close()
+        garminSearch = null
+        _state.update { it.copy(garmin = it.garmin.copy(searching = false)) }
+    }
+
+    /** Pairs if needed, connects and copies what is new on the watch, like a USB sync. */
+    fun syncGarmin(watch: GarminBleWatch) {
+        stopFindGarmin()
+        startSync(watch.name, SyncFailure.NO_FILES, SyncSource.GARMIN_BLE, refreshAfter = false) {
+            val opened = garminBle.open(watch) { step -> _state.update { it.copy(garmin = it.garmin.copy(step = step)) } }
+            val remembered = watch.copy(paired = true)
+            garminMemory.save(remembered)
+            _state.update { it.copy(garmin = it.garmin.copy(remembered = remembered, step = null)) }
+            opened
+        }
+    }
+
+    /** Forgets the remembered watch (Android's pairing stays; remove it in the phone's Bluetooth settings). */
+    fun forgetGarmin() {
+        garminMemory.save(null)
+        _state.update { it.copy(garmin = it.garmin.copy(remembered = null)) }
     }
 
     private suspend fun runSync(whenEmpty: SyncFailure, open: suspend () -> OpenedWatch): SyncStatus {
@@ -116,8 +186,15 @@ class WatchController(
                     WatchLinkException.Reason.NOT_FOUND -> SyncFailure.NOT_FOUND
                     WatchLinkException.Reason.NO_PERMISSION -> SyncFailure.NO_PERMISSION
                     WatchLinkException.Reason.CANNOT_OPEN -> SyncFailure.CANNOT_OPEN
+                    WatchLinkException.Reason.NOT_PAIRED -> SyncFailure.NOT_PAIRED
                 },
+                e.message,
             )
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // a link that failed in a way it did not foresee still ends as a message, never as a crash
+            return SyncStatus.Failed(SyncFailure.CANNOT_OPEN, e.message)
         }
         return try {
             opened.use { watch ->
@@ -295,5 +372,6 @@ class WatchController(
     /** Ends any scan or connection; call when the screen goes away for good. */
     fun close() {
         stopLive()
+        stopFindGarmin()
     }
 }

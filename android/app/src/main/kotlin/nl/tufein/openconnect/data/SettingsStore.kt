@@ -7,6 +7,8 @@ import androidx.security.crypto.MasterKey
 import nl.tufein.openconnect.ai.AiSettings
 import nl.tufein.openconnect.core.reports.AiVendor
 import nl.tufein.openconnect.garmin.GarminSettings
+import nl.tufein.openconnect.watch.GarminBleWatch
+import nl.tufein.openconnect.watch.GarminWatchMemory
 import java.util.Locale
 
 /**
@@ -89,6 +91,26 @@ class SettingsStore(
             set(value) = prefs.edit().putLong(KEY_GARMIN_LAST, value).apply()
     }
 
+    /** The watch that last synced over Bluetooth: its address and name, nothing secret. */
+    val garminWatch: GarminWatchMemory = object : GarminWatchMemory {
+        override fun load(): GarminBleWatch? {
+            val address = prefs.getString(KEY_BLE_ADDRESS, null) ?: return null
+            return GarminBleWatch(address, prefs.getString(KEY_BLE_NAME, null) ?: address, paired = true)
+        }
+
+        override fun save(watch: GarminBleWatch?) {
+            prefs.edit().apply {
+                if (watch == null) {
+                    remove(KEY_BLE_ADDRESS)
+                    remove(KEY_BLE_NAME)
+                } else {
+                    putString(KEY_BLE_ADDRESS, watch.address)
+                    putString(KEY_BLE_NAME, watch.name)
+                }
+            }.apply()
+        }
+    }
+
     private fun keyName(vendor: AiVendor) = when (vendor) {
         AiVendor.CLAUDE -> KEY_CLAUDE // the name v0.1 to v0.4 used, so an earlier key is still found
         AiVendor.GEMINI -> KEY_GEMINI
@@ -113,6 +135,8 @@ class SettingsStore(
         private const val KEY_GARMIN_DAYS = "garmin_days"
         private const val KEY_GARMIN_AUTO = "garmin_auto_sync"
         private const val KEY_GARMIN_LAST = "garmin_last_sync"
+        private const val KEY_BLE_ADDRESS = "garmin_ble_address"
+        private const val KEY_BLE_NAME = "garmin_ble_name"
 
         private fun encryptedPreferences(context: Context): SharedPreferences? = try {
             val key = MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()

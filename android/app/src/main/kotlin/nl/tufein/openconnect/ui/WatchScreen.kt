@@ -19,6 +19,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,9 +31,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import nl.tufein.openconnect.R
 import nl.tufein.openconnect.watch.BleSensor
+import nl.tufein.openconnect.watch.GarminBleWatch
+import nl.tufein.openconnect.watch.GarminStep
 import nl.tufein.openconnect.watch.LivePhase
 import nl.tufein.openconnect.watch.LiveUi
 import nl.tufein.openconnect.watch.SyncFailure
+import nl.tufein.openconnect.watch.SyncSource
 import nl.tufein.openconnect.watch.SyncStatus
 import nl.tufein.openconnect.watch.WatchInfo
 import nl.tufein.openconnect.watch.WatchUi
@@ -50,6 +54,10 @@ fun WatchScreen(
     onStopLive: () -> Unit,
     onSaveLive: (name: String) -> Unit,
     onReadFolder: (Uri) -> Unit,
+    onFindGarmin: () -> Unit = {},
+    onStopFindGarmin: () -> Unit = {},
+    onSyncGarmin: (GarminBleWatch) -> Unit = {},
+    onForgetGarmin: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     val context = LocalContext.current
@@ -57,6 +65,21 @@ fun WatchScreen(
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
         permissionDenied = !granted.values.all { it }
         if (!permissionDenied) onScan()
+    }
+    // The Garmin card asks for the same permissions, then carries on with what was tapped.
+    var afterGarminPermission by remember { mutableStateOf<(() -> Unit)?>(null) }
+    val garminPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+        permissionDenied = !granted.values.all { it }
+        if (!permissionDenied) afterGarminPermission?.invoke()
+        afterGarminPermission = null
+    }
+    fun withBluetooth(action: () -> Unit) {
+        if (hasBluetoothPermissions(context)) {
+            action()
+        } else {
+            afterGarminPermission = action
+            garminPermissionLauncher.launch(bluetoothPermissions())
+        }
     }
     val folderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { tree ->
         if (tree != null) onReadFolder(tree)
@@ -76,6 +99,21 @@ fun WatchScreen(
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
             }
             Text(stringResource(R.string.watch_title), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
+        }
+        item {
+            SectionTitle(stringResource(R.string.watch_ble_title))
+            SurfaceCard(accent = MaterialTheme.colorScheme.primary) {
+                Text(stringResource(R.string.watch_ble_body), style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.watch_ble_warning), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
+                GarminBleControls(
+                    ui = ui,
+                    permissionDenied = permissionDenied,
+                    onFind = { withBluetooth(onFindGarmin) },
+                    onStopFind = onStopFindGarmin,
+                    onSync = { watch -> withBluetooth { onSyncGarmin(watch) } },
+                    onForget = onForgetGarmin,
+                )
+            }
         }
         item {
             SectionTitle(stringResource(R.string.watch_usb_title))
@@ -135,7 +173,64 @@ private fun UsbControls(ui: WatchUi, onSearch: () -> Unit, onRead: (WatchInfo) -
     OutlinedButton(onClick = onSearch, enabled = !running, modifier = Modifier.fillMaxWidth()) {
         Text(stringResource(R.string.watch_usb_search))
     }
-    when (val sync = ui.sync) {
+    if (ui.syncSource != SyncSource.GARMIN_BLE) SyncResult(ui.sync, ui.syncSource)
+}
+
+@Composable
+private fun GarminBleControls(
+    ui: WatchUi,
+    permissionDenied: Boolean,
+    onFind: () -> Unit,
+    onStopFind: () -> Unit,
+    onSync: (GarminBleWatch) -> Unit,
+    onForget: () -> Unit,
+) {
+    val g = ui.garmin
+    val running = ui.sync is SyncStatus.Running
+    g.remembered?.let { watch ->
+        Button(onClick = { onSync(watch) }, enabled = !running, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.watch_ble_sync, watch.name))
+        }
+    }
+    OutlinedButton(
+        onClick = if (g.searching) onStopFind else onFind,
+        enabled = !running,
+        modifier = Modifier.fillMaxWidth(),
+    ) { Text(stringResource(if (g.searching) R.string.watch_ble_stop else R.string.watch_ble_find)) }
+    if (permissionDenied) {
+        Text(stringResource(R.string.watch_live_permission), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+    }
+    if (g.searching && g.found.isEmpty()) {
+        Text(stringResource(R.string.watch_ble_searching), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+    for (watch in g.found.filter { it.address != g.remembered?.address }) {
+        OutlinedButton(onClick = { onSync(watch) }, enabled = !running, modifier = Modifier.fillMaxWidth()) {
+            Text(if (watch.paired) stringResource(R.string.watch_ble_paired, watch.name) else watch.name)
+        }
+    }
+    g.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
+    if (running && ui.syncSource == SyncSource.GARMIN_BLE && g.step != null) {
+        Text(
+            when (g.step) {
+                GarminStep.PAIRING -> stringResource(R.string.watch_ble_step_pairing)
+                GarminStep.CONNECTING -> stringResource(R.string.watch_ble_step_connecting)
+                GarminStep.HANDSHAKE -> stringResource(R.string.watch_ble_step_handshake)
+            },
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        LinearProgressIndicator(Modifier.fillMaxWidth())
+    } else if (ui.syncSource == SyncSource.GARMIN_BLE) {
+        SyncResult(ui.sync, SyncSource.GARMIN_BLE)
+    }
+    if (g.remembered != null && !running) {
+        TextButton(onClick = onForget) { Text(stringResource(R.string.watch_ble_forget)) }
+    }
+}
+
+@Composable
+private fun SyncResult(sync: SyncStatus, source: SyncSource) {
+    val ble = source == SyncSource.GARMIN_BLE
+    when (sync) {
         SyncStatus.Idle -> Unit
         is SyncStatus.Running -> Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             if (sync.total == 0) {
@@ -162,9 +257,11 @@ private fun UsbControls(ui: WatchUi, onSearch: () -> Unit, onRead: (WatchInfo) -
             when (sync.reason) {
                 SyncFailure.NOT_FOUND -> stringResource(R.string.watch_fail_not_found)
                 SyncFailure.NO_PERMISSION -> stringResource(R.string.watch_fail_permission)
-                SyncFailure.CANNOT_OPEN -> stringResource(R.string.watch_fail_open)
-                SyncFailure.NO_FILES -> stringResource(R.string.watch_fail_files)
+                SyncFailure.CANNOT_OPEN ->
+                    if (ble) stringResource(R.string.watch_fail_ble_open, sync.detail ?: "") else stringResource(R.string.watch_fail_open)
+                SyncFailure.NO_FILES -> stringResource(if (ble) R.string.watch_fail_ble_files else R.string.watch_fail_files)
                 SyncFailure.NO_FILES_IN_FOLDER -> stringResource(R.string.watch_fail_folder_files)
+                SyncFailure.NOT_PAIRED -> stringResource(R.string.watch_fail_not_paired)
                 SyncFailure.OTHER -> stringResource(R.string.watch_fail_other, sync.detail ?: "")
             },
             style = MaterialTheme.typography.bodyMedium,

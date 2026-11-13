@@ -12,6 +12,9 @@ import nl.tufein.openconnect.data.SettingsStore
 import nl.tufein.openconnect.data.SqliteRepository
 import nl.tufein.openconnect.watch.BleSensor
 import nl.tufein.openconnect.watch.FakeBle
+import nl.tufein.openconnect.watch.FakeGarminBle
+import nl.tufein.openconnect.watch.GarminBleWatch
+import nl.tufein.openconnect.watch.GarminStep
 import nl.tufein.openconnect.watch.FakeUsb
 import nl.tufein.openconnect.watch.OpenedWatch
 import nl.tufein.openconnect.watch.WatchInfo
@@ -68,15 +71,17 @@ class WatchScreenTest : AppTestBase() {
         shot("08-home-with-watch-card")
         rule.onNodeWithText("Connect watch").performClick()
 
+        waitForText("Read the watch with a USB cable")
+        scrollToText("Search again")
         waitForText("No Garmin watch found", substring = true)
         shot("09-watch-none")
 
         usb.watches = listOf(WatchInfo("usb-1", "Forerunner 265"))
-        rule.onNodeWithText("Search again").performClick()
+        clickText("Search again")
         waitForText("Read Forerunner 265")
         shot("10-watch-found")
 
-        rule.onNodeWithText("Read Forerunner 265").performClick()
+        clickText("Read Forerunner 265")
         waitForText("Forerunner 265 has been read")
         shot("11-watch-read")
 
@@ -97,7 +102,51 @@ class WatchScreenTest : AppTestBase() {
         scrollToText("Pick a folder")
         assertTrue(hasText("Pick a folder", substring = false))
         shot("12b-watch-folder")
-        scrollToText("The watch itself talks Bluetooth only", substring = true)
+        scrollToText("The watch can sync over Bluetooth with OpenConnect itself", substring = true)
+    }
+
+    @Test
+    fun aGarminWatchSyncsOverBluetoothAndIsRememberedForNextTime() {
+        val fenix = GarminBleWatch("AA:BB:CC:DD:EE:FF", "fenix 8 - 47mm", paired = false)
+        val garmin = FakeGarminBle(nearby = listOf(fenix)) { _, onStep ->
+            onStep(GarminStep.PAIRING)
+            onStep(GarminStep.HANDSHAKE)
+            OpenedWatch(
+                InMemoryWatchSource(
+                    "fenix 8",
+                    mapOf(
+                        "Monitor/MONITOR_1.fit" to fixture("/watch/monitoring.fit"),
+                        "Sleep/SLEEP_2.fit" to fixture("/watch/sleep.fit"),
+                        "Activity/ACTIVITY_3.fit" to fixture("/fixtures/python-run.fit"),
+                    ),
+                ),
+            ) { }
+        }
+        launchFresh { app ->
+            app.containerOverride = AppContainer(SqliteRepository(app), SettingsStore(app), usb, ble, garminBle = garmin)
+        }
+        shadowOf(ApplicationProvider.getApplicationContext<Context>() as android.app.Application)
+            .grantPermissions(*bluetoothPermissions())
+        waitForText("Connect watch")
+        rule.onNodeWithText("Connect watch").performClick()
+        waitForText("Sync a Garmin watch over Bluetooth")
+        assertTrue(hasText("no longer sync with the Garmin Connect app", substring = true))
+        shot("16-watch-ble-card")
+
+        clickText("Find watch")
+        waitForText("fenix 8 - 47mm")
+        shot("17-watch-ble-found")
+        clickText("fenix 8 - 47mm")
+        waitForText("fenix 8 has been read")
+        shot("18-watch-ble-read")
+        assertEquals(1, repo().countActivities())
+        assertEquals(1, repo().listSleep(LocalDate.parse("2026-06-11"), LocalDate.parse("2026-06-11")).size)
+
+        // the watch is remembered: one tap next time, also after the app restarts
+        waitForText("Sync fenix 8 - 47mm")
+        assertEquals("fenix 8 - 47mm", SettingsStore(ApplicationProvider.getApplicationContext()).garminWatch.load()?.name)
+        clickText("Forget this watch")
+        rule.waitUntil(5_000) { !hasText("Sync fenix 8 - 47mm", substring = false) }
     }
 
     @Test

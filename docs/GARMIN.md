@@ -32,8 +32,8 @@ ways around that were looked at:
   partners (request form, licence, minimum order). Not available to a hobby project.
 - **Connect IQ** (Garmin's watch app platform): a companion app needs a watch app written for it and Garmin Connect
   Mobile on the phone. It would also be a route through Garmin's app, only with extra steps.
-- **Gadgetbridge**: reverse-engineered Garmin Bluetooth support for many watches. It is AGPL-3.0, which cannot be copied
-  into this MIT project, and re-implementing it without a watch to test on would be guesswork.
+- **Gadgetbridge**: reverse-engineered Garmin Bluetooth support for many watches. Since v0.6.0 its Garmin file sync is
+  ported into the app (the project became AGPL-3.0 for that), see [BLUETOOTH.md](BLUETOOTH.md). Not yet tried on a real watch.
 - **Health Connect**: needs the Garmin Connect app to fill it, has no Body Battery or stress, and is not real time.
 
 So the app takes the honest combination: Bluetooth for what Bluetooth really offers (live heart rate), the cable or a
