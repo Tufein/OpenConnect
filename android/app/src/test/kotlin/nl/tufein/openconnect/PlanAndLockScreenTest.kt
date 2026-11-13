@@ -6,6 +6,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import nl.tufein.openconnect.lock.Unlocker
+import androidx.compose.ui.test.performSemanticsAction
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -91,7 +92,7 @@ class PlanAndLockScreenTest : AppTestBase() {
         scrollToText("Lock the app")
         shot("37-settings-lock")
         val lockSwitch = androidx.compose.ui.test.isToggleable() and androidx.compose.ui.test.hasAnySibling(androidx.compose.ui.test.hasText("Lock the app"))
-        rule.onNode(lockSwitch).performClick()
+        rule.onNode(lockSwitch).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick) // may sit behind the tab bar after scrolling
         rule.waitUntil(5_000) { fake.asked == 1 }
         rule.onNode(lockSwitch).assertIsOff() // not on yet: the check has not passed
         fake.answer(true)

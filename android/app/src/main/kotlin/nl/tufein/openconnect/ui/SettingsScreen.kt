@@ -106,6 +106,8 @@ fun SettingsScreen(
     onSources: (garmin: Boolean, oura: Boolean) -> Unit = { _, _ -> },
     /** A colour theme or drawing style was picked. */
     onLook: (palette: String, style: String) -> Unit = { _, _ -> },
+    /** One of the three designs was picked. */
+    onDesign: (String) -> Unit = {},
     /** Pick a watch face file to copy to the watch over USB. */
     onWatchFace: () -> Unit = {},
     onBackup: () -> Unit = {},
@@ -140,6 +142,9 @@ fun SettingsScreen(
                         FilterChip(selected = ui.theme == mode, onClick = { onTheme(mode) }, label = { Text(stringResource(label)) })
                     }
                 }
+                Text(stringResource(R.string.design_title), style = MaterialTheme.typography.titleMedium)
+                DesignChoice(ui.look.design, onDesign)
+                Text(stringResource(R.string.design_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(stringResource(R.string.look_colours), style = MaterialTheme.typography.titleMedium)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     for (palette in Palette.entries) {
@@ -580,6 +585,8 @@ fun DeviceSwitch(title: String, body: String, checked: Boolean, onChange: (Boole
 
 private fun paletteName(p: Palette): Int = when (p) {
     Palette.ARCADE -> R.string.palette_arcade
+    Palette.CLEAN -> R.string.palette_clean
+    Palette.MIDNIGHT -> R.string.palette_midnight
     Palette.GAMEBOY -> R.string.palette_gameboy
     Palette.AMBER -> R.string.palette_amber
     Palette.SYNTHWAVE -> R.string.palette_synthwave
@@ -599,6 +606,8 @@ private fun styleName(s: LookStyle): Int = when (s) {
 private fun PaletteDot(p: Palette) {
     val color = when (p) {
         Palette.ARCADE -> androidx.compose.ui.graphics.Color(0xFF37F5A5)
+        Palette.CLEAN -> androidx.compose.ui.graphics.Color(0xFF1F5FD1)
+        Palette.MIDNIGHT -> androidx.compose.ui.graphics.Color(0xFF3DDC97)
         Palette.GAMEBOY -> androidx.compose.ui.graphics.Color(0xFF9BBC0F)
         Palette.AMBER -> androidx.compose.ui.graphics.Color(0xFFFFB000)
         Palette.SYNTHWAVE -> androidx.compose.ui.graphics.Color(0xFFFF4FB8)
@@ -609,4 +618,28 @@ private fun PaletteDot(p: Palette) {
     androidx.compose.foundation.layout.Box(
         Modifier.size(14.dp).background(color, androidx.compose.foundation.shape.CircleShape),
     )
+}
+
+/** The three designs as chips with a line on what each one is; used in Settings and at the first start. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun DesignChoice(selected: String, onPick: (String) -> Unit) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        for (design in Design.entries) {
+            FilterChip(selected = selected == design.key, onClick = { onPick(design.key) }, label = { Text(stringResource(designName(design))) })
+        }
+    }
+    Text(stringResource(designBody(Design.of(selected))), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+fun designName(d: Design): Int = when (d) {
+    Design.CLEAN -> R.string.design_clean
+    Design.DASHBOARD -> R.string.design_dashboard
+    Design.RETRO -> R.string.design_retro
+}
+
+private fun designBody(d: Design): Int = when (d) {
+    Design.CLEAN -> R.string.design_clean_body
+    Design.DASHBOARD -> R.string.design_dashboard_body
+    Design.RETRO -> R.string.design_retro_body
 }

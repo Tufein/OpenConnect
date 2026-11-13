@@ -134,7 +134,7 @@ const val GARMIN_ROUTE = "garmin"
 const val OURA_ROUTE = "oura"
 
 /** The colour theme ([Palette] key) and drawing style ([LookStyle] key). */
-data class Look(val palette: String = "arcade", val style: String = "sport")
+data class Look(val palette: String = "arcade", val style: String = "sport", val design: String = "retro")
 
 /** Which devices the person uses. [onboarded] is false until the first-start questions are answered. */
 data class SourcesUi(val onboarded: Boolean = true, val garmin: Boolean = true, val oura: Boolean = false)
@@ -202,7 +202,21 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         if (oura) container.oura.syncIfDue(OPEN_GAP)
     }
 
-    private val _look = MutableStateFlow(Look(container.settings.palette, container.settings.lookStyle))
+    private fun lookNow() = container.settings.let { Look(it.palette, it.lookStyle, it.design) }
+
+    private val _look = MutableStateFlow(
+        run {
+            // A new install starts in Clean Pro; the first-start screen offers the other two.
+            if (!container.settings.onboarded && !container.settings.hasDesign) setDesignNow(Design.CLEAN)
+            lookNow()
+        },
+    )
+
+    private fun setDesignNow(design: Design) {
+        container.settings.design = design.key
+        container.settings.palette = design.palette.key
+        container.settings.lookStyle = design.style.key
+    }
 
     /** The colour theme and the drawing style. */
     val look: StateFlow<Look> = _look.asStateFlow()
@@ -210,7 +224,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun setLook(palette: String, style: String) {
         container.settings.palette = Palette.of(palette).key
         container.settings.lookStyle = LookStyle.of(style).key
-        _look.value = Look(container.settings.palette, container.settings.lookStyle)
+        _look.value = lookNow()
+    }
+
+    /** Picks one of the three designs together with its own colours and style; both can be changed afterwards. */
+    fun setDesign(key: String) {
+        setDesignNow(Design.of(key))
+        _look.value = lookNow()
     }
 
     private val _now = MutableStateFlow(Instant.now())

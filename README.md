@@ -26,13 +26,14 @@ live against a real account; the USB and Bluetooth parts have not yet been tried
 **[docs/GARMIN.md](docs/GARMIN.md)** and **[docs/WATCH.md](docs/WATCH.md)** for what works and what is unverified.
 More about the app, its limits and what has been verified: **[docs/ANDROID.md](docs/ANDROID.md)**.
 
-**New in v0.18.0:** **themes**. Pick one of seven colour themes (Arcade, Game Boy, Amber terminal, Synthwave, Ocean,
-Sunset, or your wallpaper's colours) and a style (Sport, Round or Pixel) under *Settings, Appearance*. A watch face file
-(`.prg`) can be copied to a Garmin on its USB cable; you then choose it on the watch. v0.17.0 added the first-start
-choice of devices and the Oura tab. The plan for what comes next is in **[docs/ROADMAP.md](docs/ROADMAP.md)**; see the
-[release notes](docs/releases/v0.18.0.md).
+**New in v0.19.0:** **three designs** to choose from under *Settings, Appearance, Design*: **Clean Pro** (calm cards,
+a big readiness ring and a "My day" list), **Dashboard Dark** (tiles in two columns on black, bold bars) and **Retro
+Pro** (the arcade look). A new install asks at the first start. v0.18.0 added seven colour themes, three styles and
+watch faces over USB. The plan for what comes next is in **[docs/ROADMAP.md](docs/ROADMAP.md)**; see the
+[release notes](docs/releases/v0.19.0.md).
 
-<p><img src="docs/img/v0180-themes.png" alt="Synthwave with the Pixel style, and Game Boy with the Round style" width="690"></p>
+<p><img src="docs/img/v0190-designs.png" alt="Clean Pro in light mode, Dashboard Dark, and a Clean Pro chart" width="690"></p>
+
 
 **v0.8.0:** a **Scores** section on Health with four race-HUD tiles (readiness, sleep score, Body Battery, stress),
 30-day charts for readiness and the watch's sleep score with the same plain-language explanation, and a new **sporty look**:

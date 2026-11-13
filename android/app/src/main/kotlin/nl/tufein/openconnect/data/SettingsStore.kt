@@ -73,6 +73,13 @@ class SettingsStore(
         get() = prefs.getString(KEY_STYLE, "sport") ?: "sport"
         set(value) = prefs.edit().putString(KEY_STYLE, value).apply()
 
+    /** The design (v0.19.0): "clean", "dashboard" or "retro". Retro is the look of earlier versions, so an update changes nothing. */
+    val hasDesign: Boolean get() = prefs.contains(KEY_DESIGN)
+
+    var design: String
+        get() = prefs.getString(KEY_DESIGN, "retro") ?: "retro"
+        set(value) = prefs.edit().putString(KEY_DESIGN, value).apply()
+
     /** The record of the last syncs, as the text [nl.tufein.openconnect.core.SyncLog] writes. */
     var syncLogText: String
         get() = prefs.getString(KEY_SYNC_LOG, "") ?: ""
@@ -264,6 +271,7 @@ class SettingsStore(
         private const val KEY_THEME = "theme_mode"
         private const val KEY_PALETTE = "theme_palette"
         private const val KEY_STYLE = "theme_style"
+        private const val KEY_DESIGN = "theme_design"
         private const val KEY_OURA_CLIENT = "oura_client_id"
         private const val KEY_OURA_SECRET = "oura_client_secret"
         private const val KEY_OURA_REDIRECT = "oura_redirect"
