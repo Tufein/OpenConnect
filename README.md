@@ -9,7 +9,7 @@ machine, with a dashboard, FIT/GPX/TCX import and export, and optional AI-writte
 
 ![OpenConnect dashboard](docs/img/dashboard.png)
 
-> **Status: v0.7.0, an early foundation.** It runs end to end on demo data with no credentials.
+> **Status: v0.8.0, an early foundation.** It runs end to end on demo data with no credentials.
 > Live Garmin access needs Garmin Developer Program credentials (see [Garmin access](#garmin-access)).
 > Not affiliated with or endorsed by Garmin.
 
@@ -26,7 +26,17 @@ live against a real account; the USB and Bluetooth parts have not yet been tried
 **[docs/GARMIN.md](docs/GARMIN.md)** and **[docs/WATCH.md](docs/WATCH.md)** for what works and what is unverified.
 More about the app, its limits and what has been verified: **[docs/ANDROID.md](docs/ANDROID.md)**.
 
-**New in v0.7.0:** every health chart now **says what it shows**: the period, the average with the best and worst day,
+**New in v0.8.0:** a **Scores** section on Health with four race-HUD tiles (readiness, sleep score, Body Battery, stress),
+30-day charts for readiness and the watch's sleep score with the same plain-language explanation, and a new **sporty look**:
+angular cut-corner cards, forward-leaning headlines, speed stripes and segmented score bars. See the
+[release notes](docs/releases/v0.8.0.md).
+
+<p>
+<img src="docs/img/v080-home.png" alt="Home in the new sporty look" width="230">
+<img src="docs/img/v080-health-scores.png" alt="Scores on the Health screen" width="230">
+</p>
+
+**v0.7.0:** every health chart now **says what it shows**: the period, the average with the best and worst day,
 how the last week compares with the week before, whether that is in a common range, and what the number means. The app
 also explains how to use it **next to Garmin Connect** and keeps a run once when it arrives from both the watch and your
 Garmin account. See the [release notes](docs/releases/v0.7.0.md).

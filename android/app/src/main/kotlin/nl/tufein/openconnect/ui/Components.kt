@@ -41,6 +41,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import nl.tufein.openconnect.R
 import nl.tufein.openconnect.ai.ActiveAi
 import nl.tufein.openconnect.core.Sport
@@ -101,12 +102,92 @@ fun ScreenTitle(text: String, modifier: Modifier = Modifier, trailing: @Composab
     }
 }
 
+/** Three slanted bars in the app's colours, like speed lines behind a sprinter. */
+@Composable
+fun SpeedStripes(modifier: Modifier = Modifier, height: Dp = 16.dp) {
+    val colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.tertiary)
+    Canvas(modifier.size(width = height * 1.5f, height = height)) {
+        val barW = size.width / 5f
+        val slant = size.height * 0.35f
+        colors.forEachIndexed { i, color ->
+            val x = i * barW * 1.6f
+            val path = Path().apply {
+                moveTo(x + slant, 0f)
+                lineTo(x + slant + barW, 0f)
+                lineTo(x + barW, size.height)
+                lineTo(x, size.height)
+                close()
+            }
+            drawPath(path, color)
+        }
+    }
+}
+
 @Composable
 fun SectionTitle(text: String, modifier: Modifier = Modifier) {
     Row(modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(8.dp).background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp)))
+        SpeedStripes(height = 14.dp)
         Spacer(Modifier.width(8.dp))
         Text(text, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
+    }
+}
+
+/**
+ * A score like a race HUD: a big forward-leaning number, its name, and a bar of 20 segments that fills with the score.
+ * [higherIsBetter] false (stress) turns the colour around so a low number looks good. A null [value] shows a dash.
+ */
+@Composable
+fun ScoreTile(
+    label: String,
+    value: Int?,
+    color: Color,
+    modifier: Modifier = Modifier,
+    detail: String? = null,
+) {
+    val colors = MaterialTheme.colorScheme
+    Card(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = colors.surfaceContainer),
+        border = BorderStroke(1.dp, colors.outlineVariant),
+    ) {
+        Box(Modifier.background(Brush.linearGradient(listOf(color.copy(alpha = 0.16f), Color.Transparent)))) {
+            Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(label, style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant)
+                Text(
+                    value?.toString() ?: "–",
+                    style = MaterialTheme.typography.displayMedium.copy(fontSize = 40.sp),
+                    color = if (value == null) colors.onSurfaceVariant else color,
+                )
+                SegmentBar(fraction = (value ?: 0) / 100f, color = color, Modifier.fillMaxWidth().height(8.dp))
+                if (detail != null) {
+                    Text(detail, style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant)
+                }
+            }
+        }
+    }
+}
+
+/** [segments] slanted blocks, the first `fraction` of them lit. */
+@Composable
+fun SegmentBar(fraction: Float, color: Color, modifier: Modifier = Modifier, segments: Int = 20) {
+    val off = MaterialTheme.colorScheme.outlineVariant
+    Canvas(modifier) {
+        val gap = 2.dp.toPx()
+        val w = (size.width - gap * (segments - 1)) / segments
+        val lit = (fraction.coerceIn(0f, 1f) * segments).let { kotlin.math.round(it).toInt() }
+        val slant = size.height * 0.4f
+        for (i in 0 until segments) {
+            val x = i * (w + gap)
+            val path = Path().apply {
+                moveTo(x + slant, 0f)
+                lineTo(x + w, 0f)
+                lineTo(x + w - slant, size.height)
+                lineTo(x, size.height)
+                close()
+            }
+            drawPath(path, if (i < lit) color else off)
+        }
     }
 }
 

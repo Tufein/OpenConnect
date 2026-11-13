@@ -29,6 +29,8 @@ private fun explainRes(metric: ChartMetric): Int = when (metric) {
     ChartMetric.SPO2 -> R.string.insight_explain_spo2
     ChartMetric.RESPIRATION -> R.string.insight_explain_respiration
     ChartMetric.STRESS -> R.string.insight_explain_stress
+    ChartMetric.READINESS -> R.string.insight_explain_readiness
+    ChartMetric.SLEEP_SCORE -> R.string.insight_explain_sleep_score
 }
 
 /** A value in the unit people expect for that chart. */
@@ -39,7 +41,7 @@ fun insightValue(metric: ChartMetric, v: Double): String = when (metric) {
     ChartMetric.HRV -> "${v.roundToInt()} ms"
     ChartMetric.SPO2 -> "${v.roundToInt()}%"
     ChartMetric.RESPIRATION -> Fmt.oneDecimal(v) + "/min"
-    ChartMetric.BODY_BATTERY, ChartMetric.STRESS -> v.roundToInt().toString()
+    ChartMetric.BODY_BATTERY, ChartMetric.STRESS, ChartMetric.READINESS, ChartMetric.SLEEP_SCORE -> v.roundToInt().toString()
 }
 
 /** Plain-language reading of a chart: where it stands, how it moved, what the number means. */

@@ -363,4 +363,12 @@
     <string name="insight_hr_range">Gemiddeld %1$s · hoogste %2$s</string>
     <string name="watch_together_title">Gebruik je ook Garmin Connect?</string>
     <string name="watch_together_body">Een horloge praat via Bluetooth met één telefoon-app tegelijk. Is Garmin Connect je hoofdapp, laat dat dan zo en laat OpenConnect dezelfde gegevens lezen uit je Garmin-account (scherm Garmin-account) of uit bestanden. Gebruik de Bluetooth-sync hier alleen als OpenConnect de telefoon van het horloge moet zijn. Activiteiten die via meerdere routes binnenkomen worden herkend en maar één keer bewaard.</string>
+    <string name="scores_title">Scores</string>
+    <string name="score_sleep">Slaapscore</string>
+    <string name="score_readiness_30">Gereedheid, 30 dagen</string>
+    <string name="score_sleep_30">Slaapscore, 30 dagen</string>
+    <string name="scores_note">Gereedheid is de eigen schatting van OpenConnect. Slaapscore, Body Battery en stress zijn de cijfers van het horloge. Nog geen meting? Dan staat er een streepje.</string>
+    <string name="insight_explain_readiness">De eigen schatting van OpenConnect van 0 tot 100, uit slaap, Body Battery, HRV, rusthartslag en stress, ten opzichte van jouw eigen normaal. 70 of meer is klaar voor een zware dag, onder 40 neem je het rustig aan.</string>
+    <string name="insight_explain_sleep_score">De slaapscore die je horloge elke nacht geeft, van 0 tot 100: 80 of meer is goed, 60 tot 79 redelijk, onder 60 slecht. Hij weegt duur, diepe en REM-slaap en onrust mee.</string>
+    <string name="score_out_of">van de 100</string>
 </resources>

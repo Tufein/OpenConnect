@@ -106,4 +106,16 @@ class ChartInsightTest {
         assertEquals(2, i.goalDays)
         assertNull(ChartInsight.of(ChartMetric.STRESS, days(10.0, 20.0, 30.0))!!.goalDays)
     }
+
+    @Test
+    fun `readiness and sleep score are judged like their own levels`() {
+        fun readiness(v: Double) = ChartInsight.of(ChartMetric.READINESS, days(v, v, v))!!.verdict
+        assertEquals(Verdict.GOOD, readiness(75.0))
+        assertEquals(Verdict.FAIR, readiness(55.0))
+        assertEquals(Verdict.WATCH, readiness(30.0))
+        fun sleepScore(v: Double) = ChartInsight.of(ChartMetric.SLEEP_SCORE, days(v, v, v))!!.verdict
+        assertEquals(Verdict.GOOD, sleepScore(85.0))
+        assertEquals(Verdict.FAIR, sleepScore(70.0))
+        assertEquals(Verdict.WATCH, sleepScore(50.0))
+    }
 }

@@ -127,6 +127,28 @@ class StatsService(private val repo: Repository, private val clock: () -> Instan
         }.toList()
     }
 
+    /**
+     * The readiness estimate for every day in [start, end], each against the 28 days before it; null for a day with
+     * too little data to judge. The same calculation as the readiness ring on Home, so the two always agree.
+     */
+    fun readinessSeries(start: LocalDate, end: LocalDate): List<Pair<LocalDate, Int?>> {
+        val from = start.minusDays(ReadinessCalculator.BASELINE_DAYS.toLong())
+        val dailies = repo.listDaily(from, end)
+        val byDay = dailies.associateBy { it.date }
+        val sleeps = repo.listSleep(start, end).associateBy { it.date }
+        return generateSequence(start) { it.plusDays(1) }.takeWhile { !it.isAfter(end) }.map { day ->
+            day to ReadinessCalculator.compute(byDay[day], sleeps[day], dailies.filter { it.date < day })?.score
+        }.toList()
+    }
+
+    /** The sleep score the watch gave each night in [start, end]; null where there is none. */
+    fun sleepScoreSeries(start: LocalDate, end: LocalDate): List<Pair<LocalDate, Double?>> {
+        val sleeps = repo.listSleep(start, end).associateBy { it.date }
+        return generateSequence(start) { it.plusDays(1) }.takeWhile { !it.isAfter(end) }.map { day ->
+            day to sleeps[day]?.score?.toDouble()
+        }.toList()
+    }
+
     fun overview(trendDays: Int = 30): Overview {
         val today = clock().atZone(ZoneOffset.UTC).toLocalDate()
         val last7 = summary(today.minusDays(6), today)
