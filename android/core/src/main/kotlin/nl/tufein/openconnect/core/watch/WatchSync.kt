@@ -103,7 +103,9 @@ class WatchSyncService(private val zone: ZoneId = ZoneId.systemDefault()) {
                 if (file.folder == WatchFolder.ACTIVITY) {
                     val activity = Formats.import(bytes, file.name)
                         .let { it.copy(source = "watch", deviceName = source.deviceName) }
-                    if (repo.getActivity(activity.id) == null) {
+                    // the same run may already be here under another id, for instance from the Garmin account route
+                    val twin = repo.listActivities(start = activity.startTime.minusSeconds(120), end = activity.startTime.plusSeconds(120), limit = 1)
+                    if (repo.getActivity(activity.id) == null && twin.isEmpty()) {
                         repo.upsertActivity(activity)
                         added++
                     } else {

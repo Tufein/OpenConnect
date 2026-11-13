@@ -95,6 +95,22 @@ class WatchSyncTest {
     }
 
     @Test
+    fun `a run the Garmin account already brought in is not added a second time from the watch`() {
+        val repo = InMemoryRepository()
+        // read the run once to learn its start time, then store it as the account route would have: another id and source
+        val scratch = InMemoryRepository()
+        service.sync(watch(), scratch)
+        val run = scratch.listActivities().single()
+        val fromAccount = run.copy(id = "garmin-12345", source = "garmin", externalId = "12345", startTime = run.startTime.plusSeconds(40))
+        repo.upsertActivity(fromAccount)
+
+        val report = service.sync(watch(), repo)
+        assertEquals(0, report.activitiesAdded)
+        assertEquals(1, report.activitiesKnown)
+        assertEquals(listOf("garmin-12345"), repo.listActivities().map { it.id })
+    }
+
+    @Test
     fun `a broken file is reported and the others still sync`() {
         val repo = InMemoryRepository()
         val broken = bytes("/watch/monitoring.fit").also { it[40] = (it[40].toInt() xor 0x55).toByte() }

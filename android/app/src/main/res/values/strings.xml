@@ -336,7 +336,31 @@
     <string name="watch_ble_step_pairing">Pairing: confirm the code on the watch and the phone.</string>
     <string name="watch_ble_step_connecting">Connecting to the watch…</string>
     <string name="watch_ble_step_handshake">Saying hello to the watch…</string>
-    <string name="watch_fail_ble_open">Could not connect to the watch: %1$s</string>
+    <string name="watch_fail_ble_open">Could not connect to the watch: %1$s. If Garmin Connect is paired with this watch, use the Garmin account route instead.</string>
     <string name="watch_fail_ble_files">The watch connected, but listed no files OpenConnect can read.</string>
     <string name="watch_fail_not_paired">Pairing with the watch did not work. Put the watch in pairing mode (Settings, Connectivity, Phone, Pair phone) and try again.</string>
+    <string name="insight_range">Average %1$s · lowest %2$s (%3$s) · highest %4$s (%5$s)</string>
+    <string name="insight_days">Based on %1$d days with a reading.</string>
+    <string name="insight_good">In a good range</string>
+    <string name="insight_fair">Fair</string>
+    <string name="insight_watch">Worth watching</string>
+    <string name="insight_trend_up">Up %1$s%% on the week before</string>
+    <string name="insight_trend_down">Down %1$s%% on the week before</string>
+    <string name="insight_trend_stable">Steady compared with the week before</string>
+    <string name="insight_better">better</string>
+    <string name="insight_worse">worse</string>
+    <string name="insight_goal_days">%1$d of %2$d days reached 10,000 steps</string>
+    <string name="insight_axis">%1$s to %2$s</string>
+    <string name="insight_note">General guide, not medical advice.</string>
+    <string name="insight_explain_steps">Steps counted by your watch each day. Around 7,000 to 10,000 a day is linked with good health; the dashed line is 10,000.</string>
+    <string name="insight_explain_sleep">Hours slept per night. Most adults do well on 7 to 9 hours; the dashed line is 8.</string>
+    <string name="insight_explain_resting_hr">Your heart rate at rest. A lower number usually means better fitness; most adults sit between 50 and 80. A sudden rise can mean stress, illness or poor sleep.</string>
+    <string name="insight_explain_body_battery">Garmin\'s energy estimate, from 0 to 100. The line shows the highest value of each day: 75 or more means you charged well, under 50 means little recovery.</string>
+    <string name="insight_explain_hrv" formatted="false">Heart rate variability overnight. It is personal: compare with your own normal, not with others. A drop of more than 10% below your average can mean you need rest.</string>
+    <string name="insight_explain_spo2" formatted="false">Blood oxygen. 95 to 100% is normal; lower readings at altitude or from a loose watch are common, persistent values under 90% are worth asking a doctor about.</string>
+    <string name="insight_explain_respiration">Breaths per minute. 12 to 20 at rest is normal; the value moves a little with fitness, illness and altitude.</string>
+    <string name="insight_explain_stress">Garmin\'s stress score from heart rate variability, 0 to 100: up to 25 is rest, 26 to 50 low, 51 to 75 medium, above 75 high.</string>
+    <string name="insight_hr_range">Average %1$s · highest %2$s</string>
+    <string name="watch_together_title">Using Garmin Connect too?</string>
+    <string name="watch_together_body">A watch talks to one phone app at a time over Bluetooth. If Garmin Connect is your main app, keep it that way and let OpenConnect read the same data from your Garmin account (Garmin account screen) or from files. Use the Bluetooth sync here only when OpenConnect should be the watch\'s phone. Runs that arrive from more than one route are recognised and kept once.</string>
 </resources>

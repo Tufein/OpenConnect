@@ -74,6 +74,38 @@ class AppSmokeTest : AppTestBase() {
     }
 
     @Test
+    fun healthChartsSayWhatTheyMean() {
+        waitForText("Load demo data")
+        rule.onNodeWithText("Load demo data").performClick()
+        rule.waitUntil(15_000) { !hasText("Load demo data", substring = false) }
+        tab("Health").performClick()
+        rule.waitForIdle()
+
+        // steps: the period, a verdict, the numbers with their days, the goal count and what the chart is
+        waitForText("Average ", substring = true)
+        assertTrue(hasText("days reached 10,000 steps", substring = true))
+        assertTrue(hasText("Steps counted by your watch each day", substring = true))
+        assertTrue(hasText("General guide, not medical advice.", substring = false))
+        shot("30-health-steps-explained")
+
+        scrollToText("Your heart rate at rest", substring = true)
+        shot("31-health-resting-hr-explained")
+        scrollToText("stress score from heart rate variability", substring = true)
+        assertTrue(hasText("up to 25 is rest", substring = true))
+        shot("32-health-stress-explained")
+    }
+
+    @Test
+    fun theWatchScreenExplainsHowToLiveNextToGarminConnect() {
+        waitForText("Connect watch")
+        rule.onNodeWithText("Connect watch").performClick()
+        waitForText("Sync a Garmin watch over Bluetooth")
+        scrollToText("one phone app at a time", substring = true)
+        assertTrue(hasText("Using Garmin Connect too?", substring = false))
+        shot("33-watch-next-to-garmin-connect")
+    }
+
+    @Test
     @Config(qualifiers = "nl-w411dp-h891dp-notnight-xxhdpi")
     fun dutchLightThemeFitsTheNavigationBar() {
         waitForText("Demodata laden")

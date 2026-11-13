@@ -116,6 +116,12 @@ fun WatchScreen(
             }
         }
         item {
+            SectionTitle(stringResource(R.string.watch_together_title))
+            SurfaceCard {
+                Text(stringResource(R.string.watch_together_body), style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+        item {
             SectionTitle(stringResource(R.string.watch_usb_title))
             SurfaceCard {
                 Text(stringResource(R.string.watch_usb_body), style = MaterialTheme.typography.bodyMedium)

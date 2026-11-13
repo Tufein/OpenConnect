@@ -336,7 +336,31 @@
     <string name="watch_ble_step_pairing">Koppelen: bevestig de code op het horloge en de telefoon.</string>
     <string name="watch_ble_step_connecting">Verbinden met het horloge…</string>
     <string name="watch_ble_step_handshake">Kennismaken met het horloge…</string>
-    <string name="watch_fail_ble_open">Verbinden met het horloge lukte niet: %1$s</string>
+    <string name="watch_fail_ble_open">Verbinden met het horloge lukte niet: %1$s. Is Garmin Connect aan dit horloge gekoppeld, gebruik dan de Garmin-accountroute.</string>
     <string name="watch_fail_ble_files">Het horloge is verbonden, maar gaf geen bestanden die OpenConnect kan lezen.</string>
     <string name="watch_fail_not_paired">Koppelen met het horloge lukte niet. Zet het horloge in koppelmodus (Instellingen, Connectiviteit, Telefoon, Koppel telefoon) en probeer opnieuw.</string>
+    <string name="insight_range">Gemiddeld %1$s · laagste %2$s (%3$s) · hoogste %4$s (%5$s)</string>
+    <string name="insight_days">Gebaseerd op %1$d dagen met een meting.</string>
+    <string name="insight_good">In een goed bereik</string>
+    <string name="insight_fair">Redelijk</string>
+    <string name="insight_watch">Let hier op</string>
+    <string name="insight_trend_up">%1$s%% hoger dan de week ervoor</string>
+    <string name="insight_trend_down">%1$s%% lager dan de week ervoor</string>
+    <string name="insight_trend_stable">Stabiel ten opzichte van de week ervoor</string>
+    <string name="insight_better">beter</string>
+    <string name="insight_worse">slechter</string>
+    <string name="insight_goal_days">%1$d van %2$d dagen 10.000 stappen gehaald</string>
+    <string name="insight_axis">%1$s tot %2$s</string>
+    <string name="insight_note">Algemene richtlijn, geen medisch advies.</string>
+    <string name="insight_explain_steps">Stappen die je horloge per dag telt. Rond 7.000 tot 10.000 per dag hangt samen met een goede gezondheid; de stippellijn is 10.000.</string>
+    <string name="insight_explain_sleep">Uren slaap per nacht. De meeste volwassenen doen het goed met 7 tot 9 uur; de stippellijn is 8.</string>
+    <string name="insight_explain_resting_hr">Je hartslag in rust. Lager betekent meestal een betere conditie; de meeste volwassenen zitten tussen 50 en 80. Een plotselinge stijging kan wijzen op stress, ziekte of slecht slapen.</string>
+    <string name="insight_explain_body_battery">Garmins energieschatting van 0 tot 100. De lijn toont de hoogste waarde per dag: 75 of meer betekent goed opgeladen, onder 50 weinig herstel.</string>
+    <string name="insight_explain_hrv" formatted="false">Hartslagvariabiliteit tijdens de nacht. Het is persoonlijk: vergelijk met je eigen normaal, niet met anderen. Meer dan 10% onder je gemiddelde kan betekenen dat je rust nodig hebt.</string>
+    <string name="insight_explain_spo2" formatted="false">Zuurstof in het bloed. 95 tot 100% is normaal; lagere waarden op hoogte of door een los horloge komen vaak voor, blijvend onder 90% is iets om met een arts te bespreken.</string>
+    <string name="insight_explain_respiration">Ademhalingen per minuut. 12 tot 20 in rust is normaal; de waarde beweegt licht mee met conditie, ziekte en hoogte.</string>
+    <string name="insight_explain_stress">Garmins stressscore uit hartslagvariabiliteit, 0 tot 100: tot 25 is rust, 26 tot 50 laag, 51 tot 75 gemiddeld, boven 75 hoog.</string>
+    <string name="insight_hr_range">Gemiddeld %1$s · hoogste %2$s</string>
+    <string name="watch_together_title">Gebruik je ook Garmin Connect?</string>
+    <string name="watch_together_body">Een horloge praat via Bluetooth met één telefoon-app tegelijk. Is Garmin Connect je hoofdapp, laat dat dan zo en laat OpenConnect dezelfde gegevens lezen uit je Garmin-account (scherm Garmin-account) of uit bestanden. Gebruik de Bluetooth-sync hier alleen als OpenConnect de telefoon van het horloge moet zijn. Activiteiten die via meerdere routes binnenkomen worden herkend en maar één keer bewaard.</string>
 </resources>
