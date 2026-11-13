@@ -13,6 +13,7 @@ import nl.tufein.openconnect.core.reports.HttpTransport
 import nl.tufein.openconnect.core.reports.ReportService
 import nl.tufein.openconnect.core.reports.UrlConnectionTransport
 import nl.tufein.openconnect.sync.BackgroundSync
+import nl.tufein.openconnect.sync.SyncLogKeeper
 import nl.tufein.openconnect.sync.WorkManagerBackgroundSync
 import nl.tufein.openconnect.data.SettingsStore
 import nl.tufein.openconnect.data.SqliteRepository
@@ -55,6 +56,9 @@ class AppContainer(
     garminBle: GarminBleLink = NoGarminBleLink,
 ) {
     val stats = StatsService(repository)
+
+    /** What the last syncs did, for the Settings screen. */
+    val syncLog = SyncLogKeeper(load = { settings.syncLogText }, save = { settings.syncLogText = it })
     val reports = ReportService(repository, stats)
 
     /** Emits whenever the watch screen wrote data, so the other screens reload. */
@@ -70,6 +74,7 @@ class AppContainer(
         folder = folder,
         garminBle = garminBle,
         garminMemory = settings.garminWatch,
+        onSynced = syncLog::record,
     )
 
     val garmin = GarminController(
@@ -81,6 +86,7 @@ class AppContainer(
         now = garminNow,
         onDataChanged = { dataChanged.tryEmit(Unit) },
         onBackgroundWanted = backgroundSync::set,
+        onSynced = syncLog::record,
     )
 
     /** The keys, models and choice of AI provider (Claude, Gemini, or the offline reports). */

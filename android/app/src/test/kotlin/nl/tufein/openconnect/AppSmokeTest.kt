@@ -107,6 +107,26 @@ class AppSmokeTest : AppTestBase() {
     }
 
     @Test
+    fun settingsShowBackupDataSourcesAndTheSyncLog() {
+        waitForText("Load demo data")
+        rule.onNodeWithText("Load demo data").performClick()
+        rule.waitUntil(15_000) { !hasText("Load demo data", substring = false) }
+
+        tab("Settings").performClick()
+        rule.waitForIdle()
+        scrollToText("Back up and restore")
+        assertTrue(hasText("Back up", substring = false))
+        assertTrue(hasText("Restore", substring = false))
+        scrollToText("Where your data comes from")
+        scrollToText("activities", substring = true)
+        assertTrue(hasText("Demo", substring = true))
+        shot("39-settings-sources")
+        scrollToText("Sync log")
+        assertTrue(hasText("No syncs yet", substring = true))
+        shot("40-settings-synclog")
+    }
+
+    @Test
     fun homeShowsGoalsAndTrainingLoadAndGoalsCanBeChangedInSettings() {
         waitForText("Load demo data")
         rule.onNodeWithText("Load demo data").performClick()

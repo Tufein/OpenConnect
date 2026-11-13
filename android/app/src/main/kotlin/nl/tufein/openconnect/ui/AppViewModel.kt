@@ -16,7 +16,11 @@ import nl.tufein.openconnect.R
 import nl.tufein.openconnect.core.Achievements
 import nl.tufein.openconnect.core.AchievementsCalculator
 import nl.tufein.openconnect.core.Activity
+import nl.tufein.openconnect.core.Backup
+import nl.tufein.openconnect.core.BackupException
 import nl.tufein.openconnect.core.Csv
+import nl.tufein.openconnect.core.DataOverview
+import nl.tufein.openconnect.core.SyncLogEntry
 import nl.tufein.openconnect.core.DailySummary
 import nl.tufein.openconnect.core.DemoData
 import nl.tufein.openconnect.core.Overview
@@ -105,6 +109,7 @@ data class ReportsState(
 )
 
 private const val MAX_IMPORT_BYTES = 25 * 1024 * 1024
+private const val BACKUP_MAX_BYTES = 200 * 1024 * 1024
 
 private val FIRST_DAY = LocalDate.of(1970, 1, 1)
 private val LAST_DAY = LocalDate.of(2100, 12, 31)
@@ -138,6 +143,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _trophies = MutableStateFlow(TrophiesState())
     val trophies: StateFlow<TrophiesState> = _trophies.asStateFlow()
+
+    /** What the last syncs did, newest first. */
+    val syncLog: StateFlow<List<SyncLogEntry>> = container.syncLog.entries
+
+    private val _overview = MutableStateFlow<DataOverview?>(null)
+
+    /** Where the data came from, counted per source. */
+    val overview: StateFlow<DataOverview?> = _overview.asStateFlow()
 
     private val _goals = MutableStateFlow(container.settings.weeklyGoals)
 
@@ -299,6 +312,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     // ------------------------------------------------------------------------------- loading
 
     fun refreshAll() {
+        io { _overview.value = DataOverview.of(repo) }
         loadHome()
         loadActivities(_activities.value.sport)
         loadHealth()
@@ -440,6 +454,30 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         tell(text(R.string.exported_as, csvFileName(kind)))
     }
 
+    /** Writes one compressed file with everything the app holds (no keys) to the chosen place. */
+    fun backup(target: Uri) = io {
+        val bytes = Backup.write(repo)
+        val out = getApplication<Application>().contentResolver.openOutputStream(target) ?: throw IOException("unwritable")
+        out.use { it.write(bytes) }
+        tell(text(R.string.backup_saved, backupFileName()))
+    }
+
+    /** Reads a backup file and merges it in. A file that is not a backup, or is damaged, changes nothing. */
+    fun restore(source: Uri) = io {
+        val bytes = getApplication<Application>().contentResolver.openInputStream(source)?.use { readLimited(it, BACKUP_MAX_BYTES) } ?: throw IOException("unreadable")
+        try {
+            val report = Backup.restore(bytes, repo)
+            tell(text(R.string.backup_restored, report.activities, report.days + report.nights))
+            refreshAll()
+        } catch (e: BackupException) {
+            tell(text(R.string.backup_refused, e.message ?: ""))
+        }
+    }
+
+    fun backupFileName(): String = "openconnect-backup-" + LocalDate.now() + ".ocbak"
+
+    fun clearSyncLog() = container.syncLog.clear()
+
     fun csvFileName(kind: String): String = "openconnect-" + (if (kind == CSV_ACTIVITIES) "activities" else "daily") + "-" + LocalDate.now() + ".csv"
 
     /** The file name proposed in the save dialog; the activity is the one currently on screen. */
@@ -477,14 +515,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private fun readLimited(input: InputStream): ByteArray {
+    private fun readLimited(input: InputStream, limit: Int = MAX_IMPORT_BYTES): ByteArray {
         val out = java.io.ByteArrayOutputStream()
         val buffer = ByteArray(64 * 1024)
         while (true) {
             val n = input.read(buffer)
             if (n < 0) break
             out.write(buffer, 0, n)
-            if (out.size() > MAX_IMPORT_BYTES) throw FormatError(text(R.string.error_too_large))
+            if (out.size() > limit) throw FormatError(text(R.string.error_too_large))
         }
         return out.toByteArray()
     }

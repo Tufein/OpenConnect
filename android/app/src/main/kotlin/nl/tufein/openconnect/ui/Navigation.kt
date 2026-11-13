@@ -54,6 +54,8 @@ fun OpenConnectRoot(
     onImport: () -> Unit,
     onExport: (activityId: String, format: String) -> Unit,
     onExportCsv: (kind: String) -> Unit,
+    onBackup: () -> Unit = {},
+    onRestore: () -> Unit = {},
 ) {
     val nav = rememberNavController()
     val snackbar = remember { SnackbarHostState() }
@@ -73,6 +75,8 @@ fun OpenConnectRoot(
     val detail by vm.detail.collectAsState()
     val health by vm.health.collectAsState()
     val reports by vm.reports.collectAsState()
+    val overview by vm.overview.collectAsState()
+    val syncLog by vm.syncLog.collectAsState()
     val trophies by vm.trophies.collectAsState()
     val coach by vm.coach.collectAsState()
     val ai by vm.ai.collectAsState()
@@ -183,7 +187,10 @@ fun OpenConnectRoot(
             }
             composable(Tab.Settings.route) {
                 SettingsScreen(
-                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals),
+                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog),
+                    onBackup = onBackup,
+                    onRestore = onRestore,
+                    onClearLog = vm::clearSyncLog,
                     onTheme = vm::setTheme,
                     onGoals = vm::setGoals,
                     onLanguage = vm::setAiLanguage,

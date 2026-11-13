@@ -60,6 +60,11 @@ class SettingsStore(
         get() = prefs.getString(KEY_THEME, "system")?.takeIf { it in THEMES } ?: "system"
         set(value) = prefs.edit().putString(KEY_THEME, value.takeIf { it in THEMES } ?: "system").apply()
 
+    /** The record of the last syncs, as the text [nl.tufein.openconnect.core.SyncLog] writes. */
+    var syncLogText: String
+        get() = prefs.getString(KEY_SYNC_LOG, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_SYNC_LOG, value).apply()
+
     /** The weekly goals shown on Home; a goal of 0 is switched off. */
     var weeklyGoals: WeeklyGoals
         get() = WeeklyGoals(
@@ -140,6 +145,7 @@ class SettingsStore(
         private const val KEY_LANGUAGE = "report_language"
         private const val KEY_PROVIDER = "provider"
         private const val KEY_THEME = "theme_mode"
+        private const val KEY_SYNC_LOG = "sync_log"
         private const val KEY_GOAL_INTENSITY = "goal_intensity_minutes"
         private const val KEY_GOAL_DISTANCE = "goal_distance_km"
         private const val KEY_GOAL_ACTIVITIES = "goal_activities"

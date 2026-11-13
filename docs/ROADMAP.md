@@ -17,20 +17,22 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 | v0.6.0 | Bluetooth sync of a Garmin watch (ported from Gadgetbridge), AGPL-3.0 |
 | v0.7.0 | Charts explain themselves, living next to Garmin Connect |
 | v0.8.0 | Scores on Health, sporty look |
+| v0.9.0 | Weekly goals, training load, roadmap |
 
-## v0.9.0: training, with goals 🚧
+## v0.9.0: training, with goals ✅
 
 1. **Weekly goals.** Intensity minutes, distance and activities per week, with defaults from the usual recommendations,
    set in Settings and shown on Home as race-HUD bars. A goal of 0 is off.
 2. **Training load.** This week's load against your own four-week average, six weekly bars and a plain verdict (light,
    steady, heavy, big jump). It is OpenConnect's own estimate from duration and heart rate, not Garmin's Training Load.
 
-## v0.10.0: trust the data 🔜
+## v0.10.0: trust the data 🚧
 
 3. **Backup and restore.** Export everything to one file and bring it back, so a new phone or a reinstall loses nothing.
 4. **Sync log.** A screen that lists the last syncs from every route (account, USB, folder, Bluetooth) with what each
    added, and what went wrong. Makes the first real-watch tests easy to report.
-5. **Data sources view.** Which route supplied which day, and a switch to prefer one when two disagree.
+5. **Data sources view.** Activities counted per source with their period, plus the health totals. (The switch to prefer
+   one source when two disagree is not built; the dedupe by start time already keeps the first copy.)
 
 ## v0.11.0: more from the watch 🔜
 
