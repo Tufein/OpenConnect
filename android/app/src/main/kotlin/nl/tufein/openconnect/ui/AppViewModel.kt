@@ -21,6 +21,11 @@ import nl.tufein.openconnect.core.Backup
 import nl.tufein.openconnect.core.BestEfforts
 import nl.tufein.openconnect.core.Effort
 import nl.tufein.openconnect.core.Lap
+import nl.tufein.openconnect.core.PlanConfig
+import nl.tufein.openconnect.core.PlanGoal
+import nl.tufein.openconnect.core.PlanProgress
+import nl.tufein.openconnect.core.TrainingPlan
+import nl.tufein.openconnect.core.TrainingPlans
 import nl.tufein.openconnect.core.BackupException
 import nl.tufein.openconnect.core.Csv
 import nl.tufein.openconnect.core.DataOverview
@@ -351,6 +356,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadHealth()
         loadReports(_reports.value.weekStart)
         loadEfforts()
+        loadPlan()
         loadTrophies()
         currentActivityId?.let { openActivity(it) }
     }
@@ -430,6 +436,63 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Switches between week, month and year, starting at the current one. */
     fun setReportPeriod(period: ReportPeriod) = loadReports(LocalDate.now(ZoneOffset.UTC), period)
+
+    private val _plan = MutableStateFlow(PlanState())
+
+    /** The training plan and how far it has got. */
+    val plan: StateFlow<PlanState> = _plan.asStateFlow()
+
+    fun loadPlan() = io {
+        val today = LocalDate.now(ZoneOffset.UTC)
+        val config = PlanConfig.decode(container.settings.trainingPlan)
+        val built = config?.let(TrainingPlans::build)
+        val progress = built?.let {
+            val from = it.start.atStartOfDay().toInstant(ZoneOffset.UTC)
+            val to = it.weeks.last().end.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
+            TrainingPlans.progress(it, repo.listActivities(sport = Sport.RUNNING, start = from, end = to, limit = 500), today)
+        }
+        val baseline = TrainingPlans.baselineKm(repo, today)
+        _plan.value = PlanState(loaded = true, plan = built, progress = progress, baselineKm = baseline, today = today)
+    }
+
+    /** Builds a plan that starts next Monday from what you run now. */
+    fun createPlan(goal: PlanGoal, runsPerWeek: Int, weeks: Int) {
+        val today = LocalDate.now(ZoneOffset.UTC)
+        val config = PlanConfig(goal, runsPerWeek, weeks, TrainingPlans.nextMonday(today).toString(), TrainingPlans.baselineKm(repo, today))
+        container.settings.trainingPlan = config.coerced().encode()
+        loadPlan()
+    }
+
+    fun deletePlan() {
+        container.settings.trainingPlan = ""
+        loadPlan()
+    }
+
+    private val _lock = MutableStateFlow(LockUi(container.lockGate.enabled, container.lockGate.locked))
+
+    /** Whether the app is locked; the activity shows the lock screen while [LockUi.locked]. */
+    val lock: StateFlow<LockUi> = _lock.asStateFlow()
+
+    private fun publishLock() {
+        _lock.value = LockUi(container.lockGate.enabled, container.lockGate.locked)
+    }
+
+    fun lockLeft() = container.lockGate.left()
+
+    fun lockReturned() {
+        container.lockGate.returned()
+        publishLock()
+    }
+
+    fun unlocked() {
+        container.lockGate.markUnlocked()
+        publishLock()
+    }
+
+    fun setAppLock(on: Boolean) {
+        container.setAppLock(on)
+        publishLock()
+    }
 
     private fun loadEfforts() = io {
         val efforts = BestEfforts.personalBests(repo)
@@ -569,3 +632,16 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         return out.toByteArray()
     }
 }
+
+/** The training plan on the Plan tab: nothing chosen yet ([plan] is null) or the plan and how far it has got. */
+data class PlanState(
+    val loaded: Boolean = false,
+    val plan: TrainingPlan? = null,
+    val progress: PlanProgress? = null,
+    /** What you run in a week now, which the next plan starts from. */
+    val baselineKm: Double = 0.0,
+    val today: LocalDate = LocalDate.now(ZoneOffset.UTC),
+)
+
+/** Whether the app is locked right now (and whether the lock is on at all). */
+data class LockUi(val enabled: Boolean = false, val locked: Boolean = false)

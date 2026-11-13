@@ -59,7 +59,7 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 13. **Best efforts** from tracks (fastest 1K, 5K, 10K) and a lap table.
 14. **Monthly and yearly reports.**
 
-## v0.15.0: plan and protect 🔜
+## v0.15.0: plan and protect ✅
 
 15. **Training plans:** a simple 5K or 10K plan built from your goals and load.
 16. **App lock** (biometrics) for the health data.

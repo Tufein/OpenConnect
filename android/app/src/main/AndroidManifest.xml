@@ -5,6 +5,8 @@
     <!-- Only used to ask Claude for reports, and only when you add your own API key. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Normal permission, granted at install: lets the app ask for the fingerprint or screen lock (App lock). -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <!-- Health Connect: send activities out, read steps and sleep in. Both are opt-in inside the app. -->
     <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
     <uses-permission android:name="android.permission.health.WRITE_DISTANCE" />

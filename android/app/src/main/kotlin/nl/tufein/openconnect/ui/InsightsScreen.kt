@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import nl.tufein.openconnect.R
 import nl.tufein.openconnect.ai.ActiveAi
 import nl.tufein.openconnect.ai.CoachUi
+import nl.tufein.openconnect.core.PlanGoal
 import nl.tufein.openconnect.core.RecordEntry
 import nl.tufein.openconnect.core.reports.ReportPeriod
 import nl.tufein.openconnect.core.Sport
@@ -34,6 +35,7 @@ enum class InsightsTab(val label: Int) {
     Week(R.string.insights_week),
     Trophies(R.string.insights_trophies),
     Coach(R.string.insights_coach),
+    Plan(R.string.insights_plan),
 }
 
 @Composable
@@ -45,6 +47,9 @@ fun InsightsScreen(
     active: ActiveAi,
     trophies: TrophiesState,
     coach: CoachUi,
+    plan: PlanState,
+    onCreatePlan: (PlanGoal, Int, Int) -> Unit,
+    onDeletePlan: () -> Unit,
     onShiftWeek: (Long) -> Unit,
     onPeriod: (ReportPeriod) -> Unit,
     onGenerate: (force: Boolean) -> Unit,
@@ -67,6 +72,7 @@ fun InsightsScreen(
             InsightsTab.Week -> WeekContent(reports, busy, active, onShiftWeek, onPeriod, onGenerate, onOpenActivity, contentPadding)
             InsightsTab.Trophies -> TrophiesContent(trophies, contentPadding)
             InsightsTab.Coach -> CoachContent(coach, active, onAsk, onClearCoach, onOpenAiSettings, contentPadding)
+            InsightsTab.Plan -> PlanContent(plan, onCreatePlan, onDeletePlan, contentPadding)
         }
     }
 }

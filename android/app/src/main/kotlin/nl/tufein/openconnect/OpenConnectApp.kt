@@ -85,6 +85,15 @@ class AppContainer(
 ) {
     val stats = StatsService(repository)
 
+    /** When the app is locked. Android's own check (fingerprint, face, screen lock) is in [nl.tufein.openconnect.lock]. */
+    val lockGate = nl.tufein.openconnect.core.LockGate(settings.appLock)
+
+    fun setAppLock(on: Boolean) {
+        settings.appLock = on
+        lockGate.enabled = on
+        if (on) lockGate.markUnlocked() // the person has just passed the check to switch it on
+    }
+
     /** The notifications that are due: the app's job calls [NudgeService.check]. */
     val nudges = NudgeService(repository, stats, nudgeSettings, nudgeNotifier)
 
@@ -175,6 +184,9 @@ class AppContainer(
 class OpenConnectApp : Application() {
     /** Tests set this before the first screen starts to put fake USB and Bluetooth in the app. */
     var containerOverride: AppContainer? = null
+
+    /** Tests put a fake fingerprint check here; the real one needs a phone with a screen lock. */
+    var unlockerOverride: ((androidx.activity.ComponentActivity) -> nl.tufein.openconnect.lock.Unlocker)? = null
 
     val container: AppContainer by lazy {
         containerOverride ?: SettingsStore(this).let { settingsStore -> AppContainer(
