@@ -82,6 +82,9 @@ data class HealthState(
     val trend: List<TrendRow> = emptyList(),
     val sleeps: List<SleepSummary> = emptyList(),
     val dailies: List<DailySummary> = emptyList(),
+    /** Readiness per day (OpenConnect's estimate) and the watch's sleep score per night, for the score charts. */
+    val readiness: List<Pair<LocalDate, Int?>> = emptyList(),
+    val sleepScores: List<Pair<LocalDate, Double?>> = emptyList(),
 )
 
 data class ReportsState(
@@ -336,6 +339,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             trend = container.stats.trendSeries(start, today),
             sleeps = repo.listSleep(start, today),
             dailies = repo.listDaily(start, today),
+            readiness = container.stats.readinessSeries(start, today),
+            sleepScores = container.stats.sleepScoreSeries(start, today),
         )
     }
 

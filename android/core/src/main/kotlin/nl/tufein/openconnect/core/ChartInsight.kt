@@ -13,12 +13,14 @@ enum class ChartMetric {
     SPO2,
     RESPIRATION,
     STRESS,
+    READINESS,
+    SLEEP_SCORE,
     ;
 
     /** Whether a rising line is good news; null when neither direction is better (breathing rate). */
     val higherIsBetter: Boolean?
         get() = when (this) {
-            STEPS, SLEEP, BODY_BATTERY, HRV, SPO2 -> true
+            STEPS, SLEEP, BODY_BATTERY, HRV, SPO2, READINESS, SLEEP_SCORE -> true
             RESTING_HR, STRESS -> false
             RESPIRATION -> null
         }
@@ -109,6 +111,8 @@ data class ChartInsight(
             ChartMetric.SPO2 -> pick(avg >= 95, avg >= 90)
             ChartMetric.RESPIRATION -> pick(avg in 12.0..20.0, avg in 10.0..25.0)
             ChartMetric.STRESS -> pick(avg <= 25, avg <= 50)
+            ChartMetric.READINESS -> pick(avg >= 70, avg >= 40)
+            ChartMetric.SLEEP_SCORE -> pick(avg >= 80, avg >= 60)
         }
 
         private fun pick(good: Boolean, fair: Boolean) = if (good) Verdict.GOOD else if (fair) Verdict.FAIR else Verdict.WATCH

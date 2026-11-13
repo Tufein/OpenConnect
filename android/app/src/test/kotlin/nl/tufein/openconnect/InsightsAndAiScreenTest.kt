@@ -192,7 +192,8 @@ class InsightsAndAiScreenTest : AppTestBase() {
         waitForText("Week of", substring = true)
         shot("28-insights-week")
         tab("Health").performClick()
-        waitForText("Steps")
+        waitForText("Scores")
+        scrollToText("Steps")
         shot("29-health")
     }
 

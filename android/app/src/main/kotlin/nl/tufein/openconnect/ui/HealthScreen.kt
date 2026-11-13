@@ -1,6 +1,10 @@
 package nl.tufein.openconnect.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +46,43 @@ fun HealthScreen(
         fun insightFor(metric: ChartMetric, values: List<Double?>) = ChartInsight.of(metric, dates.zip(values))
         val first = dates.firstOrNull()
         val lastDay = dates.lastOrNull()
+        item {
+            SectionTitle(stringResource(R.string.scores_title))
+            val metrics = OpenConnectColors.metrics
+            val readiness = state.readiness.mapNotNull { it.second }.lastOrNull()
+            val sleepScore = state.sleepScores.mapNotNull { it.second }.lastOrNull()?.toInt()
+            val battery = trend.mapNotNull { it.bodyBatteryHigh }.lastOrNull()
+            val stress = trend.mapNotNull { it.avgStress }.lastOrNull()
+            Column(Modifier.fillMaxWidth().padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    ScoreTile(stringResource(R.string.readiness_title), readiness, metrics.readiness, Modifier.weight(1f))
+                    ScoreTile(stringResource(R.string.score_sleep), sleepScore, metrics.sleep, Modifier.weight(1f))
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    ScoreTile(stringResource(R.string.body_battery), battery, metrics.battery, Modifier.weight(1f))
+                    ScoreTile(stringResource(R.string.stress), stress, metrics.stress, Modifier.weight(1f))
+                }
+                Text(stringResource(R.string.scores_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        item {
+            val values = state.readiness.map { it.second?.toDouble() }
+            if (values.any { it != null }) {
+                MetricCard(title = stringResource(R.string.score_readiness_30), subtitle = null) {
+                    LineChart(values, description = stringResource(R.string.score_readiness_30), color = OpenConnectColors.metrics.readiness)
+                    InsightCaption(ChartInsight.of(ChartMetric.READINESS, state.readiness.map { it.first to it.second?.toDouble() }), ChartMetric.READINESS, first, lastDay)
+                }
+            }
+        }
+        item {
+            val values = state.sleepScores.map { it.second }
+            if (values.any { it != null }) {
+                MetricCard(title = stringResource(R.string.score_sleep_30), subtitle = null) {
+                    LineChart(values, description = stringResource(R.string.score_sleep_30), color = OpenConnectColors.metrics.sleep)
+                    InsightCaption(ChartInsight.of(ChartMetric.SLEEP_SCORE, state.sleepScores), ChartMetric.SLEEP_SCORE, first, lastDay)
+                }
+            }
+        }
         item {
             val steps = trend.map { it.steps?.toDouble() }
             val average = steps.filterNotNull().average().takeIf { !it.isNaN() }

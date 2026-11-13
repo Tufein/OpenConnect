@@ -81,8 +81,19 @@ class AppSmokeTest : AppTestBase() {
         tab("Health").performClick()
         rule.waitForIdle()
 
+        // the scores come first, each as a tile, then their 30-day charts
+        waitForText("Scores")
+        assertTrue(hasText("Sleep score", substring = false))
+        assertTrue(hasText("Readiness is OpenConnect's own estimate", substring = true))
+        shot("34-health-scores")
+        scrollToText("Readiness, 30 days")
+        scrollToText("OpenConnect's own 0 to 100 estimate", substring = true)
+        shot("35-health-readiness-chart")
+        scrollToText("Sleep score, 30 days")
+        scrollToText("The sleep score your watch gives each night", substring = true)
+
         // steps: the period, a verdict, the numbers with their days, the goal count and what the chart is
-        waitForText("Average ", substring = true)
+        scrollToText("days reached 10,000 steps", substring = true)
         assertTrue(hasText("days reached 10,000 steps", substring = true))
         assertTrue(hasText("Steps counted by your watch each day", substring = true))
         assertTrue(hasText("General guide, not medical advice.", substring = false))

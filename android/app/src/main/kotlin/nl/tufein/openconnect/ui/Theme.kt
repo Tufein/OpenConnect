@@ -1,6 +1,7 @@
 package nl.tufein.openconnect.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
@@ -14,6 +15,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -127,12 +129,15 @@ object OpenConnectColors {
 
 private val Mono = FontFamily.Monospace
 
+/** Headlines and big numbers lean forward in heavy italics, like a race bib; labels keep the monospace scoreboard. */
+private val Sport = FontFamily.SansSerif
+
 private val AppTypography = Typography(
-    displayMedium = TextStyle(fontFamily = Mono, fontWeight = FontWeight.Bold, fontSize = 44.sp, lineHeight = 48.sp),
-    headlineMedium = TextStyle(fontFamily = Mono, fontWeight = FontWeight.Bold, fontSize = 26.sp, lineHeight = 32.sp),
-    headlineSmall = TextStyle(fontFamily = Mono, fontWeight = FontWeight.Bold, fontSize = 22.sp, lineHeight = 28.sp),
-    titleLarge = TextStyle(fontFamily = Mono, fontWeight = FontWeight.Bold, fontSize = 20.sp, lineHeight = 26.sp),
-    titleMedium = TextStyle(fontFamily = Mono, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, lineHeight = 22.sp),
+    displayMedium = TextStyle(fontFamily = Sport, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic, fontSize = 44.sp, lineHeight = 48.sp),
+    headlineMedium = TextStyle(fontFamily = Sport, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic, fontSize = 28.sp, lineHeight = 34.sp, letterSpacing = (-0.5).sp),
+    headlineSmall = TextStyle(fontFamily = Sport, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic, fontSize = 22.sp, lineHeight = 28.sp),
+    titleLarge = TextStyle(fontFamily = Sport, fontWeight = FontWeight.ExtraBold, fontStyle = FontStyle.Italic, fontSize = 20.sp, lineHeight = 26.sp),
+    titleMedium = TextStyle(fontFamily = Sport, fontWeight = FontWeight.Bold, fontStyle = FontStyle.Italic, fontSize = 16.sp, lineHeight = 22.sp),
     labelLarge = TextStyle(fontFamily = Mono, fontWeight = FontWeight.Medium, fontSize = 14.sp),
     labelMedium = TextStyle(fontFamily = Mono, fontWeight = FontWeight.Medium, fontSize = 12.sp),
     bodyLarge = TextStyle(fontSize = 16.sp, lineHeight = 24.sp),
@@ -140,11 +145,15 @@ private val AppTypography = Typography(
     bodySmall = TextStyle(fontSize = 12.sp, lineHeight = 16.sp),
 )
 
+/**
+ * Angular instead of round: two opposite corners are cut at an angle, like the nose of a race bike or a sports shoe.
+ * Cards use [medium], which is the signature shape of the app.
+ */
 private val AppShapes = Shapes(
-    extraSmall = RoundedCornerShape(8.dp),
-    small = RoundedCornerShape(12.dp),
-    medium = RoundedCornerShape(18.dp),
-    large = RoundedCornerShape(24.dp),
+    extraSmall = CutCornerShape(topEnd = 6.dp, bottomStart = 6.dp),
+    small = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
+    medium = CutCornerShape(topEnd = 18.dp, bottomStart = 18.dp),
+    large = CutCornerShape(topEnd = 24.dp, bottomStart = 24.dp),
     extraLarge = RoundedCornerShape(32.dp),
 )
 
