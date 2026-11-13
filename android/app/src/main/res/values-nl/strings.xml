@@ -600,4 +600,16 @@
     <string name="watchface_no_usb">Geen horloge aan de USB-kabel. Sluit de Garmin aan met zijn kabel en probeer opnieuw.</string>
     <string name="watchface_cannot_write">Het horloge nam het bestand via USB niet aan.</string>
     <string name="watchface_already">Er staat al een bestand met die naam op het horloge. Geef het bestand een andere naam en probeer opnieuw.</string>
+    <string name="palette_clean">Helder</string>
+    <string name="palette_midnight">Middernacht</string>
+    <string name="design_title">Ontwerp</string>
+    <string name="design_clean">Clean Pro</string>
+    <string name="design_dashboard">Dashboard Dark</string>
+    <string name="design_retro">Retro Pro</string>
+    <string name="design_clean_body">Rustige kaarten, een grote gereedheidsring bovenaan en een lijst "Mijn dag". Zachte vlakgrafieken.</string>
+    <string name="design_dashboard_body">Tegels in twee kolommen, elk in een eigen kleur, op zwart. Vette staven met vandaag uitgelicht.</string>
+    <string name="design_retro_body">De arcadestijl: fijne randen, gloed en gloeiende grafieklijnen.</string>
+    <string name="design_note">Een ontwerp kiest ook zijn eigen kleuren en stijl; die kun je hieronder nog aanpassen.</string>
+    <string name="onboarding_design">Kies een ontwerp</string>
+    <string name="home_my_day">Mijn dag</string>
 </resources>

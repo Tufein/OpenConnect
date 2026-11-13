@@ -76,6 +76,7 @@ fun HomeScreen(
 ) {
     val badge = syncBadge(garmin).takeIf { useGarmin }
     val metrics = OpenConnectColors.metrics
+    val design = LocalDesign.current
     // Pulling down syncs the Garmin account, like in Garmin Connect; without one there is nothing to fetch.
     PullToRefreshBox(
         isRefreshing = useGarmin && garmin.sync is GarminSyncUi.Running,
@@ -106,11 +107,12 @@ fun HomeScreen(
             }
             val today = overview.today
 
-            item { Box(Modifier.tappable { onOpenHealth(ChartMetric.READINESS) }) { ReadinessCard(state.readiness) } }
-            state.goalProgress?.let { progress -> item { Box(Modifier.tappable(onOpenInsights)) { GoalsCard(progress, state.goals) } } }
-            state.load?.let { load -> item { Box(Modifier.tappable(onOpenActivities)) { LoadCard(load) } } }
-
-            item {
+            fun readiness() = item { Box(Modifier.tappable { onOpenHealth(ChartMetric.READINESS) }) { ReadinessCard(state.readiness) } }
+            fun goalsAndLoad() {
+                state.goalProgress?.let { progress -> item { Box(Modifier.tappable(onOpenInsights)) { GoalsCard(progress, state.goals) } } }
+                state.load?.let { load -> item { Box(Modifier.tappable(onOpenActivities)) { LoadCard(load) } } }
+            }
+            fun stepsCard() = item {
                 val goal = (today?.stepsGoal ?: 10_000).coerceAtLeast(1)
                 val steps = today?.steps ?: 0
                 SurfaceCard(Modifier.tappable { onOpenHealth(ChartMetric.STEPS) }, accent = metrics.steps) {
@@ -136,19 +138,42 @@ fun HomeScreen(
                 }
             }
 
-            item {
-                val last7 = overview.trend.takeLast(7)
-                TileRow(
-                    { MetricTile(stringResource(R.string.resting_hr), today?.restingHr?.takeIf { it > 0 }?.toString() ?: "–", metrics.heart, it, "bpm", last7.map { r -> r.restingHr?.toDouble() }, onClick = { onOpenHealth(ChartMetric.RESTING_HR) }) },
-                    { MetricTile(stringResource(R.string.body_battery), today?.bodyBatteryHigh?.toString() ?: "–", metrics.battery, it, series = last7.map { r -> r.bodyBatteryHigh?.toDouble() }, onClick = { onOpenHealth(ChartMetric.BODY_BATTERY) }) },
-                )
+            val last7 = overview.trend.takeLast(7)
+            // The four signals as tiles: today's value and a line of the last seven days. Each design places them differently.
+            val signals = listOf<@Composable (Modifier) -> Unit>(
+                { MetricTile(stringResource(R.string.resting_hr), today?.restingHr?.takeIf { it > 0 }?.toString() ?: "–", metrics.heart, it, "bpm", last7.map { r -> r.restingHr?.toDouble() }, onClick = { onOpenHealth(ChartMetric.RESTING_HR) }) },
+                { MetricTile(stringResource(R.string.body_battery), today?.bodyBatteryHigh?.toString() ?: "–", metrics.battery, it, series = last7.map { r -> r.bodyBatteryHigh?.toDouble() }, onClick = { onOpenHealth(ChartMetric.BODY_BATTERY) }) },
+                { MetricTile(stringResource(R.string.stress), today?.avgStress?.toString() ?: "–", metrics.stress, it, series = last7.map { r -> r.avgStress?.toDouble() }, onClick = { onOpenHealth(ChartMetric.STRESS) }) },
+                { MetricTile(stringResource(R.string.sleep), state.sleep?.takeIf { it.durationS > 0 }?.let { s -> Fmt.hours(s.durationS) } ?: "–", metrics.sleep, it, "h", last7.map { r -> r.sleepHours }, onClick = { onOpenHealth(ChartMetric.SLEEP) }) },
+            )
+            fun signalGrid() {
+                item { TileRow(signals[0], signals[1]) }
+                item { TileRow(signals[2], signals[3]) }
             }
-            item {
-                val last7 = overview.trend.takeLast(7)
-                TileRow(
-                    { MetricTile(stringResource(R.string.stress), today?.avgStress?.toString() ?: "–", metrics.stress, it, series = last7.map { r -> r.avgStress?.toDouble() }, onClick = { onOpenHealth(ChartMetric.STRESS) }) },
-                    { MetricTile(stringResource(R.string.sleep), state.sleep?.takeIf { it.durationS > 0 }?.let { s -> Fmt.hours(s.durationS) } ?: "–", metrics.sleep, it, "h", last7.map { r -> r.sleepHours }, onClick = { onOpenHealth(ChartMetric.SLEEP) }) },
-                )
+
+            when (design) {
+                // Clean Pro: the readiness ring as the hero, then "My day" as one calm list.
+                Design.CLEAN -> {
+                    readiness()
+                    item { SectionTitle(stringResource(R.string.home_my_day)) }
+                    stepsCard()
+                    signals.forEach { tile -> item { tile(Modifier.fillMaxWidth()) } }
+                    goalsAndLoad()
+                }
+                // Dashboard Dark: the four signal tiles first, everything at a glance.
+                Design.DASHBOARD -> {
+                    signalGrid()
+                    stepsCard()
+                    readiness()
+                    goalsAndLoad()
+                }
+                // Retro Pro: the order of earlier versions.
+                Design.RETRO -> {
+                    readiness()
+                    goalsAndLoad()
+                    stepsCard()
+                    signalGrid()
+                }
             }
 
             item {

@@ -28,6 +28,10 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
@@ -37,6 +41,17 @@ import kotlin.math.max
 import kotlin.math.min
 
 /** Evenly thin a series to at most [max] points so long tracks stay cheap to draw. */
+/** 0 to 1 over 0.7 s whenever [key] changes: how far a chart has drawn itself in. */
+@Composable
+private fun rememberReveal(key: Any?): Float {
+    val shown = remember { androidx.compose.animation.core.Animatable(0f) }
+    LaunchedEffect(key) {
+        shown.snapTo(0f)
+        shown.animateTo(1f, androidx.compose.animation.core.tween(700))
+    }
+    return shown.value
+}
+
 fun <T> downsample(values: List<T>, max: Int = 300): List<T> {
     if (values.size <= max) return values
     val step = values.size.toDouble() / max
@@ -107,6 +122,8 @@ fun LineChart(
     val cursor = MaterialTheme.colorScheme.onSurface
     val density = androidx.compose.ui.platform.LocalDensity.current
     val inset = with(density) { 4.dp.toPx() }
+    val design = LocalDesign.current
+    val reveal = rememberReveal(values)
     Inspectable(values, labels, format, modifier, indexAt = { x, w ->
         if (values.size < 2) 0 else Math.round((x - inset) / (w - 2 * inset) * (values.size - 1))
     }) { extra, selected ->
@@ -133,7 +150,30 @@ fun LineChart(
                 path.lineTo(x(i), y(v))
             }
         }
-        drawPath(path, color, style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+        // The line draws itself from left to right when the chart appears.
+        clipRect(right = size.width * reveal) {
+            when (design) {
+                // Clean: a soft area under a calm line.
+                Design.CLEAN -> {
+                    values.withIndex().filter { it.value != null }.let { pts ->
+                        if (pts.size >= 2) {
+                            val area = Path().apply {
+                                moveTo(x(pts.first().index), size.height)
+                                pts.forEach { (i, v) -> lineTo(x(i), y(v!!)) }
+                                lineTo(x(pts.last().index), size.height)
+                                close()
+                            }
+                            drawPath(area, Brush.verticalGradient(listOf(color.copy(alpha = 0.30f), color.copy(alpha = 0f))))
+                        }
+                    }
+                }
+                // Retro: a wide, faint copy under the line makes it glow like a neon tube.
+                Design.RETRO -> drawPath(path, color.copy(alpha = 0.25f), style = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+                Design.DASHBOARD -> Unit
+            }
+            val width = if (design == Design.RETRO) 2.dp else 3.dp
+            drawPath(path, color, style = Stroke(width = width.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+        }
         if (selected != null) {
             drawLine(cursor.copy(alpha = 0.5f), Offset(x(selected), 0f), Offset(x(selected), size.height), strokeWidth = 1.dp.toPx())
             values.getOrNull(selected)?.let { drawCircle(color, 5.dp.toPx(), Offset(x(selected), y(it))) }
@@ -157,6 +197,8 @@ fun BarChart(
     val gridColor = MaterialTheme.colorScheme.outlineVariant
     val goalColor = MaterialTheme.colorScheme.secondary
     val cursor = MaterialTheme.colorScheme.onSurface
+    val design = LocalDesign.current
+    val reveal = rememberReveal(values)
     Inspectable(values, labels, format, modifier, indexAt = { x, w -> (x / (w / values.size)).toInt() }) { extra, selected ->
     Canvas(Modifier.fillMaxWidth().height(height).then(extra).semantics { contentDescription = description }) {
         grid(gridColor)
@@ -167,10 +209,19 @@ fun BarChart(
         val barWidth = slot * 0.7f
         values.forEachIndexed { i, v ->
             if (v == null) return@forEachIndexed
-            val h = (size.height * (v / top)).toFloat()
-            // With one bar picked the others step back, so the eye finds it.
-            val tint = if (selected == null || selected == i) color else color.copy(alpha = 0.35f)
-            drawRect(tint, Offset(slot * i + (slot - barWidth) / 2, size.height - h), Size(barWidth, h), style = Fill)
+            // Bars grow up from the base line when the chart appears.
+            val h = (size.height * (v / top)).toFloat() * reveal
+            // With one bar picked the others step back, so the eye finds it. Dashboard lights the last bar (today) the same way.
+            val lit = selected ?: if (design == Design.DASHBOARD) values.lastIndex else null
+            val tint = if (lit == null || lit == i) color else color.copy(alpha = 0.35f)
+            val topLeft = Offset(slot * i + (slot - barWidth) / 2, size.height - h)
+            if (design == Design.RETRO) {
+                drawRect(tint, topLeft, Size(barWidth, h), style = Fill)
+            } else {
+                // Clean and Dashboard round the top of each bar.
+                val r = min(barWidth / 2, 4.dp.toPx())
+                clipRect(bottom = size.height) { drawRoundRect(tint, topLeft, Size(barWidth, h + r), CornerRadius(r, r)) }
+            }
         }
         if (selected != null) {
             val cx = slot * selected + slot / 2

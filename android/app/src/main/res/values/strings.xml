@@ -600,4 +600,16 @@
     <string name="watchface_no_usb">No watch on the USB cable. Connect the Garmin with its cable and try again.</string>
     <string name="watchface_cannot_write">The watch did not accept the file over USB.</string>
     <string name="watchface_already">A file with that name is already on the watch. Rename the file and try again.</string>
+    <string name="palette_clean">Clean</string>
+    <string name="palette_midnight">Midnight</string>
+    <string name="design_title">Design</string>
+    <string name="design_clean">Clean Pro</string>
+    <string name="design_dashboard">Dashboard Dark</string>
+    <string name="design_retro">Retro Pro</string>
+    <string name="design_clean_body">Calm cards, a big readiness ring on top and a "My day" list. Soft area charts.</string>
+    <string name="design_dashboard_body">Tiles in two columns, each in its own colour, on black. Bold bars with today lit.</string>
+    <string name="design_retro_body">The arcade look: fine borders, glows and glowing chart lines.</string>
+    <string name="design_note">A design also picks its own colours and style; you can change both below.</string>
+    <string name="onboarding_design">Pick a design</string>
+    <string name="home_my_day">My day</string>
 </resources>

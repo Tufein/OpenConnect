@@ -89,7 +89,7 @@ private val LightColors = lightColorScheme(
  * colours by [scheme]. "dynamic" takes the phone's own wallpaper colours on Android 12 and newer.
  */
 enum class Palette(val key: String) {
-    ARCADE("arcade"), GAMEBOY("gameboy"), AMBER("amber"), SYNTHWAVE("synthwave"), OCEAN("ocean"), SUNSET("sunset"), DYNAMIC("dynamic");
+    ARCADE("arcade"), CLEAN("clean"), MIDNIGHT("midnight"), GAMEBOY("gameboy"), AMBER("amber"), SYNTHWAVE("synthwave"), OCEAN("ocean"), SUNSET("sunset"), DYNAMIC("dynamic");
 
     companion object {
         fun of(key: String?): Palette = entries.firstOrNull { it.key == key } ?: ARCADE
@@ -105,12 +105,48 @@ enum class LookStyle(val key: String) {
     }
 }
 
+/**
+ * The three designs (v0.19.0). A design decides how Home is laid out, how cards and charts are drawn and how the tab bar
+ * marks the open tab; colours and fonts stay free to choose. Picking a design in Settings also picks its own colours
+ * and style ([preset]), which can be changed afterwards.
+ * - CLEAN ("Clean Pro"): calm cards without borders, a big readiness ring on top, a "My day" list, soft area charts.
+ * - DASHBOARD ("Dashboard Dark"): tiles in two columns first, bold rounded bars with today lit.
+ * - RETRO ("Retro Pro"): the arcade look of v0.8.0 to v0.18.0, with borders, glows and glowing lines.
+ */
+enum class Design(val key: String, val palette: Palette, val style: LookStyle) {
+    CLEAN("clean", Palette.CLEAN, LookStyle.ROUND),
+    DASHBOARD("dashboard", Palette.MIDNIGHT, LookStyle.ROUND),
+    RETRO("retro", Palette.ARCADE, LookStyle.SPORT);
+
+    companion object {
+        fun of(key: String?): Design = entries.firstOrNull { it.key == key } ?: RETRO
+    }
+}
+
+/** The design in use; Retro unless the theme says otherwise, so previews and old screens look as before. */
+val LocalDesign = staticCompositionLocalOf { Design.RETRO }
+
+/** Cards keep their fine border only in the Retro design; the other two rely on calm surfaces. */
+@Composable
+fun cardBorder(): androidx.compose.foundation.BorderStroke? =
+    if (LocalDesign.current == Design.RETRO) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant) else null
+
+/** The soft coloured glow at the top of a card belongs to the Retro design. */
+@Composable
+fun glowsCards(): Boolean = LocalDesign.current == Design.RETRO
+
 /** The key colours of one theme, for its dark and its light version. */
 private class Keys(
     val primary: Color, val secondary: Color, val tertiary: Color, val background: Color, val surface: Color, val text: Color,
 )
 
 private val PaletteKeys: Map<Palette, Pair<Keys, Keys>> = mapOf(
+    // Clean Pro: calm blue on neutral grey and white.
+    Palette.CLEAN to (Keys(Color(0xFF7AA7FF), Color(0xFF4FD1C5), Color(0xFFB794FF), Color(0xFF101317), Color(0xFF1A1E24), Color(0xFFECEFF4)) to
+        Keys(Color(0xFF1F5FD1), Color(0xFF0E7C70), Color(0xFF6E56CF), Color(0xFFF5F6F8), Color(0xFFFFFFFF), Color(0xFF15181D))),
+    // Dashboard Dark: pure black with green, for OLED screens.
+    Palette.MIDNIGHT to (Keys(Color(0xFF3DDC97), Color(0xFF4FB3FF), Color(0xFFB794FF), Color(0xFF000000), Color(0xFF14171B), Color(0xFFF2F4F7)) to
+        Keys(Color(0xFF0B7A50), Color(0xFF1268B3), Color(0xFF6E56CF), Color(0xFFF0F1F3), Color(0xFFFFFFFF), Color(0xFF101214))),
     // The four greens of the 1989 handheld's screen.
     Palette.GAMEBOY to (Keys(Color(0xFF9BBC0F), Color(0xFF8BAC0F), Color(0xFFC4DE5A), Color(0xFF0F380F), Color(0xFF1E4A1E), Color(0xFFD7EFA0)) to
         Keys(Color(0xFF306230), Color(0xFF4F7A1E), Color(0xFF0F380F), Color(0xFFCADC9F), Color(0xFFE0EDBE), Color(0xFF0F380F))),
@@ -265,9 +301,9 @@ private val PixelShapes = Shapes(
     extraLarge = RoundedCornerShape(4.dp),
 )
 
-/** [mode] is "system" (follow the phone), "dark" or "light"; [palette] and [style] are the keys of [Palette] and [LookStyle]. */
+/** [mode] is "system" (follow the phone), "dark" or "light"; [palette], [style] and [design] are keys of [Palette], [LookStyle] and [Design]. */
 @Composable
-fun OpenConnectTheme(mode: String = "system", palette: String = "arcade", style: String = "sport", content: @Composable () -> Unit) {
+fun OpenConnectTheme(mode: String = "system", palette: String = "arcade", style: String = "sport", design: String = "retro", content: @Composable () -> Unit) {
     val dark = when (mode) {
         "dark" -> true
         "light" -> false
@@ -281,7 +317,7 @@ fun OpenConnectTheme(mode: String = "system", palette: String = "arcade", style:
         else -> PaletteKeys[chosen]?.let { (d, l) -> scheme(if (dark) d else l, dark) } ?: if (dark) DarkColors else LightColors
     }
     val look = LookStyle.of(style)
-    CompositionLocalProvider(LocalMetricColors provides metricsFor(chosen, colors, dark)) {
+    CompositionLocalProvider(LocalMetricColors provides metricsFor(chosen, colors, dark), LocalDesign provides Design.of(design)) {
         MaterialTheme(
             colorScheme = colors,
             typography = when (look) {

@@ -1,6 +1,5 @@
 package nl.tufein.openconnect.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -152,9 +152,9 @@ fun ScoreTile(
         modifier = modifier.tappable(onClick),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = colors.surfaceContainer),
-        border = BorderStroke(1.dp, colors.outlineVariant),
+        border = cardBorder(),
     ) {
-        Box(Modifier.background(Brush.linearGradient(listOf(color.copy(alpha = 0.16f), Color.Transparent)))) {
+        Box(if (glowsCards()) Modifier.background(Brush.linearGradient(listOf(color.copy(alpha = 0.16f), Color.Transparent))) else Modifier) {
             Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(label, style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant, modifier = Modifier.weight(1f))
@@ -204,9 +204,9 @@ fun SurfaceCard(modifier: Modifier = Modifier, accent: Color? = null, content: @
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        border = cardBorder(),
     ) {
-        val glow = if (accent == null) Modifier else Modifier.background(Brush.verticalGradient(listOf(accent.copy(alpha = 0.14f), Color.Transparent)))
+        val glow = if (accent == null || !glowsCards()) Modifier else Modifier.background(Brush.verticalGradient(listOf(accent.copy(alpha = 0.14f), Color.Transparent)))
         Column(glow.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) { content() }
     }
 }
@@ -218,7 +218,7 @@ fun StatTile(label: String, value: String, modifier: Modifier = Modifier, unit: 
         modifier = modifier.tappable(onClick),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        border = cardBorder(),
     ) {
         Column(Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -259,10 +259,10 @@ fun MetricTile(
         modifier = modifier.tappable(onClick),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        border = cardBorder(),
     ) {
         Column(
-            Modifier.background(Brush.verticalGradient(listOf(color.copy(alpha = 0.12f), Color.Transparent))).padding(14.dp),
+            (if (glowsCards()) Modifier.background(Brush.verticalGradient(listOf(color.copy(alpha = 0.12f), Color.Transparent))) else Modifier).padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -307,13 +307,16 @@ fun RingGauge(
     description: String = "",
     content: @Composable BoxScope.() -> Unit = {},
 ) {
+    // The ring fills up from empty when it first appears.
+    val shown = remember { androidx.compose.animation.core.Animatable(0f) }
+    androidx.compose.runtime.LaunchedEffect(progress) { shown.animateTo(progress.coerceIn(0f, 1f), androidx.compose.animation.core.tween(800)) }
     Box(modifier.size(size).semantics { if (description.isNotEmpty()) contentDescription = description }, contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
             val width = stroke.toPx()
             val topLeft = Offset(width / 2, width / 2)
             val arc = Size(this.size.width - width, this.size.height - width)
             drawArc(color.copy(alpha = 0.18f), 0f, 360f, false, topLeft, arc, style = Stroke(width))
-            val sweep = 360f * progress.coerceIn(0f, 1f)
+            val sweep = 360f * shown.value
             if (sweep > 0f) drawArc(color, -90f, sweep, false, topLeft, arc, style = Stroke(width, cap = StrokeCap.Round))
         }
         content()

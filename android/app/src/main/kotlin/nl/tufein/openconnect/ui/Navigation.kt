@@ -82,7 +82,8 @@ fun OpenConnectRoot(
 ) {
     val sources by vm.sources.collectAsState()
     if (!sources.onboarded) {
-        OnboardingScreen(sources, vm::setSources)
+        val firstLook by vm.look.collectAsState()
+        OnboardingScreen(sources, vm::setSources, firstLook.design, vm::setDesign)
         return
     }
     val nav = rememberNavController()
@@ -163,7 +164,9 @@ fun OpenConnectRoot(
         snackbarHost = { SnackbarHost(snackbar) },
         bottomBar = {
             if (showBar) {
-                NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
+                // Each design marks the open tab its own way: a pill (Clean), only the colour (Dashboard) or the arcade block (Retro).
+                val design = LocalDesign.current
+                NavigationBar(containerColor = if (design == Design.DASHBOARD) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surfaceContainer) {
                     for (tab in tabs) {
                         NavigationBarItem(
                             selected = route == tab.route,
@@ -179,7 +182,11 @@ fun OpenConnectRoot(
                                     style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Default, fontSize = 11.sp),
                                 )
                             },
-                            colors = NavigationBarItemDefaults.colors(
+                            colors = if (design == Design.DASHBOARD) NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                            ) else NavigationBarItemDefaults.colors(
                                 selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
                                 indicatorColor = MaterialTheme.colorScheme.primaryContainer,
                             ),
@@ -243,6 +250,7 @@ fun OpenConnectRoot(
                 SettingsScreen(
                     ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources, look = look),
                     onLook = vm::setLook,
+                    onDesign = vm::setDesign,
                     onWatchFace = onWatchFace,
                     onSources = vm::setSources,
                     onAppLock = onAppLock,
