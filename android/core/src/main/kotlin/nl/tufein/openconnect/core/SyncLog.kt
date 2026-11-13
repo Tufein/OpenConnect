@@ -16,6 +16,7 @@ object SyncLog {
     const val SOURCE_FOLDER = "folder"
     const val SOURCE_BLE = "garmin-ble"
     const val SOURCE_ACCOUNT = "garmin-account"
+    const val SOURCE_OURA = "oura"
     private const val MAX_DETAIL = 200
 
     fun add(log: List<SyncLogEntry>, entry: SyncLogEntry): List<SyncLogEntry> = (listOf(entry) + log).take(MAX)

@@ -69,6 +69,20 @@
                 android:resource="@xml/home_widget_info" />
         </receiver>
 
+        <!-- Where the browser comes back to after the Oura login (openconnect://oura?code=...). -->
+        <activity
+            android:name=".oura.OuraRedirectActivity"
+            android:exported="true"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="openconnect" android:host="oura" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -64,6 +64,13 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 15. **Training plans:** a simple 5K or 10K plan built from your goals and load.
 16. **App lock** (biometrics) for the health data.
 
+## v0.16.0: Oura, one AI, livelier screens ✅
+
+17. **Oura Ring** as a source (OAuth2 login with the owner's own Oura application; days, nights and workouts).
+18. **One AI at a time:** offline, Claude or Gemini; only the chosen one is shown and used.
+19. **Sync on opening and every 10 minutes** while the app is open; background jobs every 15 minutes.
+20. **Tiles that open their chart**, and charts that can be read by touch.
+
 ## Later 💡
 
 - Wear OS or a watch face is out of scope; the project is about the phone side.
@@ -72,6 +79,7 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 
 - A real **fenix 8** test of the Bluetooth sync. Everything in v0.11.0 depends on its first result.
 - Live checks of **Claude and Gemini** with the owner's own keys, entered in the app.
+- A real **Oura** login with the owner's own Oura application and membership.
 
 ## How releases work
 

@@ -47,6 +47,6 @@ In a spreadsheet with Dutch settings, use *Data, From text/CSV* with a comma as 
 
 ## Syncing like Garmin Connect
 
-See [GARMIN.md](GARMIN.md). In short: opening the app syncs if the last sync is more than 30 minutes old, pulling the
-Home screen down syncs now, a background job runs about every three hours, and the pill at the top of Home says when
+See [GARMIN.md](GARMIN.md). In short: opening the app syncs (and every 10 minutes while it stays open), pulling the
+Home screen down syncs now, a background job runs about every 15 minutes, and the pill at the top of Home says when
 the last sync was or how far a running one is.

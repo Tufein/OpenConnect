@@ -1,5 +1,7 @@
 package nl.tufein.openconnect.ui
 
+import nl.tufein.openconnect.core.ChartMetric
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -63,6 +65,10 @@ fun HomeScreen(
     onCoach: () -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
     zone: ZoneId = ZoneId.systemDefault(),
+    /** A tile was tapped: open that chart on the Health screen. */
+    onOpenHealth: (ChartMetric) -> Unit = {},
+    onOpenActivities: () -> Unit = {},
+    onOpenInsights: () -> Unit = {},
 ) {
     val badge = syncBadge(garmin)
     val metrics = OpenConnectColors.metrics
@@ -96,14 +102,14 @@ fun HomeScreen(
             }
             val today = overview.today
 
-            item { ReadinessCard(state.readiness) }
-            state.goalProgress?.let { progress -> item { GoalsCard(progress, state.goals) } }
-            state.load?.let { load -> item { LoadCard(load) } }
+            item { Box(Modifier.tappable { onOpenHealth(ChartMetric.READINESS) }) { ReadinessCard(state.readiness) } }
+            state.goalProgress?.let { progress -> item { Box(Modifier.tappable(onOpenInsights)) { GoalsCard(progress, state.goals) } } }
+            state.load?.let { load -> item { Box(Modifier.tappable(onOpenActivities)) { LoadCard(load) } } }
 
             item {
                 val goal = (today?.stepsGoal ?: 10_000).coerceAtLeast(1)
                 val steps = today?.steps ?: 0
-                SurfaceCard(accent = metrics.steps) {
+                SurfaceCard(Modifier.tappable { onOpenHealth(ChartMetric.STEPS) }, accent = metrics.steps) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(18.dp)) {
                         RingGauge(
                             progress = steps.toFloat() / goal,
@@ -129,15 +135,15 @@ fun HomeScreen(
             item {
                 val last7 = overview.trend.takeLast(7)
                 TileRow(
-                    { MetricTile(stringResource(R.string.resting_hr), today?.restingHr?.takeIf { it > 0 }?.toString() ?: "–", metrics.heart, it, "bpm", last7.map { r -> r.restingHr?.toDouble() }) },
-                    { MetricTile(stringResource(R.string.body_battery), today?.bodyBatteryHigh?.toString() ?: "–", metrics.battery, it, series = last7.map { r -> r.bodyBatteryHigh?.toDouble() }) },
+                    { MetricTile(stringResource(R.string.resting_hr), today?.restingHr?.takeIf { it > 0 }?.toString() ?: "–", metrics.heart, it, "bpm", last7.map { r -> r.restingHr?.toDouble() }, onClick = { onOpenHealth(ChartMetric.RESTING_HR) }) },
+                    { MetricTile(stringResource(R.string.body_battery), today?.bodyBatteryHigh?.toString() ?: "–", metrics.battery, it, series = last7.map { r -> r.bodyBatteryHigh?.toDouble() }, onClick = { onOpenHealth(ChartMetric.BODY_BATTERY) }) },
                 )
             }
             item {
                 val last7 = overview.trend.takeLast(7)
                 TileRow(
-                    { MetricTile(stringResource(R.string.stress), today?.avgStress?.toString() ?: "–", metrics.stress, it, series = last7.map { r -> r.avgStress?.toDouble() }) },
-                    { MetricTile(stringResource(R.string.sleep), state.sleep?.takeIf { it.durationS > 0 }?.let { s -> Fmt.hours(s.durationS) } ?: "–", metrics.sleep, it, "h", last7.map { r -> r.sleepHours }) },
+                    { MetricTile(stringResource(R.string.stress), today?.avgStress?.toString() ?: "–", metrics.stress, it, series = last7.map { r -> r.avgStress?.toDouble() }, onClick = { onOpenHealth(ChartMetric.STRESS) }) },
+                    { MetricTile(stringResource(R.string.sleep), state.sleep?.takeIf { it.durationS > 0 }?.let { s -> Fmt.hours(s.durationS) } ?: "–", metrics.sleep, it, "h", last7.map { r -> r.sleepHours }, onClick = { onOpenHealth(ChartMetric.SLEEP) }) },
                 )
             }
 
@@ -146,21 +152,22 @@ fun HomeScreen(
                 SectionTitle(stringResource(R.string.last_7_days))
                 Spacer(Modifier.padding(top = 8.dp))
                 TileRow(
-                    { StatTile(stringResource(R.string.distance), Fmt.km(week.totalDistanceM), it, unit = "km", color = metrics.distance) },
-                    { StatTile(stringResource(R.string.activities), week.activityCount.toString(), it, color = MaterialTheme.colorScheme.primary) },
+                    { StatTile(stringResource(R.string.distance), Fmt.km(week.totalDistanceM), it, unit = "km", color = metrics.distance, onClick = onOpenActivities) },
+                    { StatTile(stringResource(R.string.activities), week.activityCount.toString(), it, color = MaterialTheme.colorScheme.primary, onClick = onOpenActivities) },
                 )
             }
             item {
                 val change = overview.stepsChangePct
                 val week = overview.last7
                 TileRow(
-                    { StatTile(stringResource(R.string.avg_steps), week.avgSteps?.let { Fmt.thousands(Math.rint(it).toInt()) } ?: "–", it, color = metrics.steps) },
+                    { StatTile(stringResource(R.string.avg_steps), week.avgSteps?.let { Fmt.thousands(Math.rint(it).toInt()) } ?: "–", it, color = metrics.steps, onClick = { onOpenHealth(ChartMetric.STEPS) }) },
                     {
                         StatTile(
                             stringResource(R.string.steps_vs_previous),
                             change?.let { (if (it >= 0) "+" else "") + Fmt.oneDecimal(it) + "%" } ?: "–",
                             it,
                             color = metrics.calories,
+                            onClick = { onOpenHealth(ChartMetric.STEPS) },
                         )
                     },
                 )
@@ -174,6 +181,8 @@ fun HomeScreen(
                         goal = 10_000.0,
                         color = metrics.steps,
                         description = stringResource(R.string.steps_30_days),
+                        labels = overview.trend.map { Fmt.shortDate(it.date) },
+                        format = { insightValue(ChartMetric.STEPS, it) },
                     )
                 }
             }

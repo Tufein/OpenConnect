@@ -112,8 +112,8 @@ class GarminController(
         /** A sync in the background (when the app opens, or the job) covers this many days: the recent ones are what changes. */
         const val AUTO_SYNC_DAYS = 7
 
-        /** The app syncs by itself at most this often, like Garmin Connect does when it is opened. */
-        val AUTO_SYNC_EVERY: Duration = Duration.ofMinutes(30)
+        /** The app syncs by itself at most this often: when it is opened, every ten minutes while open, and in the background. */
+        val AUTO_SYNC_EVERY: Duration = Duration.ofMinutes(10)
 
         private val KEY_SHAPE = Regex("[A-Za-z0-9._~+/=-]{20,512}")
 
@@ -216,11 +216,11 @@ class GarminController(
 
     fun sync() = start(_state.value.days)
 
-    /** Called when the app opens: syncs when the user switched that on and the last sync is long enough ago. */
-    fun autoSyncIfDue() {
+    /** Called when the app opens and by the timer: syncs when the user switched that on and the last sync is [gap] ago. */
+    fun autoSyncIfDue(gap: Duration = AUTO_SYNC_EVERY) {
         val ui = _state.value
         if (!ui.autoSync || !ui.hasKey) return
-        if (due(ui)) start(AUTO_SYNC_DAYS)
+        if (due(ui, gap)) start(AUTO_SYNC_DAYS)
     }
 
     fun cancel() {
@@ -228,9 +228,9 @@ class GarminController(
         _state.update { ui -> (ui.sync as? GarminSyncUi.Running)?.let { ui.copy(sync = it.copy(cancelling = true)) } ?: ui }
     }
 
-    private fun due(ui: GarminUi): Boolean {
+    private fun due(ui: GarminUi, gap: Duration = AUTO_SYNC_EVERY): Boolean {
         val last = ui.lastSync
-        return last == null || Duration.between(last, now()) >= AUTO_SYNC_EVERY
+        return last == null || Duration.between(last, now()) >= gap
     }
 
     /**

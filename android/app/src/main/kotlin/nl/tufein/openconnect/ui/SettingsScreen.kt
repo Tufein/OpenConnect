@@ -97,6 +97,7 @@ fun SettingsScreen(
     onClear: () -> Unit,
     onWatch: () -> Unit,
     onGarmin: () -> Unit,
+    onOura: () -> Unit = {},
     onBackup: () -> Unit = {},
     onRestore: () -> Unit = {},
     onClearLog: () -> Unit = {},
@@ -146,6 +147,7 @@ fun SettingsScreen(
                 Text(stringResource(R.string.settings_data_body), style = MaterialTheme.typography.bodyMedium)
                 Button(onClick = onGarmin, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_garmin)) }
                 Button(onClick = onWatch, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_watch)) }
+                Button(onClick = onOura, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_oura)) }
                 OutlinedButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_import)) }
                 OutlinedButton(onClick = onDemo, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_demo)) }
                 TextButton(onClick = { confirmClear = true }) {
@@ -224,7 +226,6 @@ fun SettingsScreen(
             SurfaceCard {
                 Text(stringResource(R.string.settings_ai_body), style = MaterialTheme.typography.bodyMedium)
                 for ((value, label) in listOf(
-                    "auto" to R.string.provider_auto,
                     "template" to R.string.provider_template,
                     AiVendor.CLAUDE.id to R.string.provider_claude,
                     AiVendor.GEMINI.id to R.string.provider_gemini,
@@ -245,7 +246,8 @@ fun SettingsScreen(
                 Text(stringResource(R.string.privacy_ai), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        items(ui.ai.vendors, key = { it.vendor.id }) { vendor ->
+        // Only the AI that was picked is on screen; the other one is out of the way (its saved key is kept, unused).
+        items(ui.ai.vendors.filter { it.vendor.id == ui.ai.choice }, key = { it.vendor.id }) { vendor ->
             VendorCard(ui.ai.canStoreKeys, vendor, onSaveKey, onCheckKey, onForgetKey, onModel)
         }
         item {
@@ -406,6 +408,7 @@ private fun sourceLabel(source: String): String = stringResource(
         "garmin" -> R.string.source_garmin
         "watch", "usb", "folder", "garmin-ble" -> R.string.source_watch
         "demo" -> R.string.source_demo
+        "oura" -> R.string.source_oura
         else -> R.string.source_import
     },
 )
@@ -453,6 +456,7 @@ private fun SyncLogBody(log: List<SyncLogEntry>, onClear: () -> Unit) {
                 SyncLog.SOURCE_USB -> R.string.synclog_usb
                 SyncLog.SOURCE_FOLDER -> R.string.synclog_folder
                 SyncLog.SOURCE_BLE -> R.string.synclog_ble
+                SyncLog.SOURCE_OURA -> R.string.synclog_oura
                 else -> R.string.synclog_account
             },
         )

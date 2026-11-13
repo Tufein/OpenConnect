@@ -58,6 +58,8 @@ fun InsightsScreen(
     onClearCoach: () -> Unit,
     onOpenAiSettings: () -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
+    onOpenHealth: (nl.tufein.openconnect.core.ChartMetric) -> Unit = {},
+    onOpenActivities: () -> Unit = {},
 ) {
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
         Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -69,7 +71,7 @@ fun InsightsScreen(
             }
         }
         when (tab) {
-            InsightsTab.Week -> WeekContent(reports, busy, active, onShiftWeek, onPeriod, onGenerate, onOpenActivity, contentPadding)
+            InsightsTab.Week -> WeekContent(reports, busy, active, onShiftWeek, onPeriod, onGenerate, onOpenActivity, contentPadding, onOpenHealth, onOpenActivities)
             InsightsTab.Trophies -> TrophiesContent(trophies, contentPadding)
             InsightsTab.Coach -> CoachContent(coach, active, onAsk, onClearCoach, onOpenAiSettings, contentPadding)
             InsightsTab.Plan -> PlanContent(plan, onCreatePlan, onDeletePlan, contentPadding)
@@ -87,6 +89,8 @@ private fun WeekContent(
     onGenerate: (force: Boolean) -> Unit,
     onOpenActivity: (String) -> Unit,
     contentPadding: PaddingValues,
+    onOpenHealth: (nl.tufein.openconnect.core.ChartMetric) -> Unit,
+    onOpenActivities: () -> Unit,
 ) {
     val colors = OpenConnectColors.metrics
     LazyColumn(
@@ -116,20 +120,20 @@ private fun WeekContent(
         if (week != null) {
             item {
                 TileRow(
-                    { StatTile(stringResource(R.string.activities), week.activityCount.toString(), it, color = MaterialTheme.colorScheme.primary) },
-                    { StatTile(stringResource(R.string.distance), Fmt.km(week.totalDistanceM), it, unit = "km", color = colors.distance) },
+                    { StatTile(stringResource(R.string.activities), week.activityCount.toString(), it, color = MaterialTheme.colorScheme.primary, onClick = onOpenActivities) },
+                    { StatTile(stringResource(R.string.distance), Fmt.km(week.totalDistanceM), it, unit = "km", color = colors.distance, onClick = onOpenActivities) },
                 )
             }
             item {
                 TileRow(
-                    { StatTile(stringResource(R.string.duration), Fmt.duration(week.totalDurationS), it, color = colors.calories) },
-                    { StatTile(stringResource(R.string.avg_steps), week.avgSteps?.let { s -> Fmt.thousands(Math.rint(s).toInt()) } ?: "–", it, color = colors.steps) },
+                    { StatTile(stringResource(R.string.duration), Fmt.duration(week.totalDurationS), it, color = colors.calories, onClick = onOpenActivities) },
+                    { StatTile(stringResource(R.string.avg_steps), week.avgSteps?.let { s -> Fmt.thousands(Math.rint(s).toInt()) } ?: "–", it, color = colors.steps, onClick = { onOpenHealth(nl.tufein.openconnect.core.ChartMetric.STEPS) }) },
                 )
             }
             item {
                 TileRow(
-                    { StatTile(stringResource(R.string.sleep), week.avgSleepHours?.let { h -> Fmt.oneDecimal(h) } ?: "–", it, unit = "h", color = colors.sleep) },
-                    { StatTile(stringResource(R.string.intensity_minutes), week.intensityMinutes.toString(), it, color = colors.stress) },
+                    { StatTile(stringResource(R.string.sleep), week.avgSleepHours?.let { h -> Fmt.oneDecimal(h) } ?: "–", it, unit = "h", color = colors.sleep, onClick = { onOpenHealth(nl.tufein.openconnect.core.ChartMetric.SLEEP) }) },
+                    { StatTile(stringResource(R.string.intensity_minutes), week.intensityMinutes.toString(), it, color = colors.stress, onClick = onOpenActivities) },
                 )
             }
         }

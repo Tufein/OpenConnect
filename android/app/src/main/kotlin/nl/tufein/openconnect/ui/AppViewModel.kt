@@ -131,6 +131,7 @@ private val LAST_DAY = LocalDate.of(2100, 12, 31)
 
 const val WATCH_ROUTE = "watch"
 const val GARMIN_ROUTE = "garmin"
+const val OURA_ROUTE = "oura"
 const val CSV_DAILY = "daily"
 const val CSV_ACTIVITIES = "activities"
 
@@ -244,9 +245,38 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /** The app came to the front: sync if the last sync is old enough, like Garmin Connect does. */
+    /** The app came to the front: sync every connected account (unless that happened in the last minute) and keep
+     *  doing so every ten minutes while it stays open. */
     fun onResume() {
         _now.value = Instant.now()
-        container.garmin.autoSyncIfDue()
+        syncAccounts(OPEN_GAP)
+        ticker?.cancel()
+        // Off the main thread: a ten-minute wait has no business in the UI's queue.
+        ticker = viewModelScope.launch(Dispatchers.Default) {
+            while (true) {
+                kotlinx.coroutines.delay(TICK.toMillis())
+                _now.value = Instant.now()
+                syncAccounts(TICK.minusSeconds(30))
+            }
+        }
+    }
+
+    /** The app went to the background: the background jobs take over. */
+    fun onPause() {
+        ticker?.cancel()
+        ticker = null
+    }
+
+    private var ticker: kotlinx.coroutines.Job? = null
+
+    private fun syncAccounts(gap: java.time.Duration) {
+        container.garmin.autoSyncIfDue(gap)
+        container.oura.syncIfDue(gap)
+    }
+
+    private companion object {
+        val OPEN_GAP: java.time.Duration = java.time.Duration.ofMinutes(1)
+        val TICK: java.time.Duration = java.time.Duration.ofMinutes(10)
     }
 
     // ------------------------------------------------------------------------------------ AI
@@ -344,6 +374,24 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun setGarminAutoSync(on: Boolean) = container.garmin.setAutoSync(on)
 
     fun syncGarmin() = container.garmin.sync()
+
+    // ----------------------------------------------------------------------------------- Oura
+
+    val oura: StateFlow<nl.tufein.openconnect.oura.OuraUi> get() = container.oura.state
+
+    fun saveOuraClient(id: String, secret: String, redirect: String) = container.oura.saveClient(id, secret, redirect)
+
+    fun ouraLoginUrl(): String? = container.oura.loginUrl()
+
+    fun finishOuraLogin(redirect: String) = container.oura.finishLogin(redirect)
+
+    fun syncOura() = container.oura.sync()
+
+    fun disconnectOura() = container.oura.disconnect()
+
+    fun forgetOura() = container.oura.forget()
+
+    fun setOuraPreferSleep(on: Boolean) = container.oura.setPreferSleep(on)
 
     fun cancelGarmin() = container.garmin.cancel()
 

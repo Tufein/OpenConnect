@@ -61,7 +61,8 @@ class AiController(
     private val io: CoroutineDispatcher,
 ) {
     companion object {
-        val CHOICES = listOf("auto", "template") + AiVendor.entries.map { it.id }
+        /** Offline, or exactly one AI. The old "auto" (and anything unknown) is read as the AI that has a key. */
+        val CHOICES = listOf("template") + AiVendor.entries.map { it.id }
         val LANGUAGES = listOf("en", "nl")
 
         private val KEY_SHAPE = Regex("[A-Za-z0-9._~+/=:-]{16,512}")
@@ -82,7 +83,11 @@ class AiController(
     private val _state = MutableStateFlow(snapshot())
     val state: StateFlow<AiUi> = _state.asStateFlow()
 
-    private fun currentChoice() = settings.choice.takeIf { it in CHOICES } ?: "auto"
+    private fun currentChoice(): String = settings.choice.takeIf { it in CHOICES } ?: when {
+        !settings.key(AiVendor.CLAUDE).isNullOrBlank() -> AiVendor.CLAUDE.id
+        !settings.key(AiVendor.GEMINI).isNullOrBlank() -> AiVendor.GEMINI.id
+        else -> AiVendor.CLAUDE.id
+    }
 
     private fun snapshot(): AiUi = AiUi(
         choice = currentChoice(),
@@ -184,15 +189,11 @@ class AiController(
     fun active(): ActiveAi {
         val hasClaude = !settings.key(AiVendor.CLAUDE).isNullOrBlank()
         val hasGemini = !settings.key(AiVendor.GEMINI).isNullOrBlank()
+        // Only the chosen one is ever used: a key of the other AI stays saved but is not touched.
         return when (currentChoice()) {
-            "template" -> ActiveAi.TEMPLATE
             AiVendor.CLAUDE.id -> if (hasClaude) ActiveAi.CLAUDE else ActiveAi.TEMPLATE
             AiVendor.GEMINI.id -> if (hasGemini) ActiveAi.GEMINI else ActiveAi.TEMPLATE
-            else -> when {
-                hasClaude -> ActiveAi.CLAUDE
-                hasGemini -> ActiveAi.GEMINI
-                else -> ActiveAi.TEMPLATE
-            }
+            else -> ActiveAi.TEMPLATE
         }
     }
 
