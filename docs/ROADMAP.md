@@ -77,6 +77,13 @@ tracking their own Garmin data, and by how well they can be tested without a wat
     *Settings, Your devices*.
 22. **Oura gets its own tab**, with its own scores, nights, charts and workouts, kept apart from the watch's data.
 
+## v0.18.0: themes and watch faces ✅
+
+23. **Seven colour themes** (Arcade, Game Boy, Amber terminal, Synthwave, Ocean, Sunset, Wallpaper) and **three styles**
+    (Sport, Round, Pixel), on top of dark, light or follow the phone.
+24. **Watch face over USB:** copy a `.prg` to `GARMIN/Apps`; choose it on the watch. Switching the active face from the
+    phone is not possible over any open protocol.
+
 ## Later 💡
 
 - Wear OS or a watch face is out of scope; the project is about the phone side.

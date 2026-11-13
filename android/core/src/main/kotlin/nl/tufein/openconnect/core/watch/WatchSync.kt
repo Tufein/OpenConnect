@@ -37,10 +37,24 @@ interface WatchSource {
      * switched that on and the watch can do it. Returns how many were marked; most sources mark none.
      */
     fun archive(files: List<WatchFileInfo>): Int = 0
+
+    /**
+     * Copies a Connect IQ app or watch face (`.prg`) into `GARMIN/Apps`, the way sideloading over a USB cable works.
+     * False when this link cannot write to the watch (only a USB cable can).
+     */
+    fun installApp(name: String, bytes: ByteArray): Boolean = false
 }
 
 /** A watch that lives in memory: for tests, and for trying the sync flow without a watch. Keys look like `Monitor/ABC.FIT`. */
 class InMemoryWatchSource(override val deviceName: String, val files: Map<String, ByteArray>) : WatchSource {
+    /** What was copied to `GARMIN/Apps`, by file name. */
+    val installed = LinkedHashMap<String, ByteArray>()
+
+    override fun installApp(name: String, bytes: ByteArray): Boolean {
+        installed[name] = bytes
+        return true
+    }
+
     override fun listFiles(): List<WatchFileInfo> = files.mapNotNull { (path, bytes) ->
         val folder = WatchFolder.fromDirName(path.substringBefore('/')) ?: return@mapNotNull null
         WatchFileInfo(folder, path.substringAfter('/'), bytes.size.toLong())

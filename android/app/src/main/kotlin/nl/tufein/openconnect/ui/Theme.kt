@@ -84,6 +84,69 @@ private val LightColors = lightColorScheme(
     onError = Color.White,
 )
 
+/**
+ * The colour themes to choose from (v0.18.0). "arcade" is the original look above; the others are built from a few key
+ * colours by [scheme]. "dynamic" takes the phone's own wallpaper colours on Android 12 and newer.
+ */
+enum class Palette(val key: String) {
+    ARCADE("arcade"), GAMEBOY("gameboy"), AMBER("amber"), SYNTHWAVE("synthwave"), OCEAN("ocean"), SUNSET("sunset"), DYNAMIC("dynamic");
+
+    companion object {
+        fun of(key: String?): Palette = entries.firstOrNull { it.key == key } ?: ARCADE
+    }
+}
+
+/** How the app is drawn: "sport" (cut corners, leaning headlines), "round" (soft and calm) or "pixel" (square, all monospace). */
+enum class LookStyle(val key: String) {
+    SPORT("sport"), ROUND("round"), PIXEL("pixel");
+
+    companion object {
+        fun of(key: String?): LookStyle = entries.firstOrNull { it.key == key } ?: SPORT
+    }
+}
+
+/** The key colours of one theme, for its dark and its light version. */
+private class Keys(
+    val primary: Color, val secondary: Color, val tertiary: Color, val background: Color, val surface: Color, val text: Color,
+)
+
+private val PaletteKeys: Map<Palette, Pair<Keys, Keys>> = mapOf(
+    // The four greens of the 1989 handheld's screen.
+    Palette.GAMEBOY to (Keys(Color(0xFF9BBC0F), Color(0xFF8BAC0F), Color(0xFFC4DE5A), Color(0xFF0F380F), Color(0xFF1E4A1E), Color(0xFFD7EFA0)) to
+        Keys(Color(0xFF306230), Color(0xFF4F7A1E), Color(0xFF0F380F), Color(0xFFCADC9F), Color(0xFFE0EDBE), Color(0xFF0F380F))),
+    // An amber phosphor terminal.
+    Palette.AMBER to (Keys(Color(0xFFFFB000), Color(0xFFFF7A00), Color(0xFFFFD45C), Color(0xFF0D0900), Color(0xFF1A1206), Color(0xFFFFE2A8)) to
+        Keys(Color(0xFF8A5A00), Color(0xFFB34700), Color(0xFF6B4A00), Color(0xFFFFF6E5), Color(0xFFFFFFFF), Color(0xFF2B1D00))),
+    // Neon pink and cyan over deep purple, like an eighties album cover.
+    Palette.SYNTHWAVE to (Keys(Color(0xFFFF4FB8), Color(0xFF00E5FF), Color(0xFFFFD166), Color(0xFF14061F), Color(0xFF221033), Color(0xFFF5E6FF)) to
+        Keys(Color(0xFFB0187A), Color(0xFF007A8C), Color(0xFF8C5A00), Color(0xFFFBF2FF), Color(0xFFFFFFFF), Color(0xFF2A0E3A))),
+    Palette.OCEAN to (Keys(Color(0xFF4FC3F7), Color(0xFF26E0C2), Color(0xFFB39DFF), Color(0xFF06141F), Color(0xFF0C2030), Color(0xFFE2F3FF)) to
+        Keys(Color(0xFF0061A4), Color(0xFF00796B), Color(0xFF5B45C2), Color(0xFFF2F8FD), Color(0xFFFFFFFF), Color(0xFF0B2233))),
+    Palette.SUNSET to (Keys(Color(0xFFFF8A5B), Color(0xFFFFC857), Color(0xFFE85D9A), Color(0xFF1A0E0B), Color(0xFF2A1712), Color(0xFFFFEDE4)) to
+        Keys(Color(0xFFB34A1E), Color(0xFF946200), Color(0xFFA8326A), Color(0xFFFFF5EF), Color(0xFFFFFFFF), Color(0xFF331A10))),
+)
+
+/** A full colour scheme from a few key colours: containers are the key colour mixed into the background. */
+private fun scheme(k: Keys, dark: Boolean): androidx.compose.material3.ColorScheme {
+    fun mix(a: Color, b: Color, t: Float) = androidx.compose.ui.graphics.lerp(a, b, t)
+    val on = if (dark) Color(0xFF0A0A0A) else Color.White
+    val muted = mix(k.text, k.background, 0.35f)
+    fun container(c: Color) = mix(k.background, c, if (dark) 0.28f else 0.22f)
+    fun onContainer(c: Color) = mix(c, k.text, if (dark) 0.55f else 0.75f)
+    val base = if (dark) darkColorScheme() else lightColorScheme()
+    return base.copy(
+        primary = k.primary, onPrimary = on, primaryContainer = container(k.primary), onPrimaryContainer = onContainer(k.primary),
+        secondary = k.secondary, onSecondary = on, secondaryContainer = container(k.secondary), onSecondaryContainer = onContainer(k.secondary),
+        tertiary = k.tertiary, onTertiary = on, tertiaryContainer = container(k.tertiary), onTertiaryContainer = onContainer(k.tertiary),
+        background = k.background, onBackground = k.text, surface = k.surface, onSurface = k.text,
+        surfaceVariant = mix(k.surface, k.primary, 0.10f), onSurfaceVariant = muted,
+        surfaceContainerLowest = k.background, surfaceContainerLow = mix(k.background, k.surface, 0.5f),
+        surfaceContainer = mix(k.surface, k.primary, 0.05f), surfaceContainerHigh = mix(k.surface, k.primary, 0.10f),
+        surfaceContainerHighest = mix(k.surface, k.primary, 0.15f),
+        outline = mix(k.background, k.text, 0.35f), outlineVariant = mix(k.background, k.text, 0.15f),
+    )
+}
+
 /** One colour per signal, used for its ring, tile, chart and label so a number is recognised by colour alone. */
 @Immutable
 class MetricColors(
@@ -132,7 +195,7 @@ private val Mono = FontFamily.Monospace
 /** Headlines and big numbers lean forward in heavy italics, like a race bib; labels keep the monospace scoreboard. */
 private val Sport = FontFamily.SansSerif
 
-private val AppTypography = Typography(
+private val SportTypography = Typography(
     displayMedium = TextStyle(fontFamily = Sport, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic, fontSize = 44.sp, lineHeight = 48.sp),
     headlineMedium = TextStyle(fontFamily = Sport, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic, fontSize = 28.sp, lineHeight = 34.sp, letterSpacing = (-0.5).sp),
     headlineSmall = TextStyle(fontFamily = Sport, fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic, fontSize = 22.sp, lineHeight = 28.sp),
@@ -145,11 +208,39 @@ private val AppTypography = Typography(
     bodySmall = TextStyle(fontSize = 12.sp, lineHeight = 16.sp),
 )
 
+/** Calm: upright headlines, normal weights. */
+private val RoundTypography = Typography(
+    displayMedium = TextStyle(fontWeight = FontWeight.Bold, fontSize = 44.sp, lineHeight = 48.sp),
+    headlineMedium = TextStyle(fontWeight = FontWeight.Bold, fontSize = 28.sp, lineHeight = 34.sp),
+    headlineSmall = TextStyle(fontWeight = FontWeight.Bold, fontSize = 22.sp, lineHeight = 28.sp),
+    titleLarge = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 20.sp, lineHeight = 26.sp),
+    titleMedium = TextStyle(fontWeight = FontWeight.SemiBold, fontSize = 16.sp, lineHeight = 22.sp),
+    labelLarge = TextStyle(fontWeight = FontWeight.Medium, fontSize = 14.sp),
+    labelMedium = TextStyle(fontWeight = FontWeight.Medium, fontSize = 12.sp),
+    bodyLarge = TextStyle(fontSize = 16.sp, lineHeight = 24.sp),
+    bodyMedium = TextStyle(fontSize = 14.sp, lineHeight = 20.sp),
+    bodySmall = TextStyle(fontSize = 12.sp, lineHeight = 16.sp),
+)
+
+/** Everything in monospace, like an old terminal or a handheld's text box. */
+private val PixelTypography = Typography(
+    displayMedium = TextStyle(fontFamily = Mono, fontWeight = FontWeight.Bold, fontSize = 40.sp, lineHeight = 46.sp),
+    headlineMedium = TextStyle(fontFamily = Mono, fontWeight = FontWeight.Bold, fontSize = 26.sp, lineHeight = 32.sp),
+    headlineSmall = TextStyle(fontFamily = Mono, fontWeight = FontWeight.Bold, fontSize = 20.sp, lineHeight = 26.sp),
+    titleLarge = TextStyle(fontFamily = Mono, fontWeight = FontWeight.Bold, fontSize = 18.sp, lineHeight = 24.sp),
+    titleMedium = TextStyle(fontFamily = Mono, fontWeight = FontWeight.Bold, fontSize = 15.sp, lineHeight = 22.sp),
+    labelLarge = TextStyle(fontFamily = Mono, fontWeight = FontWeight.Medium, fontSize = 14.sp),
+    labelMedium = TextStyle(fontFamily = Mono, fontWeight = FontWeight.Medium, fontSize = 12.sp),
+    bodyLarge = TextStyle(fontFamily = Mono, fontSize = 15.sp, lineHeight = 22.sp),
+    bodyMedium = TextStyle(fontFamily = Mono, fontSize = 13.sp, lineHeight = 19.sp),
+    bodySmall = TextStyle(fontFamily = Mono, fontSize = 11.sp, lineHeight = 15.sp),
+)
+
 /**
  * Angular instead of round: two opposite corners are cut at an angle, like the nose of a race bike or a sports shoe.
  * Cards use [medium], which is the signature shape of the app.
  */
-private val AppShapes = Shapes(
+private val SportShapes = Shapes(
     extraSmall = CutCornerShape(topEnd = 6.dp, bottomStart = 6.dp),
     small = CutCornerShape(topEnd = 10.dp, bottomStart = 10.dp),
     medium = CutCornerShape(topEnd = 18.dp, bottomStart = 18.dp),
@@ -157,20 +248,71 @@ private val AppShapes = Shapes(
     extraLarge = RoundedCornerShape(32.dp),
 )
 
-/** [mode] is "system" (follow the phone), "dark" or "light". */
+private val RoundShapes = Shapes(
+    extraSmall = RoundedCornerShape(8.dp),
+    small = RoundedCornerShape(12.dp),
+    medium = RoundedCornerShape(20.dp),
+    large = RoundedCornerShape(28.dp),
+    extraLarge = RoundedCornerShape(36.dp),
+)
+
+/** Square corners, like pixels. */
+private val PixelShapes = Shapes(
+    extraSmall = RoundedCornerShape(0.dp),
+    small = RoundedCornerShape(0.dp),
+    medium = RoundedCornerShape(0.dp),
+    large = RoundedCornerShape(0.dp),
+    extraLarge = RoundedCornerShape(4.dp),
+)
+
+/** [mode] is "system" (follow the phone), "dark" or "light"; [palette] and [style] are the keys of [Palette] and [LookStyle]. */
 @Composable
-fun OpenConnectTheme(mode: String = "system", content: @Composable () -> Unit) {
+fun OpenConnectTheme(mode: String = "system", palette: String = "arcade", style: String = "sport", content: @Composable () -> Unit) {
     val dark = when (mode) {
         "dark" -> true
         "light" -> false
         else -> isSystemInDarkTheme()
     }
-    CompositionLocalProvider(LocalMetricColors provides if (dark) DarkMetrics else LightMetrics) {
+    val chosen = Palette.of(palette)
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val colors = when {
+        chosen == Palette.DYNAMIC && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S ->
+            if (dark) androidx.compose.material3.dynamicDarkColorScheme(context) else androidx.compose.material3.dynamicLightColorScheme(context)
+        else -> PaletteKeys[chosen]?.let { (d, l) -> scheme(if (dark) d else l, dark) } ?: if (dark) DarkColors else LightColors
+    }
+    val look = LookStyle.of(style)
+    CompositionLocalProvider(LocalMetricColors provides metricsFor(chosen, colors, dark)) {
         MaterialTheme(
-            colorScheme = if (dark) DarkColors else LightColors,
-            typography = AppTypography,
-            shapes = AppShapes,
+            colorScheme = colors,
+            typography = when (look) {
+                LookStyle.SPORT -> SportTypography
+                LookStyle.ROUND -> RoundTypography
+                LookStyle.PIXEL -> PixelTypography
+            },
+            shapes = when (look) {
+                LookStyle.SPORT -> SportShapes
+                LookStyle.ROUND -> RoundShapes
+                LookStyle.PIXEL -> PixelShapes
+            },
             content = content,
         )
     }
+}
+
+/**
+ * The signal colours stay the same in every theme, so a number keeps being recognised by its colour; only steps and
+ * readiness follow the theme's main colour. The Game Boy theme is the exception: four shades of green, as on the original.
+ */
+private fun metricsFor(palette: Palette, colors: androidx.compose.material3.ColorScheme, dark: Boolean): MetricColors {
+    val base = if (dark) DarkMetrics else LightMetrics
+    if (palette == Palette.ARCADE) return base
+    if (palette == Palette.GAMEBOY) {
+        val greens = if (dark) listOf(Color(0xFF9BBC0F), Color(0xFF8BAC0F), Color(0xFFC4DE5A), Color(0xFF6FA02A))
+        else listOf(Color(0xFF306230), Color(0xFF0F380F), Color(0xFF4F7A1E), Color(0xFF5E8C31))
+        return MetricColors(greens[0], greens[1], greens[2], greens[3], greens[1], greens[2], greens[3], greens[0])
+    }
+    return MetricColors(
+        steps = colors.primary, heart = base.heart, stress = base.stress, battery = base.battery, sleep = base.sleep,
+        distance = base.distance, calories = base.calories, readiness = colors.primary,
+    )
 }

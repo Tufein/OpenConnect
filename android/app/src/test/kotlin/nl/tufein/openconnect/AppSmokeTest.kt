@@ -3,6 +3,8 @@ package nl.tufein.openconnect
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Before
 import org.junit.Test
@@ -147,7 +149,8 @@ class AppSmokeTest : AppTestBase() {
         scrollToText("Weekly goals")
         assertTrue(hasText("Intensity minutes", substring = false))
         assertTrue(hasText("150 min", substring = false))
-        rule.onAllNodesWithText("+")[0].performClick() // intensity minutes: 150 -> 160
+        // intensity minutes: 150 -> 160. The button's own click: after scrolling it can sit behind the navigation bar.
+        rule.onAllNodesWithText("+")[0].performScrollTo().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
         waitForText("160 min")
         shot("38-settings-goals")
         tab("Home").performClick()

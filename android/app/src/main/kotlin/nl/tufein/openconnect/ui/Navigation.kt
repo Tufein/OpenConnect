@@ -73,6 +73,8 @@ fun OpenConnectRoot(
     onExportCsv: (kind: String) -> Unit,
     onBackup: () -> Unit = {},
     onRestore: () -> Unit = {},
+    /** Picks a watch face file (.prg) to copy to the watch over USB. */
+    onWatchFace: () -> Unit = {},
     /** Whether the phone has a screen lock or fingerprint the app lock can use. */
     lockAvailable: Boolean = false,
     /** Switches the lock on (after the person passed the check) or off. */
@@ -114,6 +116,7 @@ fun OpenConnectRoot(
     val garmin by vm.garmin.collectAsState()
     val oura by vm.oura.collectAsState()
     val theme by vm.theme.collectAsState()
+    val look by vm.look.collectAsState()
     val goals by vm.goals.collectAsState()
     val now by vm.now.collectAsState()
     val busy by vm.busy.collectAsState()
@@ -238,7 +241,9 @@ fun OpenConnectRoot(
             }
             composable(Tab.Settings.route) {
                 SettingsScreen(
-                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources),
+                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources, look = look),
+                    onLook = vm::setLook,
+                    onWatchFace = onWatchFace,
                     onSources = vm::setSources,
                     onAppLock = onAppLock,
                     onNudges = vm::setNudges,
