@@ -142,7 +142,7 @@ flow; Personal API support is the first item on the roadmap (§7).
 3. Lap table, interactive charts and best efforts (fastest 1K/5K/10K) from tracks.
 4. Follow Ping/Pull `callbackURL`s; backfill UI.
 5. Training API (workouts and plans) and Courses API publishing for business-tier users.
-6. Monthly and yearly reports, custom goals, optional app-level authentication.
+6. Monthly and yearly reports, optional app-level authentication. (Custom weekly goals shipped in v0.9.0; the full plan is in [ROADMAP.md](ROADMAP.md).)
 
 ## 8. Legal and privacy notes
 

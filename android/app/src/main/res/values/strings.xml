@@ -371,4 +371,25 @@
     <string name="insight_explain_readiness">OpenConnect\'s own 0 to 100 estimate from sleep, Body Battery, HRV, resting heart rate and stress, against your own normal. 70 or more means ready for a hard day, under 40 means take it easy.</string>
     <string name="insight_explain_sleep_score">The sleep score your watch gives each night, 0 to 100: 80 or more is good, 60 to 79 fair, below 60 poor. It weighs duration, deep and REM sleep and restlessness.</string>
     <string name="score_out_of">out of 100</string>
+    <string name="settings_goals">Weekly goals</string>
+    <string name="settings_goals_body">What you want to reach each week. The defaults follow common recommendations; set a goal to off with the minus button.</string>
+    <string name="goal_intensity">Intensity minutes</string>
+    <string name="goal_distance">Distance</string>
+    <string name="goal_activities">Activities</string>
+    <string name="goal_off">Off</string>
+    <string name="goals_title">Goals this week</string>
+    <string name="goals_reached">%1$d of %2$d goals reached</string>
+    <string name="goals_none">All goals are switched off. Turn them on in Settings.</string>
+    <string name="goal_value">%1$s of %2$s</string>
+    <string name="load_title">Training load</string>
+    <string name="load_summary">This week %1$s points, your usual week %2$s</string>
+    <string name="load_light">Light week</string>
+    <string name="load_steady">Steady</string>
+    <string name="load_heavy">Heavy week</string>
+    <string name="load_overreaching">Big jump</string>
+    <string name="load_light_text">Clearly less than your recent norm. Fine for recovery; if it was not planned, an easy session gets you going again.</string>
+    <string name="load_steady_text">In line with the last four weeks. This is the range where fitness builds with the least risk.</string>
+    <string name="load_heavy_text">More than usual. Fine for a short block, but plan an easier week after it.</string>
+    <string name="load_overreaching_text">A big jump over what your body is used to. This is the usual time for niggles and illness: back off a little.</string>
+    <string name="load_note">OpenConnect\'s own estimate: minutes times an effort weight from your heart rate, this week against your 4-week average. Not Garmin\'s Training Load, not medical advice.</string>
 </resources>

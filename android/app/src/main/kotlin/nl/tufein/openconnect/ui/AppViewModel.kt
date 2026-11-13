@@ -23,6 +23,10 @@ import nl.tufein.openconnect.core.Overview
 import nl.tufein.openconnect.core.PlayerLevel
 import nl.tufein.openconnect.core.ReadinessCalculator
 import nl.tufein.openconnect.core.Readiness
+import nl.tufein.openconnect.core.TrainingLoadCalculator
+import nl.tufein.openconnect.core.TrainingLoad
+import nl.tufein.openconnect.core.WeeklyGoalProgress
+import nl.tufein.openconnect.core.WeeklyGoals
 import nl.tufein.openconnect.core.RecordEntry
 import nl.tufein.openconnect.core.SleepSummary
 import nl.tufein.openconnect.core.Sport
@@ -59,6 +63,11 @@ data class HomeState(
     /** The night that ended on the day shown, if the watch reported it. */
     val sleep: SleepSummary? = null,
     val level: PlayerLevel? = null,
+    val goals: WeeklyGoals = WeeklyGoals(),
+    /** This week against [goals]. */
+    val goalProgress: WeeklyGoalProgress? = null,
+    /** This week's training load against your four-week average; null until there are two weeks of activities. */
+    val load: TrainingLoad? = null,
 )
 
 data class TrophiesState(val loaded: Boolean = false, val achievements: Achievements? = null)
@@ -129,6 +138,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _trophies = MutableStateFlow(TrophiesState())
     val trophies: StateFlow<TrophiesState> = _trophies.asStateFlow()
+
+    private val _goals = MutableStateFlow(container.settings.weeklyGoals)
+
+    /** The weekly goals, as set in Settings. */
+    val goals: StateFlow<WeeklyGoals> = _goals.asStateFlow()
 
     private val _theme = MutableStateFlow(container.settings.themeMode)
 
@@ -224,6 +238,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun clearCoach() = container.coach.clear()
 
+    fun setGoals(goals: WeeklyGoals) {
+        container.settings.weeklyGoals = goals
+        _goals.value = container.settings.weeklyGoals
+        loadHome()
+    }
+
     fun setTheme(mode: String) {
         container.settings.themeMode = mode
         _theme.value = container.settings.themeMode
@@ -289,6 +309,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun loadHome() = io {
         val overview = container.stats.overview()
+        val goals = container.settings.weeklyGoals
         val today = overview.today
         val sleep = today?.let { repo.listSleep(it.date.minusDays(1), it.date).lastOrNull() }
         val readiness = today?.let {
@@ -301,6 +322,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             readiness = readiness,
             sleep = sleep,
             level = AchievementsCalculator.compute(repo, ZoneId.systemDefault()).player,
+            goals = goals,
+            goalProgress = goals.progress(overview.thisWeek),
+            load = TrainingLoadCalculator.compute(repo.listActivities(limit = 10_000), LocalDate.now(ZoneOffset.UTC)),
         )
     }
 

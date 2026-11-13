@@ -2,6 +2,7 @@ package nl.tufein.openconnect.data
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import nl.tufein.openconnect.core.WeeklyGoals
 import nl.tufein.openconnect.core.reports.AiVendor
 import org.junit.Before
 import org.junit.Test
@@ -97,5 +98,15 @@ class SettingsStoreTest {
         assertEquals("light", s.themeMode)
         s.themeMode = "neon"
         assertEquals("system", s.themeMode, "an unknown value is not kept")
+    }
+
+    @Test
+    fun `weekly goals start at the recommendations, are kept, and stay within limits`() {
+        val s = store()
+        assertEquals(WeeklyGoals(150, 20, 3), s.weeklyGoals)
+        s.weeklyGoals = WeeklyGoals(intensityMinutes = 200, distanceKm = 0, activities = 5)
+        assertEquals(WeeklyGoals(200, 0, 5), store().weeklyGoals, "kept for the next start")
+        s.weeklyGoals = WeeklyGoals(intensityMinutes = 99_999, distanceKm = -4, activities = 99)
+        assertEquals(WeeklyGoals(1000, 0, 21), s.weeklyGoals)
     }
 }

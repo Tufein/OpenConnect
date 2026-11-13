@@ -45,6 +45,7 @@ import nl.tufein.openconnect.ai.AiKeyCheck
 import nl.tufein.openconnect.ai.AiKeyProblem
 import nl.tufein.openconnect.ai.AiUi
 import nl.tufein.openconnect.ai.AiVendorUi
+import nl.tufein.openconnect.core.WeeklyGoals
 import nl.tufein.openconnect.core.reports.AiVendor
 
 data class SettingsUi(
@@ -52,6 +53,7 @@ data class SettingsUi(
     /** "system", "dark" or "light". */
     val theme: String,
     val versionName: String,
+    val goals: WeeklyGoals = WeeklyGoals(),
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -59,6 +61,7 @@ data class SettingsUi(
 fun SettingsScreen(
     ui: SettingsUi,
     onTheme: (String) -> Unit,
+    onGoals: (WeeklyGoals) -> Unit,
     onLanguage: (String) -> Unit,
     onChoice: (String) -> Unit,
     onSaveKey: (AiVendor, String) -> Unit,
@@ -94,6 +97,15 @@ fun SettingsScreen(
                         FilterChip(selected = ui.theme == mode, onClick = { onTheme(mode) }, label = { Text(stringResource(label)) })
                     }
                 }
+            }
+        }
+        item {
+            SectionTitle(stringResource(R.string.settings_goals))
+            SurfaceCard {
+                Text(stringResource(R.string.settings_goals_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                GoalStepper(stringResource(R.string.goal_intensity), ui.goals.intensityMinutes, "min", 10) { onGoals(ui.goals.copy(intensityMinutes = it)) }
+                GoalStepper(stringResource(R.string.goal_distance), ui.goals.distanceKm, "km", 5) { onGoals(ui.goals.copy(distanceKm = it)) }
+                GoalStepper(stringResource(R.string.goal_activities), ui.goals.activities, "", 1) { onGoals(ui.goals.copy(activities = it)) }
             }
         }
         item {
@@ -282,5 +294,20 @@ fun openLink(context: Context, url: String) {
         context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
     } catch (_: ActivityNotFoundException) {
         // No browser: nothing else to do here.
+    }
+}
+
+/** A value with minus and plus buttons; 0 means the goal is off. */
+@Composable
+private fun GoalStepper(label: String, value: Int, unit: String, step: Int, onChange: (Int) -> Unit) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        OutlinedButton(onClick = { onChange((value - step).coerceAtLeast(0)) }) { Text("−") }
+        Text(
+            if (value == 0) stringResource(R.string.goal_off) else if (unit.isEmpty()) "$value" else "$value $unit",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(horizontal = 10.dp),
+        )
+        OutlinedButton(onClick = { onChange(value + step) }) { Text("+") }
     }
 }

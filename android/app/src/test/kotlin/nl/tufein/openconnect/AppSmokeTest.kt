@@ -107,6 +107,32 @@ class AppSmokeTest : AppTestBase() {
     }
 
     @Test
+    fun homeShowsGoalsAndTrainingLoadAndGoalsCanBeChangedInSettings() {
+        waitForText("Load demo data")
+        rule.onNodeWithText("Load demo data").performClick()
+        rule.waitUntil(15_000) { !hasText("Load demo data", substring = false) }
+
+        scrollToText("Goals this week")
+        assertTrue(hasText("goals reached", substring = true))
+        shot("36-home-goals")
+        scrollToText("Training load")
+        assertTrue(hasText("Not Garmin's Training Load", substring = true))
+        shot("37-home-training-load")
+
+        tab("Settings").performClick()
+        rule.waitForIdle()
+        scrollToText("Weekly goals")
+        assertTrue(hasText("Intensity minutes", substring = false))
+        assertTrue(hasText("150 min", substring = false))
+        rule.onAllNodesWithText("+")[0].performClick() // intensity minutes: 150 -> 160
+        waitForText("160 min")
+        shot("38-settings-goals")
+        tab("Home").performClick()
+        scrollToText("Goals this week")
+        scrollToText("of 160 min", substring = true)
+    }
+
+    @Test
     fun theWatchScreenExplainsHowToLiveNextToGarminConnect() {
         waitForText("Connect watch")
         rule.onNodeWithText("Connect watch").performClick()
