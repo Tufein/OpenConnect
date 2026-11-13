@@ -77,6 +77,7 @@ fun OpenConnectRoot(
     val reports by vm.reports.collectAsState()
     val overview by vm.overview.collectAsState()
     val nudges by vm.nudges.collectAsState()
+    val healthConnect by vm.healthConnect.collectAsState()
     val syncLog by vm.syncLog.collectAsState()
     val trophies by vm.trophies.collectAsState()
     val coach by vm.coach.collectAsState()
@@ -190,6 +191,11 @@ fun OpenConnectRoot(
                 SettingsScreen(
                     ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges),
                     onNudges = vm::setNudges,
+                    health = healthConnect,
+                    onHealthChecked = vm::refreshHealth,
+                    onHealthExport = vm::exportHealth,
+                    onHealthImport = vm::importHealth,
+                    onHealthAuto = vm::setHealthAuto,
                     onBackup = onBackup,
                     onRestore = onRestore,
                     onClearLog = vm::clearSyncLog,

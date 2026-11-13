@@ -8,6 +8,7 @@ import nl.tufein.openconnect.ai.AiSettings
 import nl.tufein.openconnect.core.WeeklyGoals
 import nl.tufein.openconnect.core.reports.AiVendor
 import nl.tufein.openconnect.garmin.GarminSettings
+import nl.tufein.openconnect.health.HealthSettings
 import nl.tufein.openconnect.notify.NudgeSettings
 import nl.tufein.openconnect.watch.GarminBleOptions
 import nl.tufein.openconnect.watch.GarminBleWatch
@@ -152,6 +153,13 @@ class SettingsStore(
         override val goals: WeeklyGoals get() = weeklyGoals
     }
 
+    /** The Health Connect switch: send activities after every sync. Off by default. */
+    val health: HealthSettings = object : HealthSettings {
+        override var auto: Boolean
+            get() = prefs.getBoolean(KEY_HEALTH_AUTO, false)
+            set(value) = prefs.edit().putBoolean(KEY_HEALTH_AUTO, value).apply()
+    }
+
     private fun keyName(vendor: AiVendor) = when (vendor) {
         AiVendor.CLAUDE -> KEY_CLAUDE // the name v0.1 to v0.4 used, so an earlier key is still found
         AiVendor.GEMINI -> KEY_GEMINI
@@ -169,6 +177,7 @@ class SettingsStore(
         private const val KEY_PROVIDER = "provider"
         private const val KEY_THEME = "theme_mode"
         private const val KEY_SYNC_LOG = "sync_log"
+        private const val KEY_HEALTH_AUTO = "health_connect_auto"
         private const val KEY_NUDGES = "nudges_enabled"
         private const val KEY_NUDGES_SENT = "nudges_sent"
         private const val KEY_BLE_ARCHIVE = "ble_archive_after_read"

@@ -12,8 +12,8 @@ android {
         applicationId = "nl.tufein.openconnect"
         minSdk = 26
         targetSdk = 35
-        versionCode = 12
-        versionName = "0.12.0"
+        versionCode = 13
+        versionName = "0.13.0"
     }
 
     // Release signing. The key is never stored in this repository: a release build reads it from
@@ -89,6 +89,7 @@ dependencies {
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("androidx.health.connect:connect-client:1.1.0-alpha10")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     testImplementation(kotlin("test"))
