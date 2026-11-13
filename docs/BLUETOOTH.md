@@ -29,6 +29,19 @@ AGPL-3.0 from this version on (see [NOTICE](../NOTICE)).
 Files that were already read are skipped, so a second sync downloads only what is new. The same FIT reader as the USB
 route handles them.
 
+## Next to the Garmin Connect app
+
+Can both apps sync the watch over Bluetooth at the same time? **No.** A Garmin watch keeps one phone connection, and
+on Android only one app can hold it. Gadgetbridge has the same limit. What does work together:
+
+| Setup | Garmin Connect | OpenConnect gets its data from |
+|-------|----------------|--------------------------------|
+| **Garmin Connect stays the watch's app** (recommended if you want both) | Syncs as always | Your **Garmin account** (*Garmin account* screen, your own key; also in the background), or a USB cable or folder of FIT files |
+| OpenConnect is the watch's app | Stops syncing until you pair it again | Bluetooth, straight from the watch |
+
+Since v0.7.0 a run that arrives by more than one route (watch file and Garmin account) is recognised by its start time
+and stored once, in whichever order they arrive.
+
 ## How it works in the code
 
 All protocol code is plain Kotlin in `android/core/.../core/watch/ble/`, tested on the computer without Android:

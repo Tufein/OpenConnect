@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import nl.tufein.openconnect.R
+import kotlin.math.roundToInt
 import nl.tufein.openconnect.ai.ActiveAi
 import nl.tufein.openconnect.core.Activity
 import nl.tufein.openconnect.core.ActivitySort
@@ -174,14 +175,28 @@ fun ActivityDetailScreen(
         if (hr.count { it != null } >= 2) {
             item {
                 SectionTitle(stringResource(R.string.heart_rate))
-                SurfaceCard { LineChart(downsample(hr), description = stringResource(R.string.heart_rate), color = OpenConnectColors.metrics.heart) }
+                SurfaceCard {
+                    LineChart(downsample(hr), description = stringResource(R.string.heart_rate), color = OpenConnectColors.metrics.heart)
+                    val present = hr.filterNotNull()
+                    Text(
+                        stringResource(R.string.insight_hr_range, "${present.average().roundToInt()} bpm", "${present.max().roundToInt()} bpm"),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
             }
         }
         val ele = activity.track.map { it.ele }
         if (ele.count { it != null } >= 2) {
             item {
                 SectionTitle(stringResource(R.string.elevation))
-                SurfaceCard { LineChart(downsample(ele), description = stringResource(R.string.elevation), color = OpenConnectColors.metrics.distance) }
+                SurfaceCard {
+                    LineChart(downsample(ele), description = stringResource(R.string.elevation), color = OpenConnectColors.metrics.distance)
+                    val present = ele.filterNotNull()
+                    Text(
+                        "${present.min().roundToInt()} m – ${present.max().roundToInt()} m",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
             }
         }
         if (state.splits.isNotEmpty()) {
