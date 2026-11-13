@@ -20,9 +20,12 @@ import nl.tufein.openconnect.core.garmin.GarminHttp
 import nl.tufein.openconnect.core.garmin.UrlConnectionGarminHttp
 import nl.tufein.openconnect.garmin.GarminController
 import nl.tufein.openconnect.garmin.GarminSettings
+import nl.tufein.openconnect.watch.AndroidGarminBleLink
 import nl.tufein.openconnect.watch.BleHeartRateLink
 import nl.tufein.openconnect.watch.FolderLink
+import nl.tufein.openconnect.watch.GarminBleLink
 import nl.tufein.openconnect.watch.HeartRateLink
+import nl.tufein.openconnect.watch.NoGarminBleLink
 import nl.tufein.openconnect.watch.SafFolderLink
 import nl.tufein.openconnect.watch.UsbWatchLink
 import nl.tufein.openconnect.watch.WatchController
@@ -48,6 +51,8 @@ class AppContainer(
     aiSettings: AiSettings = settings,
     /** Starts and stops the periodic Garmin sync job. Tests pass a fake; the app passes WorkManager. */
     backgroundSync: BackgroundSync = BackgroundSync { },
+    /** Garmin's own Bluetooth protocol. Tests pass a fake; the app passes [AndroidGarminBleLink]. */
+    garminBle: GarminBleLink = NoGarminBleLink,
 ) {
     val stats = StatsService(repository)
     val reports = ReportService(repository, stats)
@@ -63,6 +68,8 @@ class AppContainer(
         io = Dispatchers.IO,
         onDataChanged = { dataChanged.tryEmit(Unit) },
         folder = folder,
+        garminBle = garminBle,
+        garminMemory = settings.garminWatch,
     )
 
     val garmin = GarminController(
@@ -106,6 +113,7 @@ class OpenConnectApp : Application() {
             BleHeartRateLink(this),
             folder = SafFolderLink(this),
             backgroundSync = WorkManagerBackgroundSync(this),
+            garminBle = AndroidGarminBleLink(this),
         )
     }
 }

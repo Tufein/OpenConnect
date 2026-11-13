@@ -85,7 +85,7 @@
     <string name="model">Model</string>
     <string name="privacy_ai">Met een AI aan wordt een korte samenvatting van je cijfers (en de namen van activiteiten, geen gps-routes) naar die aanbieder gestuurd. Keys staan versleuteld op deze telefoon en gaan alleen naar hun eigen aanbieder.</string>
     <string name="settings_about">Over</string>
-    <string name="about_body">Een open-source, offline-first alternatief voor Garmin Connect. Niet verbonden aan Garmin.</string>
+    <string name="about_body">Een open-source, offline-first alternatief voor Garmin Connect. Niet verbonden aan Garmin. Licentie: AGPL-3.0, Bluetooth-sync overgenomen van Gadgetbridge.</string>
     <string name="sport_running">Hardlopen</string>
     <string name="sport_cycling">Fietsen</string>
     <string name="sport_swimming">Zwemmen</string>
@@ -134,7 +134,7 @@
     <string name="watch_live_saved">Opgeslagen als activiteit</string>
     <string name="watch_live_name">Live hartslag</string>
     <string name="watch_live_permission">Voor het zoeken naar sensoren is Bluetooth-toestemming nodig.</string>
-    <string name="watch_note">Het horloge praat via Bluetooth alleen met Garmins eigen app en met hartslagontvangers. Al het andere wat het opslaat lees je uit via de kabel of een map, of komt uit je Garmin-account (zie het Garmin-scherm).</string>
+    <string name="watch_note">Het horloge kan via Bluetooth met OpenConnect zelf syncen (bovenaan), uitgelezen worden met een kabel of uit een map, of live hartslag sturen. Gegevens van Garmins servers komen binnen via het Garmin-scherm.</string>
     <string name="hrv">HRV (afgelopen nacht)</string>
     <string name="spo2">Zuurstof in het bloed (SpO2)</string>
     <string name="respiration">Ademhaling</string>
@@ -324,4 +324,19 @@
     <string name="vendor_key_malformed">Dat lijkt niet op een %1$s-key. Kopieer de hele key van de pagina.</string>
     <string name="save_model">Model opslaan</string>
     <string name="default_model">Standaardmodel gebruiken</string>
+    <string name="watch_ble_title">Garmin-horloge syncen via Bluetooth</string>
+    <string name="watch_ble_body">Experimenteel. OpenConnect praat met het horloge zoals de Garmin Connect-app dat doet (het protocol dat Gadgetbridge heeft uitgezocht) en haalt op wat nieuw is: activiteiten, stappen, hartslag, stress, Body Battery, slaap en HRV. Geen kabel, geen Garmin-account. De eerste keer koppelt Android met het horloge: zet het horloge in koppelmodus (Instellingen, Connectiviteit, Telefoon, Koppel telefoon) en bevestig de code.</string>
+    <string name="watch_ble_warning">Een horloge dat aan OpenConnect gekoppeld is, synct in de praktijk niet meer met de Garmin Connect-app. De bestanden blijven op het horloge staan.</string>
+    <string name="watch_ble_find">Zoek horloge</string>
+    <string name="watch_ble_stop">Stop met zoeken</string>
+    <string name="watch_ble_searching">Zoeken naar Garmin-horloges in de buurt…</string>
+    <string name="watch_ble_paired">%1$s (gekoppeld)</string>
+    <string name="watch_ble_sync">Sync %1$s</string>
+    <string name="watch_ble_forget">Vergeet dit horloge</string>
+    <string name="watch_ble_step_pairing">Koppelen: bevestig de code op het horloge en de telefoon.</string>
+    <string name="watch_ble_step_connecting">Verbinden met het horloge…</string>
+    <string name="watch_ble_step_handshake">Kennismaken met het horloge…</string>
+    <string name="watch_fail_ble_open">Verbinden met het horloge lukte niet: %1$s</string>
+    <string name="watch_fail_ble_files">Het horloge is verbonden, maar gaf geen bestanden die OpenConnect kan lezen.</string>
+    <string name="watch_fail_not_paired">Koppelen met het horloge lukte niet. Zet het horloge in koppelmodus (Instellingen, Connectiviteit, Telefoon, Koppel telefoon) en probeer opnieuw.</string>
 </resources>

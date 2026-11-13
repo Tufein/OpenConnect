@@ -228,6 +228,10 @@ fun OpenConnectRoot(
                     onStopLive = vm::stopLive,
                     onSaveLive = vm::saveLive,
                     onReadFolder = vm::readFolder,
+                    onFindGarmin = vm::findGarmin,
+                    onStopFindGarmin = vm::stopFindGarmin,
+                    onSyncGarmin = vm::syncGarmin,
+                    onForgetGarmin = vm::forgetGarmin,
                     contentPadding = padding,
                 )
             }

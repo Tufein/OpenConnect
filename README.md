@@ -9,7 +9,7 @@ machine, with a dashboard, FIT/GPX/TCX import and export, and optional AI-writte
 
 ![OpenConnect dashboard](docs/img/dashboard.png)
 
-> **Status: v0.5.0, an early foundation.** It runs end to end on demo data with no credentials.
+> **Status: v0.6.0, an early foundation.** It runs end to end on demo data with no credentials.
 > Live Garmin access needs Garmin Developer Program credentials (see [Garmin access](#garmin-access)).
 > Not affiliated with or endorsed by Garmin.
 
@@ -26,7 +26,12 @@ live against a real account; the USB and Bluetooth parts have not yet been tried
 **[docs/GARMIN.md](docs/GARMIN.md)** and **[docs/WATCH.md](docs/WATCH.md)** for what works and what is unverified.
 More about the app, its limits and what has been verified: **[docs/ANDROID.md](docs/ANDROID.md)**.
 
-**New in v0.5.0:** a new look and logo; sync that runs like Garmin Connect (when the app opens, in the background about
+**New in v0.6.0:** **sync a Garmin watch straight over Bluetooth**, no cable, no account, no Garmin Connect: the app
+pairs with the watch and downloads activities, steps, sleep, heart rate, stress and HRV files using Garmin's own protocol,
+ported from Gadgetbridge. Written for the fenix 8 and other recent watches, **not yet tried on a real watch**. The project
+is now AGPL-3.0. See **[docs/BLUETOOTH.md](docs/BLUETOOTH.md)** and the [release notes](docs/releases/v0.6.0.md).
+
+**v0.5.0:** a new look and logo; sync that runs like Garmin Connect (when the app opens, in the background about
 every 3 hours, pull to refresh, and a status pill that says when it last synced); **Gemini next to Claude**, each with
 your own key entered in the app, for the reports and for a new **Coach** chat about your numbers; a readiness score, 17
 trophies with a level, activity search and sorting, and CSV export. See **[docs/AI.md](docs/AI.md)**,
@@ -185,4 +190,6 @@ Courses API publishing, monthly reports, and optional authentication. See
 
 ## License
 
-[MIT](LICENSE). Garmin and Garmin Connect are trademarks of Garmin Ltd.
+[AGPL-3.0-or-later](LICENSE) since v0.6.0 (MIT up to v0.5.0). The Garmin Bluetooth sync is ported from
+[Gadgetbridge](https://codeberg.org/Freeyourgadget/Gadgetbridge) (AGPL-3.0), see [NOTICE](NOTICE).
+Garmin and Garmin Connect are trademarks of Garmin Ltd.

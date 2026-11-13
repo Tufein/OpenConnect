@@ -7,7 +7,7 @@ import nl.tufein.openconnect.core.watch.WatchSource
 data class WatchInfo(val id: String, val name: String)
 
 class WatchLinkException(val reason: Reason, message: String? = null) : Exception(message) {
-    enum class Reason { NOT_FOUND, NO_PERMISSION, CANNOT_OPEN }
+    enum class Reason { NOT_FOUND, NO_PERMISSION, CANNOT_OPEN, NOT_PAIRED }
 }
 
 /** An open connection to a watch: read through [source], then [close] to let the USB device go. */
@@ -51,4 +51,47 @@ interface HeartRateLink {
 
     /** Connects and streams measurements to [listener]. Close the result to disconnect. */
     fun connect(sensor: BleSensor, listener: HeartRateListener): AutoCloseable
+}
+
+/** A Garmin watch the phone can reach over Bluetooth. [paired] is Android's pairing ("bond"), not Garmin Connect's. */
+data class GarminBleWatch(val address: String, val name: String, val paired: Boolean)
+
+/** Where a Bluetooth sync with a Garmin watch is, before the files start coming. */
+enum class GarminStep { PAIRING, CONNECTING, HANDSHAKE }
+
+/**
+ * The phone's Bluetooth side for syncing a Garmin watch directly, with Garmin's own protocol (the one Gadgetbridge
+ * worked out). The real one is [AndroidGarminBleLink]; tests use a fake.
+ */
+interface GarminBleLink {
+    /** Reports paired Garmin watches, then Garmin watches nearby. Close the result to stop looking. */
+    fun find(onFound: (GarminBleWatch) -> Unit, onError: (String) -> Unit): AutoCloseable
+
+    /** Pairs when needed, connects and finishes the handshake. Throws [WatchLinkException]. */
+    suspend fun open(watch: GarminBleWatch, onStep: (GarminStep) -> Unit = {}): OpenedWatch
+}
+
+/** Remembers the last watch that synced over Bluetooth, for a one-tap sync next time. */
+interface GarminWatchMemory {
+    fun load(): GarminBleWatch?
+
+    fun save(watch: GarminBleWatch?)
+}
+
+class InMemoryGarminWatchMemory(private var watch: GarminBleWatch? = null) : GarminWatchMemory {
+    override fun load() = watch
+
+    override fun save(watch: GarminBleWatch?) {
+        this.watch = watch
+    }
+}
+
+object NoGarminBleLink : GarminBleLink {
+    override fun find(onFound: (GarminBleWatch) -> Unit, onError: (String) -> Unit): AutoCloseable {
+        onError("Bluetooth is not available")
+        return AutoCloseable { }
+    }
+
+    override suspend fun open(watch: GarminBleWatch, onStep: (GarminStep) -> Unit): OpenedWatch =
+        throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, "Bluetooth is not available")
 }
