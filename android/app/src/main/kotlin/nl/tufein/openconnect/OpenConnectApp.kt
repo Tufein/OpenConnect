@@ -56,7 +56,7 @@ import java.time.Instant
 class AppContainer(
     val repository: SqliteRepository,
     val settings: SettingsStore,
-    usb: WatchLink,
+    val usb: WatchLink,
     ble: HeartRateLink,
     folder: FolderLink = FolderLink { throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN) },
     garminHttp: GarminHttp = UrlConnectionGarminHttp(),

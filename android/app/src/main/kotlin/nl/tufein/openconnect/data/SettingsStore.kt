@@ -63,6 +63,16 @@ class SettingsStore(
         get() = prefs.getString(KEY_THEME, "system")?.takeIf { it in THEMES } ?: "system"
         set(value) = prefs.edit().putString(KEY_THEME, value.takeIf { it in THEMES } ?: "system").apply()
 
+    /** The colour theme, a key of [nl.tufein.openconnect.ui.Palette]: "arcade" unless another was picked. */
+    var palette: String
+        get() = prefs.getString(KEY_PALETTE, "arcade") ?: "arcade"
+        set(value) = prefs.edit().putString(KEY_PALETTE, value).apply()
+
+    /** The drawing style, a key of [nl.tufein.openconnect.ui.LookStyle]: "sport", "round" or "pixel". */
+    var lookStyle: String
+        get() = prefs.getString(KEY_STYLE, "sport") ?: "sport"
+        set(value) = prefs.edit().putString(KEY_STYLE, value).apply()
+
     /** The record of the last syncs, as the text [nl.tufein.openconnect.core.SyncLog] writes. */
     var syncLogText: String
         get() = prefs.getString(KEY_SYNC_LOG, "") ?: ""
@@ -252,6 +262,8 @@ class SettingsStore(
         private const val KEY_LANGUAGE = "report_language"
         private const val KEY_PROVIDER = "provider"
         private const val KEY_THEME = "theme_mode"
+        private const val KEY_PALETTE = "theme_palette"
+        private const val KEY_STYLE = "theme_style"
         private const val KEY_OURA_CLIENT = "oura_client_id"
         private const val KEY_OURA_SECRET = "oura_client_secret"
         private const val KEY_OURA_REDIRECT = "oura_redirect"

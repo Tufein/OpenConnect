@@ -95,6 +95,37 @@ private class AndroidMtpTransport(private val mtp: MtpDevice) : MtpTransport {
         return mtp.getObject(handle.toInt(), size.toInt()) ?: throw IOException("The watch did not return the file")
     }
 
+    override fun createFolder(storageId: Int, parent: Long, name: String): Long? {
+        val info = android.mtp.MtpObjectInfo.Builder()
+            .setName(name)
+            .setFormat(MtpConstants.FORMAT_ASSOCIATION)
+            .setParent(parent.toInt())
+            .setStorageId(storageId)
+            .build()
+        return mtp.sendObjectInfo(info)?.objectHandle?.toLong()
+    }
+
+    /** MTP writes in two steps: announce the file, then send its bytes from a file descriptor. */
+    override fun upload(storageId: Int, parent: Long, name: String, bytes: ByteArray): Boolean {
+        val info = android.mtp.MtpObjectInfo.Builder()
+            .setName(name)
+            .setFormat(MtpConstants.FORMAT_UNDEFINED)
+            .setParent(parent.toInt())
+            .setStorageId(storageId)
+            .setCompressedSize(bytes.size.toLong())
+            .build()
+        val sent = mtp.sendObjectInfo(info) ?: return false
+        val temp = java.io.File.createTempFile("watchface", ".prg")
+        return try {
+            temp.writeBytes(bytes)
+            android.os.ParcelFileDescriptor.open(temp, android.os.ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+                mtp.sendObject(sent.objectHandle, bytes.size.toLong(), fd)
+            }
+        } finally {
+            temp.delete()
+        }
+    }
+
     private companion object {
         /** `MtpDevice.getObjectHandles` takes -1 for "the objects at the root of the storage". */
         const val ROOT_HANDLE = -1

@@ -28,7 +28,7 @@ import nl.tufein.openconnect.ui.OpenConnectRoot
 import nl.tufein.openconnect.ui.OpenConnectTheme
 
 class MainActivity : ComponentActivity() {
-    private val viewModel: AppViewModel by viewModels()
+    internal val viewModel: AppViewModel by viewModels()
 
     /** Android's fingerprint / face / screen-lock check; built in onCreate because it registers for a result. */
     private lateinit var unlocker: nl.tufein.openconnect.lock.Unlocker
@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
         if (savedInstanceState == null) handleIncoming(intent)
         setContent {
             val mode by viewModel.theme.collectAsState()
+            val look by viewModel.look.collectAsState()
             val systemDark = isSystemInDarkTheme()
             val dark = when (mode) {
                 "dark" -> true
@@ -54,7 +55,7 @@ class MainActivity : ComponentActivity() {
                 )
                 onDispose { }
             }
-            OpenConnectTheme(mode) {
+            OpenConnectTheme(mode, look.palette, look.style) {
                 var pendingExport by remember { mutableStateOf<Pair<String, String>?>(null) }
                 var pendingCsv by remember { mutableStateOf<String?>(null) }
                 val importPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
@@ -75,6 +76,9 @@ class MainActivity : ComponentActivity() {
                 }
                 val restorePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
                     if (uri != null) viewModel.restore(uri)
+                }
+                val watchFacePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+                    if (uri != null) viewModel.installWatchFace(uri)
                 }
                 val lockUi by viewModel.lock.collectAsState()
                 val lockAvailable = remember(lockUi) { unlocker.available() }
@@ -98,6 +102,7 @@ class MainActivity : ComponentActivity() {
                     },
                     onBackup = { backupPicker.launch(viewModel.backupFileName()) },
                     onRestore = { restorePicker.launch(arrayOf("*/*")) },
+                    onWatchFace = { watchFacePicker.launch(arrayOf("*/*")) },
                     vm = viewModel,
                     onImport = { importPicker.launch(arrayOf("*/*")) },
                     onExport = { id, format ->

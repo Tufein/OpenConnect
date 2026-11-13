@@ -133,6 +133,9 @@ const val WATCH_ROUTE = "watch"
 const val GARMIN_ROUTE = "garmin"
 const val OURA_ROUTE = "oura"
 
+/** The colour theme ([Palette] key) and drawing style ([LookStyle] key). */
+data class Look(val palette: String = "arcade", val style: String = "sport")
+
 /** Which devices the person uses. [onboarded] is false until the first-start questions are answered. */
 data class SourcesUi(val onboarded: Boolean = true, val garmin: Boolean = true, val oura: Boolean = false)
 const val CSV_DAILY = "daily"
@@ -197,6 +200,17 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         _sources.value = sourcesNow()
         container.applySources()
         if (oura) container.oura.syncIfDue(OPEN_GAP)
+    }
+
+    private val _look = MutableStateFlow(Look(container.settings.palette, container.settings.lookStyle))
+
+    /** The colour theme and the drawing style. */
+    val look: StateFlow<Look> = _look.asStateFlow()
+
+    fun setLook(palette: String, style: String) {
+        container.settings.palette = Palette.of(palette).key
+        container.settings.lookStyle = LookStyle.of(style).key
+        _look.value = Look(container.settings.palette, container.settings.lookStyle)
     }
 
     private val _now = MutableStateFlow(Instant.now())
@@ -649,6 +663,39 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         } catch (e: BackupException) {
             tell(text(R.string.backup_refused, e.message ?: ""))
         }
+    }
+
+    /**
+     * Copies a watch face (.prg) to a Garmin on the USB cable, into GARMIN/Apps. The person then picks it on the watch;
+     * no open protocol can switch the active face from the phone.
+     */
+    fun installWatchFace(source: Uri) = io {
+        val app = getApplication<Application>()
+        val name = app.contentResolver.query(source, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
+            if (c.moveToFirst()) c.getString(0) else null
+        } ?: source.lastPathSegment.orEmpty()
+        val message = try {
+            val bytes = app.contentResolver.openInputStream(source)?.use { readLimited(it, nl.tufein.openconnect.core.watch.WatchFace.MAX_BYTES + 1) }
+                ?: throw IOException("unreadable")
+            nl.tufein.openconnect.core.watch.WatchFace.check(name, bytes)
+            val watch = container.usb.attached().firstOrNull()
+                ?: throw nl.tufein.openconnect.core.watch.WatchFaceException(nl.tufein.openconnect.core.watch.WatchFaceException.Kind.NO_USB_WATCH)
+            val saved = container.usb.open(watch).use { nl.tufein.openconnect.core.watch.WatchFace.install(it.source, name, bytes) }
+            text(R.string.watchface_done, saved)
+        } catch (e: nl.tufein.openconnect.core.watch.WatchFaceException) {
+            text(
+                when (e.kind) {
+                    nl.tufein.openconnect.core.watch.WatchFaceException.Kind.NOT_PRG -> R.string.watchface_not_prg
+                    nl.tufein.openconnect.core.watch.WatchFaceException.Kind.TOO_BIG, nl.tufein.openconnect.core.watch.WatchFaceException.Kind.EMPTY -> R.string.watchface_bad_file
+                    nl.tufein.openconnect.core.watch.WatchFaceException.Kind.NO_USB_WATCH -> R.string.watchface_no_usb
+                    nl.tufein.openconnect.core.watch.WatchFaceException.Kind.CANNOT_WRITE -> R.string.watchface_cannot_write
+                    nl.tufein.openconnect.core.watch.WatchFaceException.Kind.ALREADY_THERE -> R.string.watchface_already
+                },
+            )
+        } catch (e: nl.tufein.openconnect.watch.WatchLinkException) {
+            text(R.string.watchface_cannot_write)
+        }
+        tell(message)
     }
 
     fun backupFileName(): String = "openconnect-backup-" + LocalDate.now() + ".ocbak"

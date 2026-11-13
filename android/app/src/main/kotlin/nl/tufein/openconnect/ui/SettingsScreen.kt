@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -77,6 +79,7 @@ data class SettingsUi(
     val appLock: Boolean = false,
     val lockAvailable: Boolean = false,
     val sources: SourcesUi = SourcesUi(),
+    val look: Look = Look(),
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -101,6 +104,10 @@ fun SettingsScreen(
     onOura: () -> Unit = {},
     /** The choice of devices changed: Garmin on or off, Oura Ring on or off. */
     onSources: (garmin: Boolean, oura: Boolean) -> Unit = { _, _ -> },
+    /** A colour theme or drawing style was picked. */
+    onLook: (palette: String, style: String) -> Unit = { _, _ -> },
+    /** Pick a watch face file to copy to the watch over USB. */
+    onWatchFace: () -> Unit = {},
     onBackup: () -> Unit = {},
     onRestore: () -> Unit = {},
     onClearLog: () -> Unit = {},
@@ -133,6 +140,37 @@ fun SettingsScreen(
                         FilterChip(selected = ui.theme == mode, onClick = { onTheme(mode) }, label = { Text(stringResource(label)) })
                     }
                 }
+                Text(stringResource(R.string.look_colours), style = MaterialTheme.typography.titleMedium)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for (palette in Palette.entries) {
+                        if (palette == Palette.DYNAMIC && android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) continue
+                        FilterChip(
+                            selected = ui.look.palette == palette.key,
+                            onClick = { onLook(palette.key, ui.look.style) },
+                            label = { Text(stringResource(paletteName(palette))) },
+                            leadingIcon = { PaletteDot(palette) },
+                        )
+                    }
+                }
+                Text(stringResource(R.string.look_style), style = MaterialTheme.typography.titleMedium)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for (style in LookStyle.entries) {
+                        FilterChip(selected = ui.look.style == style.key, onClick = { onLook(ui.look.palette, style.key) }, label = { Text(stringResource(styleName(style))) })
+                    }
+                }
+                Text(stringResource(R.string.look_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        item {
+            SectionTitle(stringResource(R.string.settings_watchface))
+            SurfaceCard {
+                Text(stringResource(R.string.watchface_body), style = MaterialTheme.typography.bodyMedium)
+                Button(onClick = onWatchFace, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.watchface_install)) }
+                val uri = androidx.compose.ui.platform.LocalUriHandler.current
+                OutlinedButton(onClick = { uri.openUri("https://apps.garmin.com/") }, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.watchface_store))
+                }
+                Text(stringResource(R.string.watchface_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         item {
@@ -538,4 +576,37 @@ fun DeviceSwitch(title: String, body: String, checked: Boolean, onChange: (Boole
         }
         androidx.compose.material3.Switch(checked = checked, onCheckedChange = onChange, modifier = Modifier.padding(start = 12.dp))
     }
+}
+
+private fun paletteName(p: Palette): Int = when (p) {
+    Palette.ARCADE -> R.string.palette_arcade
+    Palette.GAMEBOY -> R.string.palette_gameboy
+    Palette.AMBER -> R.string.palette_amber
+    Palette.SYNTHWAVE -> R.string.palette_synthwave
+    Palette.OCEAN -> R.string.palette_ocean
+    Palette.SUNSET -> R.string.palette_sunset
+    Palette.DYNAMIC -> R.string.palette_dynamic
+}
+
+private fun styleName(s: LookStyle): Int = when (s) {
+    LookStyle.SPORT -> R.string.style_sport
+    LookStyle.ROUND -> R.string.style_round
+    LookStyle.PIXEL -> R.string.style_pixel
+}
+
+/** A small dot in the theme's main colour, so the chip shows the colour before it is picked. */
+@Composable
+private fun PaletteDot(p: Palette) {
+    val color = when (p) {
+        Palette.ARCADE -> androidx.compose.ui.graphics.Color(0xFF37F5A5)
+        Palette.GAMEBOY -> androidx.compose.ui.graphics.Color(0xFF9BBC0F)
+        Palette.AMBER -> androidx.compose.ui.graphics.Color(0xFFFFB000)
+        Palette.SYNTHWAVE -> androidx.compose.ui.graphics.Color(0xFFFF4FB8)
+        Palette.OCEAN -> androidx.compose.ui.graphics.Color(0xFF4FC3F7)
+        Palette.SUNSET -> androidx.compose.ui.graphics.Color(0xFFFF8A5B)
+        Palette.DYNAMIC -> MaterialTheme.colorScheme.primary
+    }
+    androidx.compose.foundation.layout.Box(
+        Modifier.size(14.dp).background(color, androidx.compose.foundation.shape.CircleShape),
+    )
 }
