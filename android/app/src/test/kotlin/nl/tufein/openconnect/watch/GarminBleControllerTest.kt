@@ -28,6 +28,9 @@ class GarminBleControllerTest {
         mapOf("Monitor/MONITOR_1.fit" to bytes("/watch/monitoring.fit"), "Sleep/SLEEP_2.fit" to bytes("/watch/sleep.fit")),
     )
 
+    private val bleWanted = ArrayList<Boolean>()
+    private val options = InMemoryGarminBleOptions()
+
     private fun controller(ble: GarminBleLink, memory: GarminWatchMemory = InMemoryGarminWatchMemory()) = WatchController(
         repo = repo,
         usb = FakeUsb { throw AssertionError("no USB here") },
@@ -38,6 +41,8 @@ class GarminBleControllerTest {
         onDataChanged = { changed++ },
         garminBle = ble,
         garminMemory = memory,
+        garminOptions = options,
+        onBleBackgroundWanted = { bleWanted += it },
     )
 
     @Test
@@ -126,5 +131,62 @@ class GarminBleControllerTest {
         c.forgetGarmin()
         assertNull(c.state.value.garmin.remembered)
         assertNull(memory.load())
+    }
+
+    // ------------------------------------------------------------------------------ the two switches
+
+    @Test
+    fun `the switches start off, are remembered, and the job is told when the background one changes`() {
+        val c = controller(FakeGarminBle { _, _ -> error("not opened") })
+        assertEquals(listOf(false), bleWanted.toList(), "told at the start so a switch left on keeps its job")
+        assertFalse(c.state.value.garmin.archiveAfterRead)
+        c.setGarminArchive(true)
+        c.setGarminBackground(true)
+        assertTrue(options.archiveAfterRead && options.background)
+        assertTrue(c.state.value.garmin.archiveAfterRead && c.state.value.garmin.background)
+        assertEquals(listOf(false, true), bleWanted.toList())
+        c.setGarminBackground(false)
+        assertEquals(false, bleWanted.last())
+    }
+
+    // --------------------------------------------------------------------------- background attempts
+
+    private fun background(c: WatchController) = kotlinx.coroutines.runBlocking { c.syncGarminInBackground() }
+
+    @Test
+    fun `the background sync does nothing unless it is switched on and a watch is remembered`() {
+        val ble = FakeGarminBle { _, _ -> throw AssertionError("must not connect") }
+        assertEquals(BleBackgroundOutcome.SKIPPED, background(controller(ble, InMemoryGarminWatchMemory(fenix))), "switch off")
+        options.background = true
+        assertEquals(BleBackgroundOutcome.SKIPPED, background(controller(ble)), "no watch remembered")
+    }
+
+    @Test
+    fun `the background sync syncs the remembered watch, logs it, and never searches`() {
+        options.background = true
+        val log = ArrayList<nl.tufein.openconnect.core.SyncLogEntry>()
+        var opened: GarminBleWatch? = null
+        val ble = FakeGarminBle { w, _ -> opened = w; OpenedWatch(watchSource()) { closed++ } }
+        val c = WatchController(
+            repo = repo, usb = FakeUsb { throw AssertionError() }, ble = FakeBle(),
+            scope = CoroutineScope(Dispatchers.Unconfined), io = Dispatchers.Unconfined, zone = { ZoneId.of("Europe/Amsterdam") },
+            garminBle = ble, garminMemory = InMemoryGarminWatchMemory(fenix.copy(paired = true)), garminOptions = options,
+            onSynced = { log += it },
+        )
+        assertEquals(BleBackgroundOutcome.SYNCED, background(c))
+        assertEquals(fenix.address, opened?.address)
+        assertFalse(ble.searching)
+        assertEquals(1, closed)
+        assertEquals(nl.tufein.openconnect.core.SyncLog.SOURCE_BLE, log.single().source)
+        assertTrue(log.single().ok)
+    }
+
+    @Test
+    fun `a watch that is out of range is retried later, other failures are not`() {
+        options.background = true
+        val away = FakeGarminBle { _, _ -> throw WatchLinkException(WatchLinkException.Reason.NOT_FOUND, "not in range") }
+        assertEquals(BleBackgroundOutcome.RETRY, background(controller(away, InMemoryGarminWatchMemory(fenix))))
+        val refused = FakeGarminBle { _, _ -> throw WatchLinkException(WatchLinkException.Reason.NO_PERMISSION, "no permission") }
+        assertEquals(BleBackgroundOutcome.FAILED, background(controller(refused, InMemoryGarminWatchMemory(fenix))))
     }
 }

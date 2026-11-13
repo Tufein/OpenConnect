@@ -285,6 +285,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun forgetGarmin() = container.watch.forgetGarmin()
 
+    fun setGarminArchive(on: Boolean) = container.watch.setGarminArchive(on)
+
+    fun setGarminBackground(on: Boolean) = container.watch.setGarminBackground(on)
+
     fun saveLive(name: String) {
         if (container.watch.saveLive(name, Sport.OTHER)) tell(text(R.string.watch_live_saved))
     }

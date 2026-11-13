@@ -46,7 +46,11 @@ import java.util.concurrent.TimeoutException
  * Like the other links this needs a real phone and watch to exercise.
  */
 @SuppressLint("MissingPermission")
-class AndroidGarminBleLink(private val context: Context) : GarminBleLink {
+class AndroidGarminBleLink(
+    private val context: Context,
+    /** Asked at every sync, so the switch in the app takes effect at once. */
+    private val archiveAfterRead: () -> Boolean = { false },
+) : GarminBleLink {
     companion object {
         /** Names Garmin gives its watches and bike computers ("fenix 8 - 47mm", "Forerunner 965", ...). */
         val GARMIN_NAME = Regex(
@@ -144,7 +148,7 @@ class AndroidGarminBleLink(private val context: Context) : GarminBleLink {
             session.start()
             val info = session.awaitReady(HANDSHAKE_TIMEOUT_MS)
             val name = info.deviceName.ifBlank { watch.name }
-            OpenedWatch(GarminBleWatchSource(session.asFileAccess(), name)) {
+            OpenedWatch(GarminBleWatchSource(session.asFileAccess(), name, archiveAfterRead())) {
                 runCatching { session.finishSync() }
                 Thread.sleep(300) // let "sync complete" leave before the link goes
                 session.close()

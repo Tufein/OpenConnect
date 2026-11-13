@@ -12,11 +12,15 @@ interface GarminFileAccess {
     fun listDirectory(): List<GarminDirectoryEntry>
 
     fun download(index: Int): ByteArray
+
+    /** Marks a file as synced on the watch. */
+    fun archive(index: Int) {}
 }
 
 fun GarminBleSession.asFileAccess(): GarminFileAccess = object : GarminFileAccess {
     override fun listDirectory() = this@asFileAccess.listDirectory()
     override fun download(index: Int) = this@asFileAccess.download(index)
+    override fun archive(index: Int) = this@asFileAccess.archive(index)
 }
 
 /**
@@ -29,6 +33,8 @@ fun GarminBleSession.asFileAccess(): GarminFileAccess = object : GarminFileAcces
 class GarminBleWatchSource(
     private val files: GarminFileAccess,
     override val deviceName: String,
+    /** Off unless the person switched it on: marking files synced makes the watch treat them as sent to Garmin Connect. */
+    private val archiveAfterRead: Boolean = false,
 ) : WatchSource {
     companion object {
         private val STAMP = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss").withZone(ZoneOffset.UTC)
@@ -67,5 +73,19 @@ class GarminBleWatchSource(
     } catch (e: GarminBleException) {
         // the sync service carries on with the next file after an IOException
         throw java.io.IOException(e.message, e)
+    }
+
+    override fun archive(files: List<WatchFileInfo>): Int {
+        if (!archiveAfterRead) return 0
+        var marked = 0
+        for (file in files) {
+            try {
+                this.files.archive(file.handle.toInt())
+                marked++
+            } catch (e: GarminBleException) {
+                break // the link is gone; marking the rest would fail the same way
+            }
+        }
+        return marked
     }
 }

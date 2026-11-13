@@ -15,6 +15,7 @@ import nl.tufein.openconnect.core.reports.UrlConnectionTransport
 import nl.tufein.openconnect.sync.BackgroundSync
 import nl.tufein.openconnect.sync.SyncLogKeeper
 import nl.tufein.openconnect.sync.WorkManagerBackgroundSync
+import nl.tufein.openconnect.sync.WorkManagerBleBackgroundSync
 import nl.tufein.openconnect.data.SettingsStore
 import nl.tufein.openconnect.data.SqliteRepository
 import nl.tufein.openconnect.core.garmin.GarminHttp
@@ -54,6 +55,9 @@ class AppContainer(
     backgroundSync: BackgroundSync = BackgroundSync { },
     /** Garmin's own Bluetooth protocol. Tests pass a fake; the app passes [AndroidGarminBleLink]. */
     garminBle: GarminBleLink = NoGarminBleLink,
+    /** Starts and stops the experimental background Bluetooth job. Tests pass a fake; the app passes WorkManager. */
+    bleBackgroundSync: BackgroundSync = BackgroundSync { },
+    bleOptions: nl.tufein.openconnect.watch.GarminBleOptions = settings.garminBle,
 ) {
     val stats = StatsService(repository)
 
@@ -75,6 +79,8 @@ class AppContainer(
         garminBle = garminBle,
         garminMemory = settings.garminWatch,
         onSynced = syncLog::record,
+        garminOptions = bleOptions,
+        onBleBackgroundWanted = bleBackgroundSync::set,
     )
 
     val garmin = GarminController(
@@ -112,14 +118,15 @@ class OpenConnectApp : Application() {
     var containerOverride: AppContainer? = null
 
     val container: AppContainer by lazy {
-        containerOverride ?: AppContainer(
+        containerOverride ?: SettingsStore(this).let { settingsStore -> AppContainer(
             SqliteRepository(this),
-            SettingsStore(this),
+            settingsStore,
             UsbWatchLink(this),
             BleHeartRateLink(this),
             folder = SafFolderLink(this),
             backgroundSync = WorkManagerBackgroundSync(this),
-            garminBle = AndroidGarminBleLink(this),
-        )
+            garminBle = AndroidGarminBleLink(this, archiveAfterRead = { settingsStore.garminBle.archiveAfterRead }),
+            bleBackgroundSync = WorkManagerBleBackgroundSync(this),
+        ) }
     }
 }

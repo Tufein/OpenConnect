@@ -18,6 +18,7 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 | v0.7.0 | Charts explain themselves, living next to Garmin Connect |
 | v0.8.0 | Scores on Health, sporty look |
 | v0.9.0 | Weekly goals, training load, roadmap |
+| v0.10.0 | Backup and restore, sync log, data sources |
 
 ## v0.9.0: training, with goals ✅
 
@@ -26,7 +27,7 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 2. **Training load.** This week's load against your own four-week average, six weekly bars and a plain verdict (light,
    steady, heavy, big jump). It is OpenConnect's own estimate from duration and heart rate, not Garmin's Training Load.
 
-## v0.10.0: trust the data 🚧
+## v0.10.0: trust the data ✅
 
 3. **Backup and restore.** Export everything to one file and bring it back, so a new phone or a reinstall loses nothing.
 4. **Sync log.** A screen that lists the last syncs from every route (account, USB, folder, Bluetooth) with what each
@@ -34,11 +35,11 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 5. **Data sources view.** Activities counted per source with their period, plus the health totals. (The switch to prefer
    one source when two disagree is not built; the dedupe by start time already keeps the first copy.)
 
-## v0.11.0: more from the watch 🔜
+## v0.11.0: more from the watch 🚧
 
-6. **Bluetooth in the background.** Today the Bluetooth sync runs when you tap it. Next: a foreground service that
-   reconnects when the watch is in range. ❓ Needs a real watch to tune.
-7. **Archive files on the watch** after reading, like Garmin Connect does, so the two apps can share a watch. ❓ Real watch.
+6. **Bluetooth in the background.** ✅ Built as an optional WorkManager job (about every three hours). Not a foreground
+   service that reconnects the moment the watch is in range. ❓ Needs a real watch to tune.
+7. **Archive files on the watch** after reading, like Garmin Connect does. ✅ Built as an optional switch. ❓ Real watch.
 8. **The newer Garmin file sync** (the protobuf one) for watches that no longer use the classic directory sync. ❓ Real watch.
 9. **Live heart rate as a foreground service**, so a workout keeps recording with the screen off.
 

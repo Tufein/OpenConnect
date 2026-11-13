@@ -35,7 +35,7 @@ class GarminBleWatchSourceTest {
     )
 
     /** A fresh connection to the same watch, as each sync makes. */
-    private fun connect(downloads: MutableList<Int>): GarminBleWatchSource {
+    private fun connect(downloads: MutableList<Int>, archive: Boolean = false): GarminBleWatchSource {
         val watch = FakeGarminWatch(watchFiles, chunkSize = 400)
         watches += watch
         val session = GarminBleSession(watch.pipe, PhoneIdentity("p", "m", "d"), scheduler)
@@ -47,9 +47,25 @@ class GarminBleWatchSourceTest {
             object : GarminFileAccess {
                 override fun listDirectory() = access.listDirectory()
                 override fun download(index: Int): ByteArray = access.download(index).also { downloads += index }
+                override fun archive(index: Int) = access.archive(index)
             },
             info.deviceName,
+            archiveAfterRead = archive,
         )
+    }
+
+    @Test
+    fun `with archiving on, the files that were stored are marked as synced on the watch`() {
+        val report = WatchSyncService(amsterdam).sync(connect(ArrayList(), archive = true), InMemoryRepository())
+        assertEquals(4, report.archived)
+        assertEquals(setOf(10, 11, 12, 13), watches.last().archived.toSet())
+    }
+
+    @Test
+    fun `with archiving off, nothing is marked on the watch`() {
+        val report = WatchSyncService(amsterdam).sync(connect(ArrayList()), InMemoryRepository())
+        assertEquals(0, report.archived)
+        assertTrue(watches.last().archived.isEmpty())
     }
 
     @Test

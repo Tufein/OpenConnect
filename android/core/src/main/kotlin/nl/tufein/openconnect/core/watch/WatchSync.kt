@@ -31,6 +31,12 @@ interface WatchSource {
     fun listFiles(): List<WatchFileInfo>
 
     fun read(file: WatchFileInfo): ByteArray
+
+    /**
+     * Tells the watch these files are safely stored here (what Garmin Connect does after a sync), when the person
+     * switched that on and the watch can do it. Returns how many were marked; most sources mark none.
+     */
+    fun archive(files: List<WatchFileInfo>): Int = 0
 }
 
 /** A watch that lives in memory: for tests, and for trying the sync flow without a watch. Keys look like `Monitor/ABC.FIT`. */
@@ -57,6 +63,8 @@ data class WatchSyncReport(
     val nightsUpdated: Int = 0,
     val errors: List<String> = emptyList(),
     val cancelled: Boolean = false,
+    /** Files marked as synced on the watch (only when archiving is on). */
+    val archived: Int = 0,
 )
 
 /**
@@ -87,6 +95,7 @@ class WatchSyncService(private val zone: ZoneId = ZoneId.systemDefault()) {
         var cancelled = false
         val errors = ArrayList<String>()
         val touchedDays = LinkedHashSet<LocalDate>()
+        val stored = ArrayList<WatchFileInfo>()
 
         for ((index, file) in files.withIndex()) {
             if (isCancelled()) {
@@ -96,6 +105,7 @@ class WatchSyncService(private val zone: ZoneId = ZoneId.systemDefault()) {
             onProgress(WatchSyncProgress(done = index, total = files.size, current = file.path))
             if (repo.watchFileSize(file.path) == file.size) {
                 skipped++
+                stored.add(file)
                 continue
             }
             try {
@@ -124,6 +134,7 @@ class WatchSyncService(private val zone: ZoneId = ZoneId.systemDefault()) {
                     }
                 }
                 repo.markWatchFile(file.path, file.size)
+                stored.add(file)
                 read++
             } catch (e: FormatError) {
                 errors.add("${file.path}: ${e.message}")
@@ -139,6 +150,14 @@ class WatchSyncService(private val zone: ZoneId = ZoneId.systemDefault()) {
             repo.upsertDaily(DailyAggregator.summarize(day, repo.listSamples(day, day), existing))
         }
 
+        // Only after everything is written, and only for files that were stored; a failure here must not undo the sync.
+        val archived = if (cancelled || stored.isEmpty()) 0 else try {
+            source.archive(stored)
+        } catch (e: Exception) {
+            errors.add("archive: ${e.message ?: "failed"}")
+            0
+        }
+
         return WatchSyncReport(
             filesFound = files.size,
             filesRead = read,
@@ -149,6 +168,7 @@ class WatchSyncService(private val zone: ZoneId = ZoneId.systemDefault()) {
             nightsUpdated = nights,
             errors = errors,
             cancelled = cancelled,
+            archived = archived,
         )
     }
 }

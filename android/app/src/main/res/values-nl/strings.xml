@@ -416,4 +416,8 @@
     <string name="synclog_ok">%1$d nieuw</string>
     <string name="synclog_failed">mislukt: %1$s</string>
     <string name="synclog_clear">Logboek wissen</string>
+    <string name="watch_ble_archive">Bestanden als gesynchroniseerd markeren op het horloge</string>
+    <string name="watch_ble_archive_note">Zoals Garmin Connect, nadat de bestanden hier zijn opgeslagen. Zet dit alleen aan als deze app het horloge uitleest; Garmin Connect kan die bestanden dan overslaan.</string>
+    <string name="watch_ble_background">Op de achtergrond naar het horloge zoeken (experimenteel)</string>
+    <string name="watch_ble_background_note">Ongeveer elke drie uur, met de app dicht, alleen voor het horloge hierboven. Android kan het uitstellen. Nog niet op een echt horloge geprobeerd.</string>
 </resources>

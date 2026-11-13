@@ -7,6 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Switch
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -58,6 +62,8 @@ fun WatchScreen(
     onStopFindGarmin: () -> Unit = {},
     onSyncGarmin: (GarminBleWatch) -> Unit = {},
     onForgetGarmin: () -> Unit = {},
+    onGarminArchive: (Boolean) -> Unit = {},
+    onGarminBackground: (Boolean) -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     val context = LocalContext.current
@@ -112,6 +118,8 @@ fun WatchScreen(
                     onStopFind = onStopFindGarmin,
                     onSync = { watch -> withBluetooth { onSyncGarmin(watch) } },
                     onForget = onForgetGarmin,
+                    onArchive = onGarminArchive,
+                    onBackground = onGarminBackground,
                 )
             }
         }
@@ -190,6 +198,8 @@ private fun GarminBleControls(
     onStopFind: () -> Unit,
     onSync: (GarminBleWatch) -> Unit,
     onForget: () -> Unit,
+    onArchive: (Boolean) -> Unit,
+    onBackground: (Boolean) -> Unit,
 ) {
     val g = ui.garmin
     val running = ui.sync is SyncStatus.Running
@@ -227,6 +237,22 @@ private fun GarminBleControls(
         LinearProgressIndicator(Modifier.fillMaxWidth())
     } else if (ui.syncSource == SyncSource.GARMIN_BLE) {
         SyncResult(ui.sync, SyncSource.GARMIN_BLE)
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Switch(checked = g.archiveAfterRead, onCheckedChange = onArchive)
+        Spacer(Modifier.width(12.dp))
+        Column {
+            Text(stringResource(R.string.watch_ble_archive), style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.watch_ble_archive_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Switch(checked = g.background, onCheckedChange = onBackground, enabled = g.remembered != null)
+        Spacer(Modifier.width(12.dp))
+        Column {
+            Text(stringResource(R.string.watch_ble_background), style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.watch_ble_background_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
     if (g.remembered != null && !running) {
         TextButton(onClick = onForget) { Text(stringResource(R.string.watch_ble_forget)) }
