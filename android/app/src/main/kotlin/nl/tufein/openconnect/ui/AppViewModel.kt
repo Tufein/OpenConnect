@@ -21,6 +21,7 @@ import nl.tufein.openconnect.core.BackupException
 import nl.tufein.openconnect.core.Csv
 import nl.tufein.openconnect.core.DataOverview
 import nl.tufein.openconnect.core.SyncLogEntry
+import nl.tufein.openconnect.health.HealthUi
 import nl.tufein.openconnect.core.DailySummary
 import nl.tufein.openconnect.core.DemoData
 import nl.tufein.openconnect.core.Overview
@@ -218,6 +219,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     init {
+        container.health.refresh()
         refreshAll()
         viewModelScope.launch { container.dataChanged.collect { refreshAll() } }
         // A sync starting or ending moves the clock "last synced" is measured against.
@@ -284,6 +286,16 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun syncGarmin(watch: GarminBleWatch) = container.watch.syncGarmin(watch)
 
     fun forgetGarmin() = container.watch.forgetGarmin()
+
+    val healthConnect: StateFlow<HealthUi> = container.health.state
+
+    fun refreshHealth() = container.health.refresh()
+
+    fun exportHealth() = container.health.exportNow()
+
+    fun importHealth() = container.health.importNow()
+
+    fun setHealthAuto(on: Boolean) = container.health.setAuto(on)
 
     private val _nudges = MutableStateFlow(container.settings.nudges.enabled)
     val nudges: StateFlow<Boolean> = _nudges.asStateFlow()

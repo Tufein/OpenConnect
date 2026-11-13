@@ -440,4 +440,15 @@
     </plurals>
     <string name="nudge_weekly">Last week: %1$d activities, %2$d km, %3$d of 3 goals reached.</string>
     <string name="nudge_load">Your training load jumped this week. Plan some easy days.</string>
+    <string name="settings_health">Health Connect</string>
+    <string name="settings_health_body">Send your activities to Health Connect so other apps can see them, and read steps and sleep from it to fill days your watch did not cover. What your watch gave is never overwritten, and activities are not read back, so nothing is counted twice.</string>
+    <string name="health_unavailable">Health Connect is not available on this phone. It is part of Android 14 and newer; on older versions install it from Google Play.</string>
+    <string name="health_allow">Allow access in Health Connect</string>
+    <string name="health_send">Send activities now</string>
+    <string name="health_read">Read steps and sleep</string>
+    <string name="health_auto">Send new activities after every sync</string>
+    <string name="health_busy">Working…</string>
+    <string name="health_sent">Sent %1$d activities (%2$d skipped because they have no duration)</string>
+    <string name="health_read_done">Filled %1$d days of steps and %2$d nights of sleep</string>
+    <string name="health_failed">Health Connect did not accept it: %1$s</string>
 </resources>

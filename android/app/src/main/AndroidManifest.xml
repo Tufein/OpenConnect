@@ -5,6 +5,12 @@
     <!-- Only used to ask Claude for reports, and only when you add your own API key. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Health Connect: send activities out, read steps and sleep in. Both are opt-in inside the app. -->
+    <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
+    <uses-permission android:name="android.permission.health.WRITE_DISTANCE" />
+    <uses-permission android:name="android.permission.health.WRITE_TOTAL_CALORIES_BURNED" />
+    <uses-permission android:name="android.permission.health.READ_STEPS" />
+    <uses-permission android:name="android.permission.health.READ_SLEEP" />
 
     <!-- Live heart rate from a watch or chest strap over Bluetooth Low Energy. Android 12 and newer ask for the two
          Bluetooth permissions (scanning is declared as not used to find the phone's location); older versions
@@ -23,6 +29,10 @@
     <uses-feature android:name="android.hardware.usb.host" android:required="false" />
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
 
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+    </queries>
+
     <application
         android:name=".OpenConnectApp"
         android:allowBackup="false"
@@ -33,6 +43,18 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.OpenConnect">
+
+        <!-- Android 14 and newer: the "see how this app uses your health data" entry in system settings. -->
+        <activity-alias
+            android:name="ViewPermissionUsageActivity"
+            android:exported="true"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity-alias>
 
         <receiver
             android:name=".widget.HomeWidget"
@@ -52,6 +74,10 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Health Connect asks where the app explains what it does with the data. -->
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
             </intent-filter>
             <!-- A Garmin watch plugged into the phone: offer to open the Watch screen. -->
             <intent-filter>

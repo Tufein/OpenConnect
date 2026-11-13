@@ -54,7 +54,12 @@ import nl.tufein.openconnect.ai.AiKeyCheck
 import nl.tufein.openconnect.ai.AiKeyProblem
 import nl.tufein.openconnect.ai.AiUi
 import nl.tufein.openconnect.ai.AiVendorUi
+import androidx.health.connect.client.PermissionController
 import nl.tufein.openconnect.core.DataOverview
+import nl.tufein.openconnect.core.health.HealthAccess
+import nl.tufein.openconnect.health.AndroidHealthConnectGateway
+import nl.tufein.openconnect.health.HealthMessage
+import nl.tufein.openconnect.health.HealthUi
 import nl.tufein.openconnect.core.SyncLog
 import nl.tufein.openconnect.core.SyncLogEntry
 import nl.tufein.openconnect.core.WeeklyGoals
@@ -94,6 +99,11 @@ fun SettingsScreen(
     onRestore: () -> Unit = {},
     onClearLog: () -> Unit = {},
     onNudges: (Boolean) -> Unit = {},
+    health: HealthUi = HealthUi(),
+    onHealthChecked: () -> Unit = {},
+    onHealthExport: () -> Unit = {},
+    onHealthImport: () -> Unit = {},
+    onHealthAuto: (Boolean) -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     var confirmClear by remember { mutableStateOf(false) }
@@ -169,6 +179,10 @@ fun SettingsScreen(
                     Text(stringResource(R.string.settings_nudges_switch), style = MaterialTheme.typography.bodyMedium)
                 }
             }
+        }
+        item {
+            SectionTitle(stringResource(R.string.settings_health))
+            SurfaceCard { HealthConnectBody(health, onHealthChecked, onHealthExport, onHealthImport, onHealthAuto) }
         }
         item {
             SectionTitle(stringResource(R.string.settings_backup))
@@ -436,3 +450,41 @@ private fun SyncLogBody(log: List<SyncLogEntry>, onClear: () -> Unit) {
 }
 
 private const val SHOWN_LOG = 15
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun HealthConnectBody(
+    health: HealthUi,
+    onChecked: () -> Unit,
+    onExport: () -> Unit,
+    onImport: () -> Unit,
+    onAuto: (Boolean) -> Unit,
+) {
+    val permission = rememberLauncherForActivityResult(PermissionController.createRequestPermissionResultContract()) { onChecked() }
+    Text(stringResource(R.string.settings_health_body), style = MaterialTheme.typography.bodyMedium)
+    when (health.access) {
+        HealthAccess.UNAVAILABLE -> Text(stringResource(R.string.health_unavailable), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        HealthAccess.NEEDS_PERMISSION -> Button(
+            onClick = { permission.launch(AndroidHealthConnectGateway.PERMISSIONS) },
+            modifier = Modifier.fillMaxWidth(),
+        ) { Text(stringResource(R.string.health_allow)) }
+        HealthAccess.READY -> {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Button(onClick = onExport, enabled = !health.busy) { Text(stringResource(R.string.health_send)) }
+                OutlinedButton(onClick = onImport, enabled = !health.busy) { Text(stringResource(R.string.health_read)) }
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Switch(checked = health.auto, onCheckedChange = onAuto)
+                Spacer(Modifier.width(12.dp))
+                Text(stringResource(R.string.health_auto), style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+    if (health.busy) Text(stringResource(R.string.health_busy), style = MaterialTheme.typography.bodySmall)
+    when (val m = health.message) {
+        is HealthMessage.Exported -> Text(stringResource(R.string.health_sent, m.sent, m.skipped), style = MaterialTheme.typography.bodySmall)
+        is HealthMessage.Imported -> Text(stringResource(R.string.health_read_done, m.days, m.nights), style = MaterialTheme.typography.bodySmall)
+        is HealthMessage.Failed -> Text(stringResource(R.string.health_failed, m.detail ?: "?"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+        null -> Unit
+    }
+}

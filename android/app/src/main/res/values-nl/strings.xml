@@ -440,4 +440,15 @@
     </plurals>
     <string name="nudge_weekly">Vorige week: %1$d activiteiten, %2$d km, %3$d van 3 doelen gehaald.</string>
     <string name="nudge_load">Je trainingsbelasting sprong deze week omhoog. Plan wat rustige dagen.</string>
+    <string name="settings_health">Health Connect</string>
+    <string name="settings_health_body">Stuur je activiteiten naar Health Connect zodat andere apps ze zien, en lees stappen en slaap eruit om dagen aan te vullen die je horloge niet dekte. Wat je horloge gaf wordt nooit overschreven en activiteiten worden niet teruggelezen, dus er wordt niets dubbel geteld.</string>
+    <string name="health_unavailable">Health Connect is niet beschikbaar op deze telefoon. Het zit in Android 14 en nieuwer; op oudere versies installeer je het via Google Play.</string>
+    <string name="health_allow">Toegang toestaan in Health Connect</string>
+    <string name="health_send">Activiteiten nu versturen</string>
+    <string name="health_read">Stappen en slaap lezen</string>
+    <string name="health_auto">Nieuwe activiteiten na elke sync versturen</string>
+    <string name="health_busy">Bezig…</string>
+    <string name="health_sent">%1$d activiteiten verstuurd (%2$d overgeslagen omdat ze geen duur hebben)</string>
+    <string name="health_read_done">%1$d dagen stappen en %2$d nachten slaap aangevuld</string>
+    <string name="health_failed">Health Connect nam het niet aan: %1$s</string>
 </resources>

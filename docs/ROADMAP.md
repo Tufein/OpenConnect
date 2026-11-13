@@ -20,6 +20,7 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 | v0.9.0 | Weekly goals, training load, roadmap |
 | v0.10.0 | Backup and restore, sync log, data sources |
 | v0.11.0 | Archive on the watch, background Bluetooth (both optional) |
+| v0.12.0 | Widget, optional notifications |
 
 ## v0.9.0: training, with goals ✅
 
@@ -49,7 +50,7 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 10. **Home-screen widget** with readiness, today's steps and the week's activity goal.
 12. **Notifications:** a nudge when a goal is close, a weekly summary on Monday, a note when load jumps.
 
-## v0.13.0: Health Connect 🔜
+## v0.13.0: Health Connect ✅
 
 11. **Health Connect** as one more source (and as an output, so other apps see OpenConnect's activities).
 

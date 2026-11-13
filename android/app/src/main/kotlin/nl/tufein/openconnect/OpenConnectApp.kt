@@ -13,6 +13,11 @@ import nl.tufein.openconnect.core.reports.HttpTransport
 import nl.tufein.openconnect.core.reports.ReportService
 import nl.tufein.openconnect.core.reports.UrlConnectionTransport
 import nl.tufein.openconnect.sync.BackgroundSync
+import nl.tufein.openconnect.core.health.HealthConnectGateway
+import nl.tufein.openconnect.core.health.NoHealthConnect
+import nl.tufein.openconnect.health.AndroidHealthConnectGateway
+import nl.tufein.openconnect.health.HealthConnectController
+import nl.tufein.openconnect.health.HealthSettings
 import nl.tufein.openconnect.notify.AndroidNudgeNotifier
 import nl.tufein.openconnect.notify.NudgeNotifier
 import nl.tufein.openconnect.notify.NudgeService
@@ -74,6 +79,9 @@ class AppContainer(
     nudgeSettings: NudgeSettings = settings.nudges,
     /** Redraws the home-screen widgets after new data arrived. */
     private val widgetRefresh: ((summary: () -> WidgetSummary) -> Unit)? = null,
+    /** The phone's Health Connect. Tests pass a fake; the app passes the real one. */
+    healthConnect: HealthConnectGateway = NoHealthConnect,
+    healthSettings: HealthSettings = settings.health,
 ) {
     val stats = StatsService(repository)
 
@@ -97,7 +105,19 @@ class AppContainer(
     /** Emits whenever the watch screen wrote data, so the other screens reload. */
     val dataChanged = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
+    /** The Health Connect card. */
+    val health = HealthConnectController(
+        repo = repository,
+        gateway = healthConnect,
+        settings = healthSettings,
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+        io = Dispatchers.IO,
+        onDataChanged = { dataChanged.tryEmit(Unit) },
+    )
+
     init {
+        // After every sync that wrote something, Health Connect gets the new activities (only when the switch is on).
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch { dataChanged.collect { health.autoExport() } }
         nudgeSync.set(nudgeState.enabled) // a switch left on keeps its job after an update or reboot
         // Only the real app has widgets; the summary is worked out only when one is on the home screen.
         widgetRefresh?.let { refresh ->
@@ -168,6 +188,7 @@ class OpenConnectApp : Application() {
             bleBackgroundSync = WorkManagerBleBackgroundSync(this),
             nudgeNotifier = AndroidNudgeNotifier(this),
             nudgeSync = WorkManagerNudgeSync(this),
+            healthConnect = AndroidHealthConnectGateway(this),
             widgetRefresh = { summary -> HomeWidget.refresh(this, summary) },
         ) }
     }
