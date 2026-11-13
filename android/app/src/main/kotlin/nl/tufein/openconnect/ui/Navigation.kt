@@ -56,6 +56,10 @@ fun OpenConnectRoot(
     onExportCsv: (kind: String) -> Unit,
     onBackup: () -> Unit = {},
     onRestore: () -> Unit = {},
+    /** Whether the phone has a screen lock or fingerprint the app lock can use. */
+    lockAvailable: Boolean = false,
+    /** Switches the lock on (after the person passed the check) or off. */
+    onAppLock: (Boolean) -> Unit = {},
 ) {
     val nav = rememberNavController()
     val snackbar = remember { SnackbarHostState() }
@@ -77,6 +81,8 @@ fun OpenConnectRoot(
     val reports by vm.reports.collectAsState()
     val overview by vm.overview.collectAsState()
     val nudges by vm.nudges.collectAsState()
+    val plan by vm.plan.collectAsState()
+    val lock by vm.lock.collectAsState()
     val healthConnect by vm.healthConnect.collectAsState()
     val syncLog by vm.syncLog.collectAsState()
     val trophies by vm.trophies.collectAsState()
@@ -178,6 +184,9 @@ fun OpenConnectRoot(
                     active = ai.active,
                     trophies = trophies,
                     coach = coach,
+                    plan = plan,
+                    onCreatePlan = vm::createPlan,
+                    onDeletePlan = vm::deletePlan,
                     onShiftWeek = vm::shiftWeek,
                     onPeriod = vm::setReportPeriod,
                     onGenerate = vm::generateWeeklyReport,
@@ -190,7 +199,8 @@ fun OpenConnectRoot(
             }
             composable(Tab.Settings.route) {
                 SettingsScreen(
-                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges),
+                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable),
+                    onAppLock = onAppLock,
                     onNudges = vm::setNudges,
                     health = healthConnect,
                     onHealthChecked = vm::refreshHealth,

@@ -74,6 +74,8 @@ data class SettingsUi(
     val overview: DataOverview? = null,
     val syncLog: List<SyncLogEntry> = emptyList(),
     val nudges: Boolean = false,
+    val appLock: Boolean = false,
+    val lockAvailable: Boolean = false,
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -99,6 +101,7 @@ fun SettingsScreen(
     onRestore: () -> Unit = {},
     onClearLog: () -> Unit = {},
     onNudges: (Boolean) -> Unit = {},
+    onAppLock: (Boolean) -> Unit = {},
     health: HealthUi = HealthUi(),
     onHealthChecked: () -> Unit = {},
     onHealthExport: () -> Unit = {},
@@ -177,6 +180,20 @@ fun SettingsScreen(
                     )
                     Spacer(Modifier.width(12.dp))
                     Text(stringResource(R.string.settings_nudges_switch), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        }
+        item {
+            SectionTitle(stringResource(R.string.settings_lock))
+            SurfaceCard {
+                Text(stringResource(R.string.settings_lock_body), style = MaterialTheme.typography.bodyMedium)
+                if (!ui.lockAvailable && !ui.appLock) {
+                    Text(stringResource(R.string.settings_lock_unavailable), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Switch(checked = ui.appLock, enabled = ui.lockAvailable || ui.appLock, onCheckedChange = onAppLock)
+                    Spacer(Modifier.width(12.dp))
+                    Text(stringResource(R.string.settings_lock_switch), style = MaterialTheme.typography.bodyMedium)
                 }
             }
         }

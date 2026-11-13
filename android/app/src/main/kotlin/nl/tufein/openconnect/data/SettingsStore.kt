@@ -68,6 +68,16 @@ class SettingsStore(
         get() = prefs.getString(KEY_SYNC_LOG, "") ?: ""
         set(value) = prefs.edit().putString(KEY_SYNC_LOG, value).apply()
 
+    /** The training plan the user chose, as [nl.tufein.openconnect.core.PlanConfig] writes it; empty for none. */
+    var trainingPlan: String
+        get() = prefs.getString(KEY_PLAN, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_PLAN, value).apply()
+
+    /** Whether the app asks for the fingerprint, face or screen lock when it opens. */
+    var appLock: Boolean
+        get() = prefs.getBoolean(KEY_APP_LOCK, false)
+        set(value) = prefs.edit().putBoolean(KEY_APP_LOCK, value).apply()
+
     /** The weekly goals shown on Home; a goal of 0 is switched off. */
     var weeklyGoals: WeeklyGoals
         get() = WeeklyGoals(
@@ -176,6 +186,8 @@ class SettingsStore(
         private const val KEY_LANGUAGE = "report_language"
         private const val KEY_PROVIDER = "provider"
         private const val KEY_THEME = "theme_mode"
+        private const val KEY_PLAN = "training_plan"
+        private const val KEY_APP_LOCK = "app_lock"
         private const val KEY_SYNC_LOG = "sync_log"
         private const val KEY_HEALTH_AUTO = "health_connect_auto"
         private const val KEY_NUDGES = "nudges_enabled"

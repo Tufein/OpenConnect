@@ -6,6 +6,7 @@ import android.hardware.usb.UsbManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -15,20 +16,26 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import nl.tufein.openconnect.ui.AppViewModel
+import nl.tufein.openconnect.ui.LockScreen
 import nl.tufein.openconnect.ui.OpenConnectRoot
 import nl.tufein.openconnect.ui.OpenConnectTheme
 
 class MainActivity : ComponentActivity() {
     private val viewModel: AppViewModel by viewModels()
 
+    /** Android's fingerprint / face / screen-lock check; built in onCreate because it registers for a result. */
+    private lateinit var unlocker: nl.tufein.openconnect.lock.Unlocker
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        unlocker = (application as OpenConnectApp).unlockerOverride?.invoke(this) ?: nl.tufein.openconnect.lock.DeviceUnlocker(this)
         enableEdgeToEdge()
         if (savedInstanceState == null) handleIncoming(intent)
         setContent {
@@ -69,7 +76,26 @@ class MainActivity : ComponentActivity() {
                 val restorePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
                     if (uri != null) viewModel.restore(uri)
                 }
+                val lockUi by viewModel.lock.collectAsState()
+                val lockAvailable = remember(lockUi) { unlocker.available() }
+                // With the lock on, the recent-apps list and screenshots must not show the data either.
+                DisposableEffect(lockUi.enabled) {
+                    if (lockUi.enabled) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    onDispose { }
+                }
+                // A phone that lost its screen lock has nothing to check against, so the app opens rather than lock you out.
+                if (lockUi.locked && lockAvailable) {
+                    LockScreen(onUnlock = { unlocker.unlock { ok -> if (ok) viewModel.unlocked() } })
+                    LaunchedEffect(Unit) { unlocker.unlock { ok -> if (ok) viewModel.unlocked() } }
+                    return@OpenConnectTheme
+                }
                 OpenConnectRoot(
+                    lockAvailable = lockAvailable,
+                    onAppLock = { on ->
+                        // Switching it on needs the check first, so nobody locks themselves out by accident.
+                        if (on) unlocker.unlock { ok -> if (ok) viewModel.setAppLock(true) } else viewModel.setAppLock(false)
+                    },
                     onBackup = { backupPicker.launch(viewModel.backupFileName()) },
                     onRestore = { restorePicker.launch(arrayOf("*/*")) },
                     vm = viewModel,
@@ -85,6 +111,16 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        viewModel.lockReturned()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        viewModel.lockLeft()
     }
 
     override fun onResume() {

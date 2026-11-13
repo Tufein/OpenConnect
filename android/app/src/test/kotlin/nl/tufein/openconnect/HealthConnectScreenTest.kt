@@ -64,6 +64,8 @@ class HealthConnectScreenTest : AppTestBase() {
         openSettingsWithDemo()
         scrollToText("Send activities now")
         assertTrue(hasText("Read steps and sleep", substring = false))
+        // The "Demo data loaded" message sits over the lower part of the screen and would take the click.
+        rule.waitUntil(15_000) { !hasText("Demo data loaded", substring = true) }
         clickText("Send activities now")
         waitForText("Sent ", substring = true)
     }
