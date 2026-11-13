@@ -284,11 +284,11 @@ class GarminControllerTest {
         controller().autoSyncIfDue()
         // recent
         settings.key = goodKey
-        settings.lastSyncMs = now.minusSeconds(5 * 3600).toEpochMilli()
+        settings.lastSyncMs = now.minusSeconds(20 * 60).toEpochMilli()
         controller().autoSyncIfDue()
         assertTrue(http.calls.isEmpty())
 
-        settings.lastSyncMs = now.minusSeconds(6 * 3600 + 1).toEpochMilli()
+        settings.lastSyncMs = now.minusSeconds(30 * 60 + 1).toEpochMilli()
         controller().autoSyncIfDue()
         assertNotNull(http.calls.firstOrNull())
     }

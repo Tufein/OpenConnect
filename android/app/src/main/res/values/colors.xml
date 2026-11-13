@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="window_background">#FF0A0F0A</color>
-    <color name="ic_launcher_background">#FF0A0F0A</color>
+    <!-- Behind the app while it starts; the app then paints its own light or dark theme over it. -->
+    <color name="window_background">#FFF4F6FD</color>
+    <color name="ic_launcher_background">#FF0B0E1A</color>
+    <color name="ic_launcher_glow">#FF1D2540</color>
 </resources>

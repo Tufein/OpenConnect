@@ -5,8 +5,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
+import nl.tufein.openconnect.ai.AiController
+import nl.tufein.openconnect.ai.AiSettings
+import nl.tufein.openconnect.ai.CoachController
 import nl.tufein.openconnect.core.StatsService
+import nl.tufein.openconnect.core.reports.HttpTransport
 import nl.tufein.openconnect.core.reports.ReportService
+import nl.tufein.openconnect.core.reports.UrlConnectionTransport
+import nl.tufein.openconnect.sync.BackgroundSync
+import nl.tufein.openconnect.sync.WorkManagerBackgroundSync
 import nl.tufein.openconnect.data.SettingsStore
 import nl.tufein.openconnect.data.SqliteRepository
 import nl.tufein.openconnect.core.garmin.GarminHttp
@@ -36,6 +43,11 @@ class AppContainer(
     garminHttp: GarminHttp = UrlConnectionGarminHttp(),
     garminSettings: GarminSettings = settings.garmin,
     garminNow: () -> Instant = { Instant.now() },
+    /** The network to Claude and Gemini. Tests pass a fake. */
+    aiTransport: HttpTransport = UrlConnectionTransport(),
+    aiSettings: AiSettings = settings,
+    /** Starts and stops the periodic Garmin sync job. Tests pass a fake; the app passes WorkManager. */
+    backgroundSync: BackgroundSync = BackgroundSync { },
 ) {
     val stats = StatsService(repository)
     val reports = ReportService(repository, stats)
@@ -61,6 +73,24 @@ class AppContainer(
         io = Dispatchers.IO,
         now = garminNow,
         onDataChanged = { dataChanged.tryEmit(Unit) },
+        onBackgroundWanted = backgroundSync::set,
+    )
+
+    /** The keys, models and choice of AI provider (Claude, Gemini, or the offline reports). */
+    val ai = AiController(
+        settings = aiSettings,
+        transport = aiTransport,
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+        io = Dispatchers.IO,
+    )
+
+    /** The conversation on the Coach screen. */
+    val coach = CoachController(
+        repo = repository,
+        stats = stats,
+        ai = ai,
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+        io = Dispatchers.IO,
     )
 }
 
@@ -75,6 +105,7 @@ class OpenConnectApp : Application() {
             UsbWatchLink(this),
             BleHeartRateLink(this),
             folder = SafFolderLink(this),
+            backgroundSync = WorkManagerBackgroundSync(this),
         )
     }
 }

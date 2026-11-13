@@ -2,11 +2,11 @@ package nl.tufein.openconnect.ui
 
 import android.net.Uri
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -20,7 +20,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -41,7 +42,7 @@ private enum class Tab(val route: String, val label: Int, val icon: ImageVector)
     Home("home", R.string.tab_home, Icons.Filled.Home),
     Activities("activities", R.string.tab_activities, Icons.Filled.LocationOn),
     Health("health", R.string.tab_health, Icons.Filled.Favorite),
-    Reports("reports", R.string.tab_reports, Icons.Filled.DateRange),
+    Insights("insights", R.string.tab_insights, Icons.Filled.Star),
     Settings("settings", R.string.tab_settings, Icons.Filled.Settings),
 }
 
@@ -52,6 +53,7 @@ fun OpenConnectRoot(
     vm: AppViewModel,
     onImport: () -> Unit,
     onExport: (activityId: String, format: String) -> Unit,
+    onExportCsv: (kind: String) -> Unit,
 ) {
     val nav = rememberNavController()
     val snackbar = remember { SnackbarHostState() }
@@ -71,12 +73,27 @@ fun OpenConnectRoot(
     val detail by vm.detail.collectAsState()
     val health by vm.health.collectAsState()
     val reports by vm.reports.collectAsState()
+    val trophies by vm.trophies.collectAsState()
+    val coach by vm.coach.collectAsState()
+    val ai by vm.ai.collectAsState()
+    val garmin by vm.garmin.collectAsState()
+    val theme by vm.theme.collectAsState()
+    val now by vm.now.collectAsState()
     val busy by vm.busy.collectAsState()
     val watch by vm.watch.collectAsState()
-    val settings = vm.settings
-    var refreshKey by remember { mutableIntStateOf(0) }
-    val usingClaude = remember(refreshKey, settings.providerChoice, settings.hasApiKey) {
-        settings.reportProvider().name == "anthropic"
+    var insightsTab by rememberSaveable { mutableStateOf(InsightsTab.Week) }
+
+    fun openTab(tab: Tab) {
+        nav.navigate(tab.route) {
+            popUpTo(nav.graph.findStartDestination().id) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
+    fun openInsights(which: InsightsTab) {
+        insightsTab = which
+        openTab(Tab.Insights)
     }
 
     fun openWatch() {
@@ -102,13 +119,7 @@ fun OpenConnectRoot(
                     for (tab in Tab.entries) {
                         NavigationBarItem(
                             selected = route == tab.route,
-                            onClick = {
-                                nav.navigate(tab.route) {
-                                    popUpTo(nav.graph.findStartDestination().id) { saveState = true }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
-                            },
+                            onClick = { openTab(tab) },
                             icon = { Icon(tab.icon, contentDescription = null) },
                             // Plain font and a little smaller than the monospace headings: "Activiteiten" and "Instellingen"
                             // must fit a fifth of a narrow phone without being cut off.
@@ -132,32 +143,57 @@ fun OpenConnectRoot(
     ) { padding ->
         NavHost(nav, startDestination = Tab.Home.route) {
             composable(Tab.Home.route) {
-                HomeScreen(home, ::openActivity, vm::loadDemo, onImport, ::openWatch, ::openGarmin, padding)
+                HomeScreen(
+                    state = home,
+                    garmin = garmin,
+                    now = now,
+                    onOpenActivity = ::openActivity,
+                    onDemo = vm::loadDemo,
+                    onImport = onImport,
+                    onWatch = ::openWatch,
+                    onGarmin = ::openGarmin,
+                    onSync = vm::syncGarmin,
+                    onTrophies = { openInsights(InsightsTab.Trophies) },
+                    onCoach = { openInsights(InsightsTab.Coach) },
+                    contentPadding = padding,
+                )
             }
             composable(Tab.Activities.route) {
                 ActivitiesScreen(activities, vm::loadActivities, ::openActivity, vm::loadDemo, onImport, padding)
             }
             composable(Tab.Health.route) { HealthScreen(health, vm::loadDemo, onImport, padding) }
-            composable(Tab.Reports.route) {
-                ReportsScreen(reports, busy, usingClaude, vm::shiftWeek, vm::generateWeeklyReport, ::openActivity, padding)
+            composable(Tab.Insights.route) {
+                InsightsScreen(
+                    tab = insightsTab,
+                    onTab = { insightsTab = it },
+                    reports = reports,
+                    busy = busy,
+                    active = ai.active,
+                    trophies = trophies,
+                    coach = coach,
+                    onShiftWeek = vm::shiftWeek,
+                    onGenerate = vm::generateWeeklyReport,
+                    onOpenActivity = ::openActivity,
+                    onAsk = vm::askCoach,
+                    onClearCoach = vm::clearCoach,
+                    onOpenAiSettings = { openTab(Tab.Settings) },
+                    contentPadding = padding,
+                )
             }
             composable(Tab.Settings.route) {
                 SettingsScreen(
-                    ui = SettingsUi(
-                        language = settings.reportLanguage,
-                        provider = settings.providerChoice,
-                        model = settings.model,
-                        hasApiKey = settings.hasApiKey,
-                        canStoreApiKey = settings.canStoreApiKey,
-                        versionName = BuildConfig.VERSION_NAME,
-                    ),
-                    onLanguage = { settings.reportLanguage = it; refreshKey++ },
-                    onProvider = { settings.providerChoice = it; refreshKey++ },
-                    onModel = { settings.model = it },
-                    onSaveKey = { settings.apiKey = it; refreshKey++ },
-                    onRemoveKey = { settings.apiKey = null; refreshKey++ },
+                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME),
+                    onTheme = vm::setTheme,
+                    onLanguage = vm::setAiLanguage,
+                    onChoice = vm::setAiChoice,
+                    onSaveKey = vm::saveAiKey,
+                    onCheckKey = vm::checkAiKey,
+                    onForgetKey = vm::forgetAiKey,
+                    onModel = vm::setAiModel,
                     onDemo = vm::loadDemo,
                     onImport = onImport,
+                    onExportDaily = { onExportCsv(CSV_DAILY) },
+                    onExportActivities = { onExportCsv(CSV_ACTIVITIES) },
                     onClear = vm::clearAll,
                     onWatch = ::openWatch,
                     onGarmin = ::openGarmin,
@@ -165,7 +201,6 @@ fun OpenConnectRoot(
                 )
             }
             composable(GARMIN_ROUTE) {
-                val garmin by vm.garmin.collectAsState()
                 GarminScreen(
                     ui = garmin,
                     onBack = { nav.popBackStack() },
@@ -201,7 +236,7 @@ fun OpenConnectRoot(
                 ActivityDetailScreen(
                     state = detail,
                     busy = busy,
-                    usingClaude = usingClaude,
+                    active = ai.active,
                     onBack = { nav.popBackStack() },
                     onGenerate = vm::generateActivityReport,
                     onExport = { onExport(id, it) },

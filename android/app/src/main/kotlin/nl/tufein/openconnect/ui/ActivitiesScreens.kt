@@ -18,20 +18,25 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import nl.tufein.openconnect.R
+import nl.tufein.openconnect.ai.ActiveAi
 import nl.tufein.openconnect.core.Activity
+import nl.tufein.openconnect.core.ActivitySort
 import nl.tufein.openconnect.core.Sport
+import nl.tufein.openconnect.core.search
 
 @Composable
 fun ActivitiesScreen(
@@ -42,6 +47,9 @@ fun ActivitiesScreen(
     onImport: () -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
 ) {
+    var query by rememberSaveable { mutableStateOf("") }
+    var sort by rememberSaveable { mutableStateOf(ActivitySort.NEWEST) }
+    val shown = remember(state.items, query, sort) { state.items.search(query, sort) }
     LazyColumn(
         contentPadding = PaddingValues(
             start = 16.dp, end = 16.dp,
@@ -52,7 +60,7 @@ fun ActivitiesScreen(
     ) {
         item {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(stringResource(R.string.tab_activities), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
+                Text(stringResource(R.string.tab_activities), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
                 OutlinedButton(onClick = onImport) { Text(stringResource(R.string.action_import_short)) }
             }
         }
@@ -75,15 +83,46 @@ fun ActivitiesScreen(
                 }
             }
         }
-        items(state.items, key = { it.id }) { ActivityRow(it, onOpenActivity) }
+        item {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                placeholder = { Text(stringResource(R.string.search_hint)) },
+            )
+        }
+        item {
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(ActivitySort.entries) { entry ->
+                    FilterChip(selected = sort == entry, onClick = { sort = entry }, label = { Text(stringResource(sortLabel(entry))) })
+                }
+            }
+        }
+        item {
+            Text(
+                stringResource(R.string.activities_count, shown.size),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (shown.isEmpty()) item { Text(stringResource(R.string.search_none), style = MaterialTheme.typography.bodyMedium) }
+        items(shown, key = { it.id }) { ActivityRow(it, onOpenActivity) }
     }
+}
+
+private fun sortLabel(sort: ActivitySort): Int = when (sort) {
+    ActivitySort.NEWEST -> R.string.sort_newest
+    ActivitySort.OLDEST -> R.string.sort_oldest
+    ActivitySort.DISTANCE -> R.string.sort_distance
+    ActivitySort.DURATION -> R.string.sort_duration
 }
 
 @Composable
 fun ActivityDetailScreen(
     state: DetailState,
     busy: Boolean,
-    usingClaude: Boolean,
+    active: ActiveAi,
     onBack: () -> Unit,
     onGenerate: (force: Boolean) -> Unit,
     onExport: (format: String) -> Unit,
@@ -110,12 +149,17 @@ fun ActivityDetailScreen(
             return@LazyColumn
         }
         item {
-            Text(activity.name, style = MaterialTheme.typography.headlineMedium)
-            Text(
-                stringResource(sportLabel(activity.sport)) + " · " + Fmt.dateTime(activity.startTime),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                SportBadge(activity.sport)
+                Column(Modifier.weight(1f)) {
+                    Text(activity.name, style = MaterialTheme.typography.headlineSmall)
+                    Text(
+                        stringResource(sportLabel(activity.sport)) + " · " + Fmt.dateTime(activity.startTime),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
         }
         item { SummaryTiles(activity) }
 
@@ -130,14 +174,14 @@ fun ActivityDetailScreen(
         if (hr.count { it != null } >= 2) {
             item {
                 SectionTitle(stringResource(R.string.heart_rate))
-                SurfaceCard { LineChart(downsample(hr), description = stringResource(R.string.heart_rate), color = MaterialTheme.colorScheme.error) }
+                SurfaceCard { LineChart(downsample(hr), description = stringResource(R.string.heart_rate), color = OpenConnectColors.metrics.heart) }
             }
         }
         val ele = activity.track.map { it.ele }
         if (ele.count { it != null } >= 2) {
             item {
                 SectionTitle(stringResource(R.string.elevation))
-                SurfaceCard { LineChart(downsample(ele), description = stringResource(R.string.elevation), color = MaterialTheme.colorScheme.tertiary) }
+                SurfaceCard { LineChart(downsample(ele), description = stringResource(R.string.elevation), color = OpenConnectColors.metrics.distance) }
             }
         }
         if (state.splits.isNotEmpty()) {
@@ -153,7 +197,7 @@ fun ActivityDetailScreen(
                 }
             }
         }
-        item { ReportCard(state.report, busy, onGenerate, usingClaude) }
+        item { ReportCard(state.report, busy, onGenerate, active) }
         item {
             SectionTitle(stringResource(R.string.export))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

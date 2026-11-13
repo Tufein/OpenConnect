@@ -1,20 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A phosphor-green pulse line inside a ring: heart rate on an old CRT. -->
+<!--
+  The OpenConnect mark: an activity ring that is open where a connection node sits, with a heartbeat through it.
+  Drawn at 1.2 times so it fills the safe zone of an adaptive icon. LogoMark in ui/Components.kt draws the same shapes.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:pathData="M54,54m-26,0a26,26 0,1 1,52 0a26,26 0,1 1,-52 0"
-        android:strokeWidth="3"
-        android:strokeColor="#FF5CFF4A"
-        android:fillColor="#00000000" />
-    <path
-        android:pathData="M30,56 L42,56 L47,44 L54,68 L60,50 L64,56 L78,56"
-        android:strokeWidth="4"
-        android:strokeColor="#FF5CFF4A"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:fillColor="#00000000" />
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="1.2"
+        android:scaleY="1.2">
+        <path
+            android:pathData="M70.97,37.03 A24,24 0 1 1 58.17,30.36"
+            android:strokeWidth="6"
+            android:strokeColor="#FF37F5A5"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000" />
+        <path
+            android:pathData="M37,56 L45,56 L49,46 L55,66 L60,50 L63,56 L71,56"
+            android:strokeWidth="4"
+            android:strokeColor="#FFE8ECFF"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"
+            android:fillColor="#00000000" />
+        <path
+            android:pathData="M65.08,32.71 m-5,0 a5,5 0 1 1 10,0 a5,5 0 1 1 -10,0"
+            android:fillColor="#FFFFB547" />
+    </group>
 </vector>
