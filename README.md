@@ -9,7 +9,7 @@ machine, with a dashboard, FIT/GPX/TCX import and export, and optional AI-writte
 
 ![OpenConnect dashboard](docs/img/dashboard.png)
 
-> **Status: v0.9.0, an early foundation.** It runs end to end on demo data with no credentials.
+> **Status: v0.10.0, an early foundation.** It runs end to end on demo data with no credentials.
 > Live Garmin access needs Garmin Developer Program credentials (see [Garmin access](#garmin-access)).
 > Not affiliated with or endorsed by Garmin.
 
@@ -26,11 +26,11 @@ live against a real account; the USB and Bluetooth parts have not yet been tried
 **[docs/GARMIN.md](docs/GARMIN.md)** and **[docs/WATCH.md](docs/WATCH.md)** for what works and what is unverified.
 More about the app, its limits and what has been verified: **[docs/ANDROID.md](docs/ANDROID.md)**.
 
-**New in v0.9.0:** **weekly goals** (intensity minutes, distance, activities, set in Settings, shown on Home) and a
-**training load** card that compares this week with your own four-week average. The plan for what comes next is in
-**[docs/ROADMAP.md](docs/ROADMAP.md)**; see the [release notes](docs/releases/v0.9.0.md).
+**New in v0.10.0:** **backup and restore** (one file with everything, no keys), a **sync log** that lists every sync with
+what it added or why it failed, and a **data sources** card. The plan for what comes next is in
+**[docs/ROADMAP.md](docs/ROADMAP.md)**; see the [release notes](docs/releases/v0.10.0.md).
 
-<p><img src="docs/img/v090-home-goals.png" alt="Weekly goals and training load on Home" width="230"></p>
+<p><img src="docs/img/v0100-settings.png" alt="Backup, data sources and sync log in Settings" width="230"></p>
 
 **v0.8.0:** a **Scores** section on Health with four race-HUD tiles (readiness, sleep score, Body Battery, stress),
 30-day charts for readiness and the watch's sleep score with the same plain-language explanation, and a new **sporty look**:

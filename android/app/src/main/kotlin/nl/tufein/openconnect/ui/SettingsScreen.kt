@@ -45,6 +45,9 @@ import nl.tufein.openconnect.ai.AiKeyCheck
 import nl.tufein.openconnect.ai.AiKeyProblem
 import nl.tufein.openconnect.ai.AiUi
 import nl.tufein.openconnect.ai.AiVendorUi
+import nl.tufein.openconnect.core.DataOverview
+import nl.tufein.openconnect.core.SyncLog
+import nl.tufein.openconnect.core.SyncLogEntry
 import nl.tufein.openconnect.core.WeeklyGoals
 import nl.tufein.openconnect.core.reports.AiVendor
 
@@ -54,6 +57,8 @@ data class SettingsUi(
     val theme: String,
     val versionName: String,
     val goals: WeeklyGoals = WeeklyGoals(),
+    val overview: DataOverview? = null,
+    val syncLog: List<SyncLogEntry> = emptyList(),
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -75,6 +80,9 @@ fun SettingsScreen(
     onClear: () -> Unit,
     onWatch: () -> Unit,
     onGarmin: () -> Unit,
+    onBackup: () -> Unit = {},
+    onRestore: () -> Unit = {},
+    onClearLog: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     var confirmClear by remember { mutableStateOf(false) }
@@ -130,6 +138,24 @@ fun SettingsScreen(
                     OutlinedButton(onClick = onExportActivities) { Text(stringResource(R.string.export_activities)) }
                 }
             }
+        }
+        item {
+            SectionTitle(stringResource(R.string.settings_backup))
+            SurfaceCard {
+                Text(stringResource(R.string.settings_backup_body), style = MaterialTheme.typography.bodyMedium)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Button(onClick = onBackup) { Text(stringResource(R.string.action_backup)) }
+                    OutlinedButton(onClick = onRestore) { Text(stringResource(R.string.action_restore)) }
+                }
+            }
+        }
+        item {
+            SectionTitle(stringResource(R.string.settings_sources))
+            SurfaceCard { SourcesBody(ui.overview) }
+        }
+        item {
+            SectionTitle(stringResource(R.string.settings_synclog))
+            SurfaceCard { SyncLogBody(ui.syncLog, onClearLog) }
         }
         item {
             SectionTitle(stringResource(R.string.settings_ai))
@@ -311,3 +337,71 @@ private fun GoalStepper(label: String, value: Int, unit: String, step: Int, onCh
         OutlinedButton(onClick = { onChange(value + step) }) { Text("+") }
     }
 }
+
+@Composable
+private fun sourceLabel(source: String): String = stringResource(
+    when (source) {
+        "garmin" -> R.string.source_garmin
+        "watch", "usb", "folder", "garmin-ble" -> R.string.source_watch
+        "demo" -> R.string.source_demo
+        else -> R.string.source_import
+    },
+)
+
+/** Where the data came from: activities per source with the period, then the daily, sleep and watch readings. */
+@Composable
+private fun SourcesBody(overview: DataOverview?) {
+    if (overview == null || (overview.sources.isEmpty() && overview.days == 0 && overview.nights == 0)) {
+        Text(stringResource(R.string.sources_empty), style = MaterialTheme.typography.bodyMedium)
+        return
+    }
+    for (s in overview.sources) {
+        val zone = java.time.ZoneId.systemDefault()
+        val first = s.first
+        val last = s.last
+        val period = if (first != null && last != null) {
+            " · " + Fmt.shortDate(first.atZone(zone).toLocalDate()) + " – " + Fmt.shortDate(last.atZone(zone).toLocalDate())
+        } else {
+            ""
+        }
+        Text(
+            stringResource(R.string.sources_line, sourceLabel(s.source), s.activities) + period,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+    }
+    val firstDay = overview.firstDay
+    val lastDay = overview.lastDay
+    val span = if (firstDay != null && lastDay != null) " · " + Fmt.shortDate(firstDay) + " – " + Fmt.shortDate(lastDay) else ""
+    Text(
+        stringResource(R.string.sources_health, overview.days, overview.nights, Fmt.thousands(overview.samples)) + span,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+@Composable
+private fun SyncLogBody(log: List<SyncLogEntry>, onClear: () -> Unit) {
+    if (log.isEmpty()) {
+        Text(stringResource(R.string.synclog_empty), style = MaterialTheme.typography.bodyMedium)
+        return
+    }
+    for (e in log.take(SHOWN_LOG)) {
+        val where = stringResource(
+            when (e.source) {
+                SyncLog.SOURCE_USB -> R.string.synclog_usb
+                SyncLog.SOURCE_FOLDER -> R.string.synclog_folder
+                SyncLog.SOURCE_BLE -> R.string.synclog_ble
+                else -> R.string.synclog_account
+            },
+        )
+        val result = if (e.ok) stringResource(R.string.synclog_ok, e.added) else stringResource(R.string.synclog_failed, e.detail.ifBlank { "?" })
+        Text(
+            Fmt.dateTime(e.time) + " · " + where + " · " + result,
+            style = MaterialTheme.typography.bodySmall,
+            color = if (e.ok) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
+        )
+    }
+    TextButton(onClick = onClear) { Text(stringResource(R.string.synclog_clear)) }
+}
+
+private const val SHOWN_LOG = 15

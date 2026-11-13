@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import nl.tufein.openconnect.core.Repository
+import nl.tufein.openconnect.core.SyncLog
+import nl.tufein.openconnect.core.SyncLogEntry
 import nl.tufein.openconnect.core.Sport
 import nl.tufein.openconnect.core.watch.HeartRateMeasurement
 import nl.tufein.openconnect.core.watch.LiveHeartRate
@@ -96,6 +98,8 @@ class WatchController(
     /** Garmin's own Bluetooth protocol, for syncing a watch without a cable. */
     private val garminBle: GarminBleLink = NoGarminBleLink,
     private val garminMemory: GarminWatchMemory = InMemoryGarminWatchMemory(),
+    /** Told how every sync ended, for the sync log. */
+    private val onSynced: (SyncLogEntry) -> Unit = {},
     /** Waits before reconnect attempt number [attempt] (1, 2, ...). Tests replace it. */
     private val reconnectDelay: suspend (attempt: Int) -> Unit = { attempt -> delay(minOf(2_000L * attempt, 10_000L)) },
 ) {
@@ -126,8 +130,25 @@ class WatchController(
         scope.launch(io) {
             // Not inside update { }: that lambda is run again when another thread changed the state meanwhile.
             val result = runSync(whenEmpty, open)
+            onSynced(logEntry(source, result))
             _state.update { it.copy(sync = result, garmin = it.garmin.copy(step = null)) }
             if (refreshAfter) refreshUsb()
+        }
+    }
+
+    private fun logEntry(source: SyncSource, result: SyncStatus): SyncLogEntry {
+        val key = when (source) {
+            SyncSource.USB -> SyncLog.SOURCE_USB
+            SyncSource.FOLDER -> SyncLog.SOURCE_FOLDER
+            SyncSource.GARMIN_BLE -> SyncLog.SOURCE_BLE
+        }
+        return when (result) {
+            is SyncStatus.Done -> {
+                val r = result.report
+                SyncLogEntry(now(), key, ok = true, added = r.activitiesAdded + r.daysUpdated + r.nightsUpdated, detail = if (r.cancelled) "cancelled" else "")
+            }
+            is SyncStatus.Failed -> SyncLogEntry(now(), key, ok = false, detail = listOfNotNull(result.reason.name, result.detail).joinToString(": "))
+            else -> SyncLogEntry(now(), key, ok = false, detail = "unknown")
         }
     }
 

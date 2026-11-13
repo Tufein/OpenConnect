@@ -1,5 +1,7 @@
 package nl.tufein.openconnect.garmin
 
+import nl.tufein.openconnect.core.SyncLog
+import nl.tufein.openconnect.core.SyncLogEntry
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -101,6 +103,8 @@ class GarminController(
     private val onDataChanged: () -> Unit = {},
     /** Told whether a background sync job is wanted, which is when there is a key and auto-sync is on. */
     private val onBackgroundWanted: (Boolean) -> Unit = {},
+    /** Told how every sync ended, for the sync log. */
+    private val onSynced: (SyncLogEntry) -> Unit = {},
 ) {
     companion object {
         val DAY_CHOICES = listOf(7, 30, 90)
@@ -279,6 +283,19 @@ class GarminController(
         } catch (e: Exception) {
             GarminSyncUi.Failed(e.message)
         }
+        onSynced(
+            when (outcome) {
+                is GarminSyncUi.Done -> outcome.report.let { r ->
+                    SyncLogEntry(
+                        now(), SyncLog.SOURCE_ACCOUNT, ok = r.stopped == null,
+                        added = r.activitiesAdded + r.daysUpdated + r.nightsUpdated,
+                        detail = r.stopped?.kind?.name ?: if (r.cancelled) "cancelled" else "",
+                    )
+                }
+                is GarminSyncUi.Failed -> SyncLogEntry(now(), SyncLog.SOURCE_ACCOUNT, ok = false, detail = outcome.detail.orEmpty())
+                else -> SyncLogEntry(now(), SyncLog.SOURCE_ACCOUNT, ok = false, detail = "unknown")
+            },
+        )
         _state.update { it.copy(sync = outcome, lastSync = settings.lastSyncMs.takeIf { ms -> ms > 0 }?.let(Instant::ofEpochMilli)) }
         running.set(false)
         return outcome

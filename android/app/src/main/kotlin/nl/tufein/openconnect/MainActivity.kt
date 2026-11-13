@@ -63,7 +63,15 @@ class MainActivity : ComponentActivity() {
                     pendingCsv = null
                     if (uri != null && kind != null) viewModel.exportCsv(kind, uri)
                 }
+                val backupPicker = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
+                    if (uri != null) viewModel.backup(uri)
+                }
+                val restorePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+                    if (uri != null) viewModel.restore(uri)
+                }
                 OpenConnectRoot(
+                    onBackup = { backupPicker.launch(viewModel.backupFileName()) },
+                    onRestore = { restorePicker.launch(arrayOf("*/*")) },
                     vm = viewModel,
                     onImport = { importPicker.launch(arrayOf("*/*")) },
                     onExport = { id, format ->

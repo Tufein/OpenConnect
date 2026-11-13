@@ -38,7 +38,10 @@ class GarminControllerTest {
         zone = { ZoneOffset.UTC },
         now = { now },
         onDataChanged = { changed++ },
+        onSynced = { logged += it },
     )
+
+    private val logged = mutableListOf<nl.tufein.openconnect.core.SyncLogEntry>()
 
     private val goodKey = "GCDC_0123456789abcdef.fedcba9876543210.AbCdEf/12+34=="
 
@@ -168,6 +171,24 @@ class GarminControllerTest {
         assertEquals(KeyCheck.ACCEPTED, c.state.value.keyCheck)
         // 30 days by default: 2026-10-14 to 2026-11-12, asked for in windows of 28 days
         assertTrue(http.callsTo("steps/daily/2026-10-14/2026-11-10").isNotEmpty() && http.callsTo("steps/daily/2026-11-11/2026-11-12").isNotEmpty())
+    }
+
+    @Test
+    fun `every sync leaves an entry in the log, with the reason when it stopped`() {
+        settings.key = goodKey
+        controller().sync()
+        val good = logged.single()
+        assertTrue(good.ok)
+        assertEquals(3, good.added) // 2 days + 1 night
+        assertEquals(now, good.time)
+        assertEquals(nl.tufein.openconnect.core.SyncLog.SOURCE_ACCOUNT, good.source)
+
+        logged.clear()
+        http.status("POST", "/personal-api-key/token", 401)
+        controller().sync()
+        val bad = logged.single()
+        assertFalse(bad.ok)
+        assertEquals("KEY_REJECTED", bad.detail)
     }
 
     @Test
