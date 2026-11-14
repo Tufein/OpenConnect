@@ -226,4 +226,68 @@ class PersonalApiClientTest {
         assertEquals(GarminApiException.Kind.BAD_RESPONSE, kind { client.download("/download-service/files/activity/2") })
         assertTrue("zip" in http.callsTo("/activity/1").single().headers.getValue("Accept"))
     }
+
+    // ------------------------------------------------------------------------------------ hiccups and Retry-After
+
+    private val waits = ArrayList<Long>()
+    private fun retrying() = PersonalApiClient(http, apiKey = { key }, clock = { clock }, retry = nl.tufein.openconnect.core.RetryPolicy(listOf(1_500L, 5_000L)) { waits += it })
+
+    @Test
+    fun `a busy Garmin is asked again before the sync is given up`() {
+        tokenAnswers(jwt(now.plusSeconds(86_400)))
+        var asked = 0
+        http.on("GET", "/a") { if (asked++ == 0) text(503, "") else text(200, "[1]") }
+
+        assertNotNull(retrying().getJson("/a"))
+        assertEquals(2, http.callsTo("/a").size)
+        assertEquals(listOf(1_500L), waits)
+    }
+
+    @Test
+    fun `a dropped connection during the token request is retried too`() {
+        var asked = 0
+        val flaky = nl.tufein.openconnect.core.garmin.GarminHttp { method, url, headers, timeout ->
+            if (asked++ == 0) throw java.io.IOException("connection reset")
+            http.send(method, url, headers, timeout)
+        }
+        tokenAnswers(jwt(now.plusSeconds(86_400)))
+        http.json("/a", "[1]")
+        val client = PersonalApiClient(flaky, apiKey = { key }, clock = { clock }, retry = nl.tufein.openconnect.core.RetryPolicy(listOf(10L)) { waits += it })
+        assertNotNull(client.getJson("/a"))
+        assertEquals(listOf(10L), waits)
+    }
+
+    @Test
+    fun `a rate limit that asks for a short wait is waited out, a long one is reported with its wait`() {
+        tokenAnswers(jwt(now.plusSeconds(86_400)))
+        var asked = 0
+        http.on("GET", "/short") { if (asked++ == 0) text(429, "", mapOf("retry-after" to "3")) else text(200, "[1]") }
+        assertNotNull(retrying().getJson("/short"))
+        assertEquals(listOf(3_000L), waits)
+
+        waits.clear()
+        http.on("GET", "/long") { text(429, "", mapOf("retry-after" to "900")) }
+        val error = assertFailsWith<GarminApiException> { retrying().getJson("/long") }
+        assertEquals(GarminApiException.Kind.RATE_LIMITED, error.kind)
+        assertEquals(900L, error.retryAfterS)
+        assertEquals(1, http.callsTo("/long").size, "no point waiting a quarter of an hour inside a sync")
+        assertEquals(emptyList(), waits)
+    }
+
+    @Test
+    fun `a refused or missing request is never repeated`() {
+        tokenAnswers(jwt(now.plusSeconds(86_400)))
+        http.status("GET", "/a", 404)
+        assertEquals(GarminApiException.Kind.NOT_FOUND, kind { retrying().getJson("/a") })
+        assertEquals(1, http.callsTo("/a").size)
+        assertEquals(emptyList(), waits)
+    }
+
+    @Test
+    fun `without a retry policy nothing is repeated, as before`() {
+        tokenAnswers(jwt(now.plusSeconds(86_400)))
+        http.status("GET", "/a", 503)
+        assertEquals(GarminApiException.Kind.SERVER, kind { client.getJson("/a") })
+        assertEquals(1, http.callsTo("/a").size)
+    }
 }

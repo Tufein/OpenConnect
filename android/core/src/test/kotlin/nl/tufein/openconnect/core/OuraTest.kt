@@ -37,18 +37,20 @@ class FakeOuraHttp : OuraHttp {
     var apiStatus: (Call) -> Int = { 200 }
     val collections = HashMap<String, String>()
     var offline = false
+    var tokenHeaders: Map<String, String> = emptyMap()
+    var apiHeaders: Map<String, String> = emptyMap()
 
     override fun send(method: String, url: String, headers: Map<String, String>, form: String?, timeoutMs: Int): OuraResponse {
         val call = Call(method, url, headers, form)
         calls += call
         if (offline) throw IOException("no connection")
         if (url == OuraAuth.TOKEN_URL) {
-            if (tokenStatus != 200) return OuraResponse(tokenStatus, """{"error":"invalid_grant"}""")
+            if (tokenStatus != 200) return OuraResponse(tokenStatus, """{"error":"invalid_grant"}""", tokenHeaders)
             tokenCount++
             return OuraResponse(200, """{"token_type":"bearer","access_token":"access-$tokenCount","expires_in":86400,"refresh_token":"refresh-$tokenCount"}""")
         }
         val status = apiStatus(call)
-        if (status != 200) return OuraResponse(status, "{}")
+        if (status != 200) return OuraResponse(status, "{}", apiHeaders)
         val name = url.substringAfter("usercollection/").substringBefore('?')
         if ("next_token=" in url) return OuraResponse(200, """{"data":[],"next_token":null}""")
         return OuraResponse(200, collections[name] ?: """{"data":[],"next_token":null}""")
@@ -213,5 +215,82 @@ class OuraTest {
         assertEquals("access-2", store.tokens?.access, "a 401 gets one fresh token and a second try")
         store.tokens = null
         assertEquals(OuraException.Kind.NOT_CONNECTED, assertFailsWith<OuraException> { sync.sync(7, today) }.kind)
+    }
+
+    // ------------------------------------------------------------------------ hiccups, rate limits and the login
+
+    @Test
+    fun `a rate limit or a server error on the refresh keeps the login, only a real refusal ends it`() {
+        login()
+        for ((status, kind) in listOf(
+            429 to OuraException.Kind.RATE_LIMITED,
+            503 to OuraException.Kind.SERVER,
+            500 to OuraException.Kind.SERVER,
+            403 to OuraException.Kind.SERVER,
+            408 to OuraException.Kind.SERVER,
+        )) {
+            store.tokens = store.tokens!!.copy(expiresAt = now)
+            http.tokenStatus = status
+            assertEquals(kind, assertFailsWith<OuraException> { auth.accessToken() }.kind, "status $status")
+            assertTrue(auth.connected, "status $status is no reason to log out")
+        }
+        store.tokens = store.tokens!!.copy(expiresAt = now)
+        http.tokenStatus = 401
+        assertEquals(OuraException.Kind.LOGIN_EXPIRED, assertFailsWith<OuraException> { auth.accessToken() }.kind)
+        assertFalse(auth.connected, "a refused refresh token (invalid_grant, invalid_client) does")
+    }
+
+    @Test
+    fun `a rate limit on the token address reports how long Oura asks to wait`() {
+        login()
+        store.tokens = store.tokens!!.copy(expiresAt = now)
+        http.tokenStatus = 429
+        http.tokenHeaders = mapOf("retry-after" to "300")
+        assertEquals(300L, assertFailsWith<OuraException> { auth.accessToken() }.retryAfterS)
+    }
+
+    private val waits = ArrayList<Long>()
+    private fun retrying() = OuraSync(OuraClient(http, auth, RetryPolicy(listOf(1_500L, 5_000L)) { waits += it }, { now }), repo)
+
+    @Test
+    fun `a busy Oura is asked again, and a short Retry-After is waited out`() {
+        login()
+        var calls = 0
+        http.apiStatus = { if (calls++ < 2) 503 else 200 }
+        retrying().sync(7, today)
+        assertEquals(listOf(1_500L, 5_000L), waits)
+
+        waits.clear()
+        calls = 0
+        http.apiHeaders = mapOf("retry-after" to "3")
+        http.apiStatus = { if (calls++ < 1) 429 else 200 }
+        retrying().sync(7, today)
+        assertEquals(listOf(3_000L), waits)
+    }
+
+    @Test
+    fun `a long Retry-After is not waited for but handed to the caller`() {
+        login()
+        http.apiStatus = { 429 }
+        http.apiHeaders = mapOf("retry-after" to "900")
+        val error = assertFailsWith<OuraException> { retrying().sync(7, today) }
+        assertEquals(OuraException.Kind.RATE_LIMITED, error.kind)
+        assertEquals(900L, error.retryAfterS)
+        assertEquals(1, http.calls.count { "usercollection" in it.url }, "asked once, not hammered")
+        assertEquals(emptyList(), waits)
+    }
+
+    @Test
+    fun `a dropped connection is retried before it is reported`() {
+        login()
+        var calls = 0
+        val flaky = object : OuraHttp {
+            override fun send(method: String, url: String, headers: Map<String, String>, form: String?, timeoutMs: Int): OuraResponse {
+                if ("usercollection" in url && calls++ == 0) throw IOException("reset")
+                return http.send(method, url, headers, form, timeoutMs)
+            }
+        }
+        OuraSync(OuraClient(flaky, auth, RetryPolicy(listOf(10L)) { waits += it }, { now }), repo).sync(7, today)
+        assertEquals(listOf(10L), waits)
     }
 }

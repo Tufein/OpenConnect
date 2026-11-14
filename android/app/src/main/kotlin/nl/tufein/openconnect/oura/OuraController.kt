@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nl.tufein.openconnect.core.Repository
+import nl.tufein.openconnect.core.RetryAfter
+import nl.tufein.openconnect.core.RetryPolicy
 import nl.tufein.openconnect.core.SyncLog
 import nl.tufein.openconnect.core.SyncLogEntry
 import nl.tufein.openconnect.core.oura.OuraAuth
@@ -67,6 +69,8 @@ class OuraController(
     private val onSynced: (SyncLogEntry) -> Unit = {},
     /** Told whether the background job is wanted, which is while a login is saved. */
     private val onBackgroundWanted: (Boolean) -> Unit = {},
+    /** What to do about a dropped connection, a 429 or a 5xx before a sync gives up. The app asks for [RetryPolicy.standard]. */
+    retry: RetryPolicy = RetryPolicy.NONE,
 ) {
     companion object {
         const val FIRST_SYNC_DAYS = 30
@@ -81,8 +85,11 @@ class OuraController(
     }
 
     private val auth = OuraAuth(http, settings, now)
-    private val sync = OuraSync(OuraClient(http, auth), repo)
+    private val sync = OuraSync(OuraClient(http, auth, retry, now), repo)
     private val running = AtomicBoolean(false)
+
+    /** After a rate limit the automatic syncs stay quiet until this moment; the Sync button still works. In memory only. */
+    @Volatile private var coolDownUntil: Instant? = null
     @Volatile private var days: List<OuraDay> = emptyList()
     private val _state = MutableStateFlow(snapshot())
     val state: StateFlow<OuraUi> = _state.asStateFlow()
@@ -195,6 +202,7 @@ class OuraController(
     }
 
     private fun due(gap: Duration): Boolean {
+        coolDownUntil?.let { if (now().isBefore(it)) return false }
         val last = settings.lastSyncMs.takeIf { it > 0 } ?: return true
         return Duration.between(Instant.ofEpochMilli(last), now()) >= gap
     }
@@ -217,8 +225,10 @@ class OuraController(
         val problem = try {
             report = sync.sync(daysBack, LocalDate.now(zone()))
             settings.lastSyncMs = now().toEpochMilli()
+            coolDownUntil = null
             null
         } catch (e: OuraException) {
+            if (e.kind == OuraException.Kind.RATE_LIMITED) coolDownUntil = now().plus(RetryAfter.coolDown(e.retryAfterS))
             when (e.kind) {
                 OuraException.Kind.NOT_CONNECTED, OuraException.Kind.LOGIN_EXPIRED, OuraException.Kind.BAD_REDIRECT -> OuraProblem.LOGIN_EXPIRED
                 OuraException.Kind.FORBIDDEN -> OuraProblem.FORBIDDEN

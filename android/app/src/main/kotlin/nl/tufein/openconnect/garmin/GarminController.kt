@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nl.tufein.openconnect.core.Repository
+import nl.tufein.openconnect.core.RetryAfter
+import nl.tufein.openconnect.core.RetryPolicy
 import nl.tufein.openconnect.core.garmin.GarminApiException
 import nl.tufein.openconnect.core.garmin.GarminHttp
 import nl.tufein.openconnect.core.garmin.GarminProgress
@@ -105,6 +107,8 @@ class GarminController(
     private val onBackgroundWanted: (Boolean) -> Unit = {},
     /** Told how every sync ended, for the sync log. */
     private val onSynced: (SyncLogEntry) -> Unit = {},
+    /** What to do about a dropped connection, a 429 or a 5xx before a sync gives up. The app asks for [RetryPolicy.standard]. */
+    retry: RetryPolicy = RetryPolicy.NONE,
 ) {
     companion object {
         val DAY_CHOICES = listOf(7, 30, 90)
@@ -129,8 +133,15 @@ class GarminController(
         }
     }
 
-    private val client = PersonalApiClient(http, apiKey = { settings.key }, clock = now)
+    private val client = PersonalApiClient(http, apiKey = { settings.key }, clock = now, retry = retry)
     private val running = AtomicBoolean(false)
+
+    /**
+     * After a rate limit the automatic syncs (the timer, opening the app, the background job) stay quiet until this moment,
+     * so a Garmin that says "too many requests" is not asked again every ten minutes. The Sync button still works. It is
+     * kept in memory: a restarted app may try once more, which is fine.
+     */
+    @Volatile private var coolDownUntil: Instant? = null
     private val cancelRequested = AtomicBoolean(false)
 
     private val _state = MutableStateFlow(snapshot())
@@ -229,6 +240,7 @@ class GarminController(
     }
 
     private fun due(ui: GarminUi, gap: Duration = AUTO_SYNC_EVERY): Boolean {
+        coolDownUntil?.let { if (now().isBefore(it)) return false }
         val last = ui.lastSync
         return last == null || Duration.between(last, now()) >= gap
     }
@@ -304,6 +316,11 @@ class GarminController(
     private fun finish(report: GarminSyncReport) {
         val stopped = report.stopped?.kind
         if (stopped == null && !report.cancelled) settings.lastSyncMs = now().toEpochMilli()
+        if (stopped == GarminApiException.Kind.RATE_LIMITED) {
+            coolDownUntil = now().plus(RetryAfter.coolDown(report.stopped?.retryAfterS))
+        } else if (stopped == null && !report.cancelled) {
+            coolDownUntil = null
+        }
         val check = when {
             stopped == GarminApiException.Kind.KEY_REJECTED -> KeyCheck.REJECTED
             stopped == GarminApiException.Kind.NETWORK -> KeyCheck.UNREACHABLE

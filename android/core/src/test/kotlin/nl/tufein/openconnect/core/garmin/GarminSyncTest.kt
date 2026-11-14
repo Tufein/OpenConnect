@@ -153,6 +153,45 @@ class GarminSyncTest {
     }
 
     @Test
+    fun `a second sync that finds nothing new reports no updates and writes nothing`() {
+        answerEverything()
+        val first = service().sync(days = 7)
+        assertTrue(first.daysUpdated > 0 && first.nightsUpdated > 0)
+
+        val writes = CountingRepository(repo)
+        val again = GarminSyncService(client, writes, ZoneOffset.UTC, { now }).sync(days = 7)
+
+        assertEquals(0, again.daysUpdated, "the same numbers again are not an update")
+        assertEquals(0, again.nightsUpdated)
+        assertEquals(0, writes.writes, "so nothing is rewritten and the app is not told that data changed")
+    }
+
+    @Test
+    fun `a day that really changed is stored and counted, the others are left alone`() {
+        answerEverything()
+        service().sync(days = 7)
+        // the watch syncs again: the 10th has more steps now, everything else is as before
+        http.json("/usersummary-service/stats/steps/daily", """[{"calendarDate":"2026-11-10","totalSteps":9000,"totalDistance":6900,"stepGoal":10000}]""")
+
+        val writes = CountingRepository(repo)
+        val again = GarminSyncService(client, writes, ZoneOffset.UTC, { now }).sync(days = 7)
+
+        assertEquals(1, again.daysUpdated)
+        assertEquals(0, again.nightsUpdated)
+        assertEquals(9000, repo.listDaily(d10, d10).single().steps)
+        assertEquals(1, writes.writes)
+    }
+
+    @Test
+    fun `a night that changed is stored again, a longer one from elsewhere is kept`() {
+        answerEverything()
+        service().sync(days = 7)
+        http.json("/sleep-service/sleep/dailySleepSummariesByDate", """[{"calendarDate":"2026-11-11","sleepTimeSeconds":27600,"deepSleepSeconds":5400,"lightSleepSeconds":15000,"remSleepSeconds":7200,"awakeSleepSeconds":900,"sleepScores":{"overall":{"value":86}}}]""")
+        assertEquals(1, service().sync(days = 7).nightsUpdated)
+        assertEquals(27_600, repo.listSleep(d11, d11).single().durationS)
+    }
+
+    @Test
     fun `answers about days outside the period are ignored`() {
         answerEverything()
         service().sync(days = 2) // 2026-11-11 .. 2026-11-12
@@ -239,6 +278,15 @@ class GarminSyncTest {
         assertEquals(8421, repo.listDaily(d10, d10).single().steps)
         assertTrue(http.callsTo("/hrv-service").isEmpty() && http.callsTo("/activitylist-service").isEmpty())
         assertEquals(EndpointStatus.FAILED, results(report).getValue("stress").status)
+    }
+
+    @Test
+    fun `a rate limit tells the report how long Garmin wants us to wait`() {
+        answerEverything()
+        http.on("GET", "/usersummary-service/stats/stress/daily") { text(429, "", mapOf("retry-after" to "600")) }
+        val report = service().sync(days = 7)
+        assertEquals(GarminApiException.Kind.RATE_LIMITED, report.stopped?.kind)
+        assertEquals(600L, report.stopped?.retryAfterS)
     }
 
     @Test
@@ -432,5 +480,25 @@ class GarminSyncTest {
         assertEquals(1, service().sync(days = 7).activitiesAdded)
         assertEquals(0, service().sync(days = 7).activitiesAdded) // known the second time
         assertEquals("Plain", repo.getActivity(fitActivity.id)?.name)
+    }
+}
+
+/** A repository that counts what is written to it, to show that a sync with nothing new writes nothing. */
+private class CountingRepository(private val inner: nl.tufein.openconnect.core.Repository) : nl.tufein.openconnect.core.Repository by inner {
+    var writes = 0
+
+    override fun upsertDaily(daily: DailySummary) {
+        writes++
+        inner.upsertDaily(daily)
+    }
+
+    override fun upsertSleep(sleep: SleepSummary) {
+        writes++
+        inner.upsertSleep(sleep)
+    }
+
+    override fun upsertActivity(activity: Activity) {
+        writes++
+        inner.upsertActivity(activity)
     }
 }

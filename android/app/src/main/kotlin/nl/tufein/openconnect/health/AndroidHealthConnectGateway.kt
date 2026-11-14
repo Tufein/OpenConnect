@@ -74,26 +74,29 @@ class AndroidHealthConnectGateway(private val context: Context, private val zone
 
     override suspend fun write(sessions: List<HealthSession>): Int = guarded {
         val z = zone()
+        // Health Connect only replaces a record with the same client id when the version is higher (an edited activity
+        // would otherwise be ignored); Android's own guide suggests the time as the version of data that has none.
+        val version = System.currentTimeMillis()
         val records = ArrayList<androidx.health.connect.client.records.Record>()
         for (s in sessions) {
             val startOffset = z.rules.getOffset(s.start)
             val endOffset = z.rules.getOffset(s.end)
             records += ExerciseSessionRecord(
                 startTime = s.start, startZoneOffset = startOffset, endTime = s.end, endZoneOffset = endOffset,
-                metadata = Metadata(clientRecordId = s.clientId),
+                metadata = Metadata(clientRecordId = s.clientId, clientRecordVersion = version),
                 exerciseType = exerciseType(s.sportKey), title = s.name.ifBlank { null },
             )
             if (s.distanceM > 0) {
                 records += DistanceRecord(
                     startTime = s.start, startZoneOffset = startOffset, endTime = s.end, endZoneOffset = endOffset,
-                    distance = Length.meters(s.distanceM), metadata = Metadata(clientRecordId = s.clientId + "-distance"),
+                    distance = Length.meters(s.distanceM), metadata = Metadata(clientRecordId = s.clientId + "-distance", clientRecordVersion = version),
                 )
             }
             val kcal = s.calories
             if (kcal != null && kcal > 0) {
                 records += TotalCaloriesBurnedRecord(
                     startTime = s.start, startZoneOffset = startOffset, endTime = s.end, endZoneOffset = endOffset,
-                    energy = Energy.kilocalories(kcal.toDouble()), metadata = Metadata(clientRecordId = s.clientId + "-energy"),
+                    energy = Energy.kilocalories(kcal.toDouble()), metadata = Metadata(clientRecordId = s.clientId + "-energy", clientRecordVersion = version),
                 )
             }
         }

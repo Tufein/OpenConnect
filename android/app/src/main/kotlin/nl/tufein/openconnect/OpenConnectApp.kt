@@ -127,6 +127,7 @@ class AppContainer(
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
         io = Dispatchers.IO,
         onDataChanged = { dataChanged.tryEmit(Unit) },
+        ledger = settings.healthLedger,
     )
 
     init {
@@ -166,6 +167,7 @@ class AppContainer(
         onDataChanged = { dataChanged.tryEmit(Unit) },
         onBackgroundWanted = backgroundSync::set,
         onSynced = syncLog::record,
+        retry = nl.tufein.openconnect.core.RetryPolicy.standard(),
     )
 
     /** The Oura Ring link. */
@@ -179,6 +181,7 @@ class AppContainer(
         onSynced = syncLog::record,
         // The background job runs only for someone who chose the Oura Ring and logged in.
         onBackgroundWanted = { wanted -> ouraSync.set(wanted && settings.useOura) },
+        retry = nl.tufein.openconnect.core.RetryPolicy.standard(),
     )
 
     private val ouraJob = ouraSync
