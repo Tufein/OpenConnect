@@ -51,6 +51,10 @@ class WatchPreviewTest : AppTestBase() {
 
         clickText("Retro face")
         clickText("Pink")
+        clickText("fenix 8 Pro 47 mm")
+        rule.waitUntil(5_000) { settings().watchDevice == "fenix8pro47mm" }
+        scrollToText("The file is named openconnect-retro-FF5FA2-fenix8pro47mm.prg", substring = true)
+        clickText("fenix 8 47 mm")
         // A new field replaces the last one; tapping a chosen field then makes it the big one.
         clickText("Floors")
         rule.waitUntil(5_000) { settings().watchFields == "battery,heart,stress,floors" }
@@ -65,6 +69,9 @@ class WatchPreviewTest : AppTestBase() {
     fun theBuildCommandNamesTheChoices() {
         val config = WatchFaceConfig("retro", "pink", listOf("steps", "battery", "heart", "stress"))
         assertEquals("watch/build.sh --device fenix847mm --design retro --color pink --fields steps,battery,heart,stress", config.buildCommand())
+        assertEquals("openconnect-retro-FF5FA2-fenix847mm.prg", config.fileName())
+        assertEquals("openconnect-clean-7AA7FF-fenix8solar51mm.prg", WatchFaceConfig(device = "fenix8solar51mm").fileName())
+        assertEquals("fenix847mm", WatchFaceConfig(device = "nonsense").deviceValue.id)
         assertEquals(WatchColor.BLUE, WatchColor.of("nonsense"))
         // Anything that is not four different known fields falls back to the defaults.
         assertEquals(listOf(WatchField.BATTERY, WatchField.HEART, WatchField.STRESS, WatchField.STEPS), WatchField.parse("sleep,steps,heart"))

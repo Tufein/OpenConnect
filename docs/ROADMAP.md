@@ -98,6 +98,11 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 27. **Three watch faces as Connect IQ source** (`watch/`) with `build.sh`; the app shows and copies the build command.
     Not compiled yet: the device files need the owner's Garmin login.
 
+## v0.22.0: a variant per colour ✅
+
+28. **Pick your watch and get the right file:** the app knows five fenix 8 models, shows the exact file name of the
+    face you chose and the build command for it; `build.sh --all-colors` makes one file per colour.
+
 ## Later 💡
 
 - Wear OS or a watch face is out of scope; the project is about the phone side.

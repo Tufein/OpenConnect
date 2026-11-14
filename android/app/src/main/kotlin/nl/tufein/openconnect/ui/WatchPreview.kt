@@ -68,19 +68,38 @@ enum class WatchColor(val key: String, val argb: Long, val label: Int) {
     }
 }
 
+/** The watches a face can be built for; [id] is Garmin's Connect IQ device id, as the SDK Manager names it. */
+enum class WatchDevice(val id: String, val label: String) {
+    F843("fenix843mm", "fenix 8 43 mm"),
+    F847("fenix847mm", "fenix 8 47 mm"),
+    PRO47("fenix8pro47mm", "fenix 8 Pro 47 mm"),
+    SOLAR47("fenix8solar47mm", "fenix 8 Solar 47 mm"),
+    SOLAR51("fenix8solar51mm", "fenix 8 Solar 51 mm");
+
+    companion object {
+        fun of(id: String?) = entries.firstOrNull { it.id == id } ?: F847
+    }
+}
+
 /** The choices for one face: which of the three designs, the accent colour and four fields (the first is the big one). */
 data class WatchFaceConfig(
     val design: String = "clean",
     val color: String = "blue",
     val fields: List<String> = listOf("battery", "heart", "stress", "steps"),
+    val device: String = "fenix847mm",
 ) {
     val designValue: Design get() = Design.of(design)
     val colorValue: WatchColor get() = WatchColor.of(color)
     val fieldValues: List<WatchField> get() = WatchField.parse(fields.joinToString(","))
 
     /** The command that builds this face with watch/build.sh (see docs/WATCH_FACES.md). */
-    fun buildCommand(device: String = "fenix847mm"): String =
-        "watch/build.sh --device $device --design $design --color ${colorValue.key} --fields ${fieldValues.joinToString(",") { it.key }}"
+    fun buildCommand(): String =
+        "watch/build.sh --device ${deviceValue.id} --design $design --color ${colorValue.key} --fields ${fieldValues.joinToString(",") { it.key }}"
+
+    val deviceValue: WatchDevice get() = WatchDevice.of(device)
+
+    /** The name build.sh gives the file, so the right one is picked when it is installed. */
+    fun fileName(): String = "openconnect-${designValue.key}-${"%06X".format(colorValue.argb and 0xFFFFFF)}-${deviceValue.id}.prg"
 }
 
 /** The numbers a face shows now; null shows a dash. */

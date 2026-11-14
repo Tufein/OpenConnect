@@ -20,7 +20,7 @@ You need three things, once:
 
 1. **The Connect IQ SDK and your watch's device files.** Garmin's SDK Manager downloads both and asks for your Garmin
    login. The SDK alone is not enough: `monkeyc` refuses a device id whose files are not downloaded. In the SDK Manager
-   pick the device that is yours (for the fenix 8 AMOLED 47 mm that is `fenix847mm`; the 43 mm is `fenix843mm`).
+   pick the device that is yours (the app offers `fenix843mm`, `fenix847mm`, `fenix8pro47mm`, `fenix8solar47mm` and `fenix8solar51mm`; the Solar ones have a different screen than the AMOLED ones, and the preview is drawn for the AMOLED).
 2. **A developer key:** `watch/build.sh --make-key` creates `watch/developer_key.der`. Keep it; faces built with another
    key do not replace each other.
 3. **`bash`, `openssl` and Java.**
@@ -33,12 +33,13 @@ watch/build.sh --device fenix847mm --design retro --color pink --fields steps,ba
 
 - `--design`: `clean`, `dashboard` or `retro`.
 - `--color`: `mint`, `blue`, `amber`, `pink`, `green` or a hex colour such as `12ab34`.
+- `--all-colors`: one file per colour (mint, blue, amber, pink, green) instead of `--color`.
 - `--fields`: four different ones of `battery`, `heart`, `stress`, `steps`, `floors`. The first is the big one.
 - `--sdk` or `CIQ_SDK`: the SDK folder, when it is not under `~/.Garmin/ConnectIQ/Sdks`.
 - `--key` or `CIQ_KEY`: another developer key.
 - `--dry-run`: only write the generated files into `watch/gen/` (used by the tests).
 
-The result is `watch/out/openconnect-<design>-<colour>-<device>.prg`. Every design and colour gets its own app id, so
+The result is `watch/out/openconnect-<design>-<COLOUR HEX>-<device>.prg`, for example `openconnect-retro-FF5FA2-fenix847mm.prg`. The app shows this name for the face you chose, so you pick the right file when you install it. Every design and colour gets its own app id, so
 several variants can sit on the watch side by side.
 
 ## How it works

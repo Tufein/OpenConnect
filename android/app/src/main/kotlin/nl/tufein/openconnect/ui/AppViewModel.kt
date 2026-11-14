@@ -234,7 +234,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun watchFaceNow() = container.settings.let {
-        WatchFaceConfig(Design.of(it.watchDesign).key, WatchColor.of(it.watchColor).key, WatchField.parse(it.watchFields).map { f -> f.key })
+        WatchFaceConfig(Design.of(it.watchDesign).key, WatchColor.of(it.watchColor).key, WatchField.parse(it.watchFields).map { f -> f.key }, WatchDevice.of(it.watchDevice).id)
     }
 
     private val _watchFace = MutableStateFlow(watchFaceNow())
@@ -242,10 +242,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     /** The watch face shown in the preview and handed to watch/build.sh. */
     val watchFace: StateFlow<WatchFaceConfig> = _watchFace.asStateFlow()
 
-    fun setWatchFace(design: String, color: String, fields: List<String>) {
-        container.settings.watchDesign = Design.of(design).key
-        container.settings.watchColor = WatchColor.of(color).key
-        container.settings.watchFields = WatchField.parse(fields.joinToString(",")).joinToString(",") { it.key }
+    fun setWatchFace(config: WatchFaceConfig) {
+        container.settings.watchDesign = Design.of(config.design).key
+        container.settings.watchColor = WatchColor.of(config.color).key
+        container.settings.watchFields = WatchField.parse(config.fields.joinToString(",")).joinToString(",") { it.key }
+        container.settings.watchDevice = WatchDevice.of(config.device).id
         _watchFace.value = watchFaceNow()
     }
 

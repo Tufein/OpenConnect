@@ -87,6 +87,10 @@ class SettingsStore(
         get() = prefs.getString(KEY_WF_FIELDS, "battery,heart,stress,sleep") ?: "battery,heart,stress,sleep"
         set(value) = prefs.edit().putString(KEY_WF_FIELDS, value).apply()
 
+    var watchDevice: String
+        get() = prefs.getString(KEY_WF_DEVICE, "fenix847mm") ?: "fenix847mm"
+        set(value) = prefs.edit().putString(KEY_WF_DEVICE, value).apply()
+
     val hasDesign: Boolean get() = prefs.contains(KEY_DESIGN)
 
     var design: String
@@ -288,6 +292,7 @@ class SettingsStore(
         private const val KEY_WF_DESIGN = "wf_design"
         private const val KEY_WF_COLOR = "wf_color"
         private const val KEY_WF_FIELDS = "wf_fields"
+        private const val KEY_WF_DEVICE = "wf_device"
         private const val KEY_OURA_CLIENT = "oura_client_id"
         private const val KEY_OURA_SECRET = "oura_client_secret"
         private const val KEY_OURA_REDIRECT = "oura_redirect"

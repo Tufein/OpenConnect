@@ -76,3 +76,16 @@ def test_bad_choices_are_refused(script, args):
 def test_a_hex_colour_is_accepted(script):
     assert run(script, "--color", "12ab34").returncode == 0
     assert "0x12AB34" in (script.parent / "gen" / "source" / "Config.mc").read_text()
+
+
+def test_all_colors_names_one_file_per_colour_like_the_app(script):
+    done = run(script, "--device", "fenix8solar51mm", "--design", "dashboard", "--all-colors")
+    assert done.returncode == 0, done.stderr
+    files = [
+        line.split(": ", 1)[1] for line in done.stdout.splitlines() if line.startswith("file: ")
+    ]
+    # The app names the file the same way (WatchFaceConfig.fileName).
+    assert files == [
+        f"openconnect-dashboard-{hex}-fenix8solar51mm.prg"
+        for hex in ("5CF2C0", "7AA7FF", "FFB000", "FF5FA2", "9BBC0F")
+    ]
