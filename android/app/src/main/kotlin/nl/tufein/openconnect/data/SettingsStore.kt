@@ -74,6 +74,19 @@ class SettingsStore(
         set(value) = prefs.edit().putString(KEY_STYLE, value).apply()
 
     /** The design (v0.19.0): "clean", "dashboard" or "retro". Retro is the look of earlier versions, so an update changes nothing. */
+    /** The watch face preview and build choices (v0.20.0): design, accent colour and four fields, comma separated. */
+    var watchDesign: String
+        get() = prefs.getString(KEY_WF_DESIGN, "clean") ?: "clean"
+        set(value) = prefs.edit().putString(KEY_WF_DESIGN, value).apply()
+
+    var watchColor: String
+        get() = prefs.getString(KEY_WF_COLOR, "blue") ?: "blue"
+        set(value) = prefs.edit().putString(KEY_WF_COLOR, value).apply()
+
+    var watchFields: String
+        get() = prefs.getString(KEY_WF_FIELDS, "battery,heart,stress,sleep") ?: "battery,heart,stress,sleep"
+        set(value) = prefs.edit().putString(KEY_WF_FIELDS, value).apply()
+
     val hasDesign: Boolean get() = prefs.contains(KEY_DESIGN)
 
     var design: String
@@ -272,6 +285,9 @@ class SettingsStore(
         private const val KEY_PALETTE = "theme_palette"
         private const val KEY_STYLE = "theme_style"
         private const val KEY_DESIGN = "theme_design"
+        private const val KEY_WF_DESIGN = "wf_design"
+        private const val KEY_WF_COLOR = "wf_color"
+        private const val KEY_WF_FIELDS = "wf_fields"
         private const val KEY_OURA_CLIENT = "oura_client_id"
         private const val KEY_OURA_SECRET = "oura_client_secret"
         private const val KEY_OURA_REDIRECT = "oura_redirect"

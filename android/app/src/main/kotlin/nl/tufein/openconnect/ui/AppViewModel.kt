@@ -233,6 +233,22 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         _look.value = lookNow()
     }
 
+    private fun watchFaceNow() = container.settings.let {
+        WatchFaceConfig(Design.of(it.watchDesign).key, WatchColor.of(it.watchColor).key, WatchField.parse(it.watchFields).map { f -> f.key })
+    }
+
+    private val _watchFace = MutableStateFlow(watchFaceNow())
+
+    /** The watch face shown in the preview and handed to watch/build.sh. */
+    val watchFace: StateFlow<WatchFaceConfig> = _watchFace.asStateFlow()
+
+    fun setWatchFace(design: String, color: String, fields: List<String>) {
+        container.settings.watchDesign = Design.of(design).key
+        container.settings.watchColor = WatchColor.of(color).key
+        container.settings.watchFields = WatchField.parse(fields.joinToString(",")).joinToString(",") { it.key }
+        _watchFace.value = watchFaceNow()
+    }
+
     private val _now = MutableStateFlow(Instant.now())
 
     /** The time the screens measure "5 min ago" against. It moves when the app opens and when a sync changes. */

@@ -80,6 +80,9 @@ data class SettingsUi(
     val lockAvailable: Boolean = false,
     val sources: SourcesUi = SourcesUi(),
     val look: Look = Look(),
+    val watchFace: WatchFaceConfig = WatchFaceConfig(),
+    /** The numbers the preview shows; null until there is data. */
+    val watchData: WatchFaceData? = null,
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -106,6 +109,8 @@ fun SettingsScreen(
     onSources: (garmin: Boolean, oura: Boolean) -> Unit = { _, _ -> },
     /** A colour theme or drawing style was picked. */
     onLook: (palette: String, style: String) -> Unit = { _, _ -> },
+    /** The watch face preview changed: design, colour and four fields. */
+    onWatchFaceLook: (design: String, color: String, fields: List<String>) -> Unit = { _, _, _ -> },
     /** One of the three designs was picked. */
     onDesign: (String) -> Unit = {},
     /** Pick a watch face file to copy to the watch over USB. */
@@ -166,6 +171,7 @@ fun SettingsScreen(
                 Text(stringResource(R.string.look_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
+        item { WatchFacePreviewCard(ui.watchFace, ui.watchData ?: WatchFaceData("08:42", "", null, null, null, null, null), onWatchFaceLook) }
         item {
             SectionTitle(stringResource(R.string.settings_watchface))
             SurfaceCard {
@@ -642,4 +648,59 @@ private fun designBody(d: Design): Int = when (d) {
     Design.CLEAN -> R.string.design_clean_body
     Design.DASHBOARD -> R.string.design_dashboard_body
     Design.RETRO -> R.string.design_retro_body
+}
+
+/** A round preview of the watch face with the choices that decide how it is built. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, onChange: (String, String, List<String>) -> Unit) {
+    SectionTitle(stringResource(R.string.wf_title))
+    SurfaceCard {
+        androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { WatchFacePreview(config, data) }
+        Text(stringResource(R.string.wf_design), style = MaterialTheme.typography.titleMedium)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (design in Design.entries) {
+                FilterChip(
+                    selected = config.design == design.key,
+                    onClick = { onChange(design.key, config.color, config.fields) },
+                    label = { Text(stringResource(wfDesignName(design))) },
+                )
+            }
+        }
+        Text(stringResource(R.string.wf_colour), style = MaterialTheme.typography.titleMedium)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (color in WatchColor.entries) {
+                FilterChip(
+                    selected = config.color == color.key,
+                    onClick = { onChange(config.design, color.key, config.fields) },
+                    label = { Text(stringResource(color.label)) },
+                    leadingIcon = { androidx.compose.foundation.layout.Box(Modifier.size(14.dp).background(color.color, androidx.compose.foundation.shape.CircleShape)) },
+                )
+            }
+        }
+        Text(stringResource(R.string.wf_fields), style = MaterialTheme.typography.titleMedium)
+        val chosen = config.fieldValues
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (field in WatchField.entries) {
+                val place = chosen.indexOf(field)
+                FilterChip(
+                    selected = place >= 0,
+                    onClick = {
+                        // A chosen field becomes the big one; another one replaces the last.
+                        val next = if (place >= 0) listOf(field) + chosen.filter { it != field } else chosen.dropLast(1) + field
+                        onChange(config.design, config.color, next.map { it.key })
+                    },
+                    label = { Text((if (place >= 0) "${place + 1} " else "") + stringResource(field.label)) },
+                )
+            }
+        }
+        Text(stringResource(R.string.wf_fields_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(stringResource(R.string.wf_preview_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+private fun wfDesignName(d: Design): Int = when (d) {
+    Design.CLEAN -> R.string.wf_face_clean
+    Design.DASHBOARD -> R.string.wf_face_dashboard
+    Design.RETRO -> R.string.wf_face_retro
 }
