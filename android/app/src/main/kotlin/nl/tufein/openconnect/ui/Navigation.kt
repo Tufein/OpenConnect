@@ -110,6 +110,7 @@ fun OpenConnectRoot(
     val plan by vm.plan.collectAsState()
     val zones by vm.zones.collectAsState()
     val gear by vm.gear.collectAsState()
+    val calendar by vm.calendar.collectAsState()
     val lock by vm.lock.collectAsState()
     val healthConnect by vm.healthConnect.collectAsState()
     val syncLog by vm.syncLog.collectAsState()
@@ -243,6 +244,8 @@ fun OpenConnectRoot(
                     onZones = vm::zonesAction,
                     gear = gear,
                     onGear = vm::gearAction,
+                    calendar = calendar,
+                    onShiftCalendar = vm::shiftCalendar,
                     onShiftWeek = vm::shiftWeek,
                     onPeriod = vm::setReportPeriod,
                     onGenerate = vm::generateWeeklyReport,

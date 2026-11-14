@@ -737,4 +737,22 @@
     <string name="gear_none_chip">Geen schoenen</string>
     <string name="gear_automatic">Standaard volgen</string>
     <string name="gear_activity_note">Alleen deze activiteit verandert; de andere volgen het standaardpaar van hun sport.</string>
+    <string name="insights_calendar">Kalender</string>
+    <string name="calendar_current_days">Huidige reeks</string>
+    <string name="calendar_longest_days">Langste reeks</string>
+    <string name="calendar_current_weeks">Weken achter elkaar</string>
+    <string name="calendar_longest_weeks">Langste reeks weken</string>
+    <string name="calendar_days">dagen</string>
+    <string name="calendar_weeks">weken</string>
+    <string name="calendar_open_today">Vandaag is nog open: elke activiteit houdt je reeks in leven.</string>
+    <string name="calendar_prev">Vorige maand</string>
+    <string name="calendar_next">Volgende maand</string>
+    <string name="calendar_month_summary">Activiteiten: %1$d op %2$d dagen, %3$s km</string>
+    <string name="calendar_tap">Tik op een dag om de activiteiten te zien.</string>
+    <string name="calendar_rest_day">Geen activiteit op deze dag.</string>
+    <plurals name="calendar_day_summary">
+        <item quantity="one">%1$d activiteit, %2$s km</item>
+        <item quantity="other">%1$d activiteiten, %2$s km</item>
+    </plurals>
+    <string name="calendar_note">Een dag telt mee als er een activiteit op begint (dagen zijn UTC-dagen) en een week loopt van maandag tot zondag. Een reeks is pas verbroken als de dag of week voorbij is.</string>
 </resources>
