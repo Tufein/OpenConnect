@@ -111,7 +111,7 @@ private fun ShoeCard(u: ShoeUsage, onAction: (GearAction) -> Unit) {
         u.shoe.until?.let { until ->
             Text(stringResource(R.string.gear_retired_on, Fmt.date(until)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SecondaryButton(onClick = { onAction(GearAction.MoveLimit(u.shoe.id, -Gear.LIMIT_STEP_KM)) }) { Text(stringResource(R.string.gear_limit_minus)) }
             SecondaryButton(onClick = { onAction(GearAction.MoveLimit(u.shoe.id, Gear.LIMIT_STEP_KM)) }) { Text(stringResource(R.string.gear_limit_plus)) }
             if (u.shoe.until == null) {
@@ -139,7 +139,7 @@ private fun AddShoesCard(onAction: (GearAction) -> Unit) {
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             for (s in Gear.SPORTS) {
                 PixelChip(selected = sport == s.key, onClick = { sport = s.key }, label = { Text(stringResource(sportLabel(s))) })
             }
@@ -168,7 +168,7 @@ fun ActivityShoesCard(state: DetailState, onAssign: (String?) -> Unit) {
             if (shoe == null) stringResource(R.string.gear_on_none) else stringResource(R.string.gear_on, shoe.name),
             style = MaterialTheme.typography.bodyMedium,
         )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             for (c in state.shoeChoices) {
                 PixelChip(selected = shoe?.id == c.id, onClick = { onAssign(c.id) }, label = { Text(c.name) })
             }

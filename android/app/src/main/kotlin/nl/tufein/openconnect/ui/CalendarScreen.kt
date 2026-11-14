@@ -189,7 +189,7 @@ private fun DayDetail(day: LocalDate, totals: DayTotals?, onOpenActivity: (Strin
         resources.getQuantityString(R.plurals.calendar_day_summary, totals.count, totals.count, Fmt.oneDecimal(totals.distanceM / 1000.0)),
         style = MaterialTheme.typography.bodyMedium,
     )
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         for (item in totals.items) {
             SecondaryButton(onClick = { onOpenActivity(item.id) }) { Text(item.name) }
         }

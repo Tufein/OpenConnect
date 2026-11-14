@@ -93,7 +93,7 @@ private fun MaxHrCard(overview: ZoneOverview, onAction: (ZonesAction) -> Unit) {
             MaxHrSource.NONE -> R.string.zones_max_none
         }
         Text(stringResource(note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SecondaryButton(onClick = { onAction(ZonesAction.ShiftMax(-5)) }) { Text(stringResource(R.string.zones_minus)) }
             SecondaryButton(onClick = { onAction(ZonesAction.ShiftMax(5)) }) { Text(stringResource(R.string.zones_plus)) }
             if (max.source == MaxHrSource.SETTING) {

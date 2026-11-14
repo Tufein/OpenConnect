@@ -143,7 +143,7 @@ fun SettingsScreen(
                     }
                 }
                 Text(stringResource(R.string.look_colours), style = MaterialTheme.typography.titleMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     for (palette in Palette.entries) {
                         if (palette == Palette.DYNAMIC && android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) continue
                         PixelChip(
@@ -209,7 +209,7 @@ fun SettingsScreen(
             SectionTitle(stringResource(R.string.settings_export))
             SurfaceCard {
                 Text(stringResource(R.string.settings_export_body), style = MaterialTheme.typography.bodyMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     SecondaryButton(onClick = onExportDaily) { Text(stringResource(R.string.export_daily)) }
                     SecondaryButton(onClick = onExportActivities) { Text(stringResource(R.string.export_activities)) }
                 }
@@ -257,7 +257,7 @@ fun SettingsScreen(
             SectionTitle(stringResource(R.string.settings_backup))
             SurfaceCard {
                 Text(stringResource(R.string.settings_backup_body), style = MaterialTheme.typography.bodyMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     PrimaryButton(onClick = onBackup) { Text(stringResource(R.string.action_backup)) }
                     SecondaryButton(onClick = onRestore) { Text(stringResource(R.string.action_restore)) }
                 }
@@ -358,7 +358,7 @@ private fun VendorCard(
                 modifier = Modifier.fillMaxWidth(),
             )
             // Three buttons do not fit side by side on a narrow phone (and not in Dutch): they wrap onto a second line.
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 PrimaryButton(onClick = { onSaveKey(vendor, keyField); keyField = "" }, enabled = keyField.isNotBlank()) {
                     Text(stringResource(R.string.save_key, name))
                 }
@@ -388,7 +388,7 @@ private fun VendorCard(
                 )
             }
         }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             SecondaryButton(onClick = { onModel(vendor, modelField) }, enabled = modelField.trim() != ui.model) {
                 Text(stringResource(R.string.save_model))
             }
@@ -540,7 +540,7 @@ private fun HealthConnectBody(
             modifier = Modifier.fillMaxWidth(),
         ) { Text(stringResource(R.string.health_allow)) }
         HealthAccess.READY -> {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 PrimaryButton(onClick = onExport, enabled = !health.busy) { Text(stringResource(R.string.health_send)) }
                 SecondaryButton(onClick = onImport, enabled = !health.busy) { Text(stringResource(R.string.health_read)) }
             }
@@ -610,7 +610,7 @@ private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, o
     SurfaceCard {
         androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { WatchFacePreview(config, data) }
         Text(stringResource(R.string.wf_design), style = MaterialTheme.typography.titleMedium)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             for (design in Design.entries) {
                 PixelChip(
                     selected = config.design == design.key,
@@ -620,7 +620,7 @@ private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, o
             }
         }
         Text(stringResource(R.string.wf_colour), style = MaterialTheme.typography.titleMedium)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             for (color in WatchColor.entries) {
                 PixelChip(
                     selected = config.color == color.key,
@@ -632,7 +632,7 @@ private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, o
         }
         Text(stringResource(R.string.wf_fields), style = MaterialTheme.typography.titleMedium)
         val chosen = config.fieldValues
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             for (field in WatchField.entries) {
                 val place = chosen.indexOf(field)
                 PixelChip(
@@ -647,7 +647,7 @@ private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, o
             }
         }
         Text(stringResource(R.string.wf_device), style = MaterialTheme.typography.titleMedium)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             for (device in WatchDevice.entries) {
                 PixelChip(selected = config.device == device.id, onClick = { onChange(config.copy(device = device.id)) }, label = { Text(device.label) })
             }

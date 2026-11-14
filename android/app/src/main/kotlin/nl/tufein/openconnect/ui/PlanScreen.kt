@@ -123,16 +123,16 @@ private fun PlanSetup(state: PlanState, onCreate: (PlanGoal, Int, Int) -> Unit) 
             )
         }
         SectionTitle(stringResource(R.string.plan_goal))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             PixelChip(selected = goal == PlanGoal.FIVE_K, onClick = { goal = PlanGoal.FIVE_K }, label = { Text("5K") })
             PixelChip(selected = goal == PlanGoal.TEN_K, onClick = { goal = PlanGoal.TEN_K }, label = { Text("10K") })
         }
         SectionTitle(stringResource(R.string.plan_runs))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             for (n in 2..4) PixelChip(selected = runs == n, onClick = { runs = n }, label = { Text("$n×") })
         }
         SectionTitle(stringResource(R.string.plan_length))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             for (n in listOf(6, 8, 10, 12)) PixelChip(selected = weeks == n, onClick = { weeks = n }, label = { Text("$n") })
         }
         Text(
@@ -251,7 +251,7 @@ private fun RaceCard(race: RaceState, onRace: (RaceAction) -> Unit) {
                 Text(stringResource(R.string.race_no_runs), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             for (p in race.predictions) PredictionRow(p)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 for (d in RaceDistance.entries) {
                     PixelChip(selected = distance == d.key, onClick = { distance = d.key }, label = { Text(stringResource(raceDistanceName(d))) })
                 }
@@ -290,7 +290,7 @@ private fun RaceCard(race: RaceState, onRace: (RaceAction) -> Unit) {
                 },
                 style = MaterialTheme.typography.bodyMedium,
             )
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 SecondaryButton(onClick = { onRace(RaceAction.ShiftDate(-1)) }) { Text(stringResource(R.string.race_date_minus)) }
                 SecondaryButton(onClick = { onRace(RaceAction.ShiftDate(1)) }) { Text(stringResource(R.string.race_date_plus)) }
                 SecondaryButton(onClick = { onRace(RaceAction.ShiftTarget(-60)) }) { Text(stringResource(R.string.race_time_minus)) }

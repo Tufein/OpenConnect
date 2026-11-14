@@ -114,6 +114,8 @@ private fun scheme(k: Keys, dark: Boolean): androidx.compose.material3.ColorSche
         surfaceContainer = k.surface, surfaceContainerHigh = mix(k.surface, k.text, 0.06f),
         surfaceContainerHighest = mix(k.surface, k.text, 0.12f),
         outline = mix(k.background, k.text, 0.45f), outlineVariant = mix(k.background, k.text, 0.16f),
+        // The snackbar and anything else "inverse": a block of ink, like the open tab and the chosen chip.
+        inverseSurface = k.text, inverseOnSurface = k.background, inversePrimary = k.primary,
     )
 }
 
