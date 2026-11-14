@@ -43,7 +43,11 @@ import nl.tufein.openconnect.core.PlayerLevel
 import nl.tufein.openconnect.core.ReadinessCalculator
 import nl.tufein.openconnect.core.Readiness
 import nl.tufein.openconnect.core.TrainingLoadCalculator
+import nl.tufein.openconnect.core.Gear
+import nl.tufein.openconnect.core.GearBook
 import nl.tufein.openconnect.core.HeartZones
+import nl.tufein.openconnect.core.Shoe
+import nl.tufein.openconnect.core.ShoeUsage
 import nl.tufein.openconnect.core.ActivityZones
 import nl.tufein.openconnect.core.MaxHr
 import nl.tufein.openconnect.core.MaxHrSource
@@ -113,6 +117,10 @@ data class DetailState(
     /** Time per heart-rate zone of this activity, and the maximum the zones were worked out from. */
     val zones: ActivityZones? = null,
     val zonesMaxHr: Int = 0,
+    /** The pair of shoes this activity went on, the pairs it could be put on, and whether it was chosen by hand. */
+    val shoe: Shoe? = null,
+    val shoeChoices: List<Shoe> = emptyList(),
+    val shoeByHand: Boolean = false,
 )
 
 data class HealthState(
@@ -491,6 +499,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadEfforts()
         loadPlan()
         loadZones()
+        loadGear()
         loadTrophies()
         container.oura.refreshDays()
         currentActivityId?.let { openActivity(it) }
@@ -536,9 +545,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         io {
             val activity = repo.getActivity(id)
             val maxHr = HeartZones.maxHr(container.settings.maxHr, repo.listActivities(limit = 10_000)).bpm
+            val book = GearBook.decode(container.settings.gear)
             _detail.value = DetailState(
                 loaded = true,
                 activity = activity,
+                shoe = activity?.let { Gear.shoeFor(book, it) },
+                shoeChoices = activity?.let { Gear.choices(book, it) }.orEmpty(),
+                shoeByHand = activity != null && activity.id in book.overrides,
                 zones = activity?.let { HeartZones.activityZones(it, maxHr) },
                 zonesMaxHr = maxHr,
                 laps = activity?.let { BestEfforts.laps(it.track) }.orEmpty(),
@@ -600,6 +613,34 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             ZonesAction.UseMeasured -> container.settings.maxHr = 0
         }
         loadZones()
+        currentActivityId?.let { openActivity(it) }
+    }
+
+    private val _gear = MutableStateFlow(GearState())
+
+    /** The shoes and what each pair has done. */
+    val gear: StateFlow<GearState> = _gear.asStateFlow()
+
+    fun loadGear() = io {
+        val book = GearBook.decode(container.settings.gear)
+        _gear.value = GearState(loaded = true, usage = Gear.usage(book, repo.listActivities(limit = 10_000)))
+    }
+
+    /** A change to the shoes: add, retire, bring back, move the limit, remove, or put an activity on a pair. */
+    fun gearAction(action: GearAction) {
+        val settings = container.settings
+        val book = GearBook.decode(settings.gear)
+        val today = LocalDate.now(ZoneOffset.UTC)
+        val next = when (action) {
+            is GearAction.Add -> Gear.add(book, action.name, action.sport, today, action.countEarlier, java.time.Instant.now())
+            is GearAction.Retire -> Gear.retire(book, action.id, today)
+            is GearAction.Resume -> Gear.resume(book, action.id)
+            is GearAction.MoveLimit -> Gear.moveLimit(book, action.id, action.km)
+            is GearAction.Remove -> Gear.remove(book, action.id)
+            is GearAction.Assign -> Gear.assign(book, action.activityId, action.shoeId)
+        }
+        settings.gear = next.encode()
+        loadGear()
         currentActivityId?.let { openActivity(it) }
     }
 
@@ -887,6 +928,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         return out.toByteArray()
     }
 }
+
+/** The Shoes tab: every pair with what it has done so far. */
+data class GearState(val loaded: Boolean = false, val usage: List<ShoeUsage> = emptyList())
 
 /** The Zones tab: nothing to show until [loaded]; without any heart rate the overview has no zones. */
 data class ZonesState(

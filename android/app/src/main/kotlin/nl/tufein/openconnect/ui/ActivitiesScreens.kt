@@ -129,6 +129,7 @@ fun ActivityDetailScreen(
     onGenerate: (force: Boolean) -> Unit,
     onExport: (format: String) -> Unit,
     onDelete: () -> Unit,
+    onShoe: (String?) -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     var confirmDelete by remember { mutableStateOf(false) }
@@ -187,6 +188,7 @@ fun ActivityDetailScreen(
             }
         }
         state.zones?.let { zones -> item { ActivityZonesCard(zones, state.zonesMaxHr) } }
+        if (state.shoeChoices.isNotEmpty()) item { ActivityShoesCard(state, onShoe) }
         val ele = activity.track.map { it.ele }
         if (ele.count { it != null } >= 2) {
             item {

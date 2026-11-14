@@ -439,6 +439,7 @@
     </plurals>
     <string name="nudge_weekly">Vorige week: %1$d activiteiten, %2$d km, %3$d van 3 doelen gehaald.</string>
     <string name="nudge_load">Je trainingsbelasting sprong deze week omhoog. Plan wat rustige dagen.</string>
+    <string name="nudge_shoes">%1$s heeft %2$d km gelopen: tijd om aan een nieuw paar te denken.</string>
     <string name="settings_health">Health Connect</string>
     <string name="settings_health_body">Stuur je activiteiten naar Health Connect zodat andere apps ze zien, en lees stappen en slaap eruit om dagen aan te vullen die je horloge niet dekte. Wat je horloge gaf wordt nooit overschreven en activiteiten worden niet teruggelezen, dus er wordt niets dubbel geteld.</string>
     <string name="health_unavailable">Health Connect is niet beschikbaar op deze telefoon. Het zit in Android 14 en nieuwer; op oudere versies installeer je het via Google Play.</string>
@@ -709,4 +710,31 @@
     <string name="zones_activity_title">Tijd in hartslagzones</string>
     <string name="zones_activity_max">Zones vanaf een maximum van %1$d slagen/min.</string>
     <string name="zones_activity_guess">Een schatting: deze activiteit heeft alleen een gemiddelde hartslag, geen metingen.</string>
+    <string name="insights_shoes">Schoenen</string>
+    <string name="gear_title">Jouw schoenen</string>
+    <string name="gear_empty">Nog geen schoenen toegevoegd. Voeg hieronder een paar toe en de activiteiten van die sport tellen mee voor de kilometers.</string>
+    <string name="gear_note">Elke activiteit hoort bij het nieuwste paar van zijn sport dat die dag in gebruik was; op de pagina van een activiteit kun je hem op een ander paar zetten. De kilometers komen uit je opgenomen activiteiten.</string>
+    <string name="gear_alert">%1$s heeft %2$d km gelopen: tijd voor een nieuw paar.</string>
+    <string name="gear_km">%1$s van %2$d km</string>
+    <string name="gear_status_fresh">In goede staat.</string>
+    <string name="gear_status_old">Wordt oud: meer dan 80 procent van zijn leven.</string>
+    <string name="gear_status_replace">Tijd voor een nieuw paar.</string>
+    <string name="gear_no_activities">Nog geen activiteiten op dit paar.</string>
+    <string name="gear_activities">%1$d activiteiten, de laatste op %2$s</string>
+    <string name="gear_retired_on">Uit gebruik sinds %1$s.</string>
+    <string name="gear_limit_minus">Grens −50 km</string>
+    <string name="gear_limit_plus">Grens +50 km</string>
+    <string name="gear_retire">Uit gebruik nemen</string>
+    <string name="gear_resume">Weer in gebruik</string>
+    <string name="gear_remove">Verwijderen</string>
+    <string name="gear_add_title">Een paar toevoegen</string>
+    <string name="gear_name">Naam van de schoenen</string>
+    <string name="gear_earlier">Mijn eerdere activiteiten ook meetellen</string>
+    <string name="gear_add">Schoenen toevoegen</string>
+    <string name="gear_activity_title">Schoenen bij deze activiteit</string>
+    <string name="gear_on">Op: %1$s</string>
+    <string name="gear_on_none">Geen schoenen bij deze</string>
+    <string name="gear_none_chip">Geen schoenen</string>
+    <string name="gear_automatic">Standaard volgen</string>
+    <string name="gear_activity_note">Alleen deze activiteit verandert; de andere volgen het standaardpaar van hun sport.</string>
 </resources>

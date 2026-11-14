@@ -49,12 +49,12 @@ gaat uit zonder dat CI groen is. Wat zonder horloge of telefoon niet te controle
    is niet gebouwd.
    ❓ Of een echte fenix 8 de bestanden accepteert is alleen met het horloge te zien.
 
-## v0.27.0: hartslagzones 🚧
+## v0.27.0: hartslagzones ✅
 
 10. **Zones** als percentage van je maximale hartslag (instelbaar, standaard de hoogste gemeten), tijd per zone bij
     elke activiteit en per week, met een duidelijk oordeel over de verdeling (veel rustig, weinig zwaar).
 
-## v0.28.0: schoenen 🔜
+## v0.28.0: schoenen 🚧
 
 11. **Schoenen en kilometers:** schoenen toevoegen, een standaardpaar per sport, afstand per paar uit je activiteiten
     en een melding als een paar aan vervanging toe is (standaard bij 800 km, instelbaar).

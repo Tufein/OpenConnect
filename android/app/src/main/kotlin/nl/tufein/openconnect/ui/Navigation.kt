@@ -109,6 +109,7 @@ fun OpenConnectRoot(
     val nudges by vm.nudges.collectAsState()
     val plan by vm.plan.collectAsState()
     val zones by vm.zones.collectAsState()
+    val gear by vm.gear.collectAsState()
     val lock by vm.lock.collectAsState()
     val healthConnect by vm.healthConnect.collectAsState()
     val syncLog by vm.syncLog.collectAsState()
@@ -240,6 +241,8 @@ fun OpenConnectRoot(
                     onSendWorkouts = vm::sendPlanToWatch,
                     zones = zones,
                     onZones = vm::zonesAction,
+                    gear = gear,
+                    onGear = vm::gearAction,
                     onShiftWeek = vm::shiftWeek,
                     onPeriod = vm::setReportPeriod,
                     onGenerate = vm::generateWeeklyReport,
@@ -348,6 +351,7 @@ fun OpenConnectRoot(
                     onGenerate = vm::generateActivityReport,
                     onExport = { onExport(id, it) },
                     onDelete = { vm.deleteActivity(id); nav.popBackStack() },
+                    onShoe = { vm.gearAction(GearAction.Assign(id, it)) },
                     contentPadding = padding,
                 )
             }

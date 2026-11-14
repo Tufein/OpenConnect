@@ -117,6 +117,11 @@ class SettingsStore(
         get() = prefs.getInt(KEY_MAX_HR, 0)
         set(value) = prefs.edit().putInt(KEY_MAX_HR, value).apply()
 
+    /** The shoes and the activities put on a pair by hand, as [nl.tufein.openconnect.core.GearBook] writes them. */
+    var gear: String
+        get() = prefs.getString(KEY_GEAR, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_GEAR, value).apply()
+
     /** Whether the first-start questions (which devices do you use) were answered. */
     var onboarded: Boolean
         get() = prefs.getBoolean(KEY_ONBOARDED, false)
@@ -271,6 +276,7 @@ class SettingsStore(
             get() = (prefs.getString(KEY_NUDGES_SENT, "") ?: "").lines().filter { it.isNotBlank() }
             set(value) = prefs.edit().putString(KEY_NUDGES_SENT, value.joinToString("\n")).apply()
         override val goals: WeeklyGoals get() = weeklyGoals
+        override val gear: String get() = this@SettingsStore.gear
     }
 
     /** The Health Connect switch: send activities after every sync. Off by default. */
@@ -317,6 +323,7 @@ class SettingsStore(
         private const val KEY_PLAN = "training_plan"
         private const val KEY_RACE = "race_goal"
         private const val KEY_MAX_HR = "max_hr"
+        private const val KEY_GEAR = "gear"
         private const val KEY_APP_LOCK = "app_lock"
         private const val KEY_SYNC_LOG = "sync_log"
         private const val KEY_HEALTH_AUTO = "health_connect_auto"
