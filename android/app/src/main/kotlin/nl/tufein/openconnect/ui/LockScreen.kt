@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +24,6 @@ fun LockScreen(onUnlock: () -> Unit) {
     ) {
         Text(stringResource(R.string.lock_title), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
         Text(stringResource(R.string.lock_body), style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Button(onClick = onUnlock) { Text(stringResource(R.string.lock_unlock)) }
+        PrimaryButton(onClick = onUnlock) { Text(stringResource(R.string.lock_unlock)) }
     }
 }

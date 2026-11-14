@@ -13,10 +13,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import nl.tufein.openconnect.core.oura.OuraDay
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -83,7 +80,7 @@ fun OuraScreen(
         } else {
             section("intro") { Text(stringResource(if (ui.connected) R.string.oura_no_days else R.string.oura_intro), style = MaterialTheme.typography.bodyMedium) }
         }
-        if (ui.busy) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
+        if (ui.busy) item { PixelProgress(Modifier.fillMaxWidth()) }
         ui.problem?.let { problem -> item(key = "problem") { Text(stringResource(problemText(problem)), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium) } }
         if (ui.connected) {
             item(key = "link") {
@@ -101,10 +98,10 @@ fun OuraScreen(
                         )
                     }
                     Text(stringResource(R.string.oura_schedule), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Button(onClick = onSync, enabled = !ui.busy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.oura_sync_now)) }
+                    PrimaryButton(onClick = onSync, enabled = !ui.busy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.oura_sync_now)) }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedButton(onClick = onDisconnect) { Text(stringResource(R.string.oura_log_out)) }
-                        OutlinedButton(onClick = onForget) { Text(stringResource(R.string.oura_forget)) }
+                        SecondaryButton(onClick = onDisconnect) { Text(stringResource(R.string.oura_log_out)) }
+                        SecondaryButton(onClick = onForget) { Text(stringResource(R.string.oura_forget)) }
                     }
                 }
             }
@@ -114,7 +111,7 @@ fun OuraScreen(
             SectionTitle(stringResource(R.string.oura_step1))
             SurfaceCard {
                 Text(stringResource(R.string.oura_step1_body, ui.redirectUri), style = MaterialTheme.typography.bodyMedium)
-                OutlinedButton(onClick = { uri.openUri("https://cloud.ouraring.com/oauth/applications") }, modifier = Modifier.fillMaxWidth()) {
+                SecondaryButton(onClick = { uri.openUri("https://cloud.ouraring.com/oauth/applications") }, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.oura_open_apps))
                 }
             }
@@ -135,7 +132,7 @@ fun OuraScreen(
                         modifier = Modifier.fillMaxWidth(),
                     )
                     OutlinedTextField(redirect, { redirect = it }, label = { Text(stringResource(R.string.oura_redirect)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                    Button(onClick = { onSaveClient(id, secret, redirect); secret = "" }, enabled = id.isNotBlank() && (secret.isNotBlank() || ui.hasClient)) {
+                    PrimaryButton(onClick = { onSaveClient(id, secret, redirect); secret = "" }, enabled = id.isNotBlank() && (secret.isNotBlank() || ui.hasClient)) {
                         Text(stringResource(R.string.oura_save_client))
                     }
                 }
@@ -146,14 +143,14 @@ fun OuraScreen(
                 SectionTitle(stringResource(R.string.oura_step3))
                 SurfaceCard {
                     Text(stringResource(R.string.oura_step3_body), style = MaterialTheme.typography.bodyMedium)
-                    Button(onClick = { loginUrl()?.let(uri::openUri) }, enabled = !ui.busy, modifier = Modifier.fillMaxWidth()) {
+                    PrimaryButton(onClick = { loginUrl()?.let(uri::openUri) }, enabled = !ui.busy, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(R.string.oura_log_in))
                     }
                     OutlinedTextField(pasted, { pasted = it }, label = { Text(stringResource(R.string.oura_paste)) }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                    OutlinedButton(onClick = { onPasteRedirect(pasted); pasted = "" }, enabled = pasted.isNotBlank() && !ui.busy) {
+                    SecondaryButton(onClick = { onPasteRedirect(pasted); pasted = "" }, enabled = pasted.isNotBlank() && !ui.busy) {
                         Text(stringResource(R.string.oura_paste_button))
                     }
-                    OutlinedButton(onClick = onForget) { Text(stringResource(R.string.oura_forget)) }
+                    SecondaryButton(onClick = onForget) { Text(stringResource(R.string.oura_forget)) }
                 }
             }
         }

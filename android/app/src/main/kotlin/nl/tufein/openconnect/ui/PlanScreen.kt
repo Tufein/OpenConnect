@@ -9,10 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -99,12 +96,12 @@ fun PlanContent(
             SectionTitle(stringResource(R.string.workouts_title))
             SurfaceCard {
                 Text(stringResource(R.string.workouts_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Button(onClick = onSendWorkouts, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.workouts_send)) }
+                PrimaryButton(onClick = onSendWorkouts, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.workouts_send)) }
             }
         }
         item {
             Text(stringResource(R.string.plan_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            OutlinedButton(onClick = onDelete, modifier = Modifier.padding(top = 8.dp)) { Text(stringResource(R.string.plan_delete)) }
+            SecondaryButton(onClick = onDelete, modifier = Modifier.padding(top = 8.dp)) { Text(stringResource(R.string.plan_delete)) }
         }
     }
 }
@@ -126,23 +123,23 @@ private fun PlanSetup(state: PlanState, onCreate: (PlanGoal, Int, Int) -> Unit) 
         }
         SectionTitle(stringResource(R.string.plan_goal))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(selected = goal == PlanGoal.FIVE_K, onClick = { goal = PlanGoal.FIVE_K }, label = { Text("5K") })
-            FilterChip(selected = goal == PlanGoal.TEN_K, onClick = { goal = PlanGoal.TEN_K }, label = { Text("10K") })
+            PixelChip(selected = goal == PlanGoal.FIVE_K, onClick = { goal = PlanGoal.FIVE_K }, label = { Text("5K") })
+            PixelChip(selected = goal == PlanGoal.TEN_K, onClick = { goal = PlanGoal.TEN_K }, label = { Text("10K") })
         }
         SectionTitle(stringResource(R.string.plan_runs))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (n in 2..4) FilterChip(selected = runs == n, onClick = { runs = n }, label = { Text("$n×") })
+            for (n in 2..4) PixelChip(selected = runs == n, onClick = { runs = n }, label = { Text("$n×") })
         }
         SectionTitle(stringResource(R.string.plan_length))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            for (n in listOf(6, 8, 10, 12)) FilterChip(selected = weeks == n, onClick = { weeks = n }, label = { Text("$n") })
+            for (n in listOf(6, 8, 10, 12)) PixelChip(selected = weeks == n, onClick = { weeks = n }, label = { Text("$n") })
         }
         Text(
             stringResource(R.string.plan_starts, Fmt.date(nl.tufein.openconnect.core.TrainingPlans.nextMonday(state.today))),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Button(onClick = { onCreate(goal, runs, weeks) }) { Text(stringResource(R.string.plan_create)) }
+        PrimaryButton(onClick = { onCreate(goal, runs, weeks) }) { Text(stringResource(R.string.plan_create)) }
     }
 }
 
@@ -183,7 +180,7 @@ private fun WeekRow(w: WeekProgress) {
             Text(stringResource(R.string.plan_week_row, w.week.number) + tag, style = MaterialTheme.typography.bodyMedium)
             Text(stringResource(state), style = MaterialTheme.typography.labelMedium, color = color)
         }
-        SegmentBar(fraction = if (w.week.volumeKm <= 0) 0f else (w.doneKm / w.week.volumeKm).coerceIn(0.0, 1.0).toFloat(), color = color)
+        SegmentBar(fraction = if (w.week.volumeKm <= 0) 0f else (w.doneKm / w.week.volumeKm).coerceIn(0.0, 1.0).toFloat(), color = color, modifier = Modifier.fillMaxWidth().height(10.dp))
         Text(
             stringResource(R.string.plan_km_of, Fmt.oneDecimal(w.doneKm), Fmt.oneDecimal(w.week.volumeKm)),
             style = MaterialTheme.typography.bodySmall,
@@ -255,10 +252,10 @@ private fun RaceCard(race: RaceState, onRace: (RaceAction) -> Unit) {
             for (p in race.predictions) PredictionRow(p)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 for (d in RaceDistance.entries) {
-                    FilterChip(selected = distance == d.key, onClick = { distance = d.key }, label = { Text(stringResource(raceDistanceName(d))) })
+                    PixelChip(selected = distance == d.key, onClick = { distance = d.key }, label = { Text(stringResource(raceDistanceName(d))) })
                 }
             }
-            Button(onClick = { onRace(RaceAction.Start(RaceDistance.of(distance) ?: RaceDistance.K10)) }) {
+            PrimaryButton(onClick = { onRace(RaceAction.Start(RaceDistance.of(distance) ?: RaceDistance.K10)) }) {
                 Text(stringResource(R.string.race_set))
             }
         } else {
@@ -293,13 +290,13 @@ private fun RaceCard(race: RaceState, onRace: (RaceAction) -> Unit) {
                 style = MaterialTheme.typography.bodyMedium,
             )
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { onRace(RaceAction.ShiftDate(-1)) }) { Text(stringResource(R.string.race_date_minus)) }
-                OutlinedButton(onClick = { onRace(RaceAction.ShiftDate(1)) }) { Text(stringResource(R.string.race_date_plus)) }
-                OutlinedButton(onClick = { onRace(RaceAction.ShiftTarget(-60)) }) { Text(stringResource(R.string.race_time_minus)) }
-                OutlinedButton(onClick = { onRace(RaceAction.ShiftTarget(60)) }) { Text(stringResource(R.string.race_time_plus)) }
+                SecondaryButton(onClick = { onRace(RaceAction.ShiftDate(-1)) }) { Text(stringResource(R.string.race_date_minus)) }
+                SecondaryButton(onClick = { onRace(RaceAction.ShiftDate(1)) }) { Text(stringResource(R.string.race_date_plus)) }
+                SecondaryButton(onClick = { onRace(RaceAction.ShiftTarget(-60)) }) { Text(stringResource(R.string.race_time_minus)) }
+                SecondaryButton(onClick = { onRace(RaceAction.ShiftTarget(60)) }) { Text(stringResource(R.string.race_time_plus)) }
             }
             for (p in race.predictions) PredictionRow(p)
-            OutlinedButton(onClick = { onRace(RaceAction.Clear) }) { Text(stringResource(R.string.race_clear)) }
+            SecondaryButton(onClick = { onRace(RaceAction.Clear) }) { Text(stringResource(R.string.race_clear)) }
         }
     }
 }

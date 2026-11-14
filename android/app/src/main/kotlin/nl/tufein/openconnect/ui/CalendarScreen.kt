@@ -14,14 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -70,12 +63,12 @@ fun CalendarContent(
         item { StreakTiles(state.streaks) }
         item {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                IconButton(onClick = { onShift(-1) }, enabled = state.canGoPrevious) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = stringResource(R.string.calendar_prev))
+                PixelIconButton(onClick = { onShift(-1) }, enabled = state.canGoPrevious) {
+                    PixelIcon(PixelIcons.ChevronLeft, contentDescription = stringResource(R.string.calendar_prev))
                 }
                 Text(monthTitle(view.month), style = MaterialTheme.typography.titleMedium)
-                IconButton(onClick = { onShift(1) }, enabled = state.canGoNext) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = stringResource(R.string.calendar_next))
+                PixelIconButton(onClick = { onShift(1) }, enabled = state.canGoNext) {
+                    PixelIcon(PixelIcons.ChevronRight, contentDescription = stringResource(R.string.calendar_next))
                 }
             }
         }
@@ -159,8 +152,8 @@ private fun DayCell(day: LocalDate?, totals: DayTotals?, longestM: Double, selec
     }
     val primary = MaterialTheme.colorScheme.primary
     val share = if (totals == null || longestM <= 0.0) 0f else (totals.distanceM / longestM).coerceIn(0.0, 1.0).toFloat()
-    val background = if (totals == null) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f) else primary.copy(alpha = 0.25f + 0.5f * share)
-    val shape = RoundedCornerShape(6.dp)
+    val background = if (totals == null) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else primary.copy(alpha = 0.25f + 0.55f * share)
+    val shape = MaterialTheme.shapes.extraSmall
     Column(
         modifier
             .height(CELL_HEIGHT)
@@ -198,7 +191,7 @@ private fun DayDetail(day: LocalDate, totals: DayTotals?, onOpenActivity: (Strin
     )
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         for (item in totals.items) {
-            OutlinedButton(onClick = { onOpenActivity(item.id) }) { Text(item.name) }
+            SecondaryButton(onClick = { onOpenActivity(item.id) }) { Text(item.name) }
         }
     }
 }

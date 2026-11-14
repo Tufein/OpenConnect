@@ -9,18 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,7 +55,7 @@ fun ActivitiesScreen(
         item {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(stringResource(R.string.tab_activities), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
-                OutlinedButton(onClick = onImport) { Text(stringResource(R.string.action_import_short)) }
+                SecondaryButton(onClick = onImport) { Text(stringResource(R.string.action_import_short)) }
             }
         }
         if (!state.loaded) return@LazyColumn
@@ -74,10 +66,10 @@ fun ActivitiesScreen(
         item {
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 item {
-                    FilterChip(selected = state.sport == null, onClick = { onSport(null) }, label = { Text(stringResource(R.string.filter_all)) })
+                    PixelChip(selected = state.sport == null, onClick = { onSport(null) }, label = { Text(stringResource(R.string.filter_all)) })
                 }
                 items(state.sports) { sport ->
-                    FilterChip(
+                    PixelChip(
                         selected = state.sport == sport,
                         onClick = { onSport(sport) },
                         label = { Text(stringResource(sportLabel(sport))) },
@@ -97,7 +89,7 @@ fun ActivitiesScreen(
         item {
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(ActivitySort.entries) { entry ->
-                    FilterChip(selected = sort == entry, onClick = { sort = entry }, label = { Text(stringResource(sortLabel(entry))) })
+                    PixelChip(selected = sort == entry, onClick = { sort = entry }, label = { Text(stringResource(sortLabel(entry))) })
                 }
             }
         }
@@ -142,8 +134,8 @@ fun ActivityDetailScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+            PixelIconButton(onClick = onBack) {
+                PixelIcon(PixelIcons.ArrowLeft, contentDescription = stringResource(R.string.back))
             }
         }
         val activity = state.activity
@@ -227,14 +219,14 @@ fun ActivityDetailScreen(
             SectionTitle(stringResource(R.string.export))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 for (format in listOf("fit", "gpx", "tcx")) {
-                    OutlinedButton(onClick = { onExport(format) }, enabled = format != "gpx" || positions.isNotEmpty()) {
+                    SecondaryButton(onClick = { onExport(format) }, enabled = format != "gpx" || positions.isNotEmpty()) {
                         Text(format.uppercase())
                     }
                 }
             }
         }
         item {
-            TextButton(onClick = { confirmDelete = true }) {
+            QuietButton(onClick = { confirmDelete = true }) {
                 Text(stringResource(R.string.delete_activity), color = MaterialTheme.colorScheme.error)
             }
         }
@@ -245,9 +237,9 @@ fun ActivityDetailScreen(
             title = { Text(stringResource(R.string.delete_activity)) },
             text = { Text(stringResource(R.string.delete_activity_body)) },
             confirmButton = {
-                Button(onClick = { confirmDelete = false; onDelete() }) { Text(stringResource(R.string.delete)) }
+                PrimaryButton(onClick = { confirmDelete = false; onDelete() }) { Text(stringResource(R.string.delete)) }
             },
-            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.cancel)) } },
+            dismissButton = { QuietButton(onClick = { confirmDelete = false }) { Text(stringResource(R.string.cancel)) } },
         )
     }
 }

@@ -21,7 +21,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * v0.18.0 on the JVM: colour themes and styles that are picked in Settings and kept, and a watch face file copied to a
+ * v0.18.0 on the JVM: colour themes that are picked in Settings and kept, and a watch face file copied to a
  * watch on the USB cable (a fake one here). The real MTP write and the watch's own face menu are not part of this.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -49,25 +49,23 @@ class ThemesAndWatchFaceTest : AppTestBase() {
     }
 
     @Test
-    fun aColourThemeAndAStyleArePickedAndKept() {
+    fun aColourThemeIsPickedAndKept() {
         launchApp()
         loadDemo()
         tab("Settings").performClick()
         waitForText("Colours")
         clickText("Synthwave")
-        clickText("Pixel")
-        rule.waitUntil(5_000) { settings().palette == "synthwave" && settings().lookStyle == "pixel" }
+        rule.waitUntil(5_000) { settings().palette == "synthwave" }
         shot("44-settings-themes")
         tab("Home").performClick()
         waitForText("Readiness")
-        shot("45-home-synthwave-pixel")
+        shot("45-home-synthwave")
         tab("Settings").performClick()
         clickText("Game Boy")
-        clickText("Round")
-        rule.waitUntil(5_000) { settings().palette == "gameboy" && settings().lookStyle == "round" }
+        rule.waitUntil(5_000) { settings().palette == "gameboy" }
         tab("Health").performClick()
         waitForText("Scores")
-        shot("46-health-gameboy-round")
+        shot("46-health-gameboy")
     }
 
     @Test

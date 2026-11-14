@@ -159,8 +159,8 @@ const val WATCH_ROUTE = "watch"
 const val GARMIN_ROUTE = "garmin"
 const val OURA_ROUTE = "oura"
 
-/** The colour theme ([Palette] key) and drawing style ([LookStyle] key). */
-data class Look(val palette: String = "arcade", val style: String = "sport", val design: String = "retro")
+/** The colour theme ([Palette] key). The shapes, fonts and layout are the same for everyone since v0.30.0. */
+data class Look(val palette: String = "handheld")
 
 /** Which devices the person uses. [onboarded] is false until the first-start questions are answered. */
 data class SourcesUi(val onboarded: Boolean = true, val garmin: Boolean = true, val oura: Boolean = false)
@@ -228,34 +228,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         if (oura) container.oura.syncIfDue(OPEN_GAP)
     }
 
-    private fun lookNow() = container.settings.let { Look(it.palette, it.lookStyle, it.design) }
+    private fun lookNow() = Look(Palette.of(container.settings.palette).key)
 
-    private val _look = MutableStateFlow(
-        run {
-            // A new install starts in Clean Pro; the first-start screen offers the other two.
-            if (!container.settings.onboarded && !container.settings.hasDesign) setDesignNow(Design.CLEAN)
-            lookNow()
-        },
-    )
+    private val _look = MutableStateFlow(lookNow())
 
-    private fun setDesignNow(design: Design) {
-        container.settings.design = design.key
-        container.settings.palette = design.palette.key
-        container.settings.lookStyle = design.style.key
-    }
-
-    /** The colour theme and the drawing style. */
+    /** The colour theme. */
     val look: StateFlow<Look> = _look.asStateFlow()
 
-    fun setLook(palette: String, style: String) {
+    fun setLook(palette: String) {
         container.settings.palette = Palette.of(palette).key
-        container.settings.lookStyle = LookStyle.of(style).key
-        _look.value = lookNow()
-    }
-
-    /** Picks one of the three designs together with its own colours and style; both can be changed afterwards. */
-    fun setDesign(key: String) {
-        setDesignNow(Design.of(key))
         _look.value = lookNow()
     }
 

@@ -11,12 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -81,7 +75,7 @@ fun InsightsScreen(
             // Five chips do not fit on one line of a narrow phone, so they wrap; a scrolling row would also hide them from lists' scroll lookups.
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 for (entry in InsightsTab.entries) {
-                    FilterChip(selected = tab == entry, onClick = { onTab(entry) }, label = { Text(stringResource(entry.label)) })
+                    PixelChip(selected = tab == entry, onClick = { onTab(entry) }, label = { Text(stringResource(entry.label)) })
                 }
             }
         }
@@ -119,18 +113,18 @@ private fun WeekContent(
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 for ((p, label) in listOf(ReportPeriod.WEEK to R.string.period_week, ReportPeriod.MONTH to R.string.period_month, ReportPeriod.YEAR to R.string.period_year)) {
-                    FilterChip(selected = state.period == p, onClick = { onPeriod(p) }, label = { Text(stringResource(label)) })
+                    PixelChip(selected = state.period == p, onClick = { onPeriod(p) }, label = { Text(stringResource(label)) })
                 }
             }
         }
         item {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                IconButton(onClick = { onShiftWeek(-1) }) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = stringResource(R.string.previous_week))
+                PixelIconButton(onClick = { onShiftWeek(-1) }) {
+                    PixelIcon(PixelIcons.ChevronLeft, contentDescription = stringResource(R.string.previous_week))
                 }
                 Text(periodTitle(state), style = MaterialTheme.typography.titleMedium)
-                IconButton(onClick = { onShiftWeek(1) }) {
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = stringResource(R.string.next_week))
+                PixelIconButton(onClick = { onShiftWeek(1) }) {
+                    PixelIcon(PixelIcons.ChevronRight, contentDescription = stringResource(R.string.next_week))
                 }
             }
         }

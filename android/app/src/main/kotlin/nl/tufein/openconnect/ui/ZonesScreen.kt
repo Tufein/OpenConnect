@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -95,10 +94,10 @@ private fun MaxHrCard(overview: ZoneOverview, onAction: (ZonesAction) -> Unit) {
         }
         Text(stringResource(note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = { onAction(ZonesAction.ShiftMax(-5)) }) { Text(stringResource(R.string.zones_minus)) }
-            OutlinedButton(onClick = { onAction(ZonesAction.ShiftMax(5)) }) { Text(stringResource(R.string.zones_plus)) }
+            SecondaryButton(onClick = { onAction(ZonesAction.ShiftMax(-5)) }) { Text(stringResource(R.string.zones_minus)) }
+            SecondaryButton(onClick = { onAction(ZonesAction.ShiftMax(5)) }) { Text(stringResource(R.string.zones_plus)) }
             if (max.source == MaxHrSource.SETTING) {
-                OutlinedButton(onClick = { onAction(ZonesAction.UseMeasured) }) { Text(stringResource(R.string.zones_use_measured)) }
+                SecondaryButton(onClick = { onAction(ZonesAction.UseMeasured) }) { Text(stringResource(R.string.zones_use_measured)) }
             }
         }
     }

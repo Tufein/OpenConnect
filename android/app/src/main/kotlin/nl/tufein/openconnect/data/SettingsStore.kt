@@ -63,17 +63,14 @@ class SettingsStore(
         get() = prefs.getString(KEY_THEME, "system")?.takeIf { it in THEMES } ?: "system"
         set(value) = prefs.edit().putString(KEY_THEME, value.takeIf { it in THEMES } ?: "system").apply()
 
-    /** The colour theme, a key of [nl.tufein.openconnect.ui.Palette]: "arcade" unless another was picked. */
+    /**
+     * The colour theme, a key of [nl.tufein.openconnect.ui.Palette]: "handheld" unless another was picked. A key from before
+     * v0.30.0 that no longer exists (arcade, clean, midnight, ocean, sunset) opens as "handheld".
+     */
     var palette: String
-        get() = prefs.getString(KEY_PALETTE, "arcade") ?: "arcade"
+        get() = prefs.getString(KEY_PALETTE, "handheld") ?: "handheld"
         set(value) = prefs.edit().putString(KEY_PALETTE, value).apply()
 
-    /** The drawing style, a key of [nl.tufein.openconnect.ui.LookStyle]: "sport", "round" or "pixel". */
-    var lookStyle: String
-        get() = prefs.getString(KEY_STYLE, "sport") ?: "sport"
-        set(value) = prefs.edit().putString(KEY_STYLE, value).apply()
-
-    /** The design (v0.19.0): "clean", "dashboard" or "retro". Retro is the look of earlier versions, so an update changes nothing. */
     /** The watch face preview and build choices (v0.20.0): design, accent colour and four fields, comma separated. */
     var watchDesign: String
         get() = prefs.getString(KEY_WF_DESIGN, "clean") ?: "clean"
@@ -90,12 +87,6 @@ class SettingsStore(
     var watchDevice: String
         get() = prefs.getString(KEY_WF_DEVICE, "fenix847mm") ?: "fenix847mm"
         set(value) = prefs.edit().putString(KEY_WF_DEVICE, value).apply()
-
-    val hasDesign: Boolean get() = prefs.contains(KEY_DESIGN)
-
-    var design: String
-        get() = prefs.getString(KEY_DESIGN, "retro") ?: "retro"
-        set(value) = prefs.edit().putString(KEY_DESIGN, value).apply()
 
     /** The record of the last syncs, as the text [nl.tufein.openconnect.core.SyncLog] writes. */
     var syncLogText: String
@@ -303,8 +294,6 @@ class SettingsStore(
         private const val KEY_PROVIDER = "provider"
         private const val KEY_THEME = "theme_mode"
         private const val KEY_PALETTE = "theme_palette"
-        private const val KEY_STYLE = "theme_style"
-        private const val KEY_DESIGN = "theme_design"
         private const val KEY_WF_DESIGN = "wf_design"
         private const val KEY_WF_COLOR = "wf_color"
         private const val KEY_WF_FIELDS = "wf_fields"

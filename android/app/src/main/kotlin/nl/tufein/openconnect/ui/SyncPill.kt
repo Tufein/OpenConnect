@@ -1,20 +1,20 @@
 package nl.tufein.openconnect.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -59,20 +59,23 @@ fun SyncPill(badge: SyncBadge, now: Instant, onClick: () -> Unit, modifier: Modi
         is SyncBadge.Fresh -> ok to stringResource(R.string.sync_fresh, agoText(badge.lastSync, now))
         SyncBadge.NeverSynced -> quiet to stringResource(R.string.sync_never)
     }
-    Surface(
-        onClick = onClick,
-        modifier = modifier,
-        shape = RoundedCornerShape(50),
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+    val shape = MaterialTheme.shapes.small
+    Row(
+        modifier
+            .background(MaterialTheme.colorScheme.surface, shape)
+            .border(2.dp, inkColor(), shape)
+            .clip(shape)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Row(Modifier.padding(horizontal = 14.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (badge is SyncBadge.Syncing) {
-                CircularProgressIndicator(Modifier.size(14.dp), strokeWidth = 2.dp, color = warn)
-            } else {
-                Box(Modifier.size(9.dp).background(dot, RoundedCornerShape(50)))
-            }
-            Text(text, style = MaterialTheme.typography.labelMedium, maxLines = 1)
+        if (badge is SyncBadge.Syncing) {
+            PixelSpinner(Modifier.size(14.dp), color = warn)
+        } else {
+            // A square status light, like the LED on a handheld.
+            Box(Modifier.size(10.dp).background(dot))
         }
+        Text(text, style = MaterialTheme.typography.labelMedium, maxLines = 1)
     }
 }

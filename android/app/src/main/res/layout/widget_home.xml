@@ -11,28 +11,29 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/widget_readiness"
-        android:textColor="#FF9AA3C7"
+        android:textColor="#FFA39C88"
         android:textSize="12sp" />
 
     <TextView
         android:id="@+id/widget_readiness"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#FF39F5A5"
+        android:textColor="#FFFF7A3D"
         android:textSize="36sp"
-        android:textStyle="bold|italic" />
+        android:fontFamily="monospace"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/widget_steps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#FFFFFFFF"
+        android:textColor="#FFF0E9D6"
         android:textSize="14sp" />
 
     <TextView
         android:id="@+id/widget_week"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#FF9AA3C7"
+        android:textColor="#FFA39C88"
         android:textSize="12sp" />
 </LinearLayout>

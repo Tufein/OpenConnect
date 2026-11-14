@@ -9,21 +9,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Switch
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -101,8 +92,8 @@ fun WatchScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+            PixelIconButton(onClick = onBack) {
+                PixelIcon(PixelIcons.ArrowLeft, contentDescription = stringResource(R.string.back))
             }
             Text(stringResource(R.string.watch_title), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
         }
@@ -140,7 +131,7 @@ fun WatchScreen(
             SectionTitle(stringResource(R.string.watch_folder_title))
             SurfaceCard {
                 Text(stringResource(R.string.watch_folder_body), style = MaterialTheme.typography.bodyMedium)
-                OutlinedButton(
+                SecondaryButton(
                     onClick = { folderPicker.launch(null) },
                     enabled = ui.sync !is SyncStatus.Running,
                     modifier = Modifier.fillMaxWidth(),
@@ -180,11 +171,11 @@ private fun UsbControls(ui: WatchUi, onSearch: () -> Unit, onRead: (WatchInfo) -
         Text(stringResource(R.string.watch_usb_none), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
     for (watch in ui.watches) {
-        Button(onClick = { onRead(watch) }, enabled = !running, modifier = Modifier.fillMaxWidth()) {
+        PrimaryButton(onClick = { onRead(watch) }, enabled = !running, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.watch_read_button, watch.name))
         }
     }
-    OutlinedButton(onClick = onSearch, enabled = !running, modifier = Modifier.fillMaxWidth()) {
+    SecondaryButton(onClick = onSearch, enabled = !running, modifier = Modifier.fillMaxWidth()) {
         Text(stringResource(R.string.watch_usb_search))
     }
     if (ui.syncSource != SyncSource.GARMIN_BLE) SyncResult(ui.sync, ui.syncSource)
@@ -204,11 +195,11 @@ private fun GarminBleControls(
     val g = ui.garmin
     val running = ui.sync is SyncStatus.Running
     g.remembered?.let { watch ->
-        Button(onClick = { onSync(watch) }, enabled = !running, modifier = Modifier.fillMaxWidth()) {
+        PrimaryButton(onClick = { onSync(watch) }, enabled = !running, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.watch_ble_sync, watch.name))
         }
     }
-    OutlinedButton(
+    SecondaryButton(
         onClick = if (g.searching) onStopFind else onFind,
         enabled = !running,
         modifier = Modifier.fillMaxWidth(),
@@ -220,7 +211,7 @@ private fun GarminBleControls(
         Text(stringResource(R.string.watch_ble_searching), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
     for (watch in g.found.filter { it.address != g.remembered?.address }) {
-        OutlinedButton(onClick = { onSync(watch) }, enabled = !running, modifier = Modifier.fillMaxWidth()) {
+        SecondaryButton(onClick = { onSync(watch) }, enabled = !running, modifier = Modifier.fillMaxWidth()) {
             Text(if (watch.paired) stringResource(R.string.watch_ble_paired, watch.name) else watch.name)
         }
     }
@@ -234,12 +225,12 @@ private fun GarminBleControls(
             },
             style = MaterialTheme.typography.bodyMedium,
         )
-        LinearProgressIndicator(Modifier.fillMaxWidth())
+        PixelProgress(Modifier.fillMaxWidth())
     } else if (ui.syncSource == SyncSource.GARMIN_BLE) {
         SyncResult(ui.sync, SyncSource.GARMIN_BLE)
     }
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Switch(checked = g.archiveAfterRead, onCheckedChange = onArchive)
+        PixelSwitch(checked = g.archiveAfterRead, onCheckedChange = onArchive)
         Spacer(Modifier.width(12.dp))
         Column {
             Text(stringResource(R.string.watch_ble_archive), style = MaterialTheme.typography.bodyMedium)
@@ -247,7 +238,7 @@ private fun GarminBleControls(
         }
     }
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Switch(checked = g.background, onCheckedChange = onBackground, enabled = g.remembered != null)
+        PixelSwitch(checked = g.background, onCheckedChange = onBackground, enabled = g.remembered != null)
         Spacer(Modifier.width(12.dp))
         Column {
             Text(stringResource(R.string.watch_ble_background), style = MaterialTheme.typography.bodyMedium)
@@ -255,7 +246,7 @@ private fun GarminBleControls(
         }
     }
     if (g.remembered != null && !running) {
-        TextButton(onClick = onForget) { Text(stringResource(R.string.watch_ble_forget)) }
+        QuietButton(onClick = onForget) { Text(stringResource(R.string.watch_ble_forget)) }
     }
 }
 
@@ -267,10 +258,10 @@ private fun SyncResult(sync: SyncStatus, source: SyncSource) {
         is SyncStatus.Running -> Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             if (sync.total == 0) {
                 Text(stringResource(R.string.watch_sync_opening), style = MaterialTheme.typography.bodyMedium)
-                LinearProgressIndicator(Modifier.fillMaxWidth())
+                PixelProgress(Modifier.fillMaxWidth())
             } else {
                 Text(stringResource(R.string.watch_sync_progress, minOf(sync.done + 1, sync.total), sync.total), style = MaterialTheme.typography.bodyMedium)
-                LinearProgressIndicator(progress = { sync.done / sync.total.toFloat() }, modifier = Modifier.fillMaxWidth())
+                PixelProgress(progress = { sync.done / sync.total.toFloat() }, modifier = Modifier.fillMaxWidth())
                 Text(sync.current, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
@@ -314,7 +305,7 @@ private fun LiveControls(
     val busy = live.phase == LivePhase.SCANNING || live.phase == LivePhase.CONNECTING || live.phase == LivePhase.STREAMING ||
         live.phase == LivePhase.RECONNECTING
     if (live.phase == LivePhase.IDLE || live.phase == LivePhase.SCANNING || live.phase == LivePhase.STOPPED) {
-        Button(
+        PrimaryButton(
             onClick = if (live.phase == LivePhase.SCANNING) onStop else onScan,
             modifier = Modifier.fillMaxWidth(),
         ) {
@@ -331,16 +322,16 @@ private fun LiveControls(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         for (sensor in live.sensors) {
-            OutlinedButton(onClick = { onConnect(sensor) }, modifier = Modifier.fillMaxWidth()) { Text(sensor.name) }
+            SecondaryButton(onClick = { onConnect(sensor) }, modifier = Modifier.fillMaxWidth()) { Text(sensor.name) }
         }
     }
     if (live.phase == LivePhase.CONNECTING) {
         Text(stringResource(R.string.watch_live_connecting, live.sensorName.orEmpty()), style = MaterialTheme.typography.bodyMedium)
-        LinearProgressIndicator(Modifier.fillMaxWidth())
+        PixelProgress(Modifier.fillMaxWidth())
     }
     if (live.phase == LivePhase.RECONNECTING) {
         Text(stringResource(R.string.watch_live_reconnecting, live.reconnectAttempt), style = MaterialTheme.typography.bodyMedium)
-        LinearProgressIndicator(Modifier.fillMaxWidth())
+        PixelProgress(Modifier.fillMaxWidth())
     }
     if (live.phase == LivePhase.STREAMING || live.phase == LivePhase.RECONNECTING || live.hasData) {
         Text(
@@ -374,13 +365,13 @@ private fun LiveControls(
         Text(stringResource(R.string.watch_live_disconnected, live.error), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
     }
     if (busy && live.phase != LivePhase.SCANNING) {
-        OutlinedButton(onClick = onStop, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.watch_live_stop)) }
+        SecondaryButton(onClick = onStop, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.watch_live_stop)) }
     }
     if (live.phase == LivePhase.STOPPED && live.hasData) {
         if (live.saved) {
             Text(stringResource(R.string.watch_live_saved), style = MaterialTheme.typography.bodyMedium)
         } else {
-            Button(onClick = onSave, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.watch_live_save)) }
+            PrimaryButton(onClick = onSave, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.watch_live_save)) }
         }
     }
 }
