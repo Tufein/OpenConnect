@@ -128,7 +128,11 @@ class ThemesLettersAndIconTest : AppTestBase() {
         val context = ApplicationProvider.getApplicationContext<OpenConnectApp>()
         assertEquals(AppIcon.HANDHELD, AppIcons.current(context), "a fresh install has the first icon")
         tab("Settings").performClick()
-        waitForText("App icon")
+        // The settings list is lazy and the icon section sits far below the fold, so wait for the top of the list and
+        // scroll down to it instead of waiting for it to appear by itself.
+        waitForText("Clear letters")
+        scrollToText("App icon")
+        rule.waitForIdle()
         scrollToText("Night heart")
         shot("68-settings-app-icon")
         clickText("Night heart")
