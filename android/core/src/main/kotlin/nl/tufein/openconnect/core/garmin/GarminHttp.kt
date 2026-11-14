@@ -5,7 +5,8 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 
-class GarminResponse(val status: Int, val body: ByteArray) {
+/** [headers] has lower-case names; it is empty where the answer's headers are not known (a test double). */
+class GarminResponse(val status: Int, val body: ByteArray, val headers: Map<String, String> = emptyMap()) {
     val text: String get() = body.toString(Charsets.UTF_8)
 }
 
@@ -31,7 +32,8 @@ class UrlConnectionGarminHttp(private val maxBytes: Int = 30 * 1024 * 1024) : Ga
             }
             val status = connection.responseCode
             val stream = if (status >= 400) connection.errorStream else connection.inputStream
-            return GarminResponse(status, stream?.use { readCapped(it) } ?: ByteArray(0))
+            val headers = connection.headerFields.filterKeys { it != null }.entries.associate { (k, v) -> k.lowercase() to v.last() }
+            return GarminResponse(status, stream?.use { readCapped(it) } ?: ByteArray(0), headers)
         } finally {
             connection.disconnect()
         }

@@ -159,7 +159,7 @@ const val WATCH_ROUTE = "watch"
 const val GARMIN_ROUTE = "garmin"
 const val OURA_ROUTE = "oura"
 
-/** The colour theme ([Palette] key). The shapes, fonts and layout are the same for everyone since v0.30.0. */
+/** The colour theme ([Palette] key). The shapes, fonts and layout are the same for everyone since v0.31.0. */
 data class Look(val palette: String = "handheld")
 
 /** Which devices the person uses. [onboarded] is false until the first-start questions are answered. */

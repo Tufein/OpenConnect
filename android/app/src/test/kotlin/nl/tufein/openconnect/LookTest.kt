@@ -14,9 +14,9 @@ import org.robolectric.annotation.Config
 import kotlin.test.assertEquals
 
 /**
- * v0.30.0: the app has one look of its own (pixel type, pixel-cut corners, flat panels, pixel icons) instead of three
+ * v0.31.0: the app has one look of its own (pixel type, pixel-cut corners, flat panels, pixel icons) instead of three
  * designs to pick from. These tests walk through the main screens in dark and light mode, which also writes the
- * screenshots, and prove that a colour theme from before v0.30.0 opens as the new default.
+ * screenshots, and prove that a colour theme from before v0.31.0 opens as the new default.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], qualifiers = "w411dp-h891dp-night-xxhdpi", application = OpenConnectApp::class)

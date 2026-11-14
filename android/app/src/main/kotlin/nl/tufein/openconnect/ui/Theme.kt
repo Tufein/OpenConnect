@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.sp
 import nl.tufein.openconnect.R
 
 /*
- * The OpenConnect look ("Handheld", v0.30.0).
+ * The OpenConnect look ("Handheld", v0.31.0).
  *
  * One design for the whole app, made to look like the screen of a handheld console rather than like a stock Material app:
  *  - Jersey 10, a pixel typeface made for sports shirts, for headlines and every big number; IBM Plex Sans for reading
@@ -53,7 +53,7 @@ internal val PlexMono = FontFamily(Font(R.font.plex_mono_medium, FontWeight.Medi
 /**
  * The colour themes to choose from. "handheld" is the look of the app; the other three are screens from the history of
  * gaming and "dynamic" takes the phone's wallpaper colours on Android 12 and newer. Older keys (arcade, clean, midnight,
- * ocean, sunset) from before v0.30.0 are no longer known and open as "handheld".
+ * ocean, sunset) from before v0.31.0 are no longer known and open as "handheld".
  */
 enum class Palette(val key: String) {
     HANDHELD("handheld"), GAMEBOY("gameboy"), AMBER("amber"), SYNTHWAVE("synthwave"), DYNAMIC("dynamic");
@@ -64,7 +64,7 @@ enum class Palette(val key: String) {
 }
 
 /**
- * The designs of the watch faces (v0.20.0). The app itself has one look since v0.30.0; this list only decides which of
+ * The designs of the watch faces (v0.20.0). The app itself has one look since v0.31.0; this list only decides which of
  * the three Connect IQ faces the preview in Settings shows and `watch/build.sh --design` builds.
  */
 enum class Design(val key: String) {

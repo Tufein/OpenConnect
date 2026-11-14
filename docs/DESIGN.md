@@ -1,7 +1,7 @@
 # The OpenConnect look ("Handheld")
 
-Since v0.30.0 the app has one look of its own. It replaces the three designs (Clean Pro, Dashboard Dark, Retro Pro) and
-the three styles (Sport, Round, Pixel) of v0.18.0 to v0.29.0. The idea: the screen of a handheld console, not a stock
+Since v0.31.0 the app has one look of its own. It replaces the three designs (Clean Pro, Dashboard Dark, Retro Pro) and
+the three styles (Sport, Round, Pixel) of v0.18.0 to v0.30.0. The idea: the screen of a handheld console, not a stock
 Material app. Everything below lives in `android/app/src/main/kotlin/nl/tufein/openconnect/ui/`.
 
 ## The rules

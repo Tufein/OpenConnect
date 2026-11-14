@@ -83,6 +83,23 @@ class HealthConnectControllerTest {
     }
 
     @Test
+    fun `the automatic send leaves out what Health Connect already has, the button sends everything`() {
+        val g = Gateway()
+        val c = controller(g, Settings(auto = true))
+        c.autoExport()
+        assertEquals(1, g.written.size)
+        c.autoExport()
+        assertEquals(1, g.written.size, "nothing new since the last send")
+
+        repo.upsertActivity(Activity(id = "a2", startTime = Instant.parse("2026-11-12T09:00:00Z"), durationS = 600.0))
+        c.autoExport()
+        assertEquals(listOf("openconnect-a1", "openconnect-a2"), g.written.map { it.clientId }, "only the new one went out")
+
+        c.exportNow()
+        assertEquals(4, g.written.size, "the button sends all of them again")
+    }
+
+    @Test
     fun `the automatic send only happens when the switch is on and Health Connect is ready`() {
         val off = Gateway()
         controller(off).autoExport()

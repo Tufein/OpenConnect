@@ -103,6 +103,51 @@ class GarminBackgroundTest {
     }
 
     @Test
+    fun `after a rate limit the automatic syncs wait for what Garmin asked, the button does not`() {
+        http.on("GET", "/usersummary-service/stats/steps") { FakeGarminHttp.text(429, "", mapOf("retry-after" to "1200")) }
+        val c = controller()
+        assertEquals(BackgroundOutcome.RETRY, runBlocking { c.syncInBackground() })
+        val asked = http.calls.size
+
+        clock = now.plusSeconds(11 * 60) // past the ten minutes between syncs, but inside the twenty Garmin asked for
+        assertEquals(BackgroundOutcome.SKIPPED, runBlocking { c.syncInBackground() })
+        c.autoSyncIfDue(java.time.Duration.ZERO)
+        assertEquals(asked, http.calls.size, "not asked again while Garmin says wait")
+
+        c.sync() // the person presses the button: their choice
+        assertTrue(http.calls.size > asked)
+    }
+
+    @Test
+    fun `once the cool-down is over the automatic syncs go on, and a good sync ends it`() {
+        http.on("GET", "/usersummary-service/stats/steps") { FakeGarminHttp.text(429, "", mapOf("retry-after" to "1200")) }
+        val c = controller()
+        runBlocking { c.syncInBackground() }
+
+        clock = now.plusSeconds(21 * 60)
+        http.json("/usersummary-service/stats/steps/daily", "[]") // Garmin has calmed down
+        assertEquals(BackgroundOutcome.SYNCED, runBlocking { c.syncInBackground() })
+
+        clock = now.plusSeconds(40 * 60)
+        assertEquals(BackgroundOutcome.SYNCED, runBlocking { c.syncInBackground() }, "no cool-down left over from before")
+    }
+
+    @Test
+    fun `a rate limit without a wait in its answer pauses the automatic syncs for half an hour`() {
+        http.status("GET", "/usersummary-service/stats/steps", 429)
+        val c = controller()
+        runBlocking { c.syncInBackground() }
+        val asked = http.calls.size
+
+        clock = now.plusSeconds(29 * 60)
+        assertEquals(BackgroundOutcome.SKIPPED, runBlocking { c.syncInBackground() })
+        assertEquals(asked, http.calls.size)
+        clock = now.plusSeconds(31 * 60)
+        http.json("/usersummary-service/stats/steps/daily", "[]")
+        assertEquals(BackgroundOutcome.SYNCED, runBlocking { c.syncInBackground() })
+    }
+
+    @Test
     fun `a refused key stops the background job instead of trying forever`() {
         http.status("POST", "/personal-api-key/token", 401)
         val c = controller()
