@@ -42,15 +42,14 @@ class PlanAndLockScreenTest : AppTestBase() {
         rule.onNodeWithText("Plan").performClick()
         waitForText("Create plan")
         shot("33-plan-setup")
-        rule.onNodeWithText("10K").performClick()
-        rule.onNodeWithText("Create plan").performClick()
+        clickText("10K")
+        clickText("Create plan")
         waitForText("10K plan")
         waitForText("Next run")
         shot("34-plan")
         scrollToText("All weeks")
         shot("35-plan-weeks")
-        scrollToText("Delete plan")
-        rule.onNodeWithText("Delete plan").performClick()
+        clickText("Delete plan")
         waitForText("Create plan")
     }
 
