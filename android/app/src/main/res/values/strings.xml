@@ -612,4 +612,25 @@
     <string name="design_note">A design also picks its own colours and style; you can change both below.</string>
     <string name="onboarding_design">Pick a design</string>
     <string name="home_my_day">My day</string>
+    <string name="wf_title">Watch face preview</string>
+    <string name="wf_design">Face</string>
+    <string name="wf_colour">Face colour</string>
+    <string name="wf_fields">Fields</string>
+    <string name="wf_face_clean">Clean face</string>
+    <string name="wf_face_dashboard">Dashboard face</string>
+    <string name="wf_face_retro">Retro face</string>
+    <string name="wf_color_mint">Mint</string>
+    <string name="wf_color_blue">Blue</string>
+    <string name="wf_color_amber">Amber</string>
+    <string name="wf_color_pink">Pink</string>
+    <string name="wf_color_green">Green</string>
+    <string name="wf_field_battery">Body Battery</string>
+    <string name="wf_field_heart">Heart rate</string>
+    <string name="wf_field_stress">Stress</string>
+    <string name="wf_field_sleep">Sleep</string>
+    <string name="wf_field_steps">Steps</string>
+    <string name="wf_fields_note">The first field is the big one. Tap a chosen field to make it the big one, tap another to replace the last.</string>
+    <string name="wf_preview_note">A drawing with today\'s numbers. The real face is built from the watch/ folder; the watch itself shows its own live values.</string>
+    <string name="wf_preview_description">Watch face preview, %1$s, %2$s</string>
+    <string name="wf_retro_level">LVL 12  P1</string>
 </resources>

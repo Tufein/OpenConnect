@@ -89,6 +89,10 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 25. **Clean Pro, Dashboard Dark and Retro Pro**, picked in Settings or at the first start. Each lays out Home its own
     way, draws cards and charts in its own style and brings its own colours, which stay changeable.
 
+## v0.20.0: watch face preview ✅
+
+26. **Round preview of the watch face** in Settings (Clean, Dashboard, Retro; five colours; four fields), with your numbers.
+
 ## Later 💡
 
 - Wear OS or a watch face is out of scope; the project is about the phone side.

@@ -26,11 +26,11 @@ live against a real account; the USB and Bluetooth parts have not yet been tried
 **[docs/GARMIN.md](docs/GARMIN.md)** and **[docs/WATCH.md](docs/WATCH.md)** for what works and what is unverified.
 More about the app, its limits and what has been verified: **[docs/ANDROID.md](docs/ANDROID.md)**.
 
-**New in v0.19.0:** **three designs** to choose from under *Settings, Appearance, Design*: **Clean Pro** (calm cards,
+**New in v0.20.0:** a round **watch face preview** in *Settings* (Clean, Dashboard or Retro, five colours, four fields) with your own numbers. v0.19.0 added three designs: **three designs** to choose from under *Settings, Appearance, Design*: **Clean Pro** (calm cards,
 a big readiness ring and a "My day" list), **Dashboard Dark** (tiles in two columns on black, bold bars) and **Retro
 Pro** (the arcade look). A new install asks at the first start. v0.18.0 added seven colour themes, three styles and
 watch faces over USB. The plan for what comes next is in **[docs/ROADMAP.md](docs/ROADMAP.md)**; see the
-[release notes](docs/releases/v0.19.0.md).
+[release notes](docs/releases/v0.20.0.md).
 
 <p><img src="docs/img/v0190-designs.png" alt="Clean Pro in light mode, Dashboard Dark, and a Clean Pro chart" width="690"></p>
 
