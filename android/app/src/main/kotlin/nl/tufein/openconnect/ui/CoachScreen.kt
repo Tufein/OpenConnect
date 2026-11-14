@@ -153,7 +153,7 @@ private fun Bubble(message: CoachMessage) {
             Modifier
                 .fillMaxWidth(if (mine) 0.85f else 1f)
                 .background(if (mine) colors.primaryContainer else colors.surface, MaterialTheme.shapes.medium)
-                .border(2.dp, inkColor().copy(alpha = if (mine) 1f else 0.5f), MaterialTheme.shapes.medium)
+                .border(lineWidth(), inkColor().copy(alpha = if (mine) 1f else 0.5f), MaterialTheme.shapes.medium)
                 .clip(MaterialTheme.shapes.medium)
                 .padding(14.dp),
         ) {

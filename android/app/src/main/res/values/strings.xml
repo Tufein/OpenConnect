@@ -778,4 +778,9 @@
         <item quantity="other">%1$d activities, %2$s km</item>
     </plurals>
     <string name="calendar_note">A day counts when an activity starts on it (days are UTC days) and a week runs from Monday to Sunday. A streak is not broken until its day or week is over.</string>
+    <string name="look_style">Style</string>
+    <string name="style_retro">Retro</string>
+    <string name="style_clean">Sleek</string>
+    <string name="style_classic">Classic</string>
+    <string name="style_note">Retro is the pixel look. Sleek and Classic have rounded corners, thin lines and clear letters. Classic has serif titles.</string>
 </resources>

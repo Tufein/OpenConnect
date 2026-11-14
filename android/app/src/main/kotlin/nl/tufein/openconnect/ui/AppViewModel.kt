@@ -159,8 +159,8 @@ const val WATCH_ROUTE = "watch"
 const val GARMIN_ROUTE = "garmin"
 const val OURA_ROUTE = "oura"
 
-/** The colour theme ([Palette] key) and the letters ([Letters] key). The shapes and layout are the same for everyone since v0.31.0. */
-data class Look(val palette: String = "handheld", val letters: String = "pixel")
+/** The colour theme ([Palette] key), the letters ([Letters] key) and the style of shapes and lines ([Style] key). */
+data class Look(val palette: String = "handheld", val letters: String = "pixel", val style: String = "retro")
 
 /** Which devices the person uses. [onboarded] is false until the first-start questions are answered. */
 data class SourcesUi(val onboarded: Boolean = true, val garmin: Boolean = true, val oura: Boolean = false)
@@ -228,7 +228,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         if (oura) container.oura.syncIfDue(OPEN_GAP)
     }
 
-    private fun lookNow() = Look(Palette.of(container.settings.palette).key, Letters.of(container.settings.letters).key)
+    private fun lookNow() = Look(Palette.of(container.settings.palette).key, Letters.of(container.settings.letters).key, Style.of(container.settings.style).key)
 
     private val _look = MutableStateFlow(lookNow())
 
@@ -242,6 +242,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setLetters(letters: String) {
         container.settings.letters = Letters.of(letters).key
+        _look.value = lookNow()
+    }
+
+    fun setStyle(style: String) {
+        container.settings.style = Style.of(style).key
         _look.value = lookNow()
     }
 

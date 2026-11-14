@@ -61,12 +61,21 @@ private val Color.isDarkSurface: Boolean get() = luminance() < 0.5f
 @Composable
 fun inkColor(): Color {
     val c = MaterialTheme.colorScheme
-    return if (c.background.isDarkSurface) c.onBackground.copy(alpha = 0.55f) else c.onBackground
+    return when (LocalStyle.current) {
+        Style.CLEAN -> c.outline.copy(alpha = 0.5f)
+        Style.CLASSIC -> c.outline
+        Style.RETRO -> if (c.background.isDarkSurface) c.onBackground.copy(alpha = 0.55f) else c.onBackground
+    }
 }
+
+/** The width of every outline: 2 dp in the retro style, a hairline in the other two. */
+@Composable
+fun lineWidth(): Dp = if (LocalStyle.current == Style.RETRO) 2.dp else 1.dp
 
 /** The colour of the hard shadow behind panels: solid ink on light paper, a faint ghost of the text colour on dark. */
 @Composable
 fun shadowColor(): Color {
+    if (LocalStyle.current != Style.RETRO) return Color.Transparent
     val c = MaterialTheme.colorScheme
     return if (c.background.isDarkSurface) c.onBackground.copy(alpha = 0.14f) else c.onBackground
 }
@@ -105,7 +114,7 @@ fun Panel(
         modifier
             .hardShadow(shadowColor(), shape)
             .background(fill, shape)
-            .border(2.dp, inkColor(), shape)
+            .border(lineWidth(), inkColor(), shape)
             .clip(shape)
             .padding(padding),
         verticalArrangement = Arrangement.spacedBy(spacing),
@@ -137,14 +146,17 @@ private fun ButtonBase(
     val ink = inkColor()
     val colors = MaterialTheme.colorScheme
     // A framed button sits on its shadow; pressing it pushes the button down onto the shadow, like a real key.
-    val push = if (framed && pressed && enabled) 3.dp else 0.dp
-    Box(modifier.padding(end = 3.dp, bottom = 3.dp), propagateMinConstraints = true) {
+    val retro = LocalStyle.current == Style.RETRO
+    val push = if (retro && framed && pressed && enabled) 3.dp else 0.dp
+    // The other styles have no shadow to push into; a pressed button gets a little see-through instead.
+    val shown = if (!retro && pressed) fill.copy(alpha = 0.8f) else fill
+    Box(modifier.padding(end = if (retro) 3.dp else 0.dp, bottom = if (retro) 3.dp else 0.dp), propagateMinConstraints = true) {
         Row(
             Modifier
                 .offset(push, push)
                 .then(if (framed && enabled && push == 0.dp) Modifier.hardShadow(shadowColor(), shape) else Modifier)
-                .background(if (!framed) Color.Transparent else if (enabled) fill else colors.surfaceVariant, shape)
-                .then(if (framed) Modifier.border(2.dp, if (enabled) ink else ink.copy(alpha = 0.3f), shape) else Modifier)
+                .background(if (!framed) Color.Transparent else if (enabled) shown else colors.surfaceVariant, shape)
+                .then(if (framed) Modifier.border(lineWidth(), if (enabled) ink else ink.copy(alpha = 0.3f), shape) else Modifier)
                 .clip(shape)
                 .clickable(interactionSource = interaction, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
                 .heightIn(min = 44.dp)
@@ -206,14 +218,16 @@ fun PixelChip(
 ) {
     val colors = MaterialTheme.colorScheme
     val shape = MaterialTheme.shapes.small
-    val fill = if (selected) colors.onBackground else colors.surface
-    val text = if (selected) colors.background else colors.onSurface
-    val line = if (selected) colors.onBackground else inkColor().copy(alpha = 0.5f)
+    val retro = LocalStyle.current == Style.RETRO
+    // The chosen chip is ink in the retro style (like a highlighted menu entry) and the main colour in the others.
+    val fill = if (selected) (if (retro) colors.onBackground else colors.primary) else colors.surface
+    val text = if (selected) (if (retro) colors.background else colors.onPrimary) else colors.onSurface
+    val line = if (selected) fill else if (retro) inkColor().copy(alpha = 0.5f) else colors.outline
     Row(
         modifier
             .heightIn(min = 36.dp)
             .background(fill, shape)
-            .border(2.dp, line, shape)
+            .border(lineWidth(), line, shape)
             .clip(shape)
             .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 6.dp),
@@ -233,7 +247,8 @@ fun PixelChip(
 @Composable
 fun PixelSwitch(checked: Boolean, onCheckedChange: ((Boolean) -> Unit)?, modifier: Modifier = Modifier, enabled: Boolean = true) {
     val colors = MaterialTheme.colorScheme
-    val shape = MaterialTheme.shapes.small
+    val retro = LocalStyle.current == Style.RETRO
+    val shape = if (retro) MaterialTheme.shapes.small else androidx.compose.foundation.shape.CircleShape
     val line = if (enabled) inkColor() else inkColor().copy(alpha = 0.3f)
     val toggle = if (onCheckedChange != null) Modifier.toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onCheckedChange) else Modifier
     Box(
@@ -241,11 +256,11 @@ fun PixelSwitch(checked: Boolean, onCheckedChange: ((Boolean) -> Unit)?, modifie
             .then(toggle)
             .size(width = 52.dp, height = 30.dp)
             .background(if (checked && enabled) colors.primary else colors.surfaceVariant, shape)
-            .border(2.dp, line, shape)
+            .border(lineWidth(), line, shape)
             .padding(4.dp),
         contentAlignment = if (checked) Alignment.CenterEnd else Alignment.CenterStart,
     ) {
-        Box(Modifier.size(18.dp).background(if (enabled) colors.onBackground else colors.outline))
+        Box(Modifier.size(18.dp).background(if (enabled) colors.onBackground else colors.outline, if (retro) androidx.compose.ui.graphics.RectangleShape else androidx.compose.foundation.shape.CircleShape))
     }
 }
 
@@ -311,6 +326,10 @@ fun PixelProgress(modifier: Modifier = Modifier, color: Color = MaterialTheme.co
 /** A row of small squares as a divider: the dotted rule behind section titles. */
 @Composable
 fun DottedRule(modifier: Modifier = Modifier, color: Color = MaterialTheme.colorScheme.outlineVariant) {
+    if (LocalStyle.current != Style.RETRO) {
+        Box(modifier.height(1.dp).background(color))
+        return
+    }
     Canvas(modifier.height(4.dp)) {
         val dot = 3.dp.toPx()
         val pitch = dot * 2f

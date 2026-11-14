@@ -80,7 +80,7 @@ fun sportColor(sport: Sport): Color = when (sport) {
 fun SportBadge(sport: Sport, modifier: Modifier = Modifier) {
     val shape = MaterialTheme.shapes.small
     Box(
-        modifier.size(46.dp).background(sportColor(sport), shape).border(2.dp, inkColor(), shape),
+        modifier.size(46.dp).background(sportColor(sport), shape).border(lineWidth(), inkColor(), shape),
         contentAlignment = Alignment.Center,
     ) {
         Text(sportTag(sport), style = MaterialTheme.typography.titleMedium, color = Color(0xFF17150F), maxLines = 1)
@@ -141,7 +141,16 @@ fun ScoreTile(
 @Composable
 fun SegmentBar(fraction: Float, color: Color, modifier: Modifier = Modifier, segments: Int = 20, off: Color? = null) {
     val unlit = off ?: MaterialTheme.colorScheme.onSurface.copy(alpha = 0.13f)
+    val smooth = LocalStyle.current != Style.RETRO
     Canvas(modifier) {
+        if (smooth) {
+            // One rounded bar instead of blocks in the sleek and classic styles.
+            val radius = androidx.compose.ui.geometry.CornerRadius(size.height / 2f)
+            drawRoundRect(unlit, cornerRadius = radius)
+            val filled = size.width * fraction.coerceIn(0f, 1f)
+            if (filled > 0f) drawRoundRect(color, size = Size(maxOf(filled, size.height), size.height), cornerRadius = radius)
+            return@Canvas
+        }
         val gap = 2.dp.toPx()
         val w = (size.width - gap * (segments - 1)) / segments
         val lit = (fraction.coerceIn(0f, 1f) * segments).let { kotlin.math.round(it).toInt() }

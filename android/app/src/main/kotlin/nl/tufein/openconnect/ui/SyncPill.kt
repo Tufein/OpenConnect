@@ -63,7 +63,7 @@ fun SyncPill(badge: SyncBadge, now: Instant, onClick: () -> Unit, modifier: Modi
     Row(
         modifier
             .background(MaterialTheme.colorScheme.surface, shape)
-            .border(2.dp, inkColor(), shape)
+            .border(lineWidth(), inkColor(), shape)
             .clip(shape)
             .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp),

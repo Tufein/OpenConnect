@@ -123,7 +123,7 @@ private fun LevelCard(player: PlayerLevel, won: Int, total: Int) {
     SurfaceCard(accent = MaterialTheme.colorScheme.secondary) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Box(
-                Modifier.size(64.dp).background(MaterialTheme.colorScheme.secondary, MaterialTheme.shapes.medium).border(2.dp, inkColor(), MaterialTheme.shapes.medium),
+                Modifier.size(64.dp).background(MaterialTheme.colorScheme.secondary, MaterialTheme.shapes.medium).border(lineWidth(), inkColor(), MaterialTheme.shapes.medium),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(player.level.toString(), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSecondary)
@@ -157,7 +157,7 @@ private fun TrophyCard(trophy: Trophy) {
     SurfaceCard {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Box(
-                Modifier.size(52.dp).background(tint.copy(alpha = if (trophy.unlocked) 0.25f else 0.1f), MaterialTheme.shapes.small).border(2.dp, tint, MaterialTheme.shapes.small),
+                Modifier.size(52.dp).background(tint.copy(alpha = if (trophy.unlocked) 0.25f else 0.1f), MaterialTheme.shapes.small).border(lineWidth(), tint, MaterialTheme.shapes.small),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(trophyTag(trophy.key), style = MaterialTheme.typography.titleMedium, color = tint, maxLines = 1)

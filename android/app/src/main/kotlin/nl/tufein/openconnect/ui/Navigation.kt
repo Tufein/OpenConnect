@@ -277,6 +277,7 @@ fun OpenConnectRoot(
                     ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources, look = look, appIcon = appIcon, watchFace = watchFace, watchData = watchFaceData(home, now)),
                     onLook = vm::setLook,
                     onLetters = vm::setLetters,
+                    onStyle = vm::setStyle,
                     onAppIcon = vm::setAppIcon,
                     onWatchFaceLook = vm::setWatchFace,
                     onWatchFace = onWatchFace,

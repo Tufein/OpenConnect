@@ -74,6 +74,11 @@ gaat uit zonder dat CI groen is. Wat zonder horloge of telefoon niet te controle
 14. **24 kleurthema's** in vier groepen, gemeten op leesbaarheid, een keuze tussen **pixelletters en duidelijke letters**
     en een **keuze uit acht app-iconen**. Zie [DESIGN.md](DESIGN.md).
 
+## v0.33.0: strakke en deftige stijl naast retro ✅
+
+15. Een **stijlkeuze**: Retro (de pixelstijl), **Strak** (afgeronde hoeken, dunne lijnen, duidelijke letters) en **Deftig**
+    (kleine hoeken, titels met schreef). Alle 24 kleurthema's werken in alle drie. Zie [DESIGN.md](DESIGN.md).
+
 ## Later 💡
 
 - Het nieuwere Garmin-protobuf-synchronisatieprotocol voor horloges die de klassieke mapsynchronisatie niet meer gebruiken.

@@ -160,7 +160,7 @@ private fun DayCell(day: LocalDate?, totals: DayTotals?, longestM: Double, selec
             .padding(2.dp)
             .clip(shape)
             .background(background)
-            .then(if (selected) Modifier.border(2.dp, primary, shape) else Modifier)
+            .then(if (selected) Modifier.border(lineWidth(), primary, shape) else Modifier)
             .testTag(dayTag(day))
             .clickable(onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
