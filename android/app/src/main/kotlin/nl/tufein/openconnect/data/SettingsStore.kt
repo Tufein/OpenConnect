@@ -64,12 +64,17 @@ class SettingsStore(
         set(value) = prefs.edit().putString(KEY_THEME, value.takeIf { it in THEMES } ?: "system").apply()
 
     /**
-     * The colour theme, a key of [nl.tufein.openconnect.ui.Palette]: "handheld" unless another was picked. A key from before
-     * v0.31.0 that no longer exists (arcade, clean, midnight, ocean, sunset) opens as "handheld".
+     * The colour theme, a key of [nl.tufein.openconnect.ui.Palette]: "handheld" unless another was picked. A key that is no
+     * theme any more (arcade, clean, midnight, from before v0.31.0) opens as "handheld".
      */
     var palette: String
         get() = prefs.getString(KEY_PALETTE, "handheld") ?: "handheld"
         set(value) = prefs.edit().putString(KEY_PALETTE, value).apply()
+
+    /** The letters, a key of [nl.tufein.openconnect.ui.Letters]: "pixel" (the look of the app) or "clear" (plain and easier to read). */
+    var letters: String
+        get() = prefs.getString(KEY_LETTERS, "pixel")?.takeIf { it == "pixel" || it == "clear" } ?: "pixel"
+        set(value) = prefs.edit().putString(KEY_LETTERS, if (value == "clear") "clear" else "pixel").apply()
 
     /** The watch face preview and build choices (v0.20.0): design, accent colour and four fields, comma separated. */
     var watchDesign: String
@@ -305,6 +310,7 @@ class SettingsStore(
         private const val KEY_PROVIDER = "provider"
         private const val KEY_THEME = "theme_mode"
         private const val KEY_PALETTE = "theme_palette"
+        private const val KEY_LETTERS = "theme_letters"
         private const val KEY_WF_DESIGN = "wf_design"
         private const val KEY_WF_COLOR = "wf_color"
         private const val KEY_WF_FIELDS = "wf_fields"

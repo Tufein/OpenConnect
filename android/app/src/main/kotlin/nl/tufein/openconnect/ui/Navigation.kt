@@ -68,10 +68,11 @@ private fun HandheldBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) 
     val colors = MaterialTheme.colorScheme
     val ink = inkColor()
     val shape = MaterialTheme.shapes.small
-    // One label size for the whole bar: it starts at 17sp and steps down until the longest word fits its tab, so no
+    // One label size for the whole bar: it starts at 17sp (14sp in clear letters) and steps down until the longest word fits its tab, so no
     // language, phone width or font scale ever cuts a label off (and the labels never differ in size).
     val labels = tabs.map { stringResource(if (tabs.size > 5) it.compact else it.label) }
-    var labelSize by remember(labels) { mutableFloatStateOf(17f) }
+    val letters = LocalLetters.current
+    var labelSize by remember(labels, letters) { mutableFloatStateOf(if (letters == Letters.CLEAR) 14f else 17f) }
     Row(
         Modifier
             .fillMaxWidth()
@@ -165,6 +166,7 @@ fun OpenConnectRoot(
     val oura by vm.oura.collectAsState()
     val theme by vm.theme.collectAsState()
     val look by vm.look.collectAsState()
+    val appIcon by vm.appIcon.collectAsState()
     val watchFace by vm.watchFace.collectAsState()
     val goals by vm.goals.collectAsState()
     val now by vm.now.collectAsState()
@@ -272,8 +274,10 @@ fun OpenConnectRoot(
             }
             composable(Tab.Settings.route) {
                 SettingsScreen(
-                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources, look = look, watchFace = watchFace, watchData = watchFaceData(home, now)),
+                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources, look = look, appIcon = appIcon, watchFace = watchFace, watchData = watchFaceData(home, now)),
                     onLook = vm::setLook,
+                    onLetters = vm::setLetters,
+                    onAppIcon = vm::setAppIcon,
                     onWatchFaceLook = vm::setWatchFace,
                     onWatchFace = onWatchFace,
                     onSources = vm::setSources,

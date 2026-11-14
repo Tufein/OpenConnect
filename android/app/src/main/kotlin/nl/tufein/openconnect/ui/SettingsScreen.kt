@@ -18,6 +18,9 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -77,6 +80,8 @@ data class SettingsUi(
     val lockAvailable: Boolean = false,
     val sources: SourcesUi = SourcesUi(),
     val look: Look = Look(),
+    /** The icon on the launcher. */
+    val appIcon: AppIcon = AppIcon.HANDHELD,
     val watchFace: WatchFaceConfig = WatchFaceConfig(),
     /** The numbers the preview shows; null until there is data. */
     val watchData: WatchFaceData? = null,
@@ -106,6 +111,10 @@ fun SettingsScreen(
     onSources: (garmin: Boolean, oura: Boolean) -> Unit = { _, _ -> },
     /** A colour theme was picked. */
     onLook: (palette: String) -> Unit = {},
+    /** The letters were switched between pixel and clear. */
+    onLetters: (letters: String) -> Unit = {},
+    /** A launcher icon was picked. */
+    onAppIcon: (AppIcon) -> Unit = {},
     /** The watch face preview changed: design, colour and four fields. */
     onWatchFaceLook: (WatchFaceConfig) -> Unit = {},
     /** Pick a watch face file to copy to the watch over USB. */
@@ -142,19 +151,42 @@ fun SettingsScreen(
                         PixelChip(selected = ui.theme == mode, onClick = { onTheme(mode) }, label = { Text(stringResource(label)) })
                     }
                 }
+                Text(stringResource(R.string.look_letters), style = MaterialTheme.typography.titleMedium)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for ((letters, label) in listOf("pixel" to R.string.letters_pixel, "clear" to R.string.letters_clear)) {
+                        PixelChip(selected = ui.look.letters == letters, onClick = { onLetters(letters) }, label = { Text(stringResource(label)) })
+                    }
+                }
+                Text(stringResource(R.string.letters_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(stringResource(R.string.look_colours), style = MaterialTheme.typography.titleMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    for (palette in Palette.entries) {
-                        if (palette == Palette.DYNAMIC && android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) continue
-                        PixelChip(
-                            selected = ui.look.palette == palette.key,
-                            onClick = { onLook(palette.key) },
-                            label = { Text(stringResource(paletteName(palette))) },
-                            leadingIcon = { PaletteDot(palette) },
-                        )
+                val darkNow = MaterialTheme.colorScheme.background.luminance() < 0.5f
+                for (group in PaletteGroup.entries) {
+                    val themes = Palette.entries.filter { it.group == group && (it != Palette.DYNAMIC || android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) }
+                    if (themes.isEmpty()) continue
+                    Text(stringResource(group.label), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        for (palette in themes) {
+                            PixelChip(
+                                selected = ui.look.palette == palette.key,
+                                onClick = { onLook(palette.key) },
+                                label = { Text(stringResource(palette.label)) },
+                                leadingIcon = { PaletteSwatch(palette, darkNow) },
+                            )
+                        }
                     }
                 }
                 Text(stringResource(R.string.look_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        item {
+            SectionTitle(stringResource(R.string.settings_app_icon))
+            SurfaceCard {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    for (icon in AppIcon.entries) {
+                        AppIconChoice(icon, selected = ui.appIcon == icon, onClick = { onAppIcon(icon) })
+                    }
+                }
+                Text(stringResource(R.string.icon_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         item { WatchFacePreviewCard(ui.watchFace, ui.watchData ?: WatchFaceData("08:42", "", null, null, null, null, null), onWatchFaceLook) }
@@ -575,25 +607,41 @@ fun DeviceSwitch(title: String, body: String, checked: Boolean, onChange: (Boole
     }
 }
 
-private fun paletteName(p: Palette): Int = when (p) {
-    Palette.HANDHELD -> R.string.palette_handheld
-    Palette.GAMEBOY -> R.string.palette_gameboy
-    Palette.AMBER -> R.string.palette_amber
-    Palette.SYNTHWAVE -> R.string.palette_synthwave
-    Palette.DYNAMIC -> R.string.palette_dynamic
+/** Two squares next to a theme's name: its background and its main colour, so the chip shows the theme before it is picked. */
+@Composable
+private fun PaletteSwatch(p: Palette, dark: Boolean) {
+    val colors = paletteSwatch(p, dark)
+    val background = colors?.first ?: MaterialTheme.colorScheme.background
+    val main = colors?.second ?: MaterialTheme.colorScheme.primary
+    androidx.compose.foundation.layout.Row(Modifier.border(1.dp, inkColor().copy(alpha = 0.6f))) {
+        Box(Modifier.size(width = 9.dp, height = 16.dp).background(background))
+        Box(Modifier.size(width = 9.dp, height = 16.dp).background(main))
+    }
 }
 
-/** A small square in the theme's main colour, so the chip shows the colour before it is picked. */
+/** One launcher icon to pick: its picture, with the name under it; the chosen one has an ink frame and a hard shadow. */
 @Composable
-private fun PaletteDot(p: Palette) {
-    val color = when (p) {
-        Palette.HANDHELD -> androidx.compose.ui.graphics.Color(0xFFE8501B)
-        Palette.GAMEBOY -> androidx.compose.ui.graphics.Color(0xFF9BBC0F)
-        Palette.AMBER -> androidx.compose.ui.graphics.Color(0xFFFFB000)
-        Palette.SYNTHWAVE -> androidx.compose.ui.graphics.Color(0xFFFF4FB8)
-        Palette.DYNAMIC -> MaterialTheme.colorScheme.primary
+private fun AppIconChoice(icon: AppIcon, selected: Boolean, onClick: () -> Unit) {
+    val shape = MaterialTheme.shapes.medium
+    Column(
+        Modifier
+            .width(76.dp)
+            .selectable(selected = selected, role = androidx.compose.ui.semantics.Role.RadioButton, onClick = onClick),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Box(
+            Modifier
+                .border(if (selected) 3.dp else 1.dp, if (selected) MaterialTheme.colorScheme.onBackground else inkColor().copy(alpha = 0.4f), shape)
+                .padding(3.dp),
+        ) { AppIconPreview(icon, size = 56.dp) }
+        Text(
+            stringResource(icon.label),
+            style = MaterialTheme.typography.labelSmall,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            color = if (selected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
-    ColorDot(color, Modifier.size(14.dp))
 }
 
 fun designName(d: Design): Int = when (d) {
