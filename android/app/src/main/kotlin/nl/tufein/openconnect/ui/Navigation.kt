@@ -108,6 +108,7 @@ fun OpenConnectRoot(
     val overview by vm.overview.collectAsState()
     val nudges by vm.nudges.collectAsState()
     val plan by vm.plan.collectAsState()
+    val zones by vm.zones.collectAsState()
     val lock by vm.lock.collectAsState()
     val healthConnect by vm.healthConnect.collectAsState()
     val syncLog by vm.syncLog.collectAsState()
@@ -237,6 +238,8 @@ fun OpenConnectRoot(
                     onDeletePlan = vm::deletePlan,
                     onRace = vm::raceAction,
                     onSendWorkouts = vm::sendPlanToWatch,
+                    zones = zones,
+                    onZones = vm::zonesAction,
                     onShiftWeek = vm::shiftWeek,
                     onPeriod = vm::setReportPeriod,
                     onGenerate = vm::generateWeeklyReport,

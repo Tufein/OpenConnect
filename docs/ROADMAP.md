@@ -40,7 +40,7 @@ gaat uit zonder dat CI groen is. Wat zonder horloge of telefoon niet te controle
 7. **Racedoel** met datum, afstand en streeftijd, bovenaan de Plan-tab: aftelling, het tempo dat je nodig hebt en een
    oordeel (voor op schema, op koers, meer werk). Datum en streeftijd stel je bij met knoppen (+/- 1 week, +/- 1 minuut).
 
-## v0.26.0: trainingen naar je horloge 🚧
+## v0.26.0: trainingen naar je horloge ✅
 
 8. **Trainingsplan als FIT-trainingen:** elke sessie van je plan wordt een gestructureerde training (warming-up,
    intervallen of tempo, cooldown) in het FIT-formaat, dat Garmin-horloges kennen. Getest door ze met een
@@ -49,7 +49,7 @@ gaat uit zonder dat CI groen is. Wat zonder horloge of telefoon niet te controle
    is niet gebouwd.
    ❓ Of een echte fenix 8 de bestanden accepteert is alleen met het horloge te zien.
 
-## v0.27.0: hartslagzones 🔜
+## v0.27.0: hartslagzones 🚧
 
 10. **Zones** als percentage van je maximale hartslag (instelbaar, standaard de hoogste gemeten), tijd per zone bij
     elke activiteit en per week, met een duidelijk oordeel over de verdeling (veel rustig, weinig zwaar).

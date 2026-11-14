@@ -186,6 +186,7 @@ fun ActivityDetailScreen(
                 }
             }
         }
+        state.zones?.let { zones -> item { ActivityZonesCard(zones, state.zonesMaxHr) } }
         val ele = activity.track.map { it.ele }
         if (ele.count { it != null } >= 2) {
             item {

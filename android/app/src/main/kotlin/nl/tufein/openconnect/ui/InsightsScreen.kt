@@ -3,6 +3,8 @@ package nl.tufein.openconnect.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,14 +32,16 @@ import nl.tufein.openconnect.core.RecordEntry
 import nl.tufein.openconnect.core.reports.ReportPeriod
 import nl.tufein.openconnect.core.Sport
 
-/** The three things under the Insights tab. */
+/** The things under the Insights tab. */
 enum class InsightsTab(val label: Int) {
     Week(R.string.insights_week),
     Trophies(R.string.insights_trophies),
     Coach(R.string.insights_coach),
     Plan(R.string.insights_plan),
+    Zones(R.string.insights_zones),
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun InsightsScreen(
     tab: InsightsTab,
@@ -62,11 +66,14 @@ fun InsightsScreen(
     onOpenActivities: () -> Unit = {},
     onRace: (RaceAction) -> Unit = {},
     onSendWorkouts: () -> Unit = {},
+    zones: ZonesState = ZonesState(),
+    onZones: (ZonesAction) -> Unit = {},
 ) {
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
         Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(stringResource(R.string.tab_insights), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Five chips do not fit on one line of a narrow phone, so they wrap; a scrolling row would also hide them from lists' scroll lookups.
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 for (entry in InsightsTab.entries) {
                     FilterChip(selected = tab == entry, onClick = { onTab(entry) }, label = { Text(stringResource(entry.label)) })
                 }
@@ -77,6 +84,7 @@ fun InsightsScreen(
             InsightsTab.Trophies -> TrophiesContent(trophies, contentPadding)
             InsightsTab.Coach -> CoachContent(coach, active, onAsk, onClearCoach, onOpenAiSettings, contentPadding)
             InsightsTab.Plan -> PlanContent(plan, onCreatePlan, onDeletePlan, onRace, onSendWorkouts, contentPadding)
+            InsightsTab.Zones -> ZonesContent(zones, onZones, contentPadding)
         }
     }
 }
