@@ -21,7 +21,7 @@ phone, so fonts and spacing on a real device can differ slightly.*
 | **Garmin account** | Paste your personal Garmin key and pull steps, heart rate, stress, Body Battery, sleep, HRV and activities (with their original FIT files) from your Garmin account; syncs by itself too. See [GARMIN.md](GARMIN.md) |
 | **Settings** | Theme (follow phone, dark, light), import files, load or delete all data, **CSV export**, who writes the reports and the coach (automatic, offline, Claude, Gemini), report language, a key and model per provider |
 
-English and Dutch. The look is "arcade night": deep indigo, mint as the main colour, one colour per body signal and monospace numbers like an old scoreboard, in a dark and a light theme (follow the phone, or pick one). The launcher icon is an activity ring that is open where a connection node sits, with a heartbeat through it, and it has a themed (single-colour) version for Android 13 and later.
+English and Dutch. The look is one of its own, "Handheld" (see [DESIGN.md](DESIGN.md)): the screen of a handheld console, with pixel type (Jersey 10 for headlines and big numbers, IBM Plex for text), pixel-cut corners, flat panels with a hard shadow, pixel-art icons, block bar charts and a 25-block readiness bar, on warm paper (light) or warm black (dark), with orange as the one signal colour and one colour per body signal. The colours can be changed (Game Boy, Amber terminal, Synthwave, Wallpaper); the shapes stay. The launcher icon is the pixel heart of the logo with a pulse through it, and it has a themed (single-colour) version for Android 13 and later.
 
 ### Where the data comes from
 
