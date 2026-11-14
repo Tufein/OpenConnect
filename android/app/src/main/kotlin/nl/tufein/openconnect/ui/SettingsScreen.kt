@@ -2,7 +2,6 @@ package nl.tufein.openconnect.ui
 
 import android.content.ActivityNotFoundException
 import androidx.core.content.ContextCompat
-import androidx.compose.material3.Switch
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Spacer
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,15 +28,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
@@ -109,12 +104,10 @@ fun SettingsScreen(
     onOura: () -> Unit = {},
     /** The choice of devices changed: Garmin on or off, Oura Ring on or off. */
     onSources: (garmin: Boolean, oura: Boolean) -> Unit = { _, _ -> },
-    /** A colour theme or drawing style was picked. */
-    onLook: (palette: String, style: String) -> Unit = { _, _ -> },
+    /** A colour theme was picked. */
+    onLook: (palette: String) -> Unit = {},
     /** The watch face preview changed: design, colour and four fields. */
     onWatchFaceLook: (WatchFaceConfig) -> Unit = {},
-    /** One of the three designs was picked. */
-    onDesign: (String) -> Unit = {},
     /** Pick a watch face file to copy to the watch over USB. */
     onWatchFace: () -> Unit = {},
     onBackup: () -> Unit = {},
@@ -146,28 +139,19 @@ fun SettingsScreen(
             SurfaceCard {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     for ((mode, label) in listOf("system" to R.string.theme_system, "dark" to R.string.theme_dark, "light" to R.string.theme_light)) {
-                        FilterChip(selected = ui.theme == mode, onClick = { onTheme(mode) }, label = { Text(stringResource(label)) })
+                        PixelChip(selected = ui.theme == mode, onClick = { onTheme(mode) }, label = { Text(stringResource(label)) })
                     }
                 }
-                Text(stringResource(R.string.design_title), style = MaterialTheme.typography.titleMedium)
-                DesignChoice(ui.look.design, onDesign)
-                Text(stringResource(R.string.design_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(stringResource(R.string.look_colours), style = MaterialTheme.typography.titleMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     for (palette in Palette.entries) {
                         if (palette == Palette.DYNAMIC && android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) continue
-                        FilterChip(
+                        PixelChip(
                             selected = ui.look.palette == palette.key,
-                            onClick = { onLook(palette.key, ui.look.style) },
+                            onClick = { onLook(palette.key) },
                             label = { Text(stringResource(paletteName(palette))) },
                             leadingIcon = { PaletteDot(palette) },
                         )
-                    }
-                }
-                Text(stringResource(R.string.look_style), style = MaterialTheme.typography.titleMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    for (style in LookStyle.entries) {
-                        FilterChip(selected = ui.look.style == style.key, onClick = { onLook(ui.look.palette, style.key) }, label = { Text(stringResource(styleName(style))) })
                     }
                 }
                 Text(stringResource(R.string.look_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -178,9 +162,9 @@ fun SettingsScreen(
             SectionTitle(stringResource(R.string.settings_watchface))
             SurfaceCard {
                 Text(stringResource(R.string.watchface_body), style = MaterialTheme.typography.bodyMedium)
-                Button(onClick = onWatchFace, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.watchface_install)) }
+                PrimaryButton(onClick = onWatchFace, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.watchface_install)) }
                 val uri = androidx.compose.ui.platform.LocalUriHandler.current
-                OutlinedButton(onClick = { uri.openUri(ConnectIqStore.watchFaceUrl ?: ConnectIqStore.HOME) }, modifier = Modifier.fillMaxWidth()) {
+                SecondaryButton(onClick = { uri.openUri(ConnectIqStore.watchFaceUrl ?: ConnectIqStore.HOME) }, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.watchface_store))
                 }
                 Text(stringResource(R.string.watchface_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -201,12 +185,12 @@ fun SettingsScreen(
                 Text(stringResource(R.string.settings_devices_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 DeviceSwitch(stringResource(R.string.device_garmin), stringResource(R.string.device_garmin_body), ui.sources.garmin) { onSources(it, ui.sources.oura) }
                 if (ui.sources.garmin) {
-                    Button(onClick = onGarmin, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_garmin)) }
-                    Button(onClick = onWatch, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_watch)) }
+                    PrimaryButton(onClick = onGarmin, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_garmin)) }
+                    PrimaryButton(onClick = onWatch, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_watch)) }
                 }
                 DeviceSwitch(stringResource(R.string.device_oura), stringResource(R.string.device_oura_body), ui.sources.oura) { onSources(ui.sources.garmin, it) }
                 if (ui.sources.oura) {
-                    Button(onClick = onOura, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_oura)) }
+                    PrimaryButton(onClick = onOura, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_oura)) }
                 }
             }
         }
@@ -214,9 +198,9 @@ fun SettingsScreen(
             SectionTitle(stringResource(R.string.settings_data))
             SurfaceCard {
                 Text(stringResource(R.string.settings_data_body), style = MaterialTheme.typography.bodyMedium)
-                OutlinedButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_import)) }
-                OutlinedButton(onClick = onDemo, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_demo)) }
-                TextButton(onClick = { confirmClear = true }) {
+                SecondaryButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_import)) }
+                SecondaryButton(onClick = onDemo, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_demo)) }
+                QuietButton(onClick = { confirmClear = true }) {
                     Text(stringResource(R.string.action_clear), color = MaterialTheme.colorScheme.error)
                 }
             }
@@ -225,9 +209,9 @@ fun SettingsScreen(
             SectionTitle(stringResource(R.string.settings_export))
             SurfaceCard {
                 Text(stringResource(R.string.settings_export_body), style = MaterialTheme.typography.bodyMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    OutlinedButton(onClick = onExportDaily) { Text(stringResource(R.string.export_daily)) }
-                    OutlinedButton(onClick = onExportActivities) { Text(stringResource(R.string.export_activities)) }
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    SecondaryButton(onClick = onExportDaily) { Text(stringResource(R.string.export_daily)) }
+                    SecondaryButton(onClick = onExportActivities) { Text(stringResource(R.string.export_activities)) }
                 }
             }
         }
@@ -238,7 +222,7 @@ fun SettingsScreen(
                 val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> if (granted) onNudges(true) }
                 val context = LocalContext.current
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Switch(
+                    PixelSwitch(
                         checked = ui.nudges,
                         onCheckedChange = { on ->
                             val needsAsk = on && Build.VERSION.SDK_INT >= 33 &&
@@ -259,7 +243,7 @@ fun SettingsScreen(
                     Text(stringResource(R.string.settings_lock_unavailable), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Switch(checked = ui.appLock, enabled = ui.lockAvailable || ui.appLock, onCheckedChange = onAppLock)
+                    PixelSwitch(checked = ui.appLock, enabled = ui.lockAvailable || ui.appLock, onCheckedChange = onAppLock, modifier = Modifier.testTag("app-lock-switch"))
                     Spacer(Modifier.width(12.dp))
                     Text(stringResource(R.string.settings_lock_switch), style = MaterialTheme.typography.bodyMedium)
                 }
@@ -273,9 +257,9 @@ fun SettingsScreen(
             SectionTitle(stringResource(R.string.settings_backup))
             SurfaceCard {
                 Text(stringResource(R.string.settings_backup_body), style = MaterialTheme.typography.bodyMedium)
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Button(onClick = onBackup) { Text(stringResource(R.string.action_backup)) }
-                    OutlinedButton(onClick = onRestore) { Text(stringResource(R.string.action_restore)) }
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    PrimaryButton(onClick = onBackup) { Text(stringResource(R.string.action_backup)) }
+                    SecondaryButton(onClick = onRestore) { Text(stringResource(R.string.action_restore)) }
                 }
             }
         }
@@ -306,8 +290,8 @@ fun SettingsScreen(
                 }
                 Text(stringResource(R.string.report_language), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilterChip(selected = ui.ai.language == "en", onClick = { onLanguage("en") }, label = { Text("English") })
-                    FilterChip(selected = ui.ai.language == "nl", onClick = { onLanguage("nl") }, label = { Text("Nederlands") })
+                    PixelChip(selected = ui.ai.language == "en", onClick = { onLanguage("en") }, label = { Text("English") })
+                    PixelChip(selected = ui.ai.language == "nl", onClick = { onLanguage("nl") }, label = { Text("Nederlands") })
                 }
                 Text(stringResource(R.string.privacy_ai), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
@@ -333,8 +317,8 @@ fun SettingsScreen(
             onDismissRequest = { confirmClear = false },
             title = { Text(stringResource(R.string.action_clear)) },
             text = { Text(stringResource(R.string.clear_body)) },
-            confirmButton = { Button(onClick = { confirmClear = false; onClear() }) { Text(stringResource(R.string.delete)) } },
-            dismissButton = { TextButton(onClick = { confirmClear = false }) { Text(stringResource(R.string.cancel)) } },
+            confirmButton = { PrimaryButton(onClick = { confirmClear = false; onClear() }) { Text(stringResource(R.string.delete)) } },
+            dismissButton = { QuietButton(onClick = { confirmClear = false }) { Text(stringResource(R.string.cancel)) } },
         )
     }
 }
@@ -358,7 +342,7 @@ private fun VendorCard(
     SurfaceCard(accent = if (ui.check == AiKeyCheck.OK) MaterialTheme.colorScheme.primary else null) {
         Text(stringResource(R.string.vendor_title, name), style = MaterialTheme.typography.titleMedium)
         Text(stringResource(R.string.vendor_body, name), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        OutlinedButton(onClick = { openLink(context, vendor.keyPage) }, modifier = Modifier.fillMaxWidth()) {
+        SecondaryButton(onClick = { openLink(context, vendor.keyPage) }, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.vendor_open_key_page, name))
         }
         if (!canStoreKeys) {
@@ -374,15 +358,15 @@ private fun VendorCard(
                 modifier = Modifier.fillMaxWidth(),
             )
             // Three buttons do not fit side by side on a narrow phone (and not in Dutch): they wrap onto a second line.
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Button(onClick = { onSaveKey(vendor, keyField); keyField = "" }, enabled = keyField.isNotBlank()) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                PrimaryButton(onClick = { onSaveKey(vendor, keyField); keyField = "" }, enabled = keyField.isNotBlank()) {
                     Text(stringResource(R.string.save_key, name))
                 }
                 if (ui.hasKey) {
-                    OutlinedButton(onClick = { onCheckKey(vendor) }, enabled = ui.check != AiKeyCheck.CHECKING) {
+                    SecondaryButton(onClick = { onCheckKey(vendor) }, enabled = ui.check != AiKeyCheck.CHECKING) {
                         Text(stringResource(R.string.check_key))
                     }
-                    OutlinedButton(onClick = { onForgetKey(vendor) }) { Text(stringResource(R.string.remove_key)) }
+                    SecondaryButton(onClick = { onForgetKey(vendor) }) { Text(stringResource(R.string.remove_key)) }
                 }
             }
             KeyStatus(ui, name)
@@ -397,19 +381,19 @@ private fun VendorCard(
         )
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             items(vendor.suggestedModels) { model ->
-                FilterChip(
+                PixelChip(
                     selected = modelField == model,
                     onClick = { modelField = model; onModel(vendor, model) },
                     label = { Text(model) },
                 )
             }
         }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            OutlinedButton(onClick = { onModel(vendor, modelField) }, enabled = modelField.trim() != ui.model) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            SecondaryButton(onClick = { onModel(vendor, modelField) }, enabled = modelField.trim() != ui.model) {
                 Text(stringResource(R.string.save_model))
             }
             if (ui.model != vendor.defaultModel) {
-                TextButton(onClick = { modelField = vendor.defaultModel; onModel(vendor, "") }) {
+                QuietButton(onClick = { modelField = vendor.defaultModel; onModel(vendor, "") }) {
                     Text(stringResource(R.string.default_model))
                 }
             }
@@ -426,7 +410,7 @@ private fun KeyStatus(ui: AiVendorUi, name: String) {
         !ui.hasKey -> return
         ui.check == AiKeyCheck.CHECKING -> {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                CircularProgressIndicator(Modifier.padding(2.dp), strokeWidth = 2.dp)
+                PixelSpinner(Modifier.padding(2.dp))
                 Text(stringResource(R.string.vendor_key_checking, name), style = MaterialTheme.typography.bodySmall)
             }
             return
@@ -458,13 +442,13 @@ fun openLink(context: Context, url: String) {
 private fun GoalStepper(label: String, value: Int, unit: String, step: Int, onChange: (Int) -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
         Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-        OutlinedButton(onClick = { onChange((value - step).coerceAtLeast(0)) }) { Text("−") }
+        SecondaryButton(onClick = { onChange((value - step).coerceAtLeast(0)) }) { Text("−") }
         Text(
             if (value == 0) stringResource(R.string.goal_off) else if (unit.isEmpty()) "$value" else "$value $unit",
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(horizontal = 10.dp),
         )
-        OutlinedButton(onClick = { onChange(value + step) }) { Text("+") }
+        SecondaryButton(onClick = { onChange(value + step) }) { Text("+") }
     }
 }
 
@@ -533,7 +517,7 @@ private fun SyncLogBody(log: List<SyncLogEntry>, onClear: () -> Unit) {
             color = if (e.ok) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
         )
     }
-    TextButton(onClick = onClear) { Text(stringResource(R.string.synclog_clear)) }
+    QuietButton(onClick = onClear) { Text(stringResource(R.string.synclog_clear)) }
 }
 
 private const val SHOWN_LOG = 15
@@ -551,17 +535,17 @@ private fun HealthConnectBody(
     Text(stringResource(R.string.settings_health_body), style = MaterialTheme.typography.bodyMedium)
     when (health.access) {
         HealthAccess.UNAVAILABLE -> Text(stringResource(R.string.health_unavailable), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        HealthAccess.NEEDS_PERMISSION -> Button(
+        HealthAccess.NEEDS_PERMISSION -> PrimaryButton(
             onClick = { permission.launch(AndroidHealthConnectGateway.PERMISSIONS) },
             modifier = Modifier.fillMaxWidth(),
         ) { Text(stringResource(R.string.health_allow)) }
         HealthAccess.READY -> {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Button(onClick = onExport, enabled = !health.busy) { Text(stringResource(R.string.health_send)) }
-                OutlinedButton(onClick = onImport, enabled = !health.busy) { Text(stringResource(R.string.health_read)) }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                PrimaryButton(onClick = onExport, enabled = !health.busy) { Text(stringResource(R.string.health_send)) }
+                SecondaryButton(onClick = onImport, enabled = !health.busy) { Text(stringResource(R.string.health_read)) }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Switch(checked = health.auto, onCheckedChange = onAuto)
+                PixelSwitch(checked = health.auto, onCheckedChange = onAuto)
                 Spacer(Modifier.width(12.dp))
                 Text(stringResource(R.string.health_auto), style = MaterialTheme.typography.bodyMedium)
             }
@@ -587,69 +571,35 @@ fun DeviceSwitch(title: String, body: String, checked: Boolean, onChange: (Boole
             Text(title, style = MaterialTheme.typography.titleMedium)
             Text(body, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        androidx.compose.material3.Switch(checked = checked, onCheckedChange = onChange, modifier = Modifier.padding(start = 12.dp))
+        PixelSwitch(checked = checked, onCheckedChange = onChange, modifier = Modifier.padding(start = 12.dp))
     }
 }
 
 private fun paletteName(p: Palette): Int = when (p) {
-    Palette.ARCADE -> R.string.palette_arcade
-    Palette.CLEAN -> R.string.palette_clean
-    Palette.MIDNIGHT -> R.string.palette_midnight
+    Palette.HANDHELD -> R.string.palette_handheld
     Palette.GAMEBOY -> R.string.palette_gameboy
     Palette.AMBER -> R.string.palette_amber
     Palette.SYNTHWAVE -> R.string.palette_synthwave
-    Palette.OCEAN -> R.string.palette_ocean
-    Palette.SUNSET -> R.string.palette_sunset
     Palette.DYNAMIC -> R.string.palette_dynamic
 }
 
-private fun styleName(s: LookStyle): Int = when (s) {
-    LookStyle.SPORT -> R.string.style_sport
-    LookStyle.ROUND -> R.string.style_round
-    LookStyle.PIXEL -> R.string.style_pixel
-}
-
-/** A small dot in the theme's main colour, so the chip shows the colour before it is picked. */
+/** A small square in the theme's main colour, so the chip shows the colour before it is picked. */
 @Composable
 private fun PaletteDot(p: Palette) {
     val color = when (p) {
-        Palette.ARCADE -> androidx.compose.ui.graphics.Color(0xFF37F5A5)
-        Palette.CLEAN -> androidx.compose.ui.graphics.Color(0xFF1F5FD1)
-        Palette.MIDNIGHT -> androidx.compose.ui.graphics.Color(0xFF3DDC97)
+        Palette.HANDHELD -> androidx.compose.ui.graphics.Color(0xFFE8501B)
         Palette.GAMEBOY -> androidx.compose.ui.graphics.Color(0xFF9BBC0F)
         Palette.AMBER -> androidx.compose.ui.graphics.Color(0xFFFFB000)
         Palette.SYNTHWAVE -> androidx.compose.ui.graphics.Color(0xFFFF4FB8)
-        Palette.OCEAN -> androidx.compose.ui.graphics.Color(0xFF4FC3F7)
-        Palette.SUNSET -> androidx.compose.ui.graphics.Color(0xFFFF8A5B)
         Palette.DYNAMIC -> MaterialTheme.colorScheme.primary
     }
-    androidx.compose.foundation.layout.Box(
-        Modifier.size(14.dp).background(color, androidx.compose.foundation.shape.CircleShape),
-    )
-}
-
-/** The three designs as chips with a line on what each one is; used in Settings and at the first start. */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun DesignChoice(selected: String, onPick: (String) -> Unit) {
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        for (design in Design.entries) {
-            FilterChip(selected = selected == design.key, onClick = { onPick(design.key) }, label = { Text(stringResource(designName(design))) })
-        }
-    }
-    Text(stringResource(designBody(Design.of(selected))), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    ColorDot(color, Modifier.size(14.dp))
 }
 
 fun designName(d: Design): Int = when (d) {
     Design.CLEAN -> R.string.design_clean
     Design.DASHBOARD -> R.string.design_dashboard
     Design.RETRO -> R.string.design_retro
-}
-
-private fun designBody(d: Design): Int = when (d) {
-    Design.CLEAN -> R.string.design_clean_body
-    Design.DASHBOARD -> R.string.design_dashboard_body
-    Design.RETRO -> R.string.design_retro_body
 }
 
 /** A round preview of the watch face with the choices that decide how it is built. */
@@ -660,9 +610,9 @@ private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, o
     SurfaceCard {
         androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { WatchFacePreview(config, data) }
         Text(stringResource(R.string.wf_design), style = MaterialTheme.typography.titleMedium)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             for (design in Design.entries) {
-                FilterChip(
+                PixelChip(
                     selected = config.design == design.key,
                     onClick = { onChange(config.copy(design = design.key)) },
                     label = { Text(stringResource(wfDesignName(design))) },
@@ -670,22 +620,22 @@ private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, o
             }
         }
         Text(stringResource(R.string.wf_colour), style = MaterialTheme.typography.titleMedium)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             for (color in WatchColor.entries) {
-                FilterChip(
+                PixelChip(
                     selected = config.color == color.key,
                     onClick = { onChange(config.copy(color = color.key)) },
                     label = { Text(stringResource(color.label)) },
-                    leadingIcon = { androidx.compose.foundation.layout.Box(Modifier.size(14.dp).background(color.color, androidx.compose.foundation.shape.CircleShape)) },
+                    leadingIcon = { ColorDot(color.color, Modifier.size(14.dp)) },
                 )
             }
         }
         Text(stringResource(R.string.wf_fields), style = MaterialTheme.typography.titleMedium)
         val chosen = config.fieldValues
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             for (field in WatchField.entries) {
                 val place = chosen.indexOf(field)
-                FilterChip(
+                PixelChip(
                     selected = place >= 0,
                     onClick = {
                         // A chosen field becomes the big one; another one replaces the last.
@@ -697,9 +647,9 @@ private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, o
             }
         }
         Text(stringResource(R.string.wf_device), style = MaterialTheme.typography.titleMedium)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             for (device in WatchDevice.entries) {
-                FilterChip(selected = config.device == device.id, onClick = { onChange(config.copy(device = device.id)) }, label = { Text(device.label) })
+                PixelChip(selected = config.device == device.id, onClick = { onChange(config.copy(device = device.id)) }, label = { Text(device.label) })
             }
         }
         Text(stringResource(R.string.wf_fields_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -709,13 +659,13 @@ private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, o
         Text(stringResource(R.string.wf_file, config.fileName()), style = MaterialTheme.typography.bodySmall)
         Text(config.buildCommand(), style = MaterialTheme.typography.bodySmall.copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace))
         val clipboard = androidx.compose.ui.platform.LocalClipboardManager.current
-        OutlinedButton(onClick = { clipboard.setText(androidx.compose.ui.text.AnnotatedString(config.buildCommand())) }, modifier = Modifier.fillMaxWidth()) {
+        SecondaryButton(onClick = { clipboard.setText(androidx.compose.ui.text.AnnotatedString(config.buildCommand())) }, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.wf_build_copy))
         }
         // The widget and its glance (the glance list on the watch) in the same colour and fields.
         Text(stringResource(R.string.wf_widget_title), style = MaterialTheme.typography.titleMedium)
         Text(stringResource(R.string.wf_widget_note, config.widgetFileName()), style = MaterialTheme.typography.bodySmall)
-        OutlinedButton(onClick = { clipboard.setText(androidx.compose.ui.text.AnnotatedString(config.widgetCommand())) }, modifier = Modifier.fillMaxWidth()) {
+        SecondaryButton(onClick = { clipboard.setText(androidx.compose.ui.text.AnnotatedString(config.widgetCommand())) }, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.wf_widget_copy))
         }
         // A direct link to the apps in Garmin's Connect IQ store, once they are published (ConnectIqStore holds the ids).
@@ -726,7 +676,7 @@ private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, o
         } else {
             val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
             for (link in storeLinks) {
-                OutlinedButton(onClick = { uriHandler.openUri(link.url) }, modifier = Modifier.fillMaxWidth()) {
+                SecondaryButton(onClick = { uriHandler.openUri(link.url) }, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(if (link.app == StoreApp.WATCHFACE) R.string.wf_store_face else R.string.wf_store_widget))
                 }
             }

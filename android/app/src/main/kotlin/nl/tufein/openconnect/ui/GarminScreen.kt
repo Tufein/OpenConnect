@@ -14,17 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -75,8 +66,8 @@ fun GarminScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+            PixelIconButton(onClick = onBack) {
+                PixelIcon(PixelIcons.ArrowLeft, contentDescription = stringResource(R.string.back))
             }
             Text(stringResource(R.string.garmin_title), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
         }
@@ -87,7 +78,7 @@ fun GarminScreen(
             SectionTitle(stringResource(R.string.garmin_key_title))
             SurfaceCard {
                 Text(stringResource(R.string.garmin_key_body), style = MaterialTheme.typography.bodyMedium)
-                OutlinedButton(onClick = { openKeyPage(context) }, modifier = Modifier.fillMaxWidth()) {
+                SecondaryButton(onClick = { openKeyPage(context) }, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.garmin_open_key_page))
                 }
                 if (!ui.canStoreKey) {
@@ -103,11 +94,11 @@ fun GarminScreen(
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(onClick = { onSaveKey(keyField); keyField = "" }, enabled = keyField.isNotBlank()) {
+                        PrimaryButton(onClick = { onSaveKey(keyField); keyField = "" }, enabled = keyField.isNotBlank()) {
                             Text(stringResource(R.string.save))
                         }
                         if (ui.hasKey) {
-                            OutlinedButton(onClick = onForgetKey) { Text(stringResource(R.string.remove_key)) }
+                            SecondaryButton(onClick = onForgetKey) { Text(stringResource(R.string.remove_key)) }
                         }
                     }
                     KeyStatus(ui)
@@ -120,7 +111,7 @@ fun GarminScreen(
                 Text(stringResource(R.string.garmin_sync_body), style = MaterialTheme.typography.bodyMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     for (days in GarminController.DAY_CHOICES) {
-                        FilterChip(
+                        PixelChip(
                             selected = ui.days == days,
                             onClick = { onDays(days) },
                             label = { Text(stringResource(R.string.garmin_days_n, days)) },
@@ -129,7 +120,7 @@ fun GarminScreen(
                 }
                 val running = ui.sync as? GarminSyncUi.Running
                 if (running == null) {
-                    Button(onClick = onSync, enabled = ui.hasKey, modifier = Modifier.fillMaxWidth()) {
+                    PrimaryButton(onClick = onSync, enabled = ui.hasKey, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(R.string.garmin_sync_button))
                     }
                 } else {
@@ -155,7 +146,7 @@ fun GarminScreen(
         }
         item {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Switch(checked = ui.autoSync, onCheckedChange = onAutoSync, enabled = ui.hasKey)
+                PixelSwitch(checked = ui.autoSync, onCheckedChange = onAutoSync, enabled = ui.hasKey)
                 Text(stringResource(R.string.garmin_auto), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
             }
         }
@@ -197,8 +188,8 @@ private fun Running(running: GarminSyncUi.Running, onCancel: () -> Unit) {
             stringResource(R.string.garmin_sync_running, partName(running.label))
         }
         Text(label, style = MaterialTheme.typography.bodyMedium)
-        LinearProgressIndicator(progress = { (running.done / running.total.coerceAtLeast(1).toFloat()).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
-        OutlinedButton(onClick = onCancel, enabled = !running.cancelling, modifier = Modifier.fillMaxWidth()) {
+        PixelProgress(progress = { (running.done / running.total.coerceAtLeast(1).toFloat()).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
+        SecondaryButton(onClick = onCancel, enabled = !running.cancelling, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.garmin_sync_cancel))
         }
     }
@@ -236,7 +227,7 @@ private fun Result(report: GarminSyncReport) {
         }
         for (endpoint in report.endpoints) EndpointLine(endpoint)
         if (report.hasProblems) {
-            OutlinedButton(
+            SecondaryButton(
                 onClick = { copyToClipboard(context, report.diagnostics()); copied = true },
                 modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
             ) { Text(stringResource(R.string.garmin_copy_details)) }

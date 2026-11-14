@@ -1,30 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The same mark in one colour, for the themed icons of Android 13 and later. -->
+<!-- The heart without its pulse, in one colour, for the themed icons of Android 13 and later. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <group
-        android:pivotX="54"
-        android:pivotY="54"
-        android:scaleX="1.2"
-        android:scaleY="1.2">
-        <path
-            android:pathData="M70.97,37.03 A24,24 0 1 1 58.17,30.36"
-            android:strokeWidth="6"
-            android:strokeColor="#FF000000"
-            android:strokeLineCap="round"
-            android:fillColor="#00000000" />
-        <path
-            android:pathData="M37,56 L45,56 L49,46 L55,66 L60,50 L63,56 L71,56"
-            android:strokeWidth="4"
-            android:strokeColor="#FF000000"
-            android:strokeLineCap="round"
-            android:strokeLineJoin="round"
-            android:fillColor="#00000000" />
-        <path
-            android:pathData="M65.08,32.71 m-5,0 a5,5 0 1 1 10,0 a5,5 0 1 1 -10,0"
-            android:fillColor="#FF000000" />
-    </group>
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M34,30h16v4h-16z M58,30h16v4h-16z M30,34h4v4h-4z M50,34h8v4h-8z M74,34h4v4h-4z M26,38h4v4h-4z M78,38h4v4h-4z M26,42h4v4h-4z M78,42h4v4h-4z M26,46h4v4h-4z M78,46h4v4h-4z M26,50h4v4h-4z M78,50h4v4h-4z M30,54h4v4h-4z M74,54h4v4h-4z M34,58h4v4h-4z M70,58h4v4h-4z M38,62h4v4h-4z M66,62h4v4h-4z M42,66h4v4h-4z M62,66h4v4h-4z M46,70h4v4h-4z M58,70h4v4h-4z M50,74h8v4h-8z M34,34h16v4h-16z M58,34h16v4h-16z M30,38h8v4h-8z M42,38h36v4h-36z M30,42h4v4h-4z M38,42h12v4h-12z M54,42h24v4h-24z M30,46h16v4h-16z M50,46h4v4h-4z M58,46h20v4h-20z M30,50h12v4h-12z M46,50h8v4h-8z M58,50h20v4h-20z M42,54h16v4h-16z M62,54h8v4h-8z M38,58h20v4h-20z M62,58h4v4h-4z M42,62h20v4h-20z M46,66h16v4h-16z M50,70h8v4h-8z M38,38h4v4h-4z M34,42h4v4h-4z" />
 </vector>

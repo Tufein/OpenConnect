@@ -7,10 +7,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -114,15 +111,15 @@ private fun ShoeCard(u: ShoeUsage, onAction: (GearAction) -> Unit) {
         u.shoe.until?.let { until ->
             Text(stringResource(R.string.gear_retired_on, Fmt.date(until)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = { onAction(GearAction.MoveLimit(u.shoe.id, -Gear.LIMIT_STEP_KM)) }) { Text(stringResource(R.string.gear_limit_minus)) }
-            OutlinedButton(onClick = { onAction(GearAction.MoveLimit(u.shoe.id, Gear.LIMIT_STEP_KM)) }) { Text(stringResource(R.string.gear_limit_plus)) }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            SecondaryButton(onClick = { onAction(GearAction.MoveLimit(u.shoe.id, -Gear.LIMIT_STEP_KM)) }) { Text(stringResource(R.string.gear_limit_minus)) }
+            SecondaryButton(onClick = { onAction(GearAction.MoveLimit(u.shoe.id, Gear.LIMIT_STEP_KM)) }) { Text(stringResource(R.string.gear_limit_plus)) }
             if (u.shoe.until == null) {
-                OutlinedButton(onClick = { onAction(GearAction.Retire(u.shoe.id)) }) { Text(stringResource(R.string.gear_retire)) }
+                SecondaryButton(onClick = { onAction(GearAction.Retire(u.shoe.id)) }) { Text(stringResource(R.string.gear_retire)) }
             } else {
-                OutlinedButton(onClick = { onAction(GearAction.Resume(u.shoe.id)) }) { Text(stringResource(R.string.gear_resume)) }
+                SecondaryButton(onClick = { onAction(GearAction.Resume(u.shoe.id)) }) { Text(stringResource(R.string.gear_resume)) }
             }
-            OutlinedButton(onClick = { onAction(GearAction.Remove(u.shoe.id)) }) { Text(stringResource(R.string.gear_remove)) }
+            SecondaryButton(onClick = { onAction(GearAction.Remove(u.shoe.id)) }) { Text(stringResource(R.string.gear_remove)) }
         }
     }
 }
@@ -142,13 +139,13 @@ private fun AddShoesCard(onAction: (GearAction) -> Unit) {
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             for (s in Gear.SPORTS) {
-                FilterChip(selected = sport == s.key, onClick = { sport = s.key }, label = { Text(stringResource(sportLabel(s))) })
+                PixelChip(selected = sport == s.key, onClick = { sport = s.key }, label = { Text(stringResource(sportLabel(s))) })
             }
         }
-        FilterChip(selected = earlier, onClick = { earlier = !earlier }, label = { Text(stringResource(R.string.gear_earlier)) })
-        Button(
+        PixelChip(selected = earlier, onClick = { earlier = !earlier }, label = { Text(stringResource(R.string.gear_earlier)) })
+        PrimaryButton(
             enabled = Gear.cleanName(name).isNotEmpty(),
             onClick = {
                 onAction(GearAction.Add(name, Sport.fromKey(sport), earlier))
@@ -171,14 +168,14 @@ fun ActivityShoesCard(state: DetailState, onAssign: (String?) -> Unit) {
             if (shoe == null) stringResource(R.string.gear_on_none) else stringResource(R.string.gear_on, shoe.name),
             style = MaterialTheme.typography.bodyMedium,
         )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             for (c in state.shoeChoices) {
-                FilterChip(selected = shoe?.id == c.id, onClick = { onAssign(c.id) }, label = { Text(c.name) })
+                PixelChip(selected = shoe?.id == c.id, onClick = { onAssign(c.id) }, label = { Text(c.name) })
             }
-            FilterChip(selected = shoe == null, onClick = { onAssign(Gear.NONE) }, label = { Text(stringResource(R.string.gear_none_chip)) })
+            PixelChip(selected = shoe == null, onClick = { onAssign(Gear.NONE) }, label = { Text(stringResource(R.string.gear_none_chip)) })
         }
         if (state.shoeByHand) {
-            OutlinedButton(onClick = { onAssign(null) }) { Text(stringResource(R.string.gear_automatic)) }
+            SecondaryButton(onClick = { onAssign(null) }) { Text(stringResource(R.string.gear_automatic)) }
         }
         Text(
             stringResource(R.string.gear_activity_note, stringResource(sportLabel(activity.sport))),

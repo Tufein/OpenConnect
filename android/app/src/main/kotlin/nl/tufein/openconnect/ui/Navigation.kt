@@ -1,17 +1,17 @@
 package nl.tufein.openconnect.ui
 
 import android.net.Uri
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -20,15 +20,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -41,29 +47,68 @@ import nl.tufein.openconnect.BuildConfig
 import nl.tufein.openconnect.R
 
 /** [compact] is the label when six tabs share the bar (with the Oura tab), so long Dutch words still fit. */
-private enum class Tab(val route: String, val label: Int, val icon: ImageVector, val compact: Int = label) {
-    Home("home", R.string.tab_home, Icons.Filled.Home),
-    Activities("activities", R.string.tab_activities, Icons.Filled.LocationOn, R.string.tab_activities_compact),
-    Health("health", R.string.tab_health, Icons.Filled.Favorite, R.string.tab_health_compact),
-    Insights("insights", R.string.tab_insights, Icons.Filled.Star),
+private enum class Tab(val route: String, val label: Int, val icon: PixelArt, val compact: Int = label) {
+    Home("home", R.string.tab_home, PixelIcons.Home),
+    Activities("activities", R.string.tab_activities, PixelIcons.Stopwatch, R.string.tab_activities_compact),
+    Health("health", R.string.tab_health, PixelIcons.Heart, R.string.tab_health_compact),
+    Insights("insights", R.string.tab_insights, PixelIcons.Star),
     /** Only for someone who chose the Oura Ring. */
-    Oura(OURA_ROUTE, R.string.tab_oura, RingIcon),
-    Settings("settings", R.string.tab_settings, Icons.Filled.Settings, R.string.tab_settings_compact),
+    Oura(OURA_ROUTE, R.string.tab_oura, PixelIcons.Ring),
+    Settings("settings", R.string.tab_settings, PixelIcons.Sliders, R.string.tab_settings_compact),
 }
 
 private const val DETAIL = "activity/{id}"
 
-/** A plain ring for the Oura tab; the standard icon set has none. */
-private val RingIcon: ImageVector = ImageVector.Builder("Ring", 24.dp, 24.dp, 24f, 24f).apply {
-    path(fill = androidx.compose.ui.graphics.SolidColor(androidx.compose.ui.graphics.Color.Black), pathFillType = androidx.compose.ui.graphics.PathFillType.EvenOdd) {
-        moveTo(12f, 3f)
-        arcTo(9f, 9f, 0f, isMoreThanHalf = true, isPositiveArc = true, x1 = 11.99f, y1 = 3f)
-        close()
-        moveTo(12f, 7f)
-        arcTo(5f, 5f, 0f, isMoreThanHalf = true, isPositiveArc = false, x1 = 12.01f, y1 = 7f)
-        close()
+/**
+ * The tab bar: a flat strip under a 2 dp ink line. The open tab is a block filled with ink and its icon and word in the
+ * background colour, like the highlighted entry in the menu of a game; the other tabs are plain.
+ */
+@Composable
+private fun HandheldBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    val ink = inkColor()
+    val shape = MaterialTheme.shapes.small
+    // One label size for the whole bar: it starts at 17sp and steps down until the longest word fits its tab, so no
+    // language, phone width or font scale ever cuts a label off (and the labels never differ in size).
+    val labels = tabs.map { stringResource(if (tabs.size > 5) it.compact else it.label) }
+    var labelSize by remember(labels) { mutableFloatStateOf(17f) }
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .background(colors.surface)
+            .drawBehind { drawLine(ink, Offset(0f, 1.dp.toPx()), Offset(size.width, 1.dp.toPx()), strokeWidth = 2.dp.toPx()) }
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(horizontal = 4.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        for ((index, tab) in tabs.withIndex()) {
+            val selected = route == tab.route
+            val content = if (selected) colors.background else colors.onSurfaceVariant
+            Column(
+                Modifier
+                    .weight(1f)
+                    .clip(shape)
+                    .background(if (selected) colors.onBackground else Color.Transparent, shape)
+                    .selectable(selected = selected, role = Role.Tab, onClick = { onOpen(tab) })
+                    .padding(horizontal = 1.dp, vertical = 6.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                PixelIcon(tab.icon, size = 24.dp, tint = content)
+                Text(
+                    labels[index],
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    softWrap = false,
+                    color = content,
+                    style = MaterialTheme.typography.titleMedium.copy(fontSize = labelSize.sp, lineHeight = 18.sp),
+                    onTextLayout = { if (it.didOverflowWidth && labelSize > 10f) labelSize -= 0.5f },
+                )
+            }
+        }
     }
-}.build()
+}
 
 @Composable
 fun OpenConnectRoot(
@@ -82,8 +127,7 @@ fun OpenConnectRoot(
 ) {
     val sources by vm.sources.collectAsState()
     if (!sources.onboarded) {
-        val firstLook by vm.look.collectAsState()
-        OnboardingScreen(sources, vm::setSources, firstLook.design, vm::setDesign)
+        OnboardingScreen(sources, vm::setSources)
         return
     }
     val nav = rememberNavController()
@@ -166,39 +210,7 @@ fun OpenConnectRoot(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbar) },
-        bottomBar = {
-            if (showBar) {
-                // Each design marks the open tab its own way: a pill (Clean), only the colour (Dashboard) or the arcade block (Retro).
-                val design = LocalDesign.current
-                NavigationBar(containerColor = if (design == Design.DASHBOARD) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.surfaceContainer) {
-                    for (tab in tabs) {
-                        NavigationBarItem(
-                            selected = route == tab.route,
-                            onClick = { openTab(tab) },
-                            icon = { Icon(tab.icon, contentDescription = null) },
-                            // Plain font and a little smaller than the monospace headings: "Activiteiten" and "Instellingen"
-                            // must fit a fifth of a narrow phone without being cut off.
-                            label = {
-                                Text(
-                                    stringResource(if (tabs.size > 5) tab.compact else tab.label),
-                                    maxLines = 1,
-                                    softWrap = false,
-                                    style = MaterialTheme.typography.labelSmall.copy(fontFamily = FontFamily.Default, fontSize = 11.sp),
-                                )
-                            },
-                            colors = if (design == Design.DASHBOARD) NavigationBarItemDefaults.colors(
-                                selectedIconColor = MaterialTheme.colorScheme.primary,
-                                selectedTextColor = MaterialTheme.colorScheme.primary,
-                                indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
-                            ) else NavigationBarItemDefaults.colors(
-                                selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                            ),
-                        )
-                    }
-                }
-            }
-        },
+        bottomBar = { if (showBar) HandheldBar(tabs, route, ::openTab) },
     ) { padding ->
         NavHost(nav, startDestination = Tab.Home.route) {
             composable(Tab.Home.route) {
@@ -262,7 +274,6 @@ fun OpenConnectRoot(
                 SettingsScreen(
                     ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources, look = look, watchFace = watchFace, watchData = watchFaceData(home, now)),
                     onLook = vm::setLook,
-                    onDesign = vm::setDesign,
                     onWatchFaceLook = vm::setWatchFace,
                     onWatchFace = onWatchFace,
                     onSources = vm::setSources,

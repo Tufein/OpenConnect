@@ -3,6 +3,10 @@ package nl.tufein.openconnect.ui
 import nl.tufein.openconnect.core.ChartMetric
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
@@ -15,12 +19,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -76,7 +76,6 @@ fun HomeScreen(
 ) {
     val badge = syncBadge(garmin).takeIf { useGarmin }
     val metrics = OpenConnectColors.metrics
-    val design = LocalDesign.current
     // Pulling down syncs the Garmin account, like in Garmin Connect; without one there is nothing to fetch.
     PullToRefreshBox(
         isRefreshing = useGarmin && garmin.sync is GarminSyncUi.Running,
@@ -139,7 +138,7 @@ fun HomeScreen(
             }
 
             val last7 = overview.trend.takeLast(7)
-            // The four signals as tiles: today's value and a line of the last seven days. Each design places them differently.
+            // The four signals as tiles: today's value and a line of the last seven days.
             val signals = listOf<@Composable (Modifier) -> Unit>(
                 { MetricTile(stringResource(R.string.resting_hr), today?.restingHr?.takeIf { it > 0 }?.toString() ?: "–", metrics.heart, it, "bpm", last7.map { r -> r.restingHr?.toDouble() }, onClick = { onOpenHealth(ChartMetric.RESTING_HR) }) },
                 { MetricTile(stringResource(R.string.body_battery), today?.bodyBatteryHigh?.toString() ?: "–", metrics.battery, it, series = last7.map { r -> r.bodyBatteryHigh?.toDouble() }, onClick = { onOpenHealth(ChartMetric.BODY_BATTERY) }) },
@@ -151,30 +150,11 @@ fun HomeScreen(
                 item { TileRow(signals[2], signals[3]) }
             }
 
-            when (design) {
-                // Clean Pro: the readiness ring as the hero, then "My day" as one calm list.
-                Design.CLEAN -> {
-                    readiness()
-                    item { SectionTitle(stringResource(R.string.home_my_day)) }
-                    stepsCard()
-                    signals.forEach { tile -> item { tile(Modifier.fillMaxWidth()) } }
-                    goalsAndLoad()
-                }
-                // Dashboard Dark: the four signal tiles first, everything at a glance.
-                Design.DASHBOARD -> {
-                    signalGrid()
-                    stepsCard()
-                    readiness()
-                    goalsAndLoad()
-                }
-                // Retro Pro: the order of earlier versions.
-                Design.RETRO -> {
-                    readiness()
-                    goalsAndLoad()
-                    stepsCard()
-                    signalGrid()
-                }
-            }
+            // One order: how ready you are, today's four signals, the day so far, then the week.
+            readiness()
+            signalGrid()
+            stepsCard()
+            goalsAndLoad()
 
             item {
                 val week = overview.last7
@@ -218,13 +198,13 @@ fun HomeScreen(
             item {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     if (useGarmin) {
-                        OutlinedButton(onClick = onGarmin, Modifier.weight(1f)) { Text(stringResource(R.string.action_garmin_short), maxLines = 1) }
-                        OutlinedButton(onClick = onWatch, Modifier.weight(1f)) { Text(stringResource(R.string.action_watch_short), maxLines = 1) }
+                        SecondaryButton(onClick = onGarmin, Modifier.weight(1f)) { Text(stringResource(R.string.action_garmin_short), maxLines = 1) }
+                        SecondaryButton(onClick = onWatch, Modifier.weight(1f)) { Text(stringResource(R.string.action_watch_short), maxLines = 1) }
                     }
                     if (onOura != null) {
-                        OutlinedButton(onClick = onOura, Modifier.weight(1f)) { Text(stringResource(R.string.tab_oura), maxLines = 1) }
+                        SecondaryButton(onClick = onOura, Modifier.weight(1f)) { Text(stringResource(R.string.tab_oura), maxLines = 1) }
                     }
-                    OutlinedButton(onClick = onCoach, Modifier.weight(1f)) { Text(stringResource(R.string.action_coach_short), maxLines = 1) }
+                    SecondaryButton(onClick = onCoach, Modifier.weight(1f)) { Text(stringResource(R.string.action_coach_short), maxLines = 1) }
                 }
             }
             item { SectionTitle(stringResource(R.string.recent_activities)) }
@@ -251,9 +231,9 @@ private fun Header(
     }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            LogoMark(size = 44.dp)
+            LogoMark(size = 52.dp)
             Column(Modifier.weight(1f)) {
-                Text(stringResource(greeting), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(greeting), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium)
             }
             if (level != null) LevelChip(level, onLevel)
@@ -262,26 +242,30 @@ private fun Header(
     }
 }
 
-/** "LV 4" like the level of a game character; it opens the trophies. */
+/** "LV 4" like the level of a game character, with its experience points; it opens the trophies. */
 @Composable
 private fun LevelChip(level: PlayerLevel, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+    val colors = MaterialTheme.colorScheme
+    val shape = MaterialTheme.shapes.small
+    Column(
+        Modifier
+            .hardShadow(shadowColor(), shape)
+            .background(colors.secondary, shape)
+            .border(2.dp, inkColor(), shape)
+            .clip(shape)
+            .clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Column(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(stringResource(R.string.level_short, level.level), style = MaterialTheme.typography.titleMedium)
-            Text(stringResource(R.string.xp_short, level.xp), style = MaterialTheme.typography.labelMedium)
-        }
+        Text(stringResource(R.string.level_short, level.level), style = MaterialTheme.typography.titleLarge, color = colors.onSecondary)
+        Text(stringResource(R.string.xp_short, level.xp), style = MaterialTheme.typography.labelSmall, color = colors.onSecondary)
     }
 }
 
 @Composable
 private fun Fact(label: String, value: String, color: Color) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.padding(end = 8.dp).size(8.dp).background(color, RoundedCornerShape(50)))
+        ColorDot(color, Modifier.padding(end = 8.dp))
         Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f), maxLines = 1)
         Text(value, style = MaterialTheme.typography.labelLarge)
     }
@@ -298,11 +282,11 @@ private fun ConnectCard(hasGarmin: Boolean, onWatch: () -> Unit, onGarmin: () ->
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (hasGarmin) {
-                OutlinedButton(onClick = onGarmin) { Text(stringResource(R.string.action_garmin)) }
-                Button(onClick = onWatch) { Text(stringResource(R.string.action_watch)) }
+                SecondaryButton(onClick = onGarmin) { Text(stringResource(R.string.action_garmin)) }
+                PrimaryButton(onClick = onWatch) { Text(stringResource(R.string.action_watch)) }
             } else {
-                Button(onClick = onGarmin) { Text(stringResource(R.string.action_garmin)) }
-                OutlinedButton(onClick = onWatch) { Text(stringResource(R.string.action_watch)) }
+                PrimaryButton(onClick = onGarmin) { Text(stringResource(R.string.action_garmin)) }
+                SecondaryButton(onClick = onWatch) { Text(stringResource(R.string.action_watch)) }
             }
         }
     }
@@ -325,33 +309,32 @@ private fun ReadinessCard(readiness: Readiness?) {
         ReadinessLevel.GOOD, ReadinessLevel.EXCELLENT -> metric
     }
     SurfaceCard(accent = levelColor) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(18.dp)) {
-            RingGauge(
-                progress = readiness.score / 100f,
-                color = levelColor,
-                description = stringResource(R.string.readiness_description, readiness.score),
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(readiness.score.toString(), style = MaterialTheme.typography.displayMedium.copy(fontSize = 36.sp), textAlign = TextAlign.Center)
-                    Text("/100", style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
-                }
-            }
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        // The score is the "health bar" of the day: a big pixel number over a bar of 25 blocks.
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(readiness.score.toString(), style = MaterialTheme.typography.displayLarge, color = levelColor)
+            Text("/100", style = MaterialTheme.typography.labelLarge, color = colors.onSurfaceVariant, modifier = Modifier.padding(start = 6.dp, bottom = 12.dp))
+            Column(Modifier.weight(1f), horizontalAlignment = Alignment.End) {
                 Text(stringResource(R.string.readiness_title), style = MaterialTheme.typography.titleMedium)
                 Text(stringResource(readinessLabel(readiness.level)), style = MaterialTheme.typography.titleLarge, color = levelColor)
-                Text(
-                    stringResource(R.string.readiness_best, stringResource(readinessPartLabel(readiness.strongest.part))),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurfaceVariant,
-                )
-                if (readiness.components.size > 2) {
-                    Text(
-                        stringResource(R.string.readiness_worst, stringResource(readinessPartLabel(readiness.weakest.part))),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = colors.onSurfaceVariant,
-                    )
-                }
             }
+        }
+        val description = stringResource(R.string.readiness_description, readiness.score)
+        SegmentBar(
+            readiness.score / 100f, levelColor,
+            Modifier.fillMaxWidth().height(18.dp).semantics { contentDescription = description },
+            segments = 25,
+        )
+        Text(
+            stringResource(R.string.readiness_best, stringResource(readinessPartLabel(readiness.strongest.part))),
+            style = MaterialTheme.typography.bodySmall,
+            color = colors.onSurfaceVariant,
+        )
+        if (readiness.components.size > 2) {
+            Text(
+                stringResource(R.string.readiness_worst, stringResource(readinessPartLabel(readiness.weakest.part))),
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onSurfaceVariant,
+            )
         }
         Text(stringResource(R.string.readiness_note), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
     }
@@ -432,7 +415,7 @@ private fun GoalsCard(progress: WeeklyGoalProgress, goals: WeeklyGoals) {
                     color = if (goal.reached) color else MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            SegmentBar(goal.fraction.toFloat(), color, Modifier.fillMaxWidth().height(8.dp))
+            SegmentBar(goal.fraction.toFloat(), color, Modifier.fillMaxWidth().height(10.dp))
         }
         val active = rows.size
         Text(

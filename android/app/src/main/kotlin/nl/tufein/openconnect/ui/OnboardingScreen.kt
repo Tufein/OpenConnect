@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -28,7 +27,7 @@ import nl.tufein.openconnect.R
  * Garmin or without an Oura Ring is never bothered by it. It can be changed later under Settings, "Your devices".
  */
 @Composable
-fun OnboardingScreen(initial: SourcesUi, onDone: (garmin: Boolean, oura: Boolean) -> Unit, design: String = "retro", onDesign: (String) -> Unit = {}) {
+fun OnboardingScreen(initial: SourcesUi, onDone: (garmin: Boolean, oura: Boolean) -> Unit) {
     var garmin by rememberSaveable { mutableStateOf(initial.garmin) }
     var oura by rememberSaveable { mutableStateOf(initial.oura) }
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -44,14 +43,12 @@ fun OnboardingScreen(initial: SourcesUi, onDone: (garmin: Boolean, oura: Boolean
                 DeviceSwitch(stringResource(R.string.device_garmin), stringResource(R.string.device_garmin_body), garmin) { garmin = it }
                 DeviceSwitch(stringResource(R.string.device_oura), stringResource(R.string.device_oura_body), oura) { oura = it }
             }
-            SectionTitle(stringResource(R.string.onboarding_design))
-            SurfaceCard { DesignChoice(design, onDesign) }
             Text(
                 stringResource(if (!garmin && !oura) R.string.onboarding_none else R.string.onboarding_later),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Button(onClick = { onDone(garmin, oura) }, modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
+            PrimaryButton(onClick = { onDone(garmin, oura) }, modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
                 Text(stringResource(R.string.onboarding_start))
             }
         }

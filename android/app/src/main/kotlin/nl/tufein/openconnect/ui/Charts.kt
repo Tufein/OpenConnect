@@ -25,11 +25,8 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.semantics.contentDescription
@@ -58,10 +55,12 @@ fun <T> downsample(values: List<T>, max: Int = 300): List<T> {
     return List(max) { values[(it * step).toInt()] }
 }
 
+/** Faint dotted lines behind a chart, like the grid of graph paper. */
 private fun DrawScope.grid(color: Color, lines: Int = 3) {
+    val dash = PathEffect.dashPathEffect(floatArrayOf(2.dp.toPx(), 4.dp.toPx()))
     for (i in 0..lines) {
         val y = size.height * i / lines
-        drawLine(color, Offset(0f, y), Offset(size.width, y), strokeWidth = 1f)
+        drawLine(color, Offset(0f, y), Offset(size.width, y), strokeWidth = 1.dp.toPx(), pathEffect = dash)
     }
 }
 
@@ -122,7 +121,6 @@ fun LineChart(
     val cursor = MaterialTheme.colorScheme.onSurface
     val density = androidx.compose.ui.platform.LocalDensity.current
     val inset = with(density) { 4.dp.toPx() }
-    val design = LocalDesign.current
     val reveal = rememberReveal(values)
     Inspectable(values, labels, format, modifier, indexAt = { x, w ->
         if (values.size < 2) 0 else Math.round((x - inset) / (w - 2 * inset) * (values.size - 1))
@@ -152,31 +150,27 @@ fun LineChart(
         }
         // The line draws itself from left to right when the chart appears.
         clipRect(right = size.width * reveal) {
-            when (design) {
-                // Clean: a soft area under a calm line.
-                Design.CLEAN -> {
-                    values.withIndex().filter { it.value != null }.let { pts ->
-                        if (pts.size >= 2) {
-                            val area = Path().apply {
-                                moveTo(x(pts.first().index), size.height)
-                                pts.forEach { (i, v) -> lineTo(x(i), y(v!!)) }
-                                lineTo(x(pts.last().index), size.height)
-                                close()
-                            }
-                            drawPath(area, Brush.verticalGradient(listOf(color.copy(alpha = 0.30f), color.copy(alpha = 0f))))
-                        }
-                    }
+            // Under the line a scan-line fill: thin vertical bars, like the shading of an old LCD, instead of a smooth gradient.
+            val columnWidth = 2.dp.toPx()
+            val pitch = 4.dp.toPx()
+            for (i in 0 until values.size - 1) {
+                val v0 = values[i] ?: continue
+                val v1 = values[i + 1] ?: continue
+                val x0 = x(i)
+                val x1 = x(i + 1)
+                var cx = x0
+                while (cx < x1) {
+                    val t = (cx - x0) / (x1 - x0)
+                    val top = y(v0) + (y(v1) - y(v0)) * t
+                    drawRect(color.copy(alpha = 0.22f), Offset(cx, top), Size(columnWidth, size.height - top))
+                    cx += pitch
                 }
-                // Retro: a wide, faint copy under the line makes it glow like a neon tube.
-                Design.RETRO -> drawPath(path, color.copy(alpha = 0.25f), style = Stroke(width = 8.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
-                Design.DASHBOARD -> Unit
             }
-            val width = if (design == Design.RETRO) 2.dp else 3.dp
-            drawPath(path, color, style = Stroke(width = width.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+            drawPath(path, color, style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Square, join = StrokeJoin.Miter))
         }
         if (selected != null) {
             drawLine(cursor.copy(alpha = 0.5f), Offset(x(selected), 0f), Offset(x(selected), size.height), strokeWidth = 1.dp.toPx())
-            values.getOrNull(selected)?.let { drawCircle(color, 5.dp.toPx(), Offset(x(selected), y(it))) }
+            values.getOrNull(selected)?.let { drawRect(color, Offset(x(selected) - 5.dp.toPx(), y(it) - 5.dp.toPx()), Size(10.dp.toPx(), 10.dp.toPx())) }
         }
     }
     }
@@ -197,7 +191,6 @@ fun BarChart(
     val gridColor = MaterialTheme.colorScheme.outlineVariant
     val goalColor = MaterialTheme.colorScheme.secondary
     val cursor = MaterialTheme.colorScheme.onSurface
-    val design = LocalDesign.current
     val reveal = rememberReveal(values)
     Inspectable(values, labels, format, modifier, indexAt = { x, w -> (x / (w / values.size)).toInt() }) { extra, selected ->
     Canvas(Modifier.fillMaxWidth().height(height).then(extra).semantics { contentDescription = description }) {
@@ -207,20 +200,19 @@ fun BarChart(
         val top = max(present.max(), goal ?: 0.0).coerceAtLeast(1.0)
         val slot = size.width / values.size
         val barWidth = slot * 0.7f
+        // Each bar is a stack of small blocks, like the level meter of a stereo: it fills from the bottom when the chart appears.
+        val block = 5.dp.toPx()
+        val blockGap = 1.5.dp.toPx()
         values.forEachIndexed { i, v ->
             if (v == null) return@forEachIndexed
-            // Bars grow up from the base line when the chart appears.
             val h = (size.height * (v / top)).toFloat() * reveal
-            // With one bar picked the others step back, so the eye finds it. Dashboard lights the last bar (today) the same way.
-            val lit = selected ?: if (design == Design.DASHBOARD) values.lastIndex else null
-            val tint = if (lit == null || lit == i) color else color.copy(alpha = 0.35f)
-            val topLeft = Offset(slot * i + (slot - barWidth) / 2, size.height - h)
-            if (design == Design.RETRO) {
-                drawRect(tint, topLeft, Size(barWidth, h), style = Fill)
-            } else {
-                // Clean and Dashboard round the top of each bar.
-                val r = min(barWidth / 2, 4.dp.toPx())
-                clipRect(bottom = size.height) { drawRoundRect(tint, topLeft, Size(barWidth, h + r), CornerRadius(r, r)) }
+            // With one bar picked the others step back, so the eye finds it.
+            val tint = if (selected == null || selected == i) color else color.copy(alpha = 0.35f)
+            val left = slot * i + (slot - barWidth) / 2
+            val blocks = (h / (block + blockGap)).toInt().coerceAtLeast(if (h > 0f) 1 else 0)
+            for (b in 0 until blocks) {
+                val y = size.height - (b + 1) * (block + blockGap) + blockGap
+                drawRect(tint, Offset(left, y), Size(barWidth, block))
             }
         }
         if (selected != null) {
@@ -272,8 +264,9 @@ fun RouteMap(
             moveTo(px(0).x, px(0).y)
             for (i in 1 until points.size) lineTo(px(i).x, px(i).y)
         }
-        drawPath(path, line, style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
-        drawCircle(start, 6.dp.toPx(), px(0))
-        drawCircle(end, 6.dp.toPx(), px(points.lastIndex))
+        drawPath(path, line, style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Square, join = StrokeJoin.Miter))
+        val half = 6.dp.toPx()
+        drawRect(start, Offset(px(0).x - half, px(0).y - half), Size(2 * half, 2 * half))
+        drawRect(end, Offset(px(points.lastIndex).x - half, px(points.lastIndex).y - half), Size(2 * half, 2 * half))
     }
 }

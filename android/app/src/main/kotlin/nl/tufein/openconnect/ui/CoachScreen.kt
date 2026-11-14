@@ -14,14 +14,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.border
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -67,7 +63,7 @@ fun CoachContent(
                 SurfaceCard(accent = MaterialTheme.colorScheme.tertiary) {
                     Text(stringResource(R.string.coach_title), style = MaterialTheme.typography.titleMedium)
                     Text(stringResource(R.string.coach_needs_key), style = MaterialTheme.typography.bodyMedium)
-                    Button(onClick = onOpenAiSettings) { Text(stringResource(R.string.coach_open_settings)) }
+                    PrimaryButton(onClick = onOpenAiSettings) { Text(stringResource(R.string.coach_open_settings)) }
                 }
             }
         }
@@ -96,7 +92,7 @@ fun CoachContent(
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(stringResource(R.string.coach_title), style = MaterialTheme.typography.titleMedium)
                         if (state.messages.isNotEmpty()) {
-                            TextButton(onClick = onClear) { Text(stringResource(R.string.coach_new_chat)) }
+                            QuietButton(onClick = onClear) { Text(stringResource(R.string.coach_new_chat)) }
                         }
                     }
                     Text(stringResource(R.string.coach_intro), style = MaterialTheme.typography.bodyMedium)
@@ -113,7 +109,7 @@ fun CoachContent(
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         for (id in SUGGESTIONS) {
                             val text = stringResource(id)
-                            AssistChip(onClick = { send(text) }, label = { Text(text) }, enabled = !state.busy, modifier = Modifier.fillMaxWidth())
+                            SecondaryButton(onClick = { send(text) }, modifier = Modifier.fillMaxWidth(), enabled = !state.busy) { Text(text) }
                         }
                     }
                 }
@@ -122,7 +118,7 @@ fun CoachContent(
             if (state.busy) {
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                        PixelSpinner(Modifier.size(18.dp))
                         Text(stringResource(R.string.coach_thinking), style = MaterialTheme.typography.bodyMedium)
                     }
                 }
@@ -143,7 +139,7 @@ fun CoachContent(
                 placeholder = { Text(stringResource(R.string.coach_hint)) },
                 maxLines = 3,
             )
-            Button(onClick = { send(draft) }, enabled = draft.isNotBlank() && !state.busy) { Text(stringResource(R.string.coach_send)) }
+            PrimaryButton(onClick = { send(draft) }, enabled = draft.isNotBlank() && !state.busy) { Text(stringResource(R.string.coach_send)) }
         }
     }
 }
@@ -156,8 +152,9 @@ private fun Bubble(message: CoachMessage) {
         Box(
             Modifier
                 .fillMaxWidth(if (mine) 0.85f else 1f)
-                .clip(RoundedCornerShape(18.dp))
-                .background(if (mine) colors.primaryContainer else colors.surfaceContainerHigh)
+                .background(if (mine) colors.primaryContainer else colors.surface, MaterialTheme.shapes.medium)
+                .border(2.dp, inkColor().copy(alpha = if (mine) 1f else 0.5f), MaterialTheme.shapes.medium)
+                .clip(MaterialTheme.shapes.medium)
                 .padding(14.dp),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

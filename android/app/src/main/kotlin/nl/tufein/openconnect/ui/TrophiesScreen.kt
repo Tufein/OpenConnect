@@ -11,8 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.foundation.border
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -124,10 +123,10 @@ private fun LevelCard(player: PlayerLevel, won: Int, total: Int) {
     SurfaceCard(accent = MaterialTheme.colorScheme.secondary) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Box(
-                Modifier.size(64.dp).clip(RoundedCornerShape(18.dp)).background(MaterialTheme.colorScheme.secondaryContainer),
+                Modifier.size(64.dp).background(MaterialTheme.colorScheme.secondary, MaterialTheme.shapes.medium).border(2.dp, inkColor(), MaterialTheme.shapes.medium),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(player.level.toString(), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                Text(player.level.toString(), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onSecondary)
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(stringResource(R.string.trophies_level, player.level), style = MaterialTheme.typography.titleLarge)
@@ -135,9 +134,9 @@ private fun LevelCard(player: PlayerLevel, won: Int, total: Int) {
                 Text(stringResource(R.string.trophies_won, won, total), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        LinearProgressIndicator(
+        PixelProgress(
             progress = { (player.xpIntoLevel.toFloat() / player.xpForNext.coerceAtLeast(1)).coerceIn(0f, 1f) },
-            modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
+            modifier = Modifier.fillMaxWidth().height(10.dp),
             color = MaterialTheme.colorScheme.secondary,
             trackColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f),
         )
@@ -158,10 +157,10 @@ private fun TrophyCard(trophy: Trophy) {
     SurfaceCard {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Box(
-                Modifier.size(52.dp).clip(RoundedCornerShape(14.dp)).background(tint.copy(alpha = if (trophy.unlocked) 0.22f else 0.12f)),
+                Modifier.size(52.dp).background(tint.copy(alpha = if (trophy.unlocked) 0.25f else 0.1f), MaterialTheme.shapes.small).border(2.dp, tint, MaterialTheme.shapes.small),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(trophyTag(trophy.key), style = MaterialTheme.typography.labelLarge, color = tint, maxLines = 1)
+                Text(trophyTag(trophy.key), style = MaterialTheme.typography.titleMedium, color = tint, maxLines = 1)
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(stringResource(trophyTitle(trophy.key)), style = MaterialTheme.typography.titleMedium)
@@ -173,9 +172,9 @@ private fun TrophyCard(trophy: Trophy) {
                         color = gold,
                     )
                 } else {
-                    LinearProgressIndicator(
+                    PixelProgress(
                         progress = { trophy.progress.toFloat() },
-                        modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
+                        modifier = Modifier.fillMaxWidth().height(8.dp),
                         color = MaterialTheme.colorScheme.primary,
                         trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
                     )

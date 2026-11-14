@@ -119,7 +119,7 @@ class PlanAndLockScreenTest : AppTestBase() {
         tab("Settings").performClick()
         scrollToText("Lock the app")
         shot("37-settings-lock")
-        val lockSwitch = androidx.compose.ui.test.isToggleable() and androidx.compose.ui.test.hasAnySibling(androidx.compose.ui.test.hasText("Lock the app"))
+        val lockSwitch = androidx.compose.ui.test.hasTestTag("app-lock-switch")
         rule.onNode(lockSwitch).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick) // may sit behind the tab bar after scrolling
         rule.waitUntil(5_000) { fake.asked == 1 }
         rule.onNode(lockSwitch).assertIsOff() // not on yet: the check has not passed

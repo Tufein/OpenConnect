@@ -1,20 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Deep indigo with a soft glow in the middle, like a screen that was just switched on. -->
+<!-- Warm paper with a faint dot grid, like graph paper. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:pathData="M0,0h108v108h-108z">
-        <aapt:attr name="android:fillColor">
-            <gradient
-                android:type="radial"
-                android:centerX="54"
-                android:centerY="54"
-                android:gradientRadius="76"
-                android:startColor="@color/ic_launcher_glow"
-                android:endColor="@color/ic_launcher_background" />
-        </aapt:attr>
-    </path>
+    <path
+        android:fillColor="@color/ic_launcher_background"
+        android:pathData="M0,0h108v108h-108z" />
+    <path
+        android:fillColor="@color/ic_launcher_dots"
+        android:pathData="M6,6h2v2h-2z M6,18h2v2h-2z M6,30h2v2h-2z M6,42h2v2h-2z M6,54h2v2h-2z M6,66h2v2h-2z M6,78h2v2h-2z M6,90h2v2h-2z M6,102h2v2h-2z M18,6h2v2h-2z M18,18h2v2h-2z M18,30h2v2h-2z M18,42h2v2h-2z M18,54h2v2h-2z M18,66h2v2h-2z M18,78h2v2h-2z M18,90h2v2h-2z M18,102h2v2h-2z M30,6h2v2h-2z M30,18h2v2h-2z M30,30h2v2h-2z M30,42h2v2h-2z M30,54h2v2h-2z M30,66h2v2h-2z M30,78h2v2h-2z M30,90h2v2h-2z M30,102h2v2h-2z M42,6h2v2h-2z M42,18h2v2h-2z M42,30h2v2h-2z M42,42h2v2h-2z M42,54h2v2h-2z M42,66h2v2h-2z M42,78h2v2h-2z M42,90h2v2h-2z M42,102h2v2h-2z M54,6h2v2h-2z M54,18h2v2h-2z M54,30h2v2h-2z M54,42h2v2h-2z M54,54h2v2h-2z M54,66h2v2h-2z M54,78h2v2h-2z M54,90h2v2h-2z M54,102h2v2h-2z M66,6h2v2h-2z M66,18h2v2h-2z M66,30h2v2h-2z M66,42h2v2h-2z M66,54h2v2h-2z M66,66h2v2h-2z M66,78h2v2h-2z M66,90h2v2h-2z M66,102h2v2h-2z M78,6h2v2h-2z M78,18h2v2h-2z M78,30h2v2h-2z M78,42h2v2h-2z M78,54h2v2h-2z M78,66h2v2h-2z M78,78h2v2h-2z M78,90h2v2h-2z M78,102h2v2h-2z M90,6h2v2h-2z M90,18h2v2h-2z M90,30h2v2h-2z M90,42h2v2h-2z M90,54h2v2h-2z M90,66h2v2h-2z M90,78h2v2h-2z M90,90h2v2h-2z M90,102h2v2h-2z M102,6h2v2h-2z M102,18h2v2h-2z M102,30h2v2h-2z M102,42h2v2h-2z M102,54h2v2h-2z M102,66h2v2h-2z M102,78h2v2h-2z M102,90h2v2h-2z M102,102h2v2h-2z" />
 </vector>

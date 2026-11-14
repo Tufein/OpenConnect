@@ -64,6 +64,11 @@ gaat uit zonder dat CI groen is. Wat zonder horloge of telefoon niet te controle
 12. **Maandkalender** van je activiteiten (afstand en aantal per dag, bladeren per maand) en **reeksen**: langste en
     huidige reeks dagen en weken met beweging.
 
+## v0.31.0: een eigen ontwerp ✅
+
+13. **Eén eigen uiterlijk ("Handheld")** in plaats van drie ontwerpen en drie stijlen: pixellettertype, pixelhoeken,
+    vlakke panelen met een harde schaduw, pixeliconen en -logo, blokgrafieken. Zie [DESIGN.md](DESIGN.md).
+
 ## Later 💡
 
 - Het nieuwere Garmin-protobuf-synchronisatieprotocol voor horloges die de klassieke mapsynchronisatie niet meer gebruiken.

@@ -159,8 +159,8 @@ const val WATCH_ROUTE = "watch"
 const val GARMIN_ROUTE = "garmin"
 const val OURA_ROUTE = "oura"
 
-/** The colour theme ([Palette] key) and drawing style ([LookStyle] key). */
-data class Look(val palette: String = "arcade", val style: String = "sport", val design: String = "retro")
+/** The colour theme ([Palette] key). The shapes, fonts and layout are the same for everyone since v0.31.0. */
+data class Look(val palette: String = "handheld")
 
 /** Which devices the person uses. [onboarded] is false until the first-start questions are answered. */
 data class SourcesUi(val onboarded: Boolean = true, val garmin: Boolean = true, val oura: Boolean = false)
@@ -228,34 +228,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         if (oura) container.oura.syncIfDue(OPEN_GAP)
     }
 
-    private fun lookNow() = container.settings.let { Look(it.palette, it.lookStyle, it.design) }
+    private fun lookNow() = Look(Palette.of(container.settings.palette).key)
 
-    private val _look = MutableStateFlow(
-        run {
-            // A new install starts in Clean Pro; the first-start screen offers the other two.
-            if (!container.settings.onboarded && !container.settings.hasDesign) setDesignNow(Design.CLEAN)
-            lookNow()
-        },
-    )
+    private val _look = MutableStateFlow(lookNow())
 
-    private fun setDesignNow(design: Design) {
-        container.settings.design = design.key
-        container.settings.palette = design.palette.key
-        container.settings.lookStyle = design.style.key
-    }
-
-    /** The colour theme and the drawing style. */
+    /** The colour theme. */
     val look: StateFlow<Look> = _look.asStateFlow()
 
-    fun setLook(palette: String, style: String) {
+    fun setLook(palette: String) {
         container.settings.palette = Palette.of(palette).key
-        container.settings.lookStyle = LookStyle.of(style).key
-        _look.value = lookNow()
-    }
-
-    /** Picks one of the three designs together with its own colours and style; both can be changed afterwards. */
-    fun setDesign(key: String) {
-        setDesignNow(Design.of(key))
         _look.value = lookNow()
     }
 
@@ -330,6 +311,28 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    // These four are filled by refreshAll(), which the init block below starts on another thread, so they have to
+    // exist before it (a property declared after an init block is still null while that block runs).
+    private val _zones = MutableStateFlow(ZonesState())
+
+    /** Heart-rate zones: the maximum, the zone table and the last four weeks. */
+    val zones: StateFlow<ZonesState> = _zones.asStateFlow()
+
+    private val _calendar = MutableStateFlow(CalendarState())
+
+    /** The month calendar and the streaks. */
+    val calendar: StateFlow<CalendarState> = _calendar.asStateFlow()
+
+    private val _gear = MutableStateFlow(GearState())
+
+    /** The shoes and what each pair has done. */
+    val gear: StateFlow<GearState> = _gear.asStateFlow()
+
+    private val _plan = MutableStateFlow(PlanState())
+
+    /** The training plan and how far it has got. */
+    val plan: StateFlow<PlanState> = _plan.asStateFlow()
 
     init {
         container.health.refresh()
@@ -593,11 +596,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     /** Switches between week, month and year, starting at the current one. */
     fun setReportPeriod(period: ReportPeriod) = loadReports(LocalDate.now(ZoneOffset.UTC), period)
 
-    private val _zones = MutableStateFlow(ZonesState())
-
-    /** Heart-rate zones: the maximum, the zone table and the last four weeks. */
-    val zones: StateFlow<ZonesState> = _zones.asStateFlow()
-
     fun loadZones() = io {
         val today = LocalDate.now(ZoneOffset.UTC)
         val all = repo.listActivities(limit = 10_000)
@@ -620,11 +618,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadZones()
         currentActivityId?.let { openActivity(it) }
     }
-
-    private val _calendar = MutableStateFlow(CalendarState())
-
-    /** The month calendar and the streaks. */
-    val calendar: StateFlow<CalendarState> = _calendar.asStateFlow()
 
     /** The month the person paged to; null means the current one. */
     private var calendarMonth: java.time.YearMonth? = null
@@ -650,11 +643,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadCalendar()
     }
 
-    private val _gear = MutableStateFlow(GearState())
-
-    /** The shoes and what each pair has done. */
-    val gear: StateFlow<GearState> = _gear.asStateFlow()
-
     fun loadGear() = io {
         val book = GearBook.decode(container.settings.gear)
         _gear.value = GearState(loaded = true, usage = Gear.usage(book, repo.listActivities(limit = 10_000)))
@@ -677,11 +665,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadGear()
         currentActivityId?.let { openActivity(it) }
     }
-
-    private val _plan = MutableStateFlow(PlanState())
-
-    /** The training plan and how far it has got. */
-    val plan: StateFlow<PlanState> = _plan.asStateFlow()
 
     fun loadPlan() = io {
         val today = LocalDate.now(ZoneOffset.UTC)
