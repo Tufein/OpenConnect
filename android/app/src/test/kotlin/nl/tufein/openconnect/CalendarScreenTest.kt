@@ -88,8 +88,9 @@ class CalendarScreenTest : AppTestBase() {
             waitForText(latest.name)
         }
 
-        // The activity of the day opens its page.
-        rule.onNodeWithText(latest.name).performClick()
+        // The activity of the day opens its page. Its button sits under the month grid, close to the navigation bar,
+        // so a touch at its centre can miss: clickText scrolls to it and fires its own click action.
+        clickText(latest.name)
         waitForText("Distance")
     }
 
