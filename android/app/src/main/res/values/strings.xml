@@ -615,6 +615,9 @@
     <string name="wf_build_title">Build this face</string>
     <string name="wf_build_copy">Copy build command</string>
     <string name="wf_device">Watch</string>
+    <string name="wf_widget_title">Widget and glance</string>
+    <string name="wf_widget_note">A second app for the watch: a glance in the glance list and a widget screen with your fields and the Body Battery of the last 12 hours. File: %1$s</string>
+    <string name="wf_widget_copy">Copy widget build command</string>
     <string name="wf_file">The file is named %1$s; pick that one when you install it below.</string>
     <string name="wf_title">Watch face preview</string>
     <string name="wf_design">Face</string>

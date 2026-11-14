@@ -60,6 +60,7 @@ def test_every_variant_gets_its_own_app_id(script):
     "args",
     [
         ("--design", "neon"),
+        ("--type", "tile"),
         ("--color", "purple"),
         ("--fields", "battery,heart,stress"),
         ("--fields", "battery,battery,heart,stress"),
@@ -71,6 +72,30 @@ def test_bad_choices_are_refused(script, args):
     done = run(script, *args)
     assert done.returncode == 2
     assert "build.sh:" in done.stderr
+
+
+def test_a_widget_has_its_own_entry_type_name_and_file(script):
+    done = run(script, "--type", "widget", "--device", "fenix843mm", "--color", "mint")
+    assert done.returncode == 0, done.stderr
+    assert "file: openconnect-widget-5CF2C0-fenix843mm.prg" in done.stdout
+    gen = script.parent / "gen"
+    manifest = (gen / "manifest.xml").read_text()
+    assert 'entry="OpenConnectWidgetApp"' in manifest
+    assert 'type="widget"' in manifest
+    assert "__" not in manifest
+    assert "OpenConnect Widget" in (gen / "resources" / "strings" / "strings.xml").read_text()
+    # A glance runs in little memory: everything it uses is annotated for it.
+    assert (gen / "source" / "Config.mc").read_text().startswith("(:glance)")
+    # The widget and the face have different app ids, so both fit on the watch.
+    face = run(script, "--color", "mint")
+    assert face.returncode == 0
+    assert (gen / "manifest.xml").read_text() != manifest
+
+
+def test_the_widget_files_are_in_the_sources():
+    for name in ("OpenConnectWidgetApp.mc", "WidgetView.mc", "OpenConnectGlance.mc"):
+        assert (WATCH / "source" / name).is_file()
+    assert "(:glance)" in (WATCH / "source" / "Data.mc").read_text()
 
 
 def test_a_hex_colour_is_accepted(script):

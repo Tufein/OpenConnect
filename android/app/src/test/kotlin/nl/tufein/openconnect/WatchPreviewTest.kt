@@ -70,6 +70,8 @@ class WatchPreviewTest : AppTestBase() {
         val config = WatchFaceConfig("retro", "pink", listOf("steps", "battery", "heart", "stress"))
         assertEquals("watch/build.sh --device fenix847mm --design retro --color pink --fields steps,battery,heart,stress", config.buildCommand())
         assertEquals("openconnect-retro-FF5FA2-fenix847mm.prg", config.fileName())
+        assertEquals("openconnect-widget-FF5FA2-fenix847mm.prg", config.widgetFileName())
+        assertEquals("watch/build.sh --type widget --device fenix847mm --color pink --fields steps,battery,heart,stress", config.widgetCommand())
         assertEquals("openconnect-clean-7AA7FF-fenix8solar51mm.prg", WatchFaceConfig(device = "fenix8solar51mm").fileName())
         assertEquals("fenix847mm", WatchFaceConfig(device = "nonsense").deviceValue.id)
         assertEquals(WatchColor.BLUE, WatchColor.of("nonsense"))

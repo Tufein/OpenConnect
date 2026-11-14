@@ -710,6 +710,12 @@ private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, o
         OutlinedButton(onClick = { clipboard.setText(androidx.compose.ui.text.AnnotatedString(config.buildCommand())) }, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.wf_build_copy))
         }
+        // The widget and its glance (the glance list on the watch) in the same colour and fields.
+        Text(stringResource(R.string.wf_widget_title), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.wf_widget_note, config.widgetFileName()), style = MaterialTheme.typography.bodySmall)
+        OutlinedButton(onClick = { clipboard.setText(androidx.compose.ui.text.AnnotatedString(config.widgetCommand())) }, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.wf_widget_copy))
+        }
     }
 }
 

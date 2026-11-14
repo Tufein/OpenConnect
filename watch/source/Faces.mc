@@ -42,6 +42,56 @@ module Faces {
         center(dc, dc.getWidth() / 2, dc.getHeight() / 2, Graphics.FONT_NUMBER_MEDIUM, timeText());
     }
 
+    // The widget: the first field as a ring, all four as rows, and the Body Battery of the last 12 hours as a line.
+    function widget(dc) {
+        var w = dc.getWidth();
+        var h = dc.getHeight();
+        var cx = w / 2;
+        var fields = Config.FIELDS;
+        var main = fields[0];
+        var color = Data.color(main, Config.COLOR);
+        var pen = w * 3 / 100;
+        var radius = w / 2 - pen;
+
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
+        dc.clear();
+        dc.setPenWidth(pen);
+        dc.setColor(dim(color), Graphics.COLOR_TRANSPARENT);
+        dc.drawCircle(cx, h / 2, radius);
+        var f = Data.fraction(main, Data.value(main));
+        if (f > 0.0) {
+            dc.setColor(color, Graphics.COLOR_TRANSPARENT);
+            dc.drawArc(cx, h / 2, radius, Graphics.ARC_CLOCKWISE, 90, 90 - (360 * f).toNumber());
+        }
+        dc.setColor(Config.COLOR, Graphics.COLOR_TRANSPARENT);
+        center(dc, cx, h * 13 / 100, Graphics.FONT_XTINY, "OPENCONNECT");
+        for (var i = 0; i < 4; i++) {
+            var y = h * (28 + 12 * i) / 100;
+            dc.setColor(MUTED, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(w * 24 / 100, y, Graphics.FONT_XTINY, Data.label(fields[i]), Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+            dc.setColor(Data.color(fields[i], Config.COLOR), Graphics.COLOR_TRANSPARENT);
+            dc.drawText(w * 76 / 100, y, Graphics.FONT_SMALL, Data.text(fields[i]), Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
+        }
+        var points = Data.bodyBatteryHistory();
+        if (points.size() >= 2) {
+            var x0 = w * 26 / 100;
+            var x1 = w * 74 / 100;
+            var top = h * 78 / 100;
+            var bottom = h * 90 / 100;
+            dc.setPenWidth(3);
+            dc.setColor(Data.COLOR_BATTERY, Graphics.COLOR_TRANSPARENT);
+            var px = x0;
+            var py = bottom - (bottom - top) * points[0] / 100;
+            for (var i = 1; i < points.size(); i++) {
+                var x = x0 + (x1 - x0) * i / (points.size() - 1);
+                var y = bottom - (bottom - top) * points[i] / 100;
+                dc.drawLine(px, py, x, y);
+                px = x;
+                py = y;
+            }
+        }
+    }
+
     // Clean Pro: a ring around the big time, the first field is the ring.
     function clean(dc) {
         var w = dc.getWidth();

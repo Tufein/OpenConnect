@@ -96,6 +96,12 @@ data class WatchFaceConfig(
     fun buildCommand(): String =
         "watch/build.sh --device ${deviceValue.id} --design $design --color ${colorValue.key} --fields ${fieldValues.joinToString(",") { it.key }}"
 
+    /** The widget (with its glance) in the same colour and fields; it has one look, so no design. */
+    fun widgetCommand(): String =
+        "watch/build.sh --type widget --device ${deviceValue.id} --color ${colorValue.key} --fields ${fieldValues.joinToString(",") { it.key }}"
+
+    fun widgetFileName(): String = "openconnect-widget-${"%06X".format(colorValue.argb and 0xFFFFFF)}-${deviceValue.id}.prg"
+
     val deviceValue: WatchDevice get() = WatchDevice.of(device)
 
     /** The name build.sh gives the file, so the right one is picked when it is installed. */
