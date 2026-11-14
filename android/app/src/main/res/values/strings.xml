@@ -737,4 +737,22 @@
     <string name="gear_none_chip">No shoes</string>
     <string name="gear_automatic">Follow the default</string>
     <string name="gear_activity_note">Only this activity changes; the others follow the default pair of their sport.</string>
+    <string name="insights_calendar">Calendar</string>
+    <string name="calendar_current_days">Current streak</string>
+    <string name="calendar_longest_days">Longest streak</string>
+    <string name="calendar_current_weeks">Weeks in a row</string>
+    <string name="calendar_longest_weeks">Longest run of weeks</string>
+    <string name="calendar_days">days</string>
+    <string name="calendar_weeks">weeks</string>
+    <string name="calendar_open_today">Today is still open: any activity keeps your streak going.</string>
+    <string name="calendar_prev">Previous month</string>
+    <string name="calendar_next">Next month</string>
+    <string name="calendar_month_summary">Activities: %1$d on %2$d days, %3$s km</string>
+    <string name="calendar_tap">Tap a day to see its activities.</string>
+    <string name="calendar_rest_day">No activity on this day.</string>
+    <plurals name="calendar_day_summary">
+        <item quantity="one">%1$d activity, %2$s km</item>
+        <item quantity="other">%1$d activities, %2$s km</item>
+    </plurals>
+    <string name="calendar_note">A day counts when an activity starts on it (days are UTC days) and a week runs from Monday to Sunday. A streak is not broken until its day or week is over.</string>
 </resources>

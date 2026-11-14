@@ -44,8 +44,12 @@ import nl.tufein.openconnect.core.ReadinessCalculator
 import nl.tufein.openconnect.core.Readiness
 import nl.tufein.openconnect.core.TrainingLoadCalculator
 import nl.tufein.openconnect.core.Gear
+import nl.tufein.openconnect.core.MonthView
+import nl.tufein.openconnect.core.StreakSummary
+import nl.tufein.openconnect.core.Streaks
 import nl.tufein.openconnect.core.GearBook
 import nl.tufein.openconnect.core.HeartZones
+import nl.tufein.openconnect.core.StreakRun
 import nl.tufein.openconnect.core.Shoe
 import nl.tufein.openconnect.core.ShoeUsage
 import nl.tufein.openconnect.core.ActivityZones
@@ -500,6 +504,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadPlan()
         loadZones()
         loadGear()
+        loadCalendar()
         loadTrophies()
         container.oura.refreshDays()
         currentActivityId?.let { openActivity(it) }
@@ -614,6 +619,35 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
         loadZones()
         currentActivityId?.let { openActivity(it) }
+    }
+
+    private val _calendar = MutableStateFlow(CalendarState())
+
+    /** The month calendar and the streaks. */
+    val calendar: StateFlow<CalendarState> = _calendar.asStateFlow()
+
+    /** The month the person paged to; null means the current one. */
+    private var calendarMonth: java.time.YearMonth? = null
+
+    fun loadCalendar() = io {
+        val today = LocalDate.now(ZoneOffset.UTC)
+        val all = repo.listActivities(limit = 10_000)
+        val thisMonth = java.time.YearMonth.from(today)
+        val first = minOf(Streaks.firstMonth(all) ?: thisMonth, thisMonth)
+        val month = (calendarMonth ?: thisMonth).coerceIn(first, thisMonth)
+        _calendar.value = CalendarState(
+            loaded = true,
+            view = Streaks.month(all, month),
+            streaks = Streaks.compute(all, today),
+            canGoPrevious = month > first,
+            canGoNext = month < thisMonth,
+        )
+    }
+
+    /** Pages the calendar by [months] (negative goes back). It stops at the first month with an activity and at this one. */
+    fun shiftCalendar(months: Int) {
+        calendarMonth = (calendarMonth ?: java.time.YearMonth.now(ZoneOffset.UTC)).plusMonths(months.toLong())
+        loadCalendar()
     }
 
     private val _gear = MutableStateFlow(GearState())
@@ -928,6 +962,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         return out.toByteArray()
     }
 }
+
+/** The Calendar tab: a month with its activities, and the streaks. [view] is null until loaded. */
+data class CalendarState(
+    val loaded: Boolean = false,
+    val view: MonthView? = null,
+    val streaks: StreakSummary = StreakSummary(StreakRun.NONE, StreakRun.NONE, StreakRun.NONE, StreakRun.NONE, false),
+    val canGoPrevious: Boolean = false,
+    val canGoNext: Boolean = false,
+)
 
 /** The Shoes tab: every pair with what it has done so far. */
 data class GearState(val loaded: Boolean = false, val usage: List<ShoeUsage> = emptyList())

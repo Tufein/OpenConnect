@@ -54,12 +54,12 @@ gaat uit zonder dat CI groen is. Wat zonder horloge of telefoon niet te controle
 10. **Zones** als percentage van je maximale hartslag (instelbaar, standaard de hoogste gemeten), tijd per zone bij
     elke activiteit en per week, met een duidelijk oordeel over de verdeling (veel rustig, weinig zwaar).
 
-## v0.28.0: schoenen 🚧
+## v0.28.0: schoenen ✅
 
 11. **Schoenen en kilometers:** schoenen toevoegen, een standaardpaar per sport, afstand per paar uit je activiteiten
     en een melding als een paar aan vervanging toe is (standaard bij 800 km, instelbaar).
 
-## v0.29.0: kalender en reeksen 🔜
+## v0.29.0: kalender en reeksen ✅
 
 12. **Maandkalender** van je activiteiten (afstand en aantal per dag, bladeren per maand) en **reeksen**: langste en
     huidige reeks dagen en weken met beweging.
