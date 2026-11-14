@@ -1,3 +1,4 @@
 project.manifest = gen/manifest.xml
 base.sourcePath = source;gen/source
 base.resourcePath = resources;gen/resources
+base.lang.nld = resources-nld

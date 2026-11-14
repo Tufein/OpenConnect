@@ -11,7 +11,9 @@ The `watch/` folder holds a Garmin Connect IQ watch face in Monkey C, in three d
 - There is **no Sleep field**: Garmin's API gives a face no length of last night's sleep.
 - OpenConnect's own readiness score cannot go to the watch without Garmin's phone app, so it is not on the face.
 - The phone **cannot switch the active face**, and a face has no menu on the watch. You pick the face on the watch
-  (hold the menu button, *Watch Face*). Colour and fields are fixed **when the face is built**, one `.prg` per variant.
+  (hold the menu button, *Watch Face*). Colour and fields are fixed **when the face is built**, one `.prg` per variant,
+  **unless the face comes from the Connect IQ store**: then design, colour and the four fields are settings in Garmin's
+  Connect IQ app (since v0.24.0, see below).
 - The app copies a `.prg` to `GARMIN/Apps` over USB (*Settings, Watch face*, since v0.18.0).
 
 ## Build one
@@ -57,6 +59,18 @@ several variants can sit on the watch side by side.
 - A glance has very little memory. `Config`, `Data` and the glance class carry the `(:glance)` annotation for that; if
   the glance shows nothing on the watch, send the message and it gets simpler.
 
+## For the Connect IQ store (v0.24.0)
+
+`watch/build.sh --package` (with `--type watchface` or `--type widget`) packs one `.iq` file instead of a `.prg`: every
+fenix 8 model in one file (`--products` changes the list), one fixed app id per app, and settings. The face reads
+`Application.Properties` through `source/Prefs.mc`: `Design`, `Colour` and `Field1` to `Field4`, with the values the
+package was built with as defaults (`resources/settings` and `resources/properties` are written into `gen/`). A value
+that is missing or not valid falls back to the built-in `Config`, so the screen is never empty. English and Dutch names
+are in `resources/strings` and `resources-nld`.
+
+`watch/check-store.sh` checks everything that does not need Garmin's login. The whole route, with what only the owner
+can do, is in [CONNECT_IQ_STORE.md](CONNECT_IQ_STORE.md).
+
 ## How it works
 
 - `build.sh` writes `gen/source/Config.mc` (design, colour, fields), `gen/resources/strings/strings.xml` and
@@ -64,7 +78,7 @@ several variants can sit on the watch side by side.
 - `source/Data.mc` reads the values (`ActivityMonitor`, `Activity`, `SensorHistory`, `UserProfile`); a missing value is
   a dash. `source/Faces.mc` draws the three designs with fractions of the screen size, so 416 and 454 px displays fit.
   `source/FaceView.mc` picks the design and shows only the time while an AMOLED wrist is down (burn-in protection).
-- The Python tests run `build.sh --dry-run` against a copy of the folder (`tests/test_watch_build.py`).
+- The Python tests run `build.sh --dry-run` against a copy of the folder (`tests/test_watch_build.py`, `tests/test_watch_store.py`).
 
 ## What has not been checked
 

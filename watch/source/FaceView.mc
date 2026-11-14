@@ -23,9 +23,9 @@ class FaceView extends WatchUi.WatchFace {
         var settings = System.getDeviceSettings();
         if (_sleeping && (settings has :requiresBurnInProtection) && settings.requiresBurnInProtection) {
             Faces.sleeping(dc);
-        } else if (Config.DESIGN.equals("dashboard")) {
+        } else if (Prefs.design().equals("dashboard")) {
             Faces.dashboard(dc);
-        } else if (Config.DESIGN.equals("retro")) {
+        } else if (Prefs.design().equals("retro")) {
             Faces.retro(dc);
         } else {
             Faces.clean(dc);

@@ -1,8 +1,8 @@
 import Toybox.Application;
 import Toybox.WatchUi;
 
-// OpenConnect watch face. The design, colour and fields are fixed when the face is built (watch/build.sh writes
-// gen/source/Config.mc), so the face needs neither a phone nor Garmin's settings screen.
+// OpenConnect watch face. Design, colour and fields start as built by watch/build.sh (gen/source/Config.mc) and, for
+// an app from the Connect IQ store, can be changed in Garmin's Connect IQ app (see Prefs.mc).
 class OpenConnectFaceApp extends Application.AppBase {
     function initialize() {
         AppBase.initialize();
@@ -10,5 +10,9 @@ class OpenConnectFaceApp extends Application.AppBase {
 
     function getInitialView() {
         return [ new FaceView() ];
+    }
+
+    function onSettingsChanged() {
+        WatchUi.requestUpdate();
     }
 }

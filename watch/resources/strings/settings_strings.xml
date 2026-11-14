@@ -1,0 +1,22 @@
+<strings>
+    <!-- Names shown in Garmin's Connect IQ app for the settings of the face, widget and glance. -->
+    <string id="DesignTitle">Face design</string>
+    <string id="DesignClean">Clean</string>
+    <string id="DesignDashboard">Dashboard</string>
+    <string id="DesignRetro">Retro</string>
+    <string id="ColourTitle">Accent colour</string>
+    <string id="ColourMint">Mint</string>
+    <string id="ColourBlue">Blue</string>
+    <string id="ColourAmber">Amber</string>
+    <string id="ColourPink">Pink</string>
+    <string id="ColourGreen">Green</string>
+    <string id="Field1Title">Big field</string>
+    <string id="Field2Title">Field 2</string>
+    <string id="Field3Title">Field 3</string>
+    <string id="Field4Title">Field 4</string>
+    <string id="FieldBattery">Body Battery</string>
+    <string id="FieldHeart">Heart rate</string>
+    <string id="FieldStress">Stress</string>
+    <string id="FieldSteps">Steps</string>
+    <string id="FieldFloors">Floors</string>
+</strings>

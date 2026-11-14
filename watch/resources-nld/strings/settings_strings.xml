@@ -1,0 +1,22 @@
+<strings>
+    <!-- Dutch names for the same settings (Garmin language code nld). -->
+    <string id="DesignTitle">Ontwerp van de face</string>
+    <string id="DesignClean">Clean</string>
+    <string id="DesignDashboard">Dashboard</string>
+    <string id="DesignRetro">Retro</string>
+    <string id="ColourTitle">Accentkleur</string>
+    <string id="ColourMint">Munt</string>
+    <string id="ColourBlue">Blauw</string>
+    <string id="ColourAmber">Amber</string>
+    <string id="ColourPink">Roze</string>
+    <string id="ColourGreen">Groen</string>
+    <string id="Field1Title">Groot veld</string>
+    <string id="Field2Title">Veld 2</string>
+    <string id="Field3Title">Veld 3</string>
+    <string id="Field4Title">Veld 4</string>
+    <string id="FieldBattery">Body Battery</string>
+    <string id="FieldHeart">Hartslag</string>
+    <string id="FieldStress">Stress</string>
+    <string id="FieldSteps">Stappen</string>
+    <string id="FieldFloors">Verdiepingen</string>
+</strings>

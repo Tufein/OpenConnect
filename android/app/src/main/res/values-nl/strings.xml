@@ -618,6 +618,10 @@
     <string name="wf_widget_title">Widget en glance</string>
     <string name="wf_widget_note">Een tweede app voor het horloge: een glance in de glance-lijst en een widgetscherm met je velden en de Body Battery van de laatste 12 uur. Bestand: %1$s</string>
     <string name="wf_widget_copy">Kopieer widget-bouwcommando</string>
+    <string name="wf_store_title">Connect IQ-store</string>
+    <string name="wf_store_none">Nog niet in Garmins Connect IQ-store. Tot die tijd installeer je een zelfgebouwd bestand (hierboven) of kopieer je het via USB.</string>
+    <string name="wf_store_face">Open de watchface in de store</string>
+    <string name="wf_store_widget">Open de widget in de store</string>
     <string name="wf_file">Het bestand heet %1$s; kies dat bij het installeren hieronder.</string>
     <string name="wf_title">Voorvertoning watchface</string>
     <string name="wf_design">Face</string>

@@ -26,11 +26,11 @@ live against a real account; the USB and Bluetooth parts have not yet been tried
 **[docs/GARMIN.md](docs/GARMIN.md)** and **[docs/WATCH.md](docs/WATCH.md)** for what works and what is unverified.
 More about the app, its limits and what has been verified: **[docs/ANDROID.md](docs/ANDROID.md)**.
 
-**New in v0.23.0:** a **glance and widget** for the watch as Connect IQ source (`build.sh --type widget`, not compiled yet) and a copy button in the app. v0.22.0: choose your fenix 8 model in the preview and get the exact file name and build command; `build.sh --all-colors` builds one face per colour. v0.21.0: the **watch faces** as Connect IQ source in `watch/` (Clean, Dashboard, Retro) with a build script; see **[docs/WATCH_FACES.md](docs/WATCH_FACES.md)**. They are not compiled yet. v0.20.0: a round **watch face preview** in *Settings* (Clean, Dashboard or Retro, five colours, four fields) with your own numbers. v0.19.0 added three designs: **three designs** to choose from under *Settings, Appearance, Design*: **Clean Pro** (calm cards,
+**New in v0.24.0:** the way to the **Connect IQ store**: face, widget and glance can be set up in Garmin's Connect IQ app, `watch/build.sh --package` makes the `.iq` file, `watch/check-store.sh` checks it, the store texts are written (English and Dutch) and *Settings* can link to the store listing once it exists (see **[docs/CONNECT_IQ_STORE.md](docs/CONNECT_IQ_STORE.md)**). v0.23.0: a **glance and widget** for the watch as Connect IQ source (`build.sh --type widget`, not compiled yet) and a copy button in the app. v0.22.0: choose your fenix 8 model in the preview and get the exact file name and build command; `build.sh --all-colors` builds one face per colour. v0.21.0: the **watch faces** as Connect IQ source in `watch/` (Clean, Dashboard, Retro) with a build script; see **[docs/WATCH_FACES.md](docs/WATCH_FACES.md)**. They are not compiled yet. v0.20.0: a round **watch face preview** in *Settings* (Clean, Dashboard or Retro, five colours, four fields) with your own numbers. v0.19.0 added three designs: **three designs** to choose from under *Settings, Appearance, Design*: **Clean Pro** (calm cards,
 a big readiness ring and a "My day" list), **Dashboard Dark** (tiles in two columns on black, bold bars) and **Retro
 Pro** (the arcade look). A new install asks at the first start. v0.18.0 added seven colour themes, three styles and
 watch faces over USB. The plan for what comes next is in **[docs/ROADMAP.md](docs/ROADMAP.md)**; see the
-[release notes](docs/releases/v0.23.0.md).
+[release notes](docs/releases/v0.24.0.md).
 
 <p><img src="docs/img/v0190-designs.png" alt="Clean Pro in light mode, Dashboard Dark, and a Clean Pro chart" width="690"></p>
 

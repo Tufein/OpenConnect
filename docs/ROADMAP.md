@@ -1,125 +1,83 @@
-# OpenConnect roadmap
+# OpenConnect: roadmap
 
-Where OpenConnect is, and where it goes next. Written 2026-11-13 after v0.8.0. Items are ordered by value for one person
-tracking their own Garmin data, and by how well they can be tested without a watch in hand.
+Waar OpenConnect staat en waar het heen gaat. Opnieuw geschreven op 2026-11-14, na v0.23.0. Alles is bedacht voor één
+persoon die zijn eigen Garmin-gegevens volgt, en alles is **test-first** gebouwd: eerst de test, dan de code, en niets
+gaat uit zonder dat CI groen is. Wat zonder horloge of telefoon niet te controleren is, staat er eerlijk bij.
 
-**Legend:** ✅ shipped · 🚧 in this release · 🔜 next · 💡 later · ❓ needs something only the owner can supply
+**Legenda:** ✅ klaar · 🚧 in deze release · 🔜 volgende · ❓ heeft iets nodig dat alleen de eigenaar kan geven
 
-## Shipped
+## Klaar
 
-| Version | What |
-|---------|------|
-| v0.1.0 | Python server, FIT/GPX/TCX import and export, dashboard, AI reports |
-| v0.2.0 | Standalone Android app |
-| v0.3.0 | Watch over USB, live heart rate over Bluetooth |
-| v0.4.0 | Garmin account via the Personal API, folder import, Bluetooth reconnect |
-| v0.5.0 | New look, background sync, Gemini and Claude, coach, readiness, trophies |
-| v0.6.0 | Bluetooth sync of a Garmin watch (ported from Gadgetbridge), AGPL-3.0 |
-| v0.7.0 | Charts explain themselves, living next to Garmin Connect |
-| v0.8.0 | Scores on Health, sporty look |
-| v0.9.0 | Weekly goals, training load, roadmap |
-| v0.10.0 | Backup and restore, sync log, data sources |
-| v0.11.0 | Archive on the watch, background Bluetooth (both optional) |
-| v0.12.0 | Widget, optional notifications |
+| Versie | Wat |
+|--------|-----|
+| v0.1.0 | Python-server, FIT/GPX/TCX-import en -export, dashboard, AI-rapporten |
+| v0.2.0 | Zelfstandige Android-app |
+| v0.3.0 – v0.4.0 | Horloge via USB, live hartslag over Bluetooth, Garmin-account via de Personal API |
+| v0.5.0 – v0.9.0 | Nieuwe look, coach, Gemini en Claude, Bluetooth-sync (uit Gadgetbridge), uitleg bij grafieken, weekdoelen, trainingsbelasting |
+| v0.10.0 – v0.15.0 | Back-up, synclogboek, widget en meldingen, Health Connect, beste prestaties, trainingsplan, app-vergrendeling |
+| v0.16.0 – v0.19.0 | Oura Ring, één AI tegelijk, apparaatkeuze, thema's, drie ontwerpen (Clean, Dashboard, Retro) |
+| v0.20.0 – v0.23.0 | Watchface-voorvertoning, watchfaces en widget als Connect IQ-broncode met bouwscript |
 
-## v0.9.0: training, with goals ✅
+## v0.24.0: op weg naar de Connect IQ-store 🚧
 
-1. **Weekly goals.** Intensity minutes, distance and activities per week, with defaults from the usual recommendations,
-   set in Settings and shown on Home as race-HUD bars. A goal of 0 is off.
-2. **Training load.** This week's load against your own four-week average, six weekly bars and a plain verdict (light,
-   steady, heavy, big jump). It is OpenConnect's own estimate from duration and heart rate, not Garmin's Training Load.
+1. **Instellen in Garmins app.** Ontwerp, kleur en vier velden van face, widget en glance zijn instellingen in de
+   Connect IQ-app van Garmin (Nederlands en Engels). Ongeldige of ontbrekende instellingen vallen terug op de
+   ingebouwde waarden, dus het scherm blijft nooit leeg.
+2. **`.iq`-bestand voor de store:** `watch/build.sh --package` maakt één bestand met alle fenix 8-modellen en een vast,
+   nooit veranderend app-id per app.
+3. **`watch/check-store.sh`:** controleert alles wat zonder Garmin-login kan (manifest, versie, producten, instellingen,
+   teksten, pictogram) en valideert tegen Garmins eigen `resources.xsd` als de SDK aanwezig is.
+4. **Store-teksten** in het Nederlands en Engels en een lijst van screenshots (`docs/store/`).
+5. **De link in de app** (Instellingen, Watchface-voorvertoning): één constante per app in `ConnectIqStore.kt`, leeg tot
+   de eerste upload. Zie [CONNECT_IQ_STORE.md](CONNECT_IQ_STORE.md).
 
-## v0.10.0: trust the data ✅
+## v0.25.0: racevoorspelling en racedoel 🔜
 
-3. **Backup and restore.** Export everything to one file and bring it back, so a new phone or a reinstall loses nothing.
-4. **Sync log.** A screen that lists the last syncs from every route (account, USB, folder, Bluetooth) with what each
-   added, and what went wrong. Makes the first real-watch tests easy to report.
-5. **Data sources view.** Activities counted per source with their period, plus the health totals. (The switch to prefer
-   one source when two disagree is not built; the dedupe by start time already keeps the first copy.)
+6. **Voorspelde racetijden** (5 km, 10 km, halve en hele marathon) uit je beste prestaties, met de formule van Riegel
+   en een eerlijke betrouwbaarheid (een marathon voorspellen uit een 5 km is een schatting, geen belofte). Garmins eigen
+   Race Predictor wordt niet aan ontwikkelaars gegeven, dit is OpenConnects eigen schatting.
+7. **Racedoel** met datum, afstand en streeftijd: aftelling op Home en een oordeel (voor op schema, op koers, meer werk).
 
-## v0.11.0: more from the watch ✅ (partly)
+## v0.26.0: trainingen naar je horloge 🔜
 
-6. **Bluetooth in the background.** ✅ Built as an optional WorkManager job (about every three hours). Not a foreground
-   service that reconnects the moment the watch is in range. ❓ Needs a real watch to tune.
-7. **Archive files on the watch** after reading, like Garmin Connect does. ✅ Built as an optional switch. ❓ Real watch.
-8. **The newer Garmin file sync** (the protobuf one) for watches that no longer use the classic directory sync. ❓ Real watch.
-9. **Live heart rate as a foreground service**, so a workout keeps recording with the screen off.
+8. **Trainingsplan als FIT-trainingen:** elke sessie van je plan wordt een gestructureerde training (warming-up,
+   intervallen of tempo, cooldown) in het FIT-formaat, dat Garmin-horloges kennen. Getest door ze met een
+   onafhankelijke decoder terug te lezen.
+9. **Naar het horloge kopiëren** via de USB-verbinding (map `GARMIN/NewFiles`), of delen als bestand.
+   ❓ Of een echte fenix 8 de bestanden accepteert is alleen met het horloge te zien.
 
-## v0.12.0: on your phone ✅ (widget and notifications)
+## v0.27.0: hartslagzones 🔜
 
-10. **Home-screen widget** with readiness, today's steps and the week's activity goal.
-12. **Notifications:** a nudge when a goal is close, a weekly summary on Monday, a note when load jumps.
+10. **Zones** als percentage van je maximale hartslag (instelbaar, standaard de hoogste gemeten), tijd per zone bij
+    elke activiteit en per week, met een duidelijk oordeel over de verdeling (veel rustig, weinig zwaar).
 
-## v0.13.0: Health Connect ✅
+## v0.28.0: schoenen 🔜
 
-11. **Health Connect** as one more source (and as an output, so other apps see OpenConnect's activities).
+11. **Schoenen en kilometers:** schoenen toevoegen, een standaardpaar per sport, afstand per paar uit je activiteiten
+    en een melding als een paar aan vervanging toe is (standaard bij 800 km, instelbaar).
 
-## v0.14.0: more insight ✅
+## v0.29.0: kalender en reeksen 🔜
 
-13. **Best efforts** from tracks (fastest 1K, 5K, 10K) and a lap table.
-14. **Monthly and yearly reports.**
-
-## v0.15.0: plan and protect ✅
-
-15. **Training plans:** a simple 5K or 10K plan built from your goals and load.
-16. **App lock** (biometrics) for the health data.
-
-## v0.16.0: Oura, one AI, livelier screens ✅
-
-17. **Oura Ring** as a source (OAuth2 login with the owner's own Oura application; days, nights and workouts).
-18. **One AI at a time:** offline, Claude or Gemini; only the chosen one is shown and used.
-19. **Sync on opening and every 10 minutes** while the app is open; background jobs every 15 minutes.
-20. **Tiles that open their chart**, and charts that can be read by touch.
-
-## v0.17.0: choose your devices ✅
-
-21. **First start asks which devices you use** (Garmin, Oura Ring, both or none); only those show up. Changeable under
-    *Settings, Your devices*.
-22. **Oura gets its own tab**, with its own scores, nights, charts and workouts, kept apart from the watch's data.
-
-## v0.18.0: themes and watch faces ✅
-
-23. **Seven colour themes** (Arcade, Game Boy, Amber terminal, Synthwave, Ocean, Sunset, Wallpaper) and **three styles**
-    (Sport, Round, Pixel), on top of dark, light or follow the phone.
-24. **Watch face over USB:** copy a `.prg` to `GARMIN/Apps`; choose it on the watch. Switching the active face from the
-    phone is not possible over any open protocol.
-
-## v0.19.0: three designs ✅
-
-25. **Clean Pro, Dashboard Dark and Retro Pro**, picked in Settings or at the first start. Each lays out Home its own
-    way, draws cards and charts in its own style and brings its own colours, which stay changeable.
-
-## v0.20.0: watch face preview ✅
-
-26. **Round preview of the watch face** in Settings (Clean, Dashboard, Retro; five colours; four fields), with your numbers.
-
-## v0.21.0: watch faces (source) ✅
-
-27. **Three watch faces as Connect IQ source** (`watch/`) with `build.sh`; the app shows and copies the build command.
-    Not compiled yet: the device files need the owner's Garmin login.
-
-## v0.22.0: a variant per colour ✅
-
-28. **Pick your watch and get the right file:** the app knows five fenix 8 models, shows the exact file name of the
-    face you chose and the build command for it; `build.sh --all-colors` makes one file per colour.
-
-## v0.23.0: widget and glance ✅
-
-29. **Glance and widget as Connect IQ source:** `build.sh --type widget` builds `openconnect-widget-<colour>-<device>.prg`;
-    the app shows its file name and a copy button. No sleep screen: the watch gives apps no sleep-duration API.
-    Not compiled yet, like the faces.
+12. **Maandkalender** van je activiteiten (afstand en aantal per dag, bladeren per maand) en **reeksen**: langste en
+    huidige reeks dagen en weken met beweging.
 
 ## Later 💡
 
-- Wear OS or a watch face is out of scope; the project is about the phone side.
+- Het nieuwere Garmin-protobuf-synchronisatieprotocol voor horloges die de klassieke mapsynchronisatie niet meer gebruiken.
+- Live hartslag als voorgrondservice (een training blijft opnemen met scherm uit).
+- Wear OS of een eigen horloge-app buiten Garmin valt buiten dit project.
 
-## Needs the owner ❓
+## Heeft de eigenaar nodig ❓
 
-- A real **fenix 8** test of the Bluetooth sync. Everything in v0.11.0 depends on its first result.
-- Live checks of **Claude and Gemini** with the owner's own keys, entered in the app.
-- A real **Oura** login with the owner's own Oura application and membership.
+- **Connect IQ-store:** een Garmin-ontwikkelaarsaccount, de eerste upload en Garmins keuring. Daarna het store-id in
+  `ConnectIqStore.kt` zetten. Stap voor stap in [CONNECT_IQ_STORE.md](CONNECT_IQ_STORE.md).
+- **De Monkey C-code is nooit gecompileerd** (de apparaatbestanden vragen een Garmin-login). Eén keer bouwen met
+  `watch/build.sh` laat zien of er nog fouten in zitten.
+- Een echte **fenix 8** voor de Bluetooth-sync en voor het kopiëren van watchfaces en trainingen.
+- Live controles van **Claude, Gemini en Oura** met eigen sleutels.
 
-## How releases work
+## Hoe releases werken
 
-Each version is a pull request, then a GitHub release with the signed APK. Nothing ships without CI green and the
-owner's go-ahead. Features that cannot be verified without hardware are marked as such in their release notes.
+Elke versie is een pull request, daarna een GitHub-release met de ondertekende APK (zelfde sleutel, dus de nieuwe versie
+installeert over de oude en houdt je gegevens). Er gaat niets uit zonder groene CI. Elke release legt uit wat er in de
+code is veranderd en wat niet is gecontroleerd.

@@ -66,6 +66,8 @@ import nl.tufein.openconnect.core.SyncLog
 import nl.tufein.openconnect.core.SyncLogEntry
 import nl.tufein.openconnect.core.WeeklyGoals
 import nl.tufein.openconnect.core.reports.AiVendor
+import nl.tufein.openconnect.core.watch.ConnectIqStore
+import nl.tufein.openconnect.core.watch.StoreApp
 
 data class SettingsUi(
     val ai: AiUi,
@@ -715,6 +717,19 @@ private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, o
         Text(stringResource(R.string.wf_widget_note, config.widgetFileName()), style = MaterialTheme.typography.bodySmall)
         OutlinedButton(onClick = { clipboard.setText(androidx.compose.ui.text.AnnotatedString(config.widgetCommand())) }, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(R.string.wf_widget_copy))
+        }
+        // A direct link to the apps in Garmin's Connect IQ store, once they are published (ConnectIqStore holds the ids).
+        Text(stringResource(R.string.wf_store_title), style = MaterialTheme.typography.titleMedium)
+        val storeLinks = ConnectIqStore.links()
+        if (storeLinks.isEmpty()) {
+            Text(stringResource(R.string.wf_store_none), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        } else {
+            val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+            for (link in storeLinks) {
+                OutlinedButton(onClick = { uriHandler.openUri(link.url) }, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(if (link.app == StoreApp.WATCHFACE) R.string.wf_store_face else R.string.wf_store_widget))
+                }
+            }
         }
     }
 }
