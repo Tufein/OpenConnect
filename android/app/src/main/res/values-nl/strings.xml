@@ -671,4 +671,9 @@
     <string name="race_date_plus">+1 week</string>
     <string name="race_time_minus">-1 min</string>
     <string name="race_time_plus">+1 min</string>
+    <string name="workouts_title">Trainingen op je horloge</string>
+    <string name="workouts_note">Elke geplande loop van de komende 7 dagen wordt een gestructureerde training (warming-up, intervallen of tempo, cooldown) in een .fit-bestand, dat via de USB-kabel naar GARMIN/NewFiles op het horloge wordt gekopieerd. Intervallen en tempo krijgen een tempovenster uit je voorspelde 10 km-tempo. Je vindt ze op het horloge onder Training. Nog niet op een echt horloge geprobeerd.</string>
+    <string name="workouts_send">Stuur de komende 7 dagen naar mijn horloge (USB)</string>
+    <string name="workouts_done">%1$d trainingen naar het horloge gekopieerd, %2$d stonden er al.</string>
+    <string name="workouts_none">Er zijn geen geplande lopen in de komende 7 dagen.</string>
 </resources>

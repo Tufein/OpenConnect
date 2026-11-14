@@ -180,7 +180,7 @@ fun SettingsScreen(
                 Text(stringResource(R.string.watchface_body), style = MaterialTheme.typography.bodyMedium)
                 Button(onClick = onWatchFace, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.watchface_install)) }
                 val uri = androidx.compose.ui.platform.LocalUriHandler.current
-                OutlinedButton(onClick = { uri.openUri("https://apps.garmin.com/") }, modifier = Modifier.fillMaxWidth()) {
+                OutlinedButton(onClick = { uri.openUri(ConnectIqStore.watchFaceUrl ?: ConnectIqStore.HOME) }, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.watchface_store))
                 }
                 Text(stringResource(R.string.watchface_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

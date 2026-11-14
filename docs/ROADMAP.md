@@ -32,7 +32,7 @@ gaat uit zonder dat CI groen is. Wat zonder horloge of telefoon niet te controle
 5. **De link in de app** (Instellingen, Watchface-voorvertoning): één constante per app in `ConnectIqStore.kt`, leeg tot
    de eerste upload. Zie [CONNECT_IQ_STORE.md](CONNECT_IQ_STORE.md).
 
-## v0.25.0: racevoorspelling en racedoel 🚧
+## v0.25.0: racevoorspelling en racedoel ✅
 
 6. **Voorspelde racetijden** (5 km, 10 km, halve en hele marathon) uit je beste prestaties, met de formule van Riegel
    en een eerlijke betrouwbaarheid (een marathon voorspellen uit een 5 km is een schatting, geen belofte). Garmins eigen
@@ -40,12 +40,13 @@ gaat uit zonder dat CI groen is. Wat zonder horloge of telefoon niet te controle
 7. **Racedoel** met datum, afstand en streeftijd, bovenaan de Plan-tab: aftelling, het tempo dat je nodig hebt en een
    oordeel (voor op schema, op koers, meer werk). Datum en streeftijd stel je bij met knoppen (+/- 1 week, +/- 1 minuut).
 
-## v0.26.0: trainingen naar je horloge 🔜
+## v0.26.0: trainingen naar je horloge 🚧
 
 8. **Trainingsplan als FIT-trainingen:** elke sessie van je plan wordt een gestructureerde training (warming-up,
    intervallen of tempo, cooldown) in het FIT-formaat, dat Garmin-horloges kennen. Getest door ze met een
    onafhankelijke decoder terug te lezen.
-9. **Naar het horloge kopiëren** via de USB-verbinding (map `GARMIN/NewFiles`), of delen als bestand.
+9. **Naar het horloge kopiëren** via de USB-verbinding (map `GARMIN/NewFiles`), de komende 7 dagen per keer. Delen als bestand
+   is niet gebouwd.
    ❓ Of een echte fenix 8 de bestanden accepteert is alleen met het horloge te zien.
 
 ## v0.27.0: hartslagzones 🔜

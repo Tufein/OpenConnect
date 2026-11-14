@@ -236,6 +236,7 @@ fun OpenConnectRoot(
                     onCreatePlan = vm::createPlan,
                     onDeletePlan = vm::deletePlan,
                     onRace = vm::raceAction,
+                    onSendWorkouts = vm::sendPlanToWatch,
                     onShiftWeek = vm::shiftWeek,
                     onPeriod = vm::setReportPeriod,
                     onGenerate = vm::generateWeeklyReport,

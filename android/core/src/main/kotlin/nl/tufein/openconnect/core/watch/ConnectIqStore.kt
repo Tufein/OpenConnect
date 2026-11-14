@@ -20,6 +20,12 @@ object ConnectIqStore {
     /** The store id (or address) of the OpenConnect widget. Empty until the widget is published. */
     const val WIDGET_ID = ""
 
+    /** Garmin's store start page: where the "find watch faces" button goes while OpenConnect's own listing has no id. */
+    const val HOME = "https://apps.garmin.com/"
+
+    /** The store address of the watch face, or null while [WATCHFACE_ID] is empty. */
+    val watchFaceUrl: String? get() = url(WATCHFACE_ID)
+
     /** Without a language part (`/en-US/`), so the store opens in the reader's own language. */
     const val BASE = "https://apps.garmin.com/apps/"
 
