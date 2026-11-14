@@ -107,6 +107,11 @@ class SettingsStore(
         get() = prefs.getString(KEY_PLAN, "") ?: ""
         set(value) = prefs.edit().putString(KEY_PLAN, value).apply()
 
+    /** The race the user is aiming at, as [nl.tufein.openconnect.core.RaceGoal] writes it; empty for none. */
+    var raceGoal: String
+        get() = prefs.getString(KEY_RACE, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_RACE, value).apply()
+
     /** Whether the first-start questions (which devices do you use) were answered. */
     var onboarded: Boolean
         get() = prefs.getBoolean(KEY_ONBOARDED, false)
@@ -305,6 +310,7 @@ class SettingsStore(
         private const val KEY_USE_GARMIN = "use_garmin"
         private const val KEY_USE_OURA = "use_oura"
         private const val KEY_PLAN = "training_plan"
+        private const val KEY_RACE = "race_goal"
         private const val KEY_APP_LOCK = "app_lock"
         private const val KEY_SYNC_LOG = "sync_log"
         private const val KEY_HEALTH_AUTO = "health_connect_auto"

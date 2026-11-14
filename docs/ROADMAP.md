@@ -17,8 +17,9 @@ gaat uit zonder dat CI groen is. Wat zonder horloge of telefoon niet te controle
 | v0.10.0 – v0.15.0 | Back-up, synclogboek, widget en meldingen, Health Connect, beste prestaties, trainingsplan, app-vergrendeling |
 | v0.16.0 – v0.19.0 | Oura Ring, één AI tegelijk, apparaatkeuze, thema's, drie ontwerpen (Clean, Dashboard, Retro) |
 | v0.20.0 – v0.23.0 | Watchface-voorvertoning, watchfaces en widget als Connect IQ-broncode met bouwscript |
+| v0.24.0 | Op weg naar de Connect IQ-store: instellingen in Garmins app, `.iq`-build, controlescript, store-teksten, store-link in de app |
 
-## v0.24.0: op weg naar de Connect IQ-store 🚧
+## v0.24.0: op weg naar de Connect IQ-store ✅
 
 1. **Instellen in Garmins app.** Ontwerp, kleur en vier velden van face, widget en glance zijn instellingen in de
    Connect IQ-app van Garmin (Nederlands en Engels). Ongeldige of ontbrekende instellingen vallen terug op de
@@ -31,12 +32,13 @@ gaat uit zonder dat CI groen is. Wat zonder horloge of telefoon niet te controle
 5. **De link in de app** (Instellingen, Watchface-voorvertoning): één constante per app in `ConnectIqStore.kt`, leeg tot
    de eerste upload. Zie [CONNECT_IQ_STORE.md](CONNECT_IQ_STORE.md).
 
-## v0.25.0: racevoorspelling en racedoel 🔜
+## v0.25.0: racevoorspelling en racedoel 🚧
 
 6. **Voorspelde racetijden** (5 km, 10 km, halve en hele marathon) uit je beste prestaties, met de formule van Riegel
    en een eerlijke betrouwbaarheid (een marathon voorspellen uit een 5 km is een schatting, geen belofte). Garmins eigen
    Race Predictor wordt niet aan ontwikkelaars gegeven, dit is OpenConnects eigen schatting.
-7. **Racedoel** met datum, afstand en streeftijd: aftelling op Home en een oordeel (voor op schema, op koers, meer werk).
+7. **Racedoel** met datum, afstand en streeftijd, bovenaan de Plan-tab: aftelling, het tempo dat je nodig hebt en een
+   oordeel (voor op schema, op koers, meer werk). Datum en streeftijd stel je bij met knoppen (+/- 1 week, +/- 1 minuut).
 
 ## v0.26.0: trainingen naar je horloge 🔜
 

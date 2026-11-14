@@ -26,6 +26,11 @@ import androidx.compose.ui.unit.dp
 import nl.tufein.openconnect.R
 import nl.tufein.openconnect.core.PlanGoal
 import nl.tufein.openconnect.core.PlannedSession
+import nl.tufein.openconnect.core.RaceDistance
+import nl.tufein.openconnect.core.RacePrediction
+import nl.tufein.openconnect.core.RaceState
+import nl.tufein.openconnect.core.RaceVerdict
+import nl.tufein.openconnect.core.Reliability
 import nl.tufein.openconnect.core.SessionType
 import nl.tufein.openconnect.core.WeekProgress
 import nl.tufein.openconnect.core.WeekState
@@ -39,6 +44,7 @@ fun PlanContent(
     state: PlanState,
     onCreate: (PlanGoal, Int, Int) -> Unit,
     onDelete: () -> Unit,
+    onRace: (RaceAction) -> Unit,
     contentPadding: PaddingValues,
 ) {
     LazyColumn(
@@ -46,6 +52,7 @@ fun PlanContent(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         if (!state.loaded) return@LazyColumn
+        item { RaceCard(state.race, onRace) }
         val plan = state.plan
         val progress = state.progress
         if (plan == null || progress == null) {
@@ -187,3 +194,104 @@ private fun sessionText(type: SessionType): Pair<Int, Int> = when (type) {
 
 private fun dayLabel(date: LocalDate): String =
     date.format(DateTimeFormatter.ofPattern("EEE d MMM", Locale.getDefault()))
+
+/** What the person can change about the race goal on the Plan tab. */
+sealed interface RaceAction {
+    data class Start(val distance: RaceDistance) : RaceAction
+    data class ShiftDate(val weeks: Long) : RaceAction
+    data class ShiftTarget(val seconds: Int) : RaceAction
+    data object Clear : RaceAction
+}
+
+private fun raceDistanceName(d: RaceDistance): Int = when (d) {
+    RaceDistance.K5 -> R.string.race_d_5k
+    RaceDistance.K10 -> R.string.race_d_10k
+    RaceDistance.HALF -> R.string.race_d_half
+    RaceDistance.MARATHON -> R.string.race_d_marathon
+}
+
+private fun reliabilityName(r: Reliability): Int = when (r) {
+    Reliability.EXACT -> R.string.race_rel_exact
+    Reliability.GOOD -> R.string.race_rel_good
+    Reliability.ROUGH -> R.string.race_rel_rough
+    Reliability.WEAK -> R.string.race_rel_weak
+}
+
+@Composable
+private fun PredictionRow(p: RacePrediction) {
+    Text(
+        stringResource(
+            R.string.race_row,
+            stringResource(raceDistanceName(p.distance)),
+            Fmt.duration(p.seconds),
+            Fmt.pace(p.paceSecondsPerKm),
+            stringResource(reliabilityName(p.reliability)),
+        ),
+        style = MaterialTheme.typography.bodyMedium,
+    )
+}
+
+/** Predicted race times from your best efforts and, once you set one, a race goal with its countdown and verdict. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun RaceCard(race: RaceState, onRace: (RaceAction) -> Unit) {
+    var distance by rememberSaveable { mutableStateOf(RaceDistance.K10.key) }
+    SectionTitle(stringResource(R.string.race_title))
+    SurfaceCard {
+        val outlook = race.outlook
+        if (outlook == null) {
+            Text(stringResource(R.string.race_intro), style = MaterialTheme.typography.bodyMedium)
+            if (race.predictions.isEmpty()) {
+                Text(stringResource(R.string.race_no_runs), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            for (p in race.predictions) PredictionRow(p)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                for (d in RaceDistance.entries) {
+                    FilterChip(selected = distance == d.key, onClick = { distance = d.key }, label = { Text(stringResource(raceDistanceName(d))) })
+                }
+            }
+            Button(onClick = { onRace(RaceAction.Start(RaceDistance.of(distance) ?: RaceDistance.K10)) }) {
+                Text(stringResource(R.string.race_set))
+            }
+        } else {
+            val goal = outlook.goal
+            Text(
+                stringResource(R.string.race_goal_line, stringResource(raceDistanceName(goal.distance)), Fmt.date(goal.date)),
+                style = MaterialTheme.typography.titleMedium,
+            )
+            val days = outlook.daysLeft
+            Text(
+                when {
+                    days > 0 -> stringResource(R.string.race_countdown, days, days / 7)
+                    days == 0L -> stringResource(R.string.race_today)
+                    else -> stringResource(R.string.race_past, -days)
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                stringResource(R.string.race_target, Fmt.duration(goal.targetSeconds.toDouble()), Fmt.pace(goal.targetPaceSecondsPerKm())),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            val predicted = outlook.predicted
+            val gap = outlook.gapSeconds
+            Text(
+                when (outlook.verdict) {
+                    RaceVerdict.AHEAD -> stringResource(R.string.race_verdict_ahead, Fmt.duration(predicted?.seconds ?: 0.0))
+                    RaceVerdict.ON_TRACK -> stringResource(R.string.race_verdict_on_track, Fmt.duration(predicted?.seconds ?: 0.0))
+                    RaceVerdict.BEHIND -> stringResource(R.string.race_verdict_behind, Fmt.duration(predicted?.seconds ?: 0.0), Fmt.duration(gap ?: 0.0))
+                    RaceVerdict.NO_DATA -> stringResource(R.string.race_verdict_no_data)
+                },
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(onClick = { onRace(RaceAction.ShiftDate(-1)) }) { Text(stringResource(R.string.race_date_minus)) }
+                OutlinedButton(onClick = { onRace(RaceAction.ShiftDate(1)) }) { Text(stringResource(R.string.race_date_plus)) }
+                OutlinedButton(onClick = { onRace(RaceAction.ShiftTarget(-60)) }) { Text(stringResource(R.string.race_time_minus)) }
+                OutlinedButton(onClick = { onRace(RaceAction.ShiftTarget(60)) }) { Text(stringResource(R.string.race_time_plus)) }
+            }
+            for (p in race.predictions) PredictionRow(p)
+            OutlinedButton(onClick = { onRace(RaceAction.Clear) }) { Text(stringResource(R.string.race_clear)) }
+        }
+    }
+}

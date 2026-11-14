@@ -60,6 +60,7 @@ fun InsightsScreen(
     contentPadding: PaddingValues = PaddingValues(),
     onOpenHealth: (nl.tufein.openconnect.core.ChartMetric) -> Unit = {},
     onOpenActivities: () -> Unit = {},
+    onRace: (RaceAction) -> Unit = {},
 ) {
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
         Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -74,7 +75,7 @@ fun InsightsScreen(
             InsightsTab.Week -> WeekContent(reports, busy, active, onShiftWeek, onPeriod, onGenerate, onOpenActivity, contentPadding, onOpenHealth, onOpenActivities)
             InsightsTab.Trophies -> TrophiesContent(trophies, contentPadding)
             InsightsTab.Coach -> CoachContent(coach, active, onAsk, onClearCoach, onOpenAiSettings, contentPadding)
-            InsightsTab.Plan -> PlanContent(plan, onCreatePlan, onDeletePlan, contentPadding)
+            InsightsTab.Plan -> PlanContent(plan, onCreatePlan, onDeletePlan, onRace, contentPadding)
         }
     }
 }

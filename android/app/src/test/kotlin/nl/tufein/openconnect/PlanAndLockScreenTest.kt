@@ -42,16 +42,44 @@ class PlanAndLockScreenTest : AppTestBase() {
         rule.onNodeWithText("Plan").performClick()
         waitForText("Create plan")
         shot("33-plan-setup")
-        rule.onNodeWithText("10K").performClick()
-        rule.onNodeWithText("Create plan").performClick()
+        clickText("10K")
+        clickText("Create plan")
         waitForText("10K plan")
         waitForText("Next run")
         shot("34-plan")
         scrollToText("All weeks")
         shot("35-plan-weeks")
-        scrollToText("Delete plan")
-        rule.onNodeWithText("Delete plan").performClick()
+        clickText("Delete plan")
         waitForText("Create plan")
+    }
+
+    @Test
+    fun aRaceGoalIsSetMovedAndRemoved() {
+        launchFresh()
+        waitForText("Load demo data")
+        rule.onNodeWithText("Load demo data").performClick()
+        rule.waitUntil(15_000) { !hasText("Load demo data", substring = false) }
+        rule.waitUntil(15_000) { !hasText("Demo data loaded", substring = true) }
+        tab("Insights").performClick()
+        waitForText("Week of", substring = true)
+        rule.onNodeWithText("Plan").performClick()
+        waitForText("Race goal")
+        shot("48-race-setup")
+        clickText("Set race goal")
+        // Twelve weeks out, in UTC like the plan itself.
+        waitForText("in 84 days (12 weeks)")
+        clickText("+1 week")
+        waitForText("in 91 days (13 weeks)")
+        val settings = androidx.test.core.app.ApplicationProvider.getApplicationContext<OpenConnectApp>().container.settings
+        val goal = nl.tufein.openconnect.core.RaceGoal.decode(settings.raceGoal)!!
+        assertEquals(java.time.LocalDate.now(java.time.ZoneOffset.UTC).plusDays(91), goal.date)
+        val target = goal.targetSeconds
+        clickText("+1 min")
+        rule.waitUntil(5_000) { nl.tufein.openconnect.core.RaceGoal.decode(settings.raceGoal)?.targetSeconds == target + 60 }
+        shot("49-race-goal")
+        clickText("Remove race goal")
+        waitForText("Set race goal")
+        assertEquals("", settings.raceGoal)
     }
 
     @Test
