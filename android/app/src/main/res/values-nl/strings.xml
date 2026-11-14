@@ -614,6 +614,8 @@
     <string name="home_my_day">Mijn dag</string>
     <string name="wf_build_title">Bouw deze face</string>
     <string name="wf_build_copy">Kopieer bouwcommando</string>
+    <string name="wf_device">Horloge</string>
+    <string name="wf_file">Het bestand heet %1$s; kies dat bij het installeren hieronder.</string>
     <string name="wf_title">Voorvertoning watchface</string>
     <string name="wf_design">Face</string>
     <string name="wf_colour">Kleur van de face</string>

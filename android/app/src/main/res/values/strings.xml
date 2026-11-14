@@ -614,6 +614,8 @@
     <string name="home_my_day">My day</string>
     <string name="wf_build_title">Build this face</string>
     <string name="wf_build_copy">Copy build command</string>
+    <string name="wf_device">Watch</string>
+    <string name="wf_file">The file is named %1$s; pick that one when you install it below.</string>
     <string name="wf_title">Watch face preview</string>
     <string name="wf_design">Face</string>
     <string name="wf_colour">Face colour</string>

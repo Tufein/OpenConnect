@@ -110,7 +110,7 @@ fun SettingsScreen(
     /** A colour theme or drawing style was picked. */
     onLook: (palette: String, style: String) -> Unit = { _, _ -> },
     /** The watch face preview changed: design, colour and four fields. */
-    onWatchFaceLook: (design: String, color: String, fields: List<String>) -> Unit = { _, _, _ -> },
+    onWatchFaceLook: (WatchFaceConfig) -> Unit = {},
     /** One of the three designs was picked. */
     onDesign: (String) -> Unit = {},
     /** Pick a watch face file to copy to the watch over USB. */
@@ -653,7 +653,7 @@ private fun designBody(d: Design): Int = when (d) {
 /** A round preview of the watch face with the choices that decide how it is built. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, onChange: (String, String, List<String>) -> Unit) {
+private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, onChange: (WatchFaceConfig) -> Unit) {
     SectionTitle(stringResource(R.string.wf_title))
     SurfaceCard {
         androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { WatchFacePreview(config, data) }
@@ -662,7 +662,7 @@ private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, o
             for (design in Design.entries) {
                 FilterChip(
                     selected = config.design == design.key,
-                    onClick = { onChange(design.key, config.color, config.fields) },
+                    onClick = { onChange(config.copy(design = design.key)) },
                     label = { Text(stringResource(wfDesignName(design))) },
                 )
             }
@@ -672,7 +672,7 @@ private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, o
             for (color in WatchColor.entries) {
                 FilterChip(
                     selected = config.color == color.key,
-                    onClick = { onChange(config.design, color.key, config.fields) },
+                    onClick = { onChange(config.copy(color = color.key)) },
                     label = { Text(stringResource(color.label)) },
                     leadingIcon = { androidx.compose.foundation.layout.Box(Modifier.size(14.dp).background(color.color, androidx.compose.foundation.shape.CircleShape)) },
                 )
@@ -688,16 +688,23 @@ private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, o
                     onClick = {
                         // A chosen field becomes the big one; another one replaces the last.
                         val next = if (place >= 0) listOf(field) + chosen.filter { it != field } else chosen.dropLast(1) + field
-                        onChange(config.design, config.color, next.map { it.key })
+                        onChange(config.copy(fields = next.map { it.key }))
                     },
                     label = { Text((if (place >= 0) "${place + 1} " else "") + stringResource(field.label)) },
                 )
+            }
+        }
+        Text(stringResource(R.string.wf_device), style = MaterialTheme.typography.titleMedium)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (device in WatchDevice.entries) {
+                FilterChip(selected = config.device == device.id, onClick = { onChange(config.copy(device = device.id)) }, label = { Text(device.label) })
             }
         }
         Text(stringResource(R.string.wf_fields_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(stringResource(R.string.wf_preview_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         // The command that builds exactly this face; it can be copied to a terminal (see docs/WATCH_FACES.md).
         Text(stringResource(R.string.wf_build_title), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.wf_file, config.fileName()), style = MaterialTheme.typography.bodySmall)
         Text(config.buildCommand(), style = MaterialTheme.typography.bodySmall.copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace))
         val clipboard = androidx.compose.ui.platform.LocalClipboardManager.current
         OutlinedButton(onClick = { clipboard.setText(androidx.compose.ui.text.AnnotatedString(config.buildCommand())) }, modifier = Modifier.fillMaxWidth()) {
