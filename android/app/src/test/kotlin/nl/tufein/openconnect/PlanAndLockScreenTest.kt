@@ -55,6 +55,35 @@ class PlanAndLockScreenTest : AppTestBase() {
     }
 
     @Test
+    fun aRaceGoalIsSetMovedAndRemoved() {
+        launchFresh()
+        waitForText("Load demo data")
+        rule.onNodeWithText("Load demo data").performClick()
+        rule.waitUntil(15_000) { !hasText("Load demo data", substring = false) }
+        rule.waitUntil(15_000) { !hasText("Demo data loaded", substring = true) }
+        tab("Insights").performClick()
+        waitForText("Week of", substring = true)
+        rule.onNodeWithText("Plan").performClick()
+        waitForText("Race goal")
+        shot("48-race-setup")
+        clickText("Set race goal")
+        // Twelve weeks out, in UTC like the plan itself.
+        waitForText("in 84 days (12 weeks)")
+        clickText("+1 week")
+        waitForText("in 91 days (13 weeks)")
+        val settings = androidx.test.core.app.ApplicationProvider.getApplicationContext<OpenConnectApp>().container.settings
+        val goal = nl.tufein.openconnect.core.RaceGoal.decode(settings.raceGoal)!!
+        assertEquals(java.time.LocalDate.now(java.time.ZoneOffset.UTC).plusDays(91), goal.date)
+        val target = goal.targetSeconds
+        clickText("+1 min")
+        rule.waitUntil(5_000) { nl.tufein.openconnect.core.RaceGoal.decode(settings.raceGoal)?.targetSeconds == target + 60 }
+        shot("49-race-goal")
+        clickText("Remove race goal")
+        waitForText("Set race goal")
+        assertEquals("", settings.raceGoal)
+    }
+
+    @Test
     fun theLockHidesTheAppUntilTheCheckPassesAndOpensWithoutAScreenLock() {
         val fake = FakeUnlocker()
         launchFresh { app ->

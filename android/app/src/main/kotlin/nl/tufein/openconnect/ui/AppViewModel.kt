@@ -24,6 +24,9 @@ import nl.tufein.openconnect.core.Lap
 import nl.tufein.openconnect.core.PlanConfig
 import nl.tufein.openconnect.core.PlanGoal
 import nl.tufein.openconnect.core.PlanProgress
+import nl.tufein.openconnect.core.RaceGoal
+import nl.tufein.openconnect.core.RaceState
+import nl.tufein.openconnect.core.Races
 import nl.tufein.openconnect.core.TrainingPlan
 import nl.tufein.openconnect.core.TrainingPlans
 import nl.tufein.openconnect.core.BackupException
@@ -572,7 +575,32 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             TrainingPlans.progress(it, repo.listActivities(sport = Sport.RUNNING, start = from, end = to, limit = 500), today)
         }
         val baseline = TrainingPlans.baselineKm(repo, today)
-        _plan.value = PlanState(loaded = true, plan = built, progress = progress, baselineKm = baseline, today = today)
+        _plan.value = PlanState(loaded = true, plan = built, progress = progress, baselineKm = baseline, today = today, race = raceState(today))
+    }
+
+    private fun raceState(today: LocalDate): RaceState =
+        Races.state(_reports.value.efforts, RaceGoal.decode(container.settings.raceGoal), today)
+
+    /** Works out the race predictions and outlook again, after the efforts or the goal changed. */
+    private fun publishRace() {
+        val today = LocalDate.now(ZoneOffset.UTC)
+        _plan.update { it.copy(race = raceState(today)) }
+    }
+
+    /** A change to the race goal: start one, move its date by weeks, move its target by seconds, or remove it. */
+    fun raceAction(action: RaceAction) {
+        val today = LocalDate.now(ZoneOffset.UTC)
+        val current = RaceGoal.decode(container.settings.raceGoal)
+        val next = when (action) {
+            is RaceAction.Start -> RaceGoal.starter(action.distance, today, _plan.value.race.predictions)
+            is RaceAction.ShiftDate -> current?.copy(date = current.date.plusWeeks(action.weeks))
+            is RaceAction.ShiftTarget -> current?.copy(
+                targetSeconds = (current.targetSeconds + action.seconds).coerceIn(RaceGoal.MIN_SECONDS, RaceGoal.MAX_SECONDS),
+            )
+            RaceAction.Clear -> null
+        }
+        container.settings.raceGoal = next?.encode().orEmpty()
+        publishRace()
     }
 
     /** Builds a plan that starts next Monday from what you run now. */
@@ -617,6 +645,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private fun loadEfforts() = io {
         val efforts = BestEfforts.personalBests(repo)
         _reports.update { it.copy(efforts = efforts) }
+        publishRace()
     }
 
     // ------------------------------------------------------------------------------- actions
@@ -798,6 +827,8 @@ data class PlanState(
     /** What you run in a week now, which the next plan starts from. */
     val baselineKm: Double = 0.0,
     val today: LocalDate = LocalDate.now(ZoneOffset.UTC),
+    /** Predicted race times and the race goal, if there is one. */
+    val race: RaceState = RaceState(),
 )
 
 /** Whether the app is locked right now (and whether the lock is on at all). */

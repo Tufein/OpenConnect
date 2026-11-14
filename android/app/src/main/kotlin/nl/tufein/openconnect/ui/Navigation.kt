@@ -235,6 +235,7 @@ fun OpenConnectRoot(
                     plan = plan,
                     onCreatePlan = vm::createPlan,
                     onDeletePlan = vm::deletePlan,
+                    onRace = vm::raceAction,
                     onShiftWeek = vm::shiftWeek,
                     onPeriod = vm::setReportPeriod,
                     onGenerate = vm::generateWeeklyReport,
