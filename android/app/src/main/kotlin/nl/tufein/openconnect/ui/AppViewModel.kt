@@ -43,6 +43,12 @@ import nl.tufein.openconnect.core.PlayerLevel
 import nl.tufein.openconnect.core.ReadinessCalculator
 import nl.tufein.openconnect.core.Readiness
 import nl.tufein.openconnect.core.TrainingLoadCalculator
+import nl.tufein.openconnect.core.HeartZones
+import nl.tufein.openconnect.core.ActivityZones
+import nl.tufein.openconnect.core.MaxHr
+import nl.tufein.openconnect.core.MaxHrSource
+import nl.tufein.openconnect.core.ZoneOverview
+import nl.tufein.openconnect.core.ZoneVerdict
 import nl.tufein.openconnect.core.TrainingLoad
 import nl.tufein.openconnect.core.WeeklyGoalProgress
 import nl.tufein.openconnect.core.WeeklyGoals
@@ -104,6 +110,9 @@ data class DetailState(
     val laps: List<Lap> = emptyList(),
     val efforts: List<Effort> = emptyList(),
     val report: StoredReport? = null,
+    /** Time per heart-rate zone of this activity, and the maximum the zones were worked out from. */
+    val zones: ActivityZones? = null,
+    val zonesMaxHr: Int = 0,
 )
 
 data class HealthState(
@@ -481,6 +490,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadReports(_reports.value.weekStart)
         loadEfforts()
         loadPlan()
+        loadZones()
         loadTrophies()
         container.oura.refreshDays()
         currentActivityId?.let { openActivity(it) }
@@ -525,9 +535,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         currentActivityId = id
         io {
             val activity = repo.getActivity(id)
+            val maxHr = HeartZones.maxHr(container.settings.maxHr, repo.listActivities(limit = 10_000)).bpm
             _detail.value = DetailState(
                 loaded = true,
                 activity = activity,
+                zones = activity?.let { HeartZones.activityZones(it, maxHr) },
+                zonesMaxHr = maxHr,
                 laps = activity?.let { BestEfforts.laps(it.track) }.orEmpty(),
                 efforts = activity?.takeIf { it.sport == Sport.RUNNING }?.let { BestEfforts.efforts(it.track) }.orEmpty(),
                 report = container.reports.cached("activity", id),
@@ -561,6 +574,34 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Switches between week, month and year, starting at the current one. */
     fun setReportPeriod(period: ReportPeriod) = loadReports(LocalDate.now(ZoneOffset.UTC), period)
+
+    private val _zones = MutableStateFlow(ZonesState())
+
+    /** Heart-rate zones: the maximum, the zone table and the last four weeks. */
+    val zones: StateFlow<ZonesState> = _zones.asStateFlow()
+
+    fun loadZones() = io {
+        val today = LocalDate.now(ZoneOffset.UTC)
+        val all = repo.listActivities(limit = 10_000)
+        val from = today.minusDays((HeartZones.WEEKS * 7 - 1).toLong()).atStartOfDay().toInstant(ZoneOffset.UTC)
+        // Listings leave the tracks out, and the zones are counted from the samples, so fetch the recent ones in full.
+        val recent = all.filter { !it.startTime.isBefore(from) }.mapNotNull { repo.getActivity(it.id) }
+        _zones.value = ZonesState(loaded = true, overview = HeartZones.overview(all, recent, container.settings.maxHr, today))
+    }
+
+    /** A change to the maximum heart rate: move it by some beats, or go back to the highest measured. */
+    fun zonesAction(action: ZonesAction) {
+        val current = _zones.value.overview.maxHr
+        when (action) {
+            is ZonesAction.ShiftMax -> {
+                val base = if (current.bpm > 0) current.bpm else HeartZones.DEFAULT_MAX_HR
+                container.settings.maxHr = (base + action.bpm).coerceIn(HeartZones.MIN_MAX_HR, HeartZones.MAX_MAX_HR)
+            }
+            ZonesAction.UseMeasured -> container.settings.maxHr = 0
+        }
+        loadZones()
+        currentActivityId?.let { openActivity(it) }
+    }
 
     private val _plan = MutableStateFlow(PlanState())
 
@@ -846,6 +887,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         return out.toByteArray()
     }
 }
+
+/** The Zones tab: nothing to show until [loaded]; without any heart rate the overview has no zones. */
+data class ZonesState(
+    val loaded: Boolean = false,
+    val overview: ZoneOverview = ZoneOverview(MaxHr(0, MaxHrSource.NONE), emptyList(), emptyList(), null, ZoneVerdict.NO_DATA),
+)
 
 /** The training plan on the Plan tab: nothing chosen yet ([plan] is null) or the plan and how far it has got. */
 data class PlanState(

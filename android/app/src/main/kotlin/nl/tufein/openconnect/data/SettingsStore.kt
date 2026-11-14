@@ -112,6 +112,11 @@ class SettingsStore(
         get() = prefs.getString(KEY_RACE, "") ?: ""
         set(value) = prefs.edit().putString(KEY_RACE, value).apply()
 
+    /** The maximum heart rate the zones are worked out from; 0 means "use the highest measured". */
+    var maxHr: Int
+        get() = prefs.getInt(KEY_MAX_HR, 0)
+        set(value) = prefs.edit().putInt(KEY_MAX_HR, value).apply()
+
     /** Whether the first-start questions (which devices do you use) were answered. */
     var onboarded: Boolean
         get() = prefs.getBoolean(KEY_ONBOARDED, false)
@@ -311,6 +316,7 @@ class SettingsStore(
         private const val KEY_USE_OURA = "use_oura"
         private const val KEY_PLAN = "training_plan"
         private const val KEY_RACE = "race_goal"
+        private const val KEY_MAX_HR = "max_hr"
         private const val KEY_APP_LOCK = "app_lock"
         private const val KEY_SYNC_LOG = "sync_log"
         private const val KEY_HEALTH_AUTO = "health_connect_auto"
