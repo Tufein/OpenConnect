@@ -103,6 +103,12 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 28. **Pick your watch and get the right file:** the app knows five fenix 8 models, shows the exact file name of the
     face you chose and the build command for it; `build.sh --all-colors` makes one file per colour.
 
+## v0.23.0: widget and glance ✅
+
+29. **Glance and widget as Connect IQ source:** `build.sh --type widget` builds `openconnect-widget-<colour>-<device>.prg`;
+    the app shows its file name and a copy button. No sleep screen: the watch gives apps no sleep-duration API.
+    Not compiled yet, like the faces.
+
 ## Later 💡
 
 - Wear OS or a watch face is out of scope; the project is about the phone side.

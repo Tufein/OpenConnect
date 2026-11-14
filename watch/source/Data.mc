@@ -2,10 +2,12 @@ import Toybox.Activity;
 import Toybox.ActivityMonitor;
 import Toybox.Lang;
 import Toybox.SensorHistory;
+import Toybox.Time;
 import Toybox.UserProfile;
 
 // The values a face can show. Every one of them is something the watch itself knows, so no phone is needed. A value
 // the watch cannot give right now is null and the face shows a dash.
+(:glance)
 module Data {
     const COLOR_BATTERY = 0x4FB3FF;
     const COLOR_HEART = 0xFF6B5B;
@@ -107,6 +109,25 @@ module Data {
             return null;
         }
         return sample.data.toNumber();
+    }
+
+    // Body Battery of the last 12 hours, oldest first, for the widget's line.
+    function bodyBatteryHistory() {
+        var out = [];
+        if ((Toybox has :SensorHistory) && (Toybox.SensorHistory has :getBodyBatteryHistory)) {
+            var iterator = SensorHistory.getBodyBatteryHistory({
+                :period => new Time.Duration(12 * 3600),
+                :order => SensorHistory.ORDER_OLDEST_FIRST
+            });
+            var sample = (iterator == null) ? null : iterator.next();
+            while (sample != null && out.size() < 60) {
+                if (sample.data != null) {
+                    out.add(sample.data);
+                }
+                sample = iterator.next();
+            }
+        }
+        return out;
     }
 
     // The live heart rate; when the watch has none right now, the resting rate from the user profile.

@@ -3,6 +3,7 @@
 #
 #   watch/build.sh --device fenix847mm --design retro --color pink --fields steps,battery,heart,stress
 #   watch/build.sh --device fenix847mm --design clean --all-colors      (one file per colour)
+#   watch/build.sh --device fenix847mm --type widget --color mint       (widget with glance, instead of a face)
 #
 # Needs, once: the Connect IQ SDK and the watch's device files (Garmin's SDK Manager downloads both and asks for your
 # Garmin login) and a developer key (--make-key creates one). See docs/WATCH_FACES.md.
@@ -10,7 +11,7 @@ set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 device="fenix847mm"; design="clean"; color="blue"; fields="battery,heart,stress,steps"
-dry=0; make_key=0; all_colors=0; key="${CIQ_KEY:-$here/developer_key.der}"; sdk="${CIQ_SDK:-}"
+kind="watchface"; dry=0; make_key=0; all_colors=0; key="${CIQ_KEY:-$here/developer_key.der}"; sdk="${CIQ_SDK:-}"
 palette="mint:5CF2C0 blue:7AA7FF amber:FFB000 pink:FF5FA2 green:9BBC0F"
 
 die() { echo "build.sh: $*" >&2; exit 2; }
@@ -23,10 +24,11 @@ while [ $# -gt 0 ]; do
     --fields) fields="${2:?}"; shift 2 ;;
     --key) key="${2:?}"; shift 2 ;;
     --sdk) sdk="${2:?}"; shift 2 ;;
+    --type) kind="${2:?}"; shift 2 ;;
     --all-colors) all_colors=1; shift ;;
     --dry-run) dry=1; shift ;;
     --make-key) make_key=1; shift ;;
-    -h|--help) sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) die "unknown option $1" ;;
   esac
 done
@@ -41,6 +43,7 @@ colour_hex() {
 }
 
 case "$design" in clean|dashboard|retro) ;; *) die "design must be clean, dashboard or retro" ;; esac
+case "$kind" in watchface|widget) ;; *) die "type must be watchface or widget" ;; esac
 IFS=',' read -r -a list <<< "$fields"
 [ "${#list[@]}" -eq 4 ] || die "fields needs four names, for example battery,heart,stress,steps"
 for f in "${list[@]}"; do
@@ -53,6 +56,9 @@ if [ "$all_colors" -eq 0 ]; then hexes="$(colour_hex "$color")"; else
 fi
 
 gen="$here/gen"
+# A widget ignores the design (it has one look); its file, app id and name say so.
+if [ "$kind" = "widget" ]; then id_part="widget"; label="Widget"; entry="OpenConnectWidgetApp"
+else id_part="$design"; label="${design^}"; entry="OpenConnectFaceApp"; fi
 quoted="$(printf '"%s", ' "${list[@]}")"
 
 # Writes gen/ for one colour; prints the file name the build will have.
@@ -60,9 +66,10 @@ generate() {
   local hex="$1"
   # One app id per design and colour, so several variants can sit on the watch side by side.
   local app_id
-  app_id="$(printf 'openconnect-%s-%s' "$design" "$hex" | md5sum | cut -c1-32)"
+  app_id="$(printf 'openconnect-%s-%s' "$id_part" "$hex" | md5sum | cut -c1-32)"
   rm -rf "$gen"; mkdir -p "$gen/source" "$gen/resources/strings"
   cat > "$gen/source/Config.mc" <<CFG
+(:glance)
 module Config {
     const DESIGN = "$design";
     const COLOR = 0x$hex;
@@ -71,13 +78,13 @@ module Config {
 CFG
   cat > "$gen/resources/strings/strings.xml" <<STR
 <strings>
-    <string id="AppName">OpenConnect ${design^}</string>
+    <string id="AppName">OpenConnect ${label}</string>
 </strings>
 STR
-  sed -e "s/__APP_ID__/$app_id/" -e "s/__PRODUCT__/$device/" "$here/manifest.xml" > "$gen/manifest.xml"
+  sed -e "s/__APP_ID__/$app_id/" -e "s/__PRODUCT__/$device/" -e "s/__ENTRY__/$entry/" -e "s/__TYPE__/$kind/" "$here/manifest.xml" > "$gen/manifest.xml"
 }
 
-file_for() { echo "openconnect-$design-$1-$device.prg"; }
+file_for() { echo "openconnect-$id_part-$1-$device.prg"; }
 
 if [ "$dry" -eq 1 ]; then
   for hex in $hexes; do

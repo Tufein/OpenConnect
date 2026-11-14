@@ -32,6 +32,7 @@ watch/build.sh --device fenix847mm --design retro --color pink --fields steps,ba
 ```
 
 - `--design`: `clean`, `dashboard` or `retro`.
+- `--type`: `watchface` (default) or `widget`. A widget has one look, so `--design` is ignored for it.
 - `--color`: `mint`, `blue`, `amber`, `pink`, `green` or a hex colour such as `12ab34`.
 - `--all-colors`: one file per colour (mint, blue, amber, pink, green) instead of `--color`.
 - `--fields`: four different ones of `battery`, `heart`, `stress`, `steps`, `floors`. The first is the big one.
@@ -41,6 +42,20 @@ watch/build.sh --device fenix847mm --design retro --color pink --fields steps,ba
 
 The result is `watch/out/openconnect-<design>-<COLOUR HEX>-<device>.prg`, for example `openconnect-retro-FF5FA2-fenix847mm.prg`. The app shows this name for the face you chose, so you pick the right file when you install it. Every design and colour gets its own app id, so
 several variants can sit on the watch side by side.
+
+## The widget and its glance (v0.23.0)
+
+`watch/build.sh --type widget --device fenix847mm --color mint` builds a second app, `openconnect-widget-<COLOUR>-<device>.prg`:
+
+- **Glance:** in the glance list (hold the up button, or swipe from the watch face) it shows `OPENCONNECT` and your first
+  three fields on one line, for example `Battery 72  HR 52  Stress 28`.
+- **Widget:** open it from the glance for one screen: the first field as a ring, all four fields as rows, and a line of
+  the Body Battery of the last 12 hours.
+- **Sleep is not in it.** A Connect IQ app on the watch cannot read how long you slept (there is no API for it), so the
+  roadmap's sleep screen is not possible. The fields are the same watch-native ones as the faces: `battery`, `heart`,
+  `stress`, `steps`, `floors`.
+- A glance has very little memory. `Config`, `Data` and the glance class carry the `(:glance)` annotation for that; if
+  the glance shows nothing on the watch, send the message and it gets simpler.
 
 ## How it works
 
@@ -53,7 +68,7 @@ several variants can sit on the watch side by side.
 
 ## What has not been checked
 
-The Monkey C has **not been compiled or run**: the device files need a Garmin login, which the build environment does
+The widget and glance (`OpenConnectWidgetApp.mc`, `WidgetView.mc`, `OpenConnectGlance.mc`) are in the same position. The Monkey C has **not been compiled or run**: the device files need a Garmin login, which the build environment does
 not have. The names it uses (`getBodyBatteryHistory`, `currentHeartRate`, `restingHeartRate`, `floorsClimbed`, `drawArc`
 and the font and justify constants) were checked against the Connect IQ 9.3.0 API list, but a compile on your machine
 can still find mistakes. If `monkeyc` reports one, send the message and it is fixed in the next version. The look on the
