@@ -6,6 +6,8 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
+import nl.tufein.openconnect.core.RetryAfter
+import nl.tufein.openconnect.core.RetryPolicy
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -17,7 +19,8 @@ import java.security.SecureRandom
 import java.time.Instant
 import java.util.Base64
 
-class OuraResponse(val status: Int, val body: String)
+/** [headers] has lower-case names; it is empty where the answer's headers are not known (a test double). */
+class OuraResponse(val status: Int, val body: String, val headers: Map<String, String> = emptyMap())
 
 /** The one network seam of the Oura link: tests answer from memory, the app uses [UrlConnectionOuraHttp]. */
 fun interface OuraHttp {
@@ -53,14 +56,20 @@ class UrlConnectionOuraHttp(private val maxBytes: Int = 20 * 1024 * 1024) : Oura
                     out.write(buffer, 0, n)
                 }
             }
-            return OuraResponse(status, out.toString("UTF-8"))
+            val headers = connection.headerFields.filterKeys { it != null }.entries.associate { (k, v) -> k.lowercase() to v.last() }
+            return OuraResponse(status, out.toString("UTF-8"), headers)
         } finally {
             connection.disconnect()
         }
     }
 }
 
-class OuraException(val kind: Kind, message: String? = null) : Exception(message ?: kind.name) {
+class OuraException(
+    val kind: Kind,
+    message: String? = null,
+    /** What Oura asked for with `Retry-After` on a 429, in seconds, when it did. */
+    val retryAfterS: Long? = null,
+) : Exception(message ?: kind.name) {
     enum class Kind {
         /** No application (client id and secret) or no login yet. */
         NOT_CONNECTED,
@@ -190,8 +199,15 @@ class OuraAuth(private val http: OuraHttp, private val store: OuraStore, private
         } catch (e: IOException) {
             throw OuraException(OuraException.Kind.NETWORK, e.message)
         }
-        if (response.status in 400..499) throw OuraException(OuraException.Kind.LOGIN_EXPIRED, "Oura answered ${response.status}")
-        if (response.status != 200) throw OuraException(OuraException.Kind.SERVER, "Oura answered ${response.status}")
+        when (response.status) {
+            200 -> Unit
+            // Only a refusal of the login itself ends it: invalid_grant is a 400 and invalid_client a 401 (RFC 6749, 5.2). A busy
+            // Oura (429, 5xx) or any other answer says nothing about the refresh token, and throwing it away would make the
+            // person log in again for something that passes by itself.
+            400, 401 -> throw OuraException(OuraException.Kind.LOGIN_EXPIRED, "Oura answered ${response.status}")
+            429 -> throw OuraException(OuraException.Kind.RATE_LIMITED, "Oura answered 429", RetryAfter.seconds(response.headers["retry-after"], now()))
+            else -> throw OuraException(OuraException.Kind.SERVER, "Oura answered ${response.status}")
+        }
         val json = try {
             JSON.parseToJsonElement(response.body).jsonObject
         } catch (e: Exception) {
@@ -208,7 +224,13 @@ internal fun JsonObject.number(name: String): Double? = (this[name] as? JsonPrim
 internal fun JsonObject.int(name: String): Int? = number(name)?.let { Math.round(it).toInt() }
 
 /** Reads Oura's v2 collections with the login of [OuraAuth], following `next_token` to the last page. */
-class OuraClient(private val http: OuraHttp, private val auth: OuraAuth) {
+class OuraClient(
+    private val http: OuraHttp,
+    private val auth: OuraAuth,
+    /** What to do about a dropped connection, a 429 or a 5xx before reporting it. The app asks for [RetryPolicy.standard]. */
+    private val retry: RetryPolicy = RetryPolicy.NONE,
+    private val now: () -> Instant = Instant::now,
+) {
     private companion object {
         const val BASE = "https://api.ouraring.com/v2/usercollection/"
         const val TIMEOUT_MS = 30_000
@@ -237,7 +259,7 @@ class OuraClient(private val http: OuraHttp, private val auth: OuraAuth) {
             200 -> Unit
             401 -> throw OuraException(OuraException.Kind.LOGIN_EXPIRED)
             403 -> throw OuraException(OuraException.Kind.FORBIDDEN)
-            429 -> throw OuraException(OuraException.Kind.RATE_LIMITED)
+            429 -> throw OuraException(OuraException.Kind.RATE_LIMITED, retryAfterS = RetryAfter.seconds(response.headers["retry-after"], now()))
             else -> throw OuraException(OuraException.Kind.SERVER, "Oura answered ${response.status}")
         }
         return try {
@@ -248,7 +270,8 @@ class OuraClient(private val http: OuraHttp, private val auth: OuraAuth) {
     }
 
     private fun call(url: String, token: String): OuraResponse = try {
-        http.send("GET", url, mapOf("Authorization" to "Bearer $token", "User-Agent" to OuraAuth.USER_AGENT, "Accept" to "application/json"), null, TIMEOUT_MS)
+        val headers = mapOf("Authorization" to "Bearer $token", "User-Agent" to OuraAuth.USER_AGENT, "Accept" to "application/json")
+        retry.call(now, { http.send("GET", url, headers, null, TIMEOUT_MS) }, { it.status }, { it.headers })
     } catch (e: IOException) {
         throw OuraException(OuraException.Kind.NETWORK, e.message)
     }

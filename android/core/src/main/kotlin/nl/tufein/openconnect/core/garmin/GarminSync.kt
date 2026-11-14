@@ -43,6 +43,7 @@ data class EndpointResult(val id: String, val status: EndpointStatus, val record
 data class GarminSyncReport(
     val days: Int,
     val endpoints: List<EndpointResult>,
+    /** Days whose stored numbers changed: a day Garmin answered with the same numbers again is not counted. */
     val daysUpdated: Int,
     val nightsUpdated: Int,
     val activitiesAdded: Int,
@@ -250,16 +251,25 @@ class GarminSyncService(
         }
     }
 
+    /**
+     * Writes what changed and counts only that. A sync every ten minutes mostly brings the numbers the app already has;
+     * rewriting those would count as an "update", and every update makes the app reload its screens and send the
+     * activities to Health Connect again. So a day or night that comes out equal to what is stored is left alone.
+     */
     private fun store(collected: Collected): Pair<Int, Int> {
         var daysUpdated = 0
         for ((date, patch) in collected.patches) {
             if (patch.isEmpty) continue
-            repo.upsertDaily(patch.applyTo(date, repo.listDaily(date, date).firstOrNull()))
+            val existing = repo.listDaily(date, date).firstOrNull()
+            val merged = patch.applyTo(date, existing)
+            if (merged == existing) continue
+            repo.upsertDaily(merged)
             daysUpdated++
         }
         var nights = 0
         for ((date, night) in collected.nights) {
             val existing = repo.listSleep(date, date).firstOrNull()
+            if (existing == night) continue
             if (existing == null || existing.durationS <= night.durationS) {
                 repo.upsertSleep(night)
                 nights++

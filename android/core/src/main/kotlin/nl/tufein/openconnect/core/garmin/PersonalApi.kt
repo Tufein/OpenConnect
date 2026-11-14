@@ -8,6 +8,8 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.longOrNull
+import nl.tufein.openconnect.core.RetryAfter
+import nl.tufein.openconnect.core.RetryPolicy
 import java.io.IOException
 import java.net.URLEncoder
 import java.time.Instant
@@ -19,6 +21,8 @@ class GarminApiException(
     message: String,
     val status: Int? = null,
     cause: Throwable? = null,
+    /** What Garmin asked for with `Retry-After` on a 429 or 5xx, in seconds, when it did. */
+    val retryAfterS: Long? = null,
 ) : Exception(message, cause) {
     enum class Kind {
         /** No key has been saved yet. */
@@ -58,6 +62,8 @@ class PersonalApiClient(
     private val clock: () -> Instant = { Instant.now() },
     private val baseUrl: String = BASE_URL,
     private val timeoutMs: Int = 30_000,
+    /** What to do about a dropped connection, a 429 or a 5xx before reporting it. The app asks for [RetryPolicy.standard]. */
+    private val retry: RetryPolicy = RetryPolicy.NONE,
 ) {
     companion object {
         const val BASE_URL = "https://personal.connectapi.garmin.com"
@@ -113,7 +119,7 @@ class PersonalApiClient(
                 "Garmin did not accept the API key (HTTP ${response.status}). It may be wrong, deleted or expired.",
                 response.status,
             )
-            response.status != 200 -> throw failure(response.status, "token request")
+            response.status != 200 -> throw failure(response, "token request")
         }
         val value = tokenFromBody(response.text)
             ?: throw GarminApiException(GarminApiException.Kind.BAD_RESPONSE, "Garmin's answer to the token request held no token")
@@ -147,18 +153,22 @@ class PersonalApiClient(
     }
 
     private fun send(method: String, url: String, headers: Map<String, String>): GarminResponse = try {
-        http.send(method, url, headers, timeoutMs)
+        retry.call(clock, { http.send(method, url, headers, timeoutMs) }, { it.status }, { it.headers })
     } catch (e: IOException) {
         throw GarminApiException(GarminApiException.Kind.NETWORK, "No connection to Garmin: ${e.message ?: e.javaClass.simpleName}", cause = e)
     }
 
-    private fun failure(status: Int, what: String): GarminApiException = when (status) {
-        401 -> GarminApiException(GarminApiException.Kind.KEY_REJECTED, "Garmin refused the $what (HTTP 401)", status)
-        403 -> GarminApiException(GarminApiException.Kind.ACCESS_DENIED, "Not allowed to read this ($what, HTTP 403)", status)
-        404 -> GarminApiException(GarminApiException.Kind.NOT_FOUND, "Not found ($what, HTTP 404)", status)
-        429 -> GarminApiException(GarminApiException.Kind.RATE_LIMITED, "Garmin is limiting requests (HTTP 429), try again later", status)
-        in 500..599 -> GarminApiException(GarminApiException.Kind.SERVER, "Garmin had a problem (HTTP $status)", status)
-        else -> GarminApiException(GarminApiException.Kind.BAD_RESPONSE, "Unexpected answer from Garmin ($what, HTTP $status)", status)
+    private fun failure(response: GarminResponse, what: String): GarminApiException {
+        val status = response.status
+        val wait = RetryAfter.seconds(response.headers["retry-after"], clock())
+        return when (status) {
+            401 -> GarminApiException(GarminApiException.Kind.KEY_REJECTED, "Garmin refused the $what (HTTP 401)", status)
+            403 -> GarminApiException(GarminApiException.Kind.ACCESS_DENIED, "Not allowed to read this ($what, HTTP 403)", status)
+            404 -> GarminApiException(GarminApiException.Kind.NOT_FOUND, "Not found ($what, HTTP 404)", status)
+            429 -> GarminApiException(GarminApiException.Kind.RATE_LIMITED, "Garmin is limiting requests (HTTP 429), try again later", status, retryAfterS = wait)
+            in 500..599 -> GarminApiException(GarminApiException.Kind.SERVER, "Garmin had a problem (HTTP $status)", status, retryAfterS = wait)
+            else -> GarminApiException(GarminApiException.Kind.BAD_RESPONSE, "Unexpected answer from Garmin ($what, HTTP $status)", status)
+        }
     }
 
     /** A GET with the bearer token. A 401 usually means the token ran out, so it is renewed once and the call repeated. */
@@ -172,7 +182,7 @@ class PersonalApiClient(
                 invalidate()
                 continue
             }
-            if (response.status != 200) throw failure(response.status, path)
+            if (response.status != 200) throw failure(response, path)
             return response
         }
     }

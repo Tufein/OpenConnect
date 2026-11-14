@@ -286,6 +286,17 @@ class SettingsStore(
             set(value) = prefs.edit().putBoolean(KEY_HEALTH_AUTO, value).apply()
     }
 
+    /** What was already sent to Health Connect (client id and a fingerprint per activity), so the automatic export sends only what is new. */
+    val healthLedger: nl.tufein.openconnect.core.health.ExportLedger = object : nl.tufein.openconnect.core.health.ExportLedger {
+        override fun fingerprints(): Map<String, String> =
+            nl.tufein.openconnect.core.health.ExportLedger.decode(prefs.getString(KEY_HEALTH_LEDGER, null))
+
+        override fun remember(sent: Map<String, String>) {
+            val all = fingerprints() + sent
+            prefs.edit().putString(KEY_HEALTH_LEDGER, nl.tufein.openconnect.core.health.ExportLedger.encode(all)).apply()
+        }
+    }
+
     private fun keyName(vendor: AiVendor) = when (vendor) {
         AiVendor.CLAUDE -> KEY_CLAUDE // the name v0.1 to v0.4 used, so an earlier key is still found
         AiVendor.GEMINI -> KEY_GEMINI
@@ -327,6 +338,7 @@ class SettingsStore(
         private const val KEY_APP_LOCK = "app_lock"
         private const val KEY_SYNC_LOG = "sync_log"
         private const val KEY_HEALTH_AUTO = "health_connect_auto"
+        private const val KEY_HEALTH_LEDGER = "health_connect_ledger"
         private const val KEY_NUDGES = "nudges_enabled"
         private const val KEY_NUDGES_SENT = "nudges_sent"
         private const val KEY_BLE_ARCHIVE = "ble_archive_after_read"

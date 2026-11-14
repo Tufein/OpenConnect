@@ -107,4 +107,81 @@ class HealthConnectSyncTest {
         assertEquals(HealthImportReport(0, 0), sync(Fake(stepsByDay = mapOf(today to 0), sleepByDay = mapOf(today to 0))).import(today = today))
         assertTrue(repo.listDaily(today, today).isEmpty())
     }
+
+    // ------------------------------------------------------------------------ only what is new
+
+    private fun run(id: String, name: String = "Run", hour: Int = 8) =
+        Activity(id = id, name = name, sport = Sport.RUNNING, startTime = Instant.parse("2026-11-12T00:00:00Z").plusSeconds(hour * 3600L), durationS = 600.0, distanceM = 1500.0)
+
+    @Test
+    fun `an automatic export sends only what is new or changed since the last one`() = runBlocking {
+        repo.upsertActivity(run("a1"))
+        repo.upsertActivity(run("a2", hour = 10))
+        val fake = Fake()
+        val export = HealthConnectSync(repo, fake, ZoneOffset.UTC, InMemoryExportLedger())
+
+        assertEquals(2, export.export(onlyNew = true).sent)
+        val again = export.export(onlyNew = true)
+        assertEquals(0, again.sent)
+        assertEquals(2, again.unchanged, "nothing new: nothing goes to Health Connect")
+        assertEquals(2, fake.written.size)
+
+        repo.upsertActivity(run("a3", hour = 12))
+        assertEquals(1, export.export(onlyNew = true).sent)
+        assertEquals("openconnect-a3", fake.written.last().clientId)
+
+        repo.upsertActivity(run("a1", name = "Morning run")) // edited: its content differs, so it goes again
+        assertEquals(1, export.export(onlyNew = true).sent)
+        assertEquals("openconnect-a1", fake.written.last().clientId)
+        assertEquals("Morning run", fake.written.last().name)
+    }
+
+    @Test
+    fun `the button sends everything again, for someone who emptied Health Connect`() = runBlocking {
+        repo.upsertActivity(run("a1"))
+        val fake = Fake()
+        val export = HealthConnectSync(repo, fake, ZoneOffset.UTC, InMemoryExportLedger())
+        export.export(onlyNew = true)
+        assertEquals(1, export.export().sent, "a full export ignores what was sent before")
+        assertEquals(2, fake.written.size)
+        assertEquals(0, export.export(onlyNew = true).sent, "and what it sent is remembered as well")
+    }
+
+    @Test
+    fun `a failure halfway keeps what was sent, so the next try continues where it stopped`() = runBlocking {
+        for (i in 1..250) repo.upsertActivity(run("a$i", hour = i))
+        var batches = 0
+        val written = ArrayList<HealthSession>()
+        val flaky = object : HealthConnectGateway by Fake() {
+            override suspend fun write(sessions: List<HealthSession>): Int {
+                if (++batches == 2) throw java.io.IOException("Health Connect is busy")
+                written += sessions
+                return sessions.size
+            }
+        }
+        val ledger = InMemoryExportLedger()
+        val export = HealthConnectSync(repo, flaky, ZoneOffset.UTC, ledger)
+        try {
+            export.export(onlyNew = true)
+            error("the second batch should have failed")
+        } catch (_: java.io.IOException) {
+        }
+        assertEquals(100, written.size)
+        assertEquals(100, ledger.fingerprints().size)
+
+        val rest = export.export(onlyNew = true)
+        assertEquals(150, rest.sent)
+        assertEquals(100, rest.unchanged)
+        assertEquals(250, written.map { it.clientId }.toSet().size)
+    }
+
+    @Test
+    fun `the ledger survives being written out and read back`() {
+        val ledger = InMemoryExportLedger()
+        ledger.remember(mapOf("openconnect-a1" to "f1", "openconnect-a2" to "f2"))
+        val text = ExportLedger.encode(ledger.fingerprints())
+        assertEquals(ledger.fingerprints(), ExportLedger.decode(text))
+        assertEquals(emptyMap(), ExportLedger.decode(null))
+        assertEquals(mapOf("x" to "y"), ExportLedger.decode("broken line\nx\ty\n"), "a damaged line is skipped")
+    }
 }

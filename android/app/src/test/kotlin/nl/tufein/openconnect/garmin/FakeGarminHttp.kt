@@ -47,7 +47,7 @@ class FakeGarminHttp : GarminHttp {
     }
 
     companion object {
-        fun text(status: Int, body: String) = GarminResponse(status, body.toByteArray())
+        fun text(status: Int, body: String, headers: Map<String, String> = emptyMap()) = GarminResponse(status, body.toByteArray(), headers)
 
         /** A token shaped like Garmin's: three parts, the middle one holding `exp`. */
         fun jwt(expires: Instant): String {

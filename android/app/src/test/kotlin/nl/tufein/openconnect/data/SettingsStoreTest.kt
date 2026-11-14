@@ -40,6 +40,15 @@ class SettingsStoreTest {
     }
 
     @Test
+    fun `what was sent to Health Connect is remembered between runs and adds up`() {
+        store().healthLedger.remember(mapOf("openconnect-a1" to "f1"))
+        val again = store().healthLedger // a new store: the app was restarted
+        assertEquals(mapOf("openconnect-a1" to "f1"), again.fingerprints())
+        again.remember(mapOf("openconnect-a2" to "f2", "openconnect-a1" to "f1b"))
+        assertEquals(mapOf("openconnect-a1" to "f1b", "openconnect-a2" to "f2"), store().healthLedger.fingerprints())
+    }
+
+    @Test
     fun `keys are kept per provider and never in the plain settings`() {
         val s = store()
         s.setKey(AiVendor.CLAUDE, "sk-ant-claude-key-0123456789")

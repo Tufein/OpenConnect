@@ -10,7 +10,9 @@ import kotlinx.coroutines.launch
 import nl.tufein.openconnect.core.Repository
 import nl.tufein.openconnect.core.health.HealthAccess
 import nl.tufein.openconnect.core.health.HealthConnectGateway
+import nl.tufein.openconnect.core.health.ExportLedger
 import nl.tufein.openconnect.core.health.HealthConnectSync
+import nl.tufein.openconnect.core.health.InMemoryExportLedger
 import java.io.IOException
 import java.time.ZoneId
 
@@ -44,8 +46,10 @@ class HealthConnectController(
     zone: () -> ZoneId = { ZoneId.systemDefault() },
     /** Told after steps or sleep were added, so the screens reload. */
     private val onDataChanged: () -> Unit = {},
+    /** What was already sent, so the automatic export sends only what is new or edited. The app keeps it between runs. */
+    ledger: ExportLedger = InMemoryExportLedger(),
 ) {
-    private val sync = HealthConnectSync(repo, gateway, zone())
+    private val sync = HealthConnectSync(repo, gateway, zone(), ledger)
     private val _state = MutableStateFlow(HealthUi(auto = settings.auto))
     val state: StateFlow<HealthUi> = _state.asStateFlow()
 
@@ -74,12 +78,12 @@ class HealthConnectController(
         HealthMessage.Imported(r.daysFilled, r.nightsFilled)
     }
 
-    /** After a sync: sends new activities when the switch is on and Health Connect is ready. Silent otherwise. */
+    /** After a sync: sends new or edited activities when the switch is on and Health Connect is ready. Silent otherwise. */
     fun autoExport() {
         if (!settings.auto) return
         scope.launch(io) {
             if (gateway.access() != HealthAccess.READY) return@launch
-            runCatching { sync.export() }
+            runCatching { sync.export(onlyNew = true) }
         }
     }
 

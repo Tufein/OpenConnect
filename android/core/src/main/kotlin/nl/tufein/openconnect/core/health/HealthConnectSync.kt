@@ -44,29 +44,48 @@ interface HealthConnectGateway {
     suspend fun sleep(from: LocalDate, to: LocalDate): Map<LocalDate, Int>
 }
 
-data class HealthExportReport(val sent: Int, val skipped: Int)
+/** [skipped] could not be sent at all (no duration); [unchanged] were left out of an automatic export because Health Connect already has them. */
+data class HealthExportReport(val sent: Int, val skipped: Int, val unchanged: Int = 0)
 
 data class HealthImportReport(val daysFilled: Int, val nightsFilled: Int)
 
 /**
  * Moves data between OpenConnect and Health Connect, in a way that cannot make a mess:
  *  - **Out:** every activity that did not itself come from Health Connect, under a stable id, so repeating it is harmless.
+ *    The button sends all of them; the automatic export after a sync sends only those that are new or edited since the
+ *    last time (the [ledger] remembers what went out), so a long history is not resent after every sync.
  *  - **In:** only steps and sleep, and only where OpenConnect has nothing yet. What your watch gave stays; Health Connect
  *    fills the gaps. Activities are not read back, because the same run could then exist twice.
  */
-class HealthConnectSync(private val repo: Repository, private val gateway: HealthConnectGateway, private val zone: ZoneId = ZoneId.systemDefault()) {
+class HealthConnectSync(
+    private val repo: Repository,
+    private val gateway: HealthConnectGateway,
+    private val zone: ZoneId = ZoneId.systemDefault(),
+    private val ledger: ExportLedger = InMemoryExportLedger(),
+) {
     companion object {
         const val SOURCE = "healthconnect"
         const val BATCH = 100
         private const val MIN_DURATION_S = 1.0
     }
 
-    suspend fun export(): HealthExportReport {
+    /**
+     * Sends the activities to Health Connect. With [onlyNew] only those the ledger does not know in this form. Every batch
+     * that went through is remembered at once, so a failure halfway costs only the batches after it.
+     */
+    suspend fun export(onlyNew: Boolean = false): HealthExportReport {
         val all = repo.listActivities(limit = Int.MAX_VALUE).filter { it.source != SOURCE }
         val sessions = all.mapNotNull(::session)
+        val known = if (onlyNew) ledger.fingerprints() else emptyMap()
+        val prints = sessions.associate { it.clientId to ExportLedger.fingerprint(it) }
+        val due = sessions.filter { known[it.clientId] != prints.getValue(it.clientId) }
         var sent = 0
-        for (batch in sessions.chunked(BATCH)) sent += gateway.write(batch)
-        return HealthExportReport(sent, all.size - sessions.size)
+        for (batch in due.chunked(BATCH)) {
+            val accepted = gateway.write(batch)
+            sent += accepted
+            if (accepted == batch.size) ledger.remember(batch.associate { it.clientId to prints.getValue(it.clientId) })
+        }
+        return HealthExportReport(sent, all.size - sessions.size, sessions.size - due.size)
     }
 
     private fun session(a: Activity): HealthSession? {
