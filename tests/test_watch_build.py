@@ -1,4 +1,5 @@
-"""watch/build.sh without the Garmin tools: --dry-run writes the generated files and checks every choice."""
+"""watch/build.sh without the Garmin tools: --dry-run writes the files and checks every choice."""
+
 import re
 import shutil
 import subprocess
@@ -22,7 +23,17 @@ def run(script, *args):
 
 
 def test_dry_run_writes_the_config_manifest_and_strings(script):
-    done = run(script, "--device", "fenix847mm", "--design", "retro", "--color", "pink", "--fields", "steps,battery,heart,stress")
+    done = run(
+        script,
+        "--device",
+        "fenix847mm",
+        "--design",
+        "retro",
+        "--color",
+        "pink",
+        "--fields",
+        "steps,battery,heart,stress",
+    )
     assert done.returncode == 0, done.stderr
     gen = script.parent / "gen"
     config = (gen / "source" / "Config.mc").read_text()
@@ -40,7 +51,8 @@ def test_every_variant_gets_its_own_app_id(script):
     ids = set()
     for design, color in (("clean", "blue"), ("clean", "mint"), ("dashboard", "blue")):
         assert run(script, "--design", design, "--color", color).returncode == 0
-        ids.add(re.search(r'application [^>]*id="([0-9a-f]{32})"', (script.parent / "gen" / "manifest.xml").read_text()).group(1))
+        manifest = (script.parent / "gen" / "manifest.xml").read_text()
+        ids.add(re.search(r'application [^>]*id="([0-9a-f]{32})"', manifest).group(1))
     assert len(ids) == 3
 
 
