@@ -3,6 +3,7 @@ package nl.tufein.openconnect.core.formats
 import nl.tufein.openconnect.core.Activity
 import nl.tufein.openconnect.core.Sport
 import nl.tufein.openconnect.core.TrackPoint
+import nl.tufein.openconnect.core.FitStep
 import nl.tufein.openconnect.core.clampInt
 import nl.tufein.openconnect.core.finalizeActivity
 import java.io.ByteArrayOutputStream
@@ -50,8 +51,10 @@ internal object Fit {
     private val SINT32 = BaseType(0x85, 4, 0x7FFFFFFF)
     private val UINT32 = BaseType(0x86, 4, 0xFFFFFFFFL)
     private val UINT32Z = BaseType(0x8C, 4, 0)
+    private val STRING = BaseType(0x07, 1, 0)
 
-    private class FieldDef(val num: Int, val type: BaseType)
+    /** [size] is the type's own size, except for a string, whose length is fixed per field. */
+    private class FieldDef(val num: Int, val type: BaseType, val size: Int = type.size)
 
     private val FILE_ID = listOf(
         FieldDef(0, ENUM), FieldDef(1, UINT16), FieldDef(2, UINT16), FieldDef(3, UINT32Z), FieldDef(4, UINT32),
@@ -101,15 +104,24 @@ internal object Fit {
             buf.write(fields.size)
             for (f in fields) {
                 buf.write(f.num)
-                buf.write(f.type.size)
+                buf.write(f.size)
                 buf.write(f.type.code)
             }
         }
 
-        fun data(local: Int, fields: List<FieldDef>, values: List<Number?>) {
+        /** A value is a number (null is the type's "invalid") or, for a string field, its bytes, cut to fit and padded with zeros. */
+        fun data(local: Int, fields: List<FieldDef>, values: List<Any?>) {
             check(fields.size == values.size)
             buf.write(local)
-            for ((f, v) in fields.zip(values)) le(v?.toLong() ?: f.type.invalid, f.type.size)
+            for ((f, v) in fields.zip(values)) {
+                if (v is ByteArray) {
+                    val n = minOf(v.size, f.size - 1)
+                    buf.write(v, 0, n)
+                    repeat(f.size - n) { buf.write(0) }
+                } else {
+                    le((v as Number?)?.toLong() ?: f.type.invalid, f.type.size)
+                }
+            }
         }
     }
 
@@ -169,6 +181,36 @@ internal object Fit {
         w.define(4, 34, ACTIVITY)
         w.data(4, ACTIVITY, listOf(endTs, elapsedMs, 1, 0, 26, 1))
 
+        return finish(w)
+    }
+
+    private val WORKOUT = listOf(FieldDef(4, ENUM), FieldDef(6, UINT16), FieldDef(8, STRING, 32))
+    private val WORKOUT_STEP = listOf(
+        FieldDef(254, UINT16), FieldDef(0, STRING, 16), FieldDef(1, ENUM), FieldDef(2, UINT32),
+        FieldDef(3, ENUM), FieldDef(4, UINT32), FieldDef(5, UINT32), FieldDef(6, UINT32), FieldDef(7, ENUM),
+    )
+
+    private fun text(s: String): ByteArray = s.toByteArray(Charsets.UTF_8)
+
+    /** A structured running workout: file_id (type workout), one workout message and one workout_step per step. */
+    fun exportWorkout(name: String, steps: List<FitStep>, created: Instant): ByteArray {
+        val w = Writer()
+        w.define(0, 0, FILE_ID)
+        w.data(0, FILE_ID, listOf(5, 255, 0, 1, fitTs(created))) // type=workout, manufacturer=development
+        w.define(1, 26, WORKOUT)
+        w.data(1, WORKOUT, listOf(1, steps.size, text(name))) // sport=running
+        w.define(2, 27, WORKOUT_STEP)
+        steps.forEachIndexed { i, s ->
+            w.data(
+                2,
+                WORKOUT_STEP,
+                listOf(i, text(s.name), s.durationType, s.durationValue, s.targetType, s.targetValue, s.low, s.high, s.intensity),
+            )
+        }
+        return finish(w)
+    }
+
+    private fun finish(w: Writer): ByteArray {
         val body = w.buf.toByteArray()
         val header = ByteArray(14)
         header[0] = 14

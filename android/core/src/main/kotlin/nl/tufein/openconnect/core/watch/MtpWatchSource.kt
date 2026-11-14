@@ -30,6 +30,7 @@ class MtpWatchSource(private val transport: MtpTransport, override val deviceNam
     private companion object {
         const val GARMIN_DIR = "GARMIN"
         const val APPS_DIR = "Apps"
+        const val NEW_FILES_DIR = "NewFiles"
     }
 
     override fun listFiles(): List<WatchFileInfo> {
@@ -48,15 +49,20 @@ class MtpWatchSource(private val transport: MtpTransport, override val deviceNam
     override fun read(file: WatchFileInfo): ByteArray = transport.read(file.handle, file.size)
 
     /** Into `GARMIN/Apps` (made when missing). A file with the same name is not overwritten: MTP cannot replace in place. */
-    override fun installApp(name: String, bytes: ByteArray): Boolean {
+    override fun installApp(name: String, bytes: ByteArray): Boolean = install(APPS_DIR, name, bytes)
+
+    /** Into `GARMIN/NewFiles` (made when missing), where the watch looks for new workouts. Same rules as [installApp]. */
+    override fun installWorkout(name: String, bytes: ByteArray): Boolean = install(NEW_FILES_DIR, name, bytes)
+
+    private fun install(folder: String, name: String, bytes: ByteArray): Boolean {
         val (storage, garmin) = findGarminDir() ?: return false
-        val apps = transport.children(storage, garmin).firstOrNull { it.isFolder && it.name.equals(APPS_DIR, ignoreCase = true) }?.handle
-            ?: transport.createFolder(storage, garmin, APPS_DIR)
+        val target = transport.children(storage, garmin).firstOrNull { it.isFolder && it.name.equals(folder, ignoreCase = true) }?.handle
+            ?: transport.createFolder(storage, garmin, folder)
             ?: return false
-        if (transport.children(storage, apps).any { !it.isFolder && it.name.equals(name, ignoreCase = true) }) {
+        if (transport.children(storage, target).any { !it.isFolder && it.name.equals(name, ignoreCase = true) }) {
             throw WatchFaceException(WatchFaceException.Kind.ALREADY_THERE)
         }
-        return transport.upload(storage, apps, name, bytes)
+        return transport.upload(storage, target, name, bytes)
     }
 
     /** The storage and handle of the GARMIN folder, at the root of a storage or one folder below it. */

@@ -671,4 +671,9 @@
     <string name="race_date_plus">+1 week</string>
     <string name="race_time_minus">-1 min</string>
     <string name="race_time_plus">+1 min</string>
+    <string name="workouts_title">Workouts on your watch</string>
+    <string name="workouts_note">Each planned run of the next 7 days becomes a structured workout (warm-up, intervals or tempo, cool-down) in a .fit file, copied over the USB cable to GARMIN/NewFiles on the watch. Intervals and tempo get a pace window from your predicted 10 km pace. Find them on the watch under Training. Not tried on a real watch yet.</string>
+    <string name="workouts_send">Send the next 7 days to my watch (USB)</string>
+    <string name="workouts_done">%1$d workouts copied to the watch, %2$d were already there.</string>
+    <string name="workouts_none">There are no planned runs in the next 7 days.</string>
 </resources>

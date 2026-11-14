@@ -45,6 +45,7 @@ fun PlanContent(
     onCreate: (PlanGoal, Int, Int) -> Unit,
     onDelete: () -> Unit,
     onRace: (RaceAction) -> Unit,
+    onSendWorkouts: () -> Unit,
     contentPadding: PaddingValues,
 ) {
     LazyColumn(
@@ -94,6 +95,13 @@ fun PlanContent(
         }
         item { SectionTitle(stringResource(R.string.plan_all_weeks)) }
         items(progress.weeks.size) { i -> WeekRow(progress.weeks[i]) }
+        item {
+            SectionTitle(stringResource(R.string.workouts_title))
+            SurfaceCard {
+                Text(stringResource(R.string.workouts_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Button(onClick = onSendWorkouts, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.workouts_send)) }
+            }
+        }
         item {
             Text(stringResource(R.string.plan_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             OutlinedButton(onClick = onDelete, modifier = Modifier.padding(top = 8.dp)) { Text(stringResource(R.string.plan_delete)) }

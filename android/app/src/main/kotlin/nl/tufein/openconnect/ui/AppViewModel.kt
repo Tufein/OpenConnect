@@ -28,7 +28,9 @@ import nl.tufein.openconnect.core.RaceGoal
 import nl.tufein.openconnect.core.RaceState
 import nl.tufein.openconnect.core.Races
 import nl.tufein.openconnect.core.TrainingPlan
+import nl.tufein.openconnect.core.TrainingPaces
 import nl.tufein.openconnect.core.TrainingPlans
+import nl.tufein.openconnect.core.Workouts
 import nl.tufein.openconnect.core.BackupException
 import nl.tufein.openconnect.core.Csv
 import nl.tufein.openconnect.core.DataOverview
@@ -760,6 +762,32 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             )
         } catch (e: nl.tufein.openconnect.watch.WatchLinkException) {
             text(R.string.watchface_cannot_write)
+        }
+        tell(message)
+    }
+
+    /**
+     * Copies the workouts of the next seven days of the training plan to a Garmin on the USB cable, into
+     * GARMIN/NewFiles. Tempo and interval steps get a pace window from the predicted 10 km pace when there is one.
+     */
+    fun sendPlanToWatch() = io {
+        val state = _plan.value
+        val plan = state.plan ?: return@io
+        val sessions = Workouts.upcoming(plan, LocalDate.now(ZoneOffset.UTC))
+        val message = if (sessions.isEmpty()) {
+            text(R.string.workouts_none)
+        } else {
+            try {
+                val files = Workouts.files(sessions, TrainingPaces.from(state.race.predictions), java.time.Instant.now())
+                val watch = container.usb.attached().firstOrNull()
+                    ?: throw nl.tufein.openconnect.core.watch.WatchFaceException(nl.tufein.openconnect.core.watch.WatchFaceException.Kind.NO_USB_WATCH)
+                val result = container.usb.open(watch).use { Workouts.send(it.source, files) }
+                text(R.string.workouts_done, result.sent.size, result.alreadyThere.size)
+            } catch (e: nl.tufein.openconnect.core.watch.WatchFaceException) {
+                text(if (e.kind == nl.tufein.openconnect.core.watch.WatchFaceException.Kind.NO_USB_WATCH) R.string.watchface_no_usb else R.string.watchface_cannot_write)
+            } catch (e: nl.tufein.openconnect.watch.WatchLinkException) {
+                text(R.string.watchface_cannot_write)
+            }
         }
         tell(message)
     }
