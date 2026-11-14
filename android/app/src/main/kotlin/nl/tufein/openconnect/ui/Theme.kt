@@ -105,6 +105,21 @@ enum class Letters(val key: String) {
 val LocalLetters = staticCompositionLocalOf { Letters.PIXEL }
 
 /**
+ * The style of the shapes and lines (v0.33.0): "retro" is the Handheld look (pixel-cut corners, thick ink outlines, a
+ * hard shadow, pixel letters by choice), "clean" is sleek (round corners, hairlines, clear letters) and "classic" is
+ * formal (small corners, thin lines, clear letters with serif titles). The colour themes work in all three.
+ */
+enum class Style(val key: String) {
+    RETRO("retro"), CLEAN("clean"), CLASSIC("classic");
+
+    companion object {
+        fun of(key: String?): Style = entries.firstOrNull { it.key == key } ?: RETRO
+    }
+}
+
+val LocalStyle = staticCompositionLocalOf { Style.RETRO }
+
+/**
  * The designs of the watch faces (v0.20.0). The app itself has one look since v0.31.0; this list only decides which of
  * the three Connect IQ faces the preview in Settings shows and `watch/build.sh --design` builds.
  */
@@ -375,6 +390,32 @@ private val HandheldShapes = Shapes(
     extraLarge = PixelCornerShape(16.dp),
 )
 
+private val CleanShapes = Shapes(
+    extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+    small = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+    medium = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+    large = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+    extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
+)
+
+private val ClassicShapes = Shapes(
+    extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(2.dp),
+    small = androidx.compose.foundation.shape.RoundedCornerShape(3.dp),
+    medium = androidx.compose.foundation.shape.RoundedCornerShape(4.dp),
+    large = androidx.compose.foundation.shape.RoundedCornerShape(6.dp),
+    extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+)
+
+/** The clear letters with the titles and big numbers in the phone's serif face. */
+private val ClassicTypography: androidx.compose.material3.Typography = ClearTypography.let { t ->
+    fun androidx.compose.ui.text.TextStyle.serif() = copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Serif)
+    t.copy(
+        displayLarge = t.displayLarge.serif(), displayMedium = t.displayMedium.serif(), displaySmall = t.displaySmall.serif(),
+        headlineLarge = t.headlineLarge.serif(), headlineMedium = t.headlineMedium.serif(), headlineSmall = t.headlineSmall.serif(),
+        titleLarge = t.titleLarge.serif(),
+    )
+}
+
 /** The colours of a theme in dark or light, as a Material colour scheme. [Palette.DYNAMIC] has no fixed colours and gives Handheld. */
 internal fun colorSchemeFor(palette: Palette, dark: Boolean): androidx.compose.material3.ColorScheme {
     val (d, l) = PaletteKeys[palette] ?: PaletteKeys.getValue(Palette.HANDHELD)
@@ -388,27 +429,37 @@ internal fun paletteSwatch(palette: Palette, dark: Boolean): Pair<Color, Color>?
     return k.background to k.primary
 }
 
-/** [mode] is "system" (follow the phone), "dark" or "light"; [palette] is a key of [Palette]; [letters] a key of [Letters]. */
+/** [mode] is "system" (follow the phone), "dark" or "light"; [palette] is a key of [Palette]; [letters] a key of [Letters], [style] a key of [Style]. */
 @Composable
-fun OpenConnectTheme(mode: String = "system", palette: String = "handheld", letters: String = "pixel", content: @Composable () -> Unit) {
+fun OpenConnectTheme(mode: String = "system", palette: String = "handheld", letters: String = "pixel", style: String = "retro", content: @Composable () -> Unit) {
     val dark = when (mode) {
         "dark" -> true
         "light" -> false
         else -> isSystemInDarkTheme()
     }
     val chosen = Palette.of(palette)
-    val chosenLetters = Letters.of(letters)
+    val chosenStyle = Style.of(style)
+    // Only the retro style has pixel letters; the other two always use the clear ones.
+    val chosenLetters = if (chosenStyle == Style.RETRO) Letters.of(letters) else Letters.CLEAR
     val context = androidx.compose.ui.platform.LocalContext.current
     val colors = when {
         chosen == Palette.DYNAMIC && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S ->
             if (dark) androidx.compose.material3.dynamicDarkColorScheme(context) else androidx.compose.material3.dynamicLightColorScheme(context)
         else -> colorSchemeFor(chosen, dark)
     }
-    CompositionLocalProvider(LocalMetricColors provides metricsFor(chosen, colors, dark), LocalLetters provides chosenLetters) {
+    CompositionLocalProvider(LocalMetricColors provides metricsFor(chosen, colors, dark), LocalLetters provides chosenLetters, LocalStyle provides chosenStyle) {
         MaterialTheme(
             colorScheme = colors,
-            typography = if (chosenLetters == Letters.CLEAR) ClearTypography else HandheldTypography,
-            shapes = HandheldShapes,
+            typography = when {
+                chosenStyle == Style.CLASSIC -> ClassicTypography
+                chosenLetters == Letters.CLEAR -> ClearTypography
+                else -> HandheldTypography
+            },
+            shapes = when (chosenStyle) {
+                Style.RETRO -> HandheldShapes
+                Style.CLEAN -> CleanShapes
+                Style.CLASSIC -> ClassicShapes
+            },
             content = content,
         )
     }

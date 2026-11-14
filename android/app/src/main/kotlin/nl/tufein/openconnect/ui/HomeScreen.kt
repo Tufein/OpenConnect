@@ -251,7 +251,7 @@ private fun LevelChip(level: PlayerLevel, onClick: () -> Unit) {
         Modifier
             .hardShadow(shadowColor(), shape)
             .background(colors.secondary, shape)
-            .border(2.dp, inkColor(), shape)
+            .border(lineWidth(), inkColor(), shape)
             .clip(shape)
             .clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 4.dp),

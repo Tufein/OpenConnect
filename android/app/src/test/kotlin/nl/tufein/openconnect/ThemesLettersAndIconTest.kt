@@ -122,6 +122,36 @@ class ThemesLettersAndIconTest : AppTestBase() {
     }
 
     @Test
+    fun sleekAndClassicStylesAreChosenAndKept() {
+        launchFresh { app -> app.containerOverride = container(app) }
+        loadDemo()
+        assertEquals("retro", settings().style)
+        tab("Settings").performClick()
+        waitForText("Sleek")
+        clickText("Sleek")
+        rule.waitUntil(5_000) { settings().style == "clean" }
+        scenario.onActivity { assertEquals("clean", it.viewModel.look.value.style) }
+        assertTrue(!hasText("Clear letters", substring = false), "only the retro style has a choice of letters")
+        shot("69-settings-sleek")
+        tab("Home").performClick()
+        waitForText("Readiness")
+        shot("70-home-sleek")
+        tab("Settings").performClick()
+        clickText("Classic")
+        rule.waitUntil(5_000) { settings().style == "classic" }
+        tab("Home").performClick()
+        waitForText("Readiness")
+        shot("71-home-classic")
+        tab("Health").performClick()
+        waitForText("Scores")
+        shot("72-health-classic")
+        tab("Settings").performClick()
+        clickText("Retro")
+        rule.waitUntil(5_000) { settings().style == "retro" }
+        waitForText("Clear letters")
+    }
+
+    @Test
     fun theLauncherIconIsChosenInSettings() {
         launchFresh { app -> app.containerOverride = container(app) }
         waitForText("Load demo data")

@@ -1,6 +1,6 @@
 # The OpenConnect look ("Handheld")
 
-Since v0.31.0 the app has one look of its own; v0.32.0 added many more colour themes, clear letters and a choice of launcher icon. It replaces the three designs (Clean Pro, Dashboard Dark, Retro Pro) and
+Since v0.31.0 the app has one look of its own; v0.33.0 added a choice of style (see "Styles" below); v0.32.0 added many more colour themes, clear letters and a choice of launcher icon. It replaces the three designs (Clean Pro, Dashboard Dark, Retro Pro) and
 the three styles (Sport, Round, Pixel) of v0.18.0 to v0.30.0. The idea: the screen of a handheld console, not a stock
 Material app. Everything below lives in `android/app/src/main/kotlin/nl/tufein/openconnect/ui/`.
 
@@ -65,3 +65,17 @@ for the watch and keep their own three designs.
 
 Jersey 10 (Copyright 2023 The Soft Type Project Authors) and IBM Plex Sans and Mono (Copyright 2017 IBM Corp.) are
 licensed under the SIL Open Font License 1.1; the texts are in `licenses/` and the credit is in `NOTICE`.
+
+## Styles
+
+Retro is the Handheld look described above. Two more styles exist for people who find it too much (v0.33.0), chosen in
+Settings, Appearance, Style (`Style` in `Theme.kt`, saved as `theme_style`, read through `LocalStyle`):
+
+- **Sleek** (`clean`): round corners (8 to 28 dp), 1 dp lines in `outline`, no shadow, a chosen chip filled with the main
+  colour, a round switch, one rounded bar instead of block bars, clear letters.
+- **Classic** (`classic`): small corners (2 to 8 dp), 1 dp lines, no shadow, clear letters with serif titles and big numbers.
+
+The shapes come from `MaterialTheme.shapes`, so everything that uses them follows. Outlines use `lineWidth()` and `inkColor()`,
+the hard shadow uses `shadowColor()` (transparent outside retro); use those and not fixed values. Sleek and Classic always
+use the clear letters (`Letters` only applies to retro). Not changed by the style: the pixel icons, the dashed ring and the
+line charts. Every colour theme works in every style.

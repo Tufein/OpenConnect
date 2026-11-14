@@ -778,4 +778,9 @@
         <item quantity="other">%1$d activiteiten, %2$s km</item>
     </plurals>
     <string name="calendar_note">Een dag telt mee als er een activiteit op begint (dagen zijn UTC-dagen) en een week loopt van maandag tot zondag. Een reeks is pas verbroken als de dag of week voorbij is.</string>
+    <string name="look_style">Stijl</string>
+    <string name="style_retro">Retro</string>
+    <string name="style_clean">Strak</string>
+    <string name="style_classic">Deftig</string>
+    <string name="style_note">Retro is de pixelstijl. Strak en Deftig hebben afgeronde hoeken, dunne lijnen en duidelijke letters. Deftig heeft titels met schreef.</string>
 </resources>

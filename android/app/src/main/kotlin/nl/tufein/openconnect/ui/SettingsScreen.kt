@@ -113,6 +113,8 @@ fun SettingsScreen(
     onLook: (palette: String) -> Unit = {},
     /** The letters were switched between pixel and clear. */
     onLetters: (letters: String) -> Unit = {},
+    /** The style was switched between retro, sleek and classic. */
+    onStyle: (style: String) -> Unit = {},
     /** A launcher icon was picked. */
     onAppIcon: (AppIcon) -> Unit = {},
     /** The watch face preview changed: design, colour and four fields. */
@@ -151,13 +153,23 @@ fun SettingsScreen(
                         PixelChip(selected = ui.theme == mode, onClick = { onTheme(mode) }, label = { Text(stringResource(label)) })
                     }
                 }
-                Text(stringResource(R.string.look_letters), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.look_style), style = MaterialTheme.typography.titleMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    for ((letters, label) in listOf("pixel" to R.string.letters_pixel, "clear" to R.string.letters_clear)) {
-                        PixelChip(selected = ui.look.letters == letters, onClick = { onLetters(letters) }, label = { Text(stringResource(label)) })
+                    for ((style, label) in listOf("retro" to R.string.style_retro, "clean" to R.string.style_clean, "classic" to R.string.style_classic)) {
+                        PixelChip(selected = ui.look.style == style, onClick = { onStyle(style) }, label = { Text(stringResource(label)) })
                     }
                 }
-                Text(stringResource(R.string.letters_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.style_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                // Only the retro style has a choice of letters; the other two always use the clear ones.
+                if (ui.look.style == "retro") {
+                    Text(stringResource(R.string.look_letters), style = MaterialTheme.typography.titleMedium)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        for ((letters, label) in listOf("pixel" to R.string.letters_pixel, "clear" to R.string.letters_clear)) {
+                            PixelChip(selected = ui.look.letters == letters, onClick = { onLetters(letters) }, label = { Text(stringResource(label)) })
+                        }
+                    }
+                    Text(stringResource(R.string.letters_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
                 Text(stringResource(R.string.look_colours), style = MaterialTheme.typography.titleMedium)
                 val darkNow = MaterialTheme.colorScheme.background.luminance() < 0.5f
                 for (group in PaletteGroup.entries) {

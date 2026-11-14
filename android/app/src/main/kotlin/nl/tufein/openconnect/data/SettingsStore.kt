@@ -76,6 +76,11 @@ class SettingsStore(
         get() = prefs.getString(KEY_LETTERS, "pixel")?.takeIf { it == "pixel" || it == "clear" } ?: "pixel"
         set(value) = prefs.edit().putString(KEY_LETTERS, if (value == "clear") "clear" else "pixel").apply()
 
+    /** The style of shapes and lines, a key of [nl.tufein.openconnect.ui.Style]: "retro" (default), "clean" or "classic". */
+    var style: String
+        get() = prefs.getString(KEY_STYLE, "retro")?.takeIf { it == "clean" || it == "classic" } ?: "retro"
+        set(value) = prefs.edit().putString(KEY_STYLE, if (value == "clean" || value == "classic") value else "retro").apply()
+
     /** The watch face preview and build choices (v0.20.0): design, accent colour and four fields, comma separated. */
     var watchDesign: String
         get() = prefs.getString(KEY_WF_DESIGN, "clean") ?: "clean"
@@ -311,6 +316,7 @@ class SettingsStore(
         private const val KEY_THEME = "theme_mode"
         private const val KEY_PALETTE = "theme_palette"
         private const val KEY_LETTERS = "theme_letters"
+        private const val KEY_STYLE = "theme_style"
         private const val KEY_WF_DESIGN = "wf_design"
         private const val KEY_WF_COLOR = "wf_color"
         private const val KEY_WF_FIELDS = "wf_fields"

@@ -60,8 +60,8 @@ class LookTest : AppTestBase() {
         shot("56-insights-handheld-dark")
         tab("Settings").performClick()
         waitForText("Colours")
-        // The three designs and the three styles are gone from Settings; the colours are left.
-        assertEquals(false, hasText("Style", substring = false))
+        // The old three designs are gone from Settings; the colours are left, and since v0.33.0 a style (Retro, Sleek, Classic).
+        assertEquals(true, hasText("Style", substring = false))
         assertEquals(false, hasText("Dashboard Dark", substring = false))
         shot("57-settings-handheld-dark")
     }
