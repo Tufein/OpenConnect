@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -67,16 +68,20 @@ private fun HandheldBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) 
     val colors = MaterialTheme.colorScheme
     val ink = inkColor()
     val shape = MaterialTheme.shapes.small
+    // One label size for the whole bar: it starts at 17sp and steps down until the longest word fits its tab, so no
+    // language, phone width or font scale ever cuts a label off (and the labels never differ in size).
+    val labels = tabs.map { stringResource(if (tabs.size > 5) it.compact else it.label) }
+    var labelSize by remember(labels) { mutableFloatStateOf(17f) }
     Row(
         Modifier
             .fillMaxWidth()
             .background(colors.surface)
             .drawBehind { drawLine(ink, Offset(0f, 1.dp.toPx()), Offset(size.width, 1.dp.toPx()), strokeWidth = 2.dp.toPx()) }
             .windowInsetsPadding(WindowInsets.navigationBars)
-            .padding(horizontal = 6.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.spacedBy(3.dp),
+            .padding(horizontal = 4.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        for (tab in tabs) {
+        for ((index, tab) in tabs.withIndex()) {
             val selected = route == tab.route
             val content = if (selected) colors.background else colors.onSurfaceVariant
             Column(
@@ -85,20 +90,20 @@ private fun HandheldBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) 
                     .clip(shape)
                     .background(if (selected) colors.onBackground else Color.Transparent, shape)
                     .selectable(selected = selected, role = Role.Tab, onClick = { onOpen(tab) })
-                    .padding(horizontal = 2.dp, vertical = 6.dp),
+                    .padding(horizontal = 1.dp, vertical = 6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 PixelIcon(tab.icon, size = 24.dp, tint = content)
-                // Jersey is narrow, so even "Activiteiten" and "Instellingen" fit a fifth of a small phone.
                 Text(
-                    stringResource(if (tabs.size > 5) tab.compact else tab.label),
+                    labels[index],
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center,
                     maxLines = 1,
                     softWrap = false,
                     color = content,
-                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp, lineHeight = 18.sp),
+                    style = MaterialTheme.typography.titleMedium.copy(fontSize = labelSize.sp, lineHeight = 18.sp),
+                    onTextLayout = { if (it.didOverflowWidth && labelSize > 10f) labelSize -= 0.5f },
                 )
             }
         }

@@ -40,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
@@ -242,7 +243,7 @@ fun SettingsScreen(
                     Text(stringResource(R.string.settings_lock_unavailable), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    PixelSwitch(checked = ui.appLock, enabled = ui.lockAvailable || ui.appLock, onCheckedChange = onAppLock)
+                    PixelSwitch(checked = ui.appLock, enabled = ui.lockAvailable || ui.appLock, onCheckedChange = onAppLock, modifier = Modifier.testTag("app-lock-switch"))
                     Spacer(Modifier.width(12.dp))
                     Text(stringResource(R.string.settings_lock_switch), style = MaterialTheme.typography.bodyMedium)
                 }
