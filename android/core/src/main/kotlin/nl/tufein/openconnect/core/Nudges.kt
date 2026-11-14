@@ -3,7 +3,7 @@ package nl.tufein.openconnect.core
 import java.time.DayOfWeek
 import java.time.LocalDate
 
-enum class NudgeKind { GOAL_CLOSE, WEEKLY_SUMMARY, LOAD_JUMP }
+enum class NudgeKind { GOAL_CLOSE, WEEKLY_SUMMARY, LOAD_JUMP, SHOES_WORN }
 
 /**
  * A notification worth sending. [key] is unique per occasion (for example one goal in one week), so remembering the keys
@@ -19,6 +19,8 @@ data class Nudge(val key: String, val kind: NudgeKind, val goal: String? = null,
  * - WEEKLY_SUMMARY: on Monday from [SUMMARY_HOUR], when last week had at least one activity ([numbers] = activities,
  *   kilometres, goals reached).
  * - LOAD_JUMP: once a week when the training load is OVERREACHING.
+ * - SHOES_WORN: from [SUMMARY_HOUR] on, once per pair and limit, when a pair in use has reached its replace-after limit
+ *   ([goal] = the pair's name, [numbers] = its kilometres, rounded; a new limit gives a new key).
  */
 object Nudges {
     const val GOAL_HOUR = 17
@@ -33,6 +35,7 @@ object Nudges {
         lastWeek: WeeklySummary,
         load: TrainingLoad?,
         alreadySent: Set<String>,
+        shoesWorn: List<ShoeUsage> = emptyList(),
     ): List<Nudge> {
         val found = ArrayList<Nudge>()
         val weekStart = thisWeek.weekStart
@@ -57,6 +60,12 @@ object Nudges {
         }
 
         if (load?.status == LoadStatus.OVERREACHING) found += Nudge("load:$weekStart", NudgeKind.LOAD_JUMP)
+
+        if (hour >= SUMMARY_HOUR) {
+            for (u in shoesWorn) {
+                found += Nudge("shoes:${u.shoe.id}:${u.shoe.retireKm}", NudgeKind.SHOES_WORN, u.shoe.name, listOf(Math.round(u.km).toInt()))
+            }
+        }
 
         return found.filter { it.key !in alreadySent }
     }

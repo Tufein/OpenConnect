@@ -39,6 +39,7 @@ enum class InsightsTab(val label: Int) {
     Coach(R.string.insights_coach),
     Plan(R.string.insights_plan),
     Zones(R.string.insights_zones),
+    Shoes(R.string.insights_shoes),
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -68,6 +69,8 @@ fun InsightsScreen(
     onSendWorkouts: () -> Unit = {},
     zones: ZonesState = ZonesState(),
     onZones: (ZonesAction) -> Unit = {},
+    gear: GearState = GearState(),
+    onGear: (GearAction) -> Unit = {},
 ) {
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
         Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -85,6 +88,7 @@ fun InsightsScreen(
             InsightsTab.Coach -> CoachContent(coach, active, onAsk, onClearCoach, onOpenAiSettings, contentPadding)
             InsightsTab.Plan -> PlanContent(plan, onCreatePlan, onDeletePlan, onRace, onSendWorkouts, contentPadding)
             InsightsTab.Zones -> ZonesContent(zones, onZones, contentPadding)
+            InsightsTab.Shoes -> GearContent(gear, onGear, contentPadding)
         }
     }
 }

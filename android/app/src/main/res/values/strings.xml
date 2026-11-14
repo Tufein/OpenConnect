@@ -439,6 +439,7 @@
     </plurals>
     <string name="nudge_weekly">Last week: %1$d activities, %2$d km, %3$d of 3 goals reached.</string>
     <string name="nudge_load">Your training load jumped this week. Plan some easy days.</string>
+    <string name="nudge_shoes">%1$s has done %2$d km: time to think about a new pair.</string>
     <string name="settings_health">Health Connect</string>
     <string name="settings_health_body">Send your activities to Health Connect so other apps can see them, and read steps and sleep from it to fill days your watch did not cover. What your watch gave is never overwritten, and activities are not read back, so nothing is counted twice.</string>
     <string name="health_unavailable">Health Connect is not available on this phone. It is part of Android 14 and newer; on older versions install it from Google Play.</string>
@@ -709,4 +710,31 @@
     <string name="zones_activity_title">Time in heart-rate zones</string>
     <string name="zones_activity_max">Zones from a maximum of %1$d bpm.</string>
     <string name="zones_activity_guess">A guess: this activity has only an average heart rate, no samples.</string>
+    <string name="insights_shoes">Shoes</string>
+    <string name="gear_title">Your shoes</string>
+    <string name="gear_empty">No shoes added yet. Add a pair below and the activities of its sport count towards its kilometres.</string>
+    <string name="gear_note">Each activity goes on the newest pair of its sport that was in use that day; on an activity\'s own page you can put it on another pair. Kilometres come from your recorded activities.</string>
+    <string name="gear_alert">%1$s has done %2$d km: time for a new pair.</string>
+    <string name="gear_km">%1$s of %2$d km</string>
+    <string name="gear_status_fresh">In good shape.</string>
+    <string name="gear_status_old">Getting old: over 80 percent of its life.</string>
+    <string name="gear_status_replace">Time for a new pair.</string>
+    <string name="gear_no_activities">No activities on this pair yet.</string>
+    <string name="gear_activities">%1$d activities, the last on %2$s</string>
+    <string name="gear_retired_on">Retired on %1$s.</string>
+    <string name="gear_limit_minus">Limit −50 km</string>
+    <string name="gear_limit_plus">Limit +50 km</string>
+    <string name="gear_retire">Retire</string>
+    <string name="gear_resume">Back in use</string>
+    <string name="gear_remove">Remove</string>
+    <string name="gear_add_title">Add a pair</string>
+    <string name="gear_name">Name of the shoes</string>
+    <string name="gear_earlier">Count my earlier activities too</string>
+    <string name="gear_add">Add shoes</string>
+    <string name="gear_activity_title">Shoes on this activity</string>
+    <string name="gear_on">On: %1$s</string>
+    <string name="gear_on_none">No shoes on this one</string>
+    <string name="gear_none_chip">No shoes</string>
+    <string name="gear_automatic">Follow the default</string>
+    <string name="gear_activity_note">Only this activity changes; the others follow the default pair of their sport.</string>
 </resources>

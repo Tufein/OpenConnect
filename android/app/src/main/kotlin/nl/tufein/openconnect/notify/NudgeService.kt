@@ -22,6 +22,8 @@ import nl.tufein.openconnect.OpenConnectApp
 import nl.tufein.openconnect.R
 import nl.tufein.openconnect.core.Nudge
 import nl.tufein.openconnect.core.NudgeKind
+import nl.tufein.openconnect.core.Gear
+import nl.tufein.openconnect.core.GearBook
 import nl.tufein.openconnect.core.Nudges
 import nl.tufein.openconnect.core.Repository
 import nl.tufein.openconnect.core.StatsService
@@ -41,6 +43,9 @@ interface NudgeSettings {
     var sent: List<String>
 
     val goals: WeeklyGoals
+
+    /** The shoes as [nl.tufein.openconnect.core.GearBook] writes them; empty when none were added. */
+    val gear: String get() = ""
 }
 
 /** Shows one nudge. The real one posts an Android notification; tests collect them. */
@@ -60,14 +65,16 @@ class NudgeService(
     fun check(now: ZonedDateTime): Int {
         if (!settings.enabled) return 0
         val today = now.toLocalDate()
+        val activities = repo.listActivities(limit = 10_000)
         val due = Nudges.due(
             today = today,
             hour = now.hour,
             goals = settings.goals,
             thisWeek = stats.weeklySummary(today),
             lastWeek = stats.weeklySummary(today.minusWeeks(1)),
-            load = TrainingLoadCalculator.compute(repo.listActivities(limit = 10_000), today),
+            load = TrainingLoadCalculator.compute(activities, today),
             alreadySent = settings.sent.toSet(),
+            shoesWorn = Gear.due(Gear.usage(GearBook.decode(settings.gear), activities)),
         )
         if (due.isEmpty()) return 0
         // Remembered first: a crash while showing must not send the same nudge again at the next check.
@@ -119,6 +126,7 @@ class AndroidNudgeNotifier(private val context: Context) : NudgeNotifier {
             }
             NudgeKind.WEEKLY_SUMMARY -> context.getString(R.string.nudge_weekly, n.numbers[0], n.numbers[1], n.numbers[2])
             NudgeKind.LOAD_JUMP -> context.getString(R.string.nudge_load)
+            NudgeKind.SHOES_WORN -> context.getString(R.string.nudge_shoes, n.goal.orEmpty(), n.numbers[0])
         }
     }
 }

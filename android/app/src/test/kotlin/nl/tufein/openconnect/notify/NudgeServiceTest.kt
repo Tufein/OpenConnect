@@ -1,9 +1,12 @@
 package nl.tufein.openconnect.notify
 
 import nl.tufein.openconnect.core.Activity
+import nl.tufein.openconnect.core.GearBook
 import nl.tufein.openconnect.core.InMemoryRepository
 import nl.tufein.openconnect.core.Nudge
 import nl.tufein.openconnect.core.NudgeKind
+import nl.tufein.openconnect.core.Shoe
+import nl.tufein.openconnect.core.Sport
 import nl.tufein.openconnect.core.StatsService
 import nl.tufein.openconnect.core.WeeklyGoals
 import java.time.Instant
@@ -14,7 +17,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class NudgeServiceTest {
-    private class Settings(override var enabled: Boolean = true, override var sent: List<String> = emptyList()) : NudgeSettings {
+    private class Settings(
+        override var enabled: Boolean = true,
+        override var sent: List<String> = emptyList(),
+        override val gear: String = "",
+    ) : NudgeSettings {
         override val goals = WeeklyGoals(intensityMinutes = 0, distanceKm = 0, activities = 3)
     }
 
@@ -61,5 +68,18 @@ class NudgeServiceTest {
     @Test
     fun `nothing is sent when nothing is close`() {
         assertEquals(0, service(Settings()).check(evening))
+    }
+
+    @Test
+    fun `a pair of shoes past its limit sends one nudge in the morning`() {
+        // 12 km on a pair that should be replaced after 10 km
+        repo.upsertActivity(Activity(id = "r", sport = Sport.RUNNING, startTime = Instant.parse("2026-11-10T08:00:00Z"), distanceM = 12_000.0))
+        val settings = Settings(gear = GearBook(listOf(Shoe("s1", "Pegasus", Sport.RUNNING, retireKm = 10))).encode())
+        val morning = ZonedDateTime.of(2026, 11, 11, 9, 0, 0, 0, zone)
+        assertEquals(1, service(settings).check(morning))
+        assertEquals(NudgeKind.SHOES_WORN, shown.single().kind)
+        assertEquals("Pegasus", shown.single().goal)
+        assertEquals(listOf(12), shown.single().numbers)
+        assertEquals(0, service(settings).check(morning.plusHours(3)))
     }
 }
