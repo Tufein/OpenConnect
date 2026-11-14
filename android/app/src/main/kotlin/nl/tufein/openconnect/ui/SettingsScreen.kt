@@ -696,6 +696,13 @@ private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, o
         }
         Text(stringResource(R.string.wf_fields_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(stringResource(R.string.wf_preview_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        // The command that builds exactly this face; it can be copied to a terminal (see docs/WATCH_FACES.md).
+        Text(stringResource(R.string.wf_build_title), style = MaterialTheme.typography.titleMedium)
+        Text(config.buildCommand(), style = MaterialTheme.typography.bodySmall.copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace))
+        val clipboard = androidx.compose.ui.platform.LocalClipboardManager.current
+        OutlinedButton(onClick = { clipboard.setText(androidx.compose.ui.text.AnnotatedString(config.buildCommand())) }, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.wf_build_copy))
+        }
     }
 }
 
