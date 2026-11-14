@@ -159,8 +159,8 @@ const val WATCH_ROUTE = "watch"
 const val GARMIN_ROUTE = "garmin"
 const val OURA_ROUTE = "oura"
 
-/** The colour theme ([Palette] key). The shapes, fonts and layout are the same for everyone since v0.31.0. */
-data class Look(val palette: String = "handheld")
+/** The colour theme ([Palette] key) and the letters ([Letters] key). The shapes and layout are the same for everyone since v0.31.0. */
+data class Look(val palette: String = "handheld", val letters: String = "pixel")
 
 /** Which devices the person uses. [onboarded] is false until the first-start questions are answered. */
 data class SourcesUi(val onboarded: Boolean = true, val garmin: Boolean = true, val oura: Boolean = false)
@@ -228,7 +228,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         if (oura) container.oura.syncIfDue(OPEN_GAP)
     }
 
-    private fun lookNow() = Look(Palette.of(container.settings.palette).key)
+    private fun lookNow() = Look(Palette.of(container.settings.palette).key, Letters.of(container.settings.letters).key)
 
     private val _look = MutableStateFlow(lookNow())
 
@@ -238,6 +238,21 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun setLook(palette: String) {
         container.settings.palette = Palette.of(palette).key
         _look.value = lookNow()
+    }
+
+    fun setLetters(letters: String) {
+        container.settings.letters = Letters.of(letters).key
+        _look.value = lookNow()
+    }
+
+    private val _appIcon = MutableStateFlow(AppIcons.current(application))
+
+    /** The icon on the launcher, one of [AppIcon]. */
+    val appIcon: StateFlow<AppIcon> = _appIcon.asStateFlow()
+
+    fun setAppIcon(icon: AppIcon) {
+        AppIcons.select(getApplication(), icon)
+        _appIcon.value = AppIcons.current(getApplication())
     }
 
     private fun watchFaceNow() = container.settings.let {

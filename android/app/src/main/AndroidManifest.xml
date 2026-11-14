@@ -58,6 +58,122 @@
             </intent-filter>
         </activity-alias>
 
+        <!--
+          The launcher icon is chosen in Settings (App icon). Each icon is an alias of the main screen with its own
+          picture; exactly one is switched on at a time (AppIcons.kt), and "Handheld" is the one a fresh install has.
+        -->
+        <activity-alias
+            android:name=".IconHandheld"
+            android:enabled="true"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_round"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".IconNight"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_night"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_night"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".IconGameBoy"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_gameboy"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_gameboy"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".IconAmber"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_amber"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_amber"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".IconSynthwave"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_synthwave"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_synthwave"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".IconCandy"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_candy"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_candy"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".IconStar"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_star"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_star"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity-alias
+            android:name=".IconStopwatch"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_stopwatch"
+            android:label="@string/app_name"
+            android:roundIcon="@mipmap/ic_launcher_stopwatch"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
         <receiver
             android:name=".widget.HomeWidget"
             android:exported="false">
@@ -87,10 +203,6 @@
             android:name=".MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
             <!-- Health Connect asks where the app explains what it does with the data. -->
             <intent-filter>
                 <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />

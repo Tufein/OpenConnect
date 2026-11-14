@@ -1,6 +1,6 @@
 # The OpenConnect look ("Handheld")
 
-Since v0.31.0 the app has one look of its own. It replaces the three designs (Clean Pro, Dashboard Dark, Retro Pro) and
+Since v0.31.0 the app has one look of its own; v0.32.0 added many more colour themes, clear letters and a choice of launcher icon. It replaces the three designs (Clean Pro, Dashboard Dark, Retro Pro) and
 the three styles (Sport, Round, Pixel) of v0.18.0 to v0.30.0. The idea: the screen of a handheld console, not a stock
 Material app. Everything below lives in `android/app/src/main/kotlin/nl/tufein/openconnect/ui/`.
 
@@ -18,12 +18,37 @@ Material app. Everything below lives in `android/app/src/main/kotlin/nl/tufein/o
 | **Charts** | Bar charts are stacks of blocks like the level meter of a stereo; line charts have a scan-line fill under a square-capped line; the dial (`RingGauge`) is 40 blocks around a centre; the readiness score on Home is a 25-block health bar. |
 | **Tab bar** | A flat strip under an ink line; the open tab is a block filled with ink, like the highlighted entry in a game menu. |
 
-## Colour themes
+## Colour themes, letters and the launcher icon
 
-Under *Settings, Appearance* the colours can still be changed: **Handheld** (the default), **Game Boy** (four greens),
-**Amber terminal**, **Synthwave** and **Wallpaper** (the phone's own colours on Android 12 and newer). Shapes, fonts and
-layout are the same in all of them. A theme saved by an older version (Arcade, Clean, Midnight, Ocean, Sunset) no longer
-exists and opens as Handheld.
+**Colour themes** (*Settings, Appearance*) come in four groups, 24 in all, each with a dark and a light version:
+
+- **Retro screens**: Handheld (the default), Game Boy, Virtual Boy, Famicom, Commodore 64, Atari, Amber terminal, Terminal
+  and Synthwave. Game Boy, Virtual Boy and Terminal keep to the shades of their one colour, also for the body signals.
+- **Easy on the eyes**: High contrast (pure black and white), Grey, Slate, Sand, Nord, Solarized, Gruvbox and Dracula.
+- **Colourful**: Ocean, Forest, Sunset, Candy, Violet and Cherry.
+- **Phone**: Wallpaper, the phone's own colours on Android 12 and newer.
+
+Shapes and layout are the same in all of them. A theme is a pair of `Keys` in `PaletteKeys` (`Theme.kt`): primary,
+secondary, tertiary, background, panel and text colour, and from them `scheme()` builds the whole Material colour scheme.
+`ThemesLettersAndIconTest.everyThemeIsReadableInDarkAndInLight` holds every theme to the same limits: text on the
+background and on a panel at least 7:1, small grey text at least 4.5:1, text on each accent colour at least 4.5:1 and
+the main colour against a panel at least 3:1 (WCAG contrast ratios). A new theme is one more entry in `Palette`, one in
+`PaletteKeys` and a name in both string files; the test tells you if it is too faint.
+
+A theme saved by an older version (Arcade, Clean, Midnight) no longer exists and opens as Handheld. Ocean and Sunset
+exist again, with new colours.
+
+**Letters** (*Settings, Appearance, Letters*): *Pixel letters* is the look described above. *Clear letters* swaps Jersey
+and Plex Mono for Plex Sans (semi-bold for titles and numbers) with a slightly larger body, for people who find the pixel
+face hard to read. It is a second `Typography` (`ClearTypography`); every screen takes its text styles from the theme, so
+nothing else changes.
+
+**Launcher icon** (*Settings, App icon*): eight icons, each an `activity-alias` of the main screen in the manifest
+(`.IconHandheld`, `.IconNight`, and so on) with its own adaptive icon in `res/mipmap-anydpi-v26`. Exactly one alias is
+switched on at a time; `AppIcons.select` turns the new one on before the old ones off, and `AppIcons.current` reads which
+is on from the system, so it also survives clearing the app's data. The picture of each icon is made from the same pixel
+grids as the app by `android/tools/launcher_icons.py` (the colours in that script and in `AppIcon.kt` must match; the
+first icon is hand-made). The launcher may take a moment to show the new icon, and on some phones the app closes once.
 
 The watch faces (Clean, Dashboard, Retro, see [WATCH_FACES.md](WATCH_FACES.md)) are separate: they are Connect IQ code
 for the watch and keep their own three designs.

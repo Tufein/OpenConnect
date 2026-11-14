@@ -69,6 +69,11 @@ gaat uit zonder dat CI groen is. Wat zonder horloge of telefoon niet te controle
 13. **Eén eigen uiterlijk ("Handheld")** in plaats van drie ontwerpen en drie stijlen: pixellettertype, pixelhoeken,
     vlakke panelen met een harde schaduw, pixeliconen en -logo, blokgrafieken. Zie [DESIGN.md](DESIGN.md).
 
+## v0.32.0: meer thema's, leesbaarder, kiesbaar icoon ✅
+
+14. **24 kleurthema's** in vier groepen, gemeten op leesbaarheid, een keuze tussen **pixelletters en duidelijke letters**
+    en een **keuze uit acht app-iconen**. Zie [DESIGN.md](DESIGN.md).
+
 ## Later 💡
 
 - Het nieuwere Garmin-protobuf-synchronisatieprotocol voor horloges die de klassieke mapsynchronisatie niet meer gebruiken.

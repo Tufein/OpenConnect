@@ -1,5 +1,6 @@
 package nl.tufein.openconnect.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.CornerSize
@@ -50,18 +51,58 @@ internal val PlexSans = FontFamily(
 /** IBM Plex Mono: labels, units and data. */
 internal val PlexMono = FontFamily(Font(R.font.plex_mono_medium, FontWeight.Medium))
 
+/** How the themes are grouped in Settings. */
+enum class PaletteGroup(@StringRes val label: Int) {
+    RETRO(R.string.palette_group_retro), EYES(R.string.palette_group_eyes), COLOUR(R.string.palette_group_colour), PHONE(R.string.palette_group_phone),
+}
+
 /**
- * The colour themes to choose from. "handheld" is the look of the app; the other three are screens from the history of
- * gaming and "dynamic" takes the phone's wallpaper colours on Android 12 and newer. Older keys (arcade, clean, midnight,
- * ocean, sunset) from before v0.31.0 are no longer known and open as "handheld".
+ * The colour themes to choose from. "handheld" is the look of the app; the others are screens from the history of gaming
+ * and computing, calm and high-contrast ones that are easy on the eyes, and colourful ones. "dynamic" takes the phone's
+ * wallpaper colours on Android 12 and newer. Older keys (arcade, clean, midnight) from before v0.31.0 are not themes
+ * any more and open as "handheld"; ocean and sunset exist again, with new colours.
  */
-enum class Palette(val key: String) {
-    HANDHELD("handheld"), GAMEBOY("gameboy"), AMBER("amber"), SYNTHWAVE("synthwave"), DYNAMIC("dynamic");
+enum class Palette(val key: String, @StringRes val label: Int, val group: PaletteGroup) {
+    HANDHELD("handheld", R.string.palette_handheld, PaletteGroup.RETRO),
+    GAMEBOY("gameboy", R.string.palette_gameboy, PaletteGroup.RETRO),
+    VIRTUALBOY("virtualboy", R.string.palette_virtualboy, PaletteGroup.RETRO),
+    FAMICOM("famicom", R.string.palette_famicom, PaletteGroup.RETRO),
+    C64("c64", R.string.palette_c64, PaletteGroup.RETRO),
+    ATARI("atari", R.string.palette_atari, PaletteGroup.RETRO),
+    AMBER("amber", R.string.palette_amber, PaletteGroup.RETRO),
+    TERMINAL("terminal", R.string.palette_terminal, PaletteGroup.RETRO),
+    SYNTHWAVE("synthwave", R.string.palette_synthwave, PaletteGroup.RETRO),
+    CONTRAST("contrast", R.string.palette_contrast, PaletteGroup.EYES),
+    MONO("mono", R.string.palette_mono, PaletteGroup.EYES),
+    SLATE("slate", R.string.palette_slate, PaletteGroup.EYES),
+    SAND("sand", R.string.palette_sand, PaletteGroup.EYES),
+    NORD("nord", R.string.palette_nord, PaletteGroup.EYES),
+    SOLARIZED("solarized", R.string.palette_solarized, PaletteGroup.EYES),
+    GRUVBOX("gruvbox", R.string.palette_gruvbox, PaletteGroup.EYES),
+    DRACULA("dracula", R.string.palette_dracula, PaletteGroup.EYES),
+    OCEAN("ocean", R.string.palette_ocean, PaletteGroup.COLOUR),
+    FOREST("forest", R.string.palette_forest, PaletteGroup.COLOUR),
+    SUNSET("sunset", R.string.palette_sunset, PaletteGroup.COLOUR),
+    CANDY("candy", R.string.palette_candy, PaletteGroup.COLOUR),
+    VIOLET("violet", R.string.palette_violet, PaletteGroup.COLOUR),
+    CHERRY("cherry", R.string.palette_cherry, PaletteGroup.COLOUR),
+    DYNAMIC("dynamic", R.string.palette_dynamic, PaletteGroup.PHONE);
 
     companion object {
         fun of(key: String?): Palette = entries.firstOrNull { it.key == key } ?: HANDHELD
     }
 }
+
+/** The letters of the app: "pixel" (Jersey for titles and numbers, the look of the app) or "clear" (plain Plex Sans, easier to read). */
+enum class Letters(val key: String) {
+    PIXEL("pixel"), CLEAR("clear");
+
+    companion object {
+        fun of(key: String?): Letters = entries.firstOrNull { it.key == key } ?: PIXEL
+    }
+}
+
+val LocalLetters = staticCompositionLocalOf { Letters.PIXEL }
 
 /**
  * The designs of the watch faces (v0.20.0). The app itself has one look since v0.31.0; this list only decides which of
@@ -84,16 +125,73 @@ private class Keys(
 private val PaletteKeys: Map<Palette, Pair<Keys, Keys>> = mapOf(
     // Handheld: warm black and warm paper, orange as the signal, ink-coloured text on every accent.
     Palette.HANDHELD to (Keys(Color(0xFFFF7A3D), Color(0xFFFFD23F), Color(0xFF5BC8F5), Color(0xFF131210), Color(0xFF1F1D19), Color(0xFFF0E9D6), Color(0xFF15110C)) to
-        Keys(Color(0xFFE8501B), Color(0xFFC98F00), Color(0xFF1B6FD0), Color(0xFFECE5D0), Color(0xFFF7F2E2), Color(0xFF17150F), Color(0xFF17150F))),
+        Keys(Color(0xFFDB5614), Color(0xFFC98F00), Color(0xFF2080E8), Color(0xFFECE5D0), Color(0xFFF7F2E2), Color(0xFF17150F), Color(0xFF17150F))),
     // The four greens of the 1989 handheld's screen.
-    Palette.GAMEBOY to (Keys(Color(0xFF9BBC0F), Color(0xFF8BAC0F), Color(0xFFC4DE5A), Color(0xFF0F380F), Color(0xFF1E4A1E), Color(0xFFD7EFA0)) to
-        Keys(Color(0xFF306230), Color(0xFF4F7A1E), Color(0xFF0F380F), Color(0xFFCADC9F), Color(0xFFE0EDBE), Color(0xFF0F380F))),
+    Palette.GAMEBOY to (Keys(Color(0xFF9BBC0F), Color(0xFF8BAC0F), Color(0xFFC4DE5A), Color(0xFF0F380F), Color(0xFF1B451B), Color(0xFFD7EFA0)) to
+        Keys(Color(0xFF306230), Color(0xFF4F7A1E), Color(0xFF0C300C), Color(0xFFCADC9F), Color(0xFFE0EDBE), Color(0xFF0C300C))),
+    // Red on black, the one colour of the 1995 headset's screen.
+    Palette.VIRTUALBOY to (Keys(Color(0xFFFF3B3B), Color(0xFFFF8080), Color(0xFFE83A3A), Color(0xFF000000), Color(0xFF1C0505), Color(0xFFFFB3B3)) to
+        Keys(Color(0xFFB30000), Color(0xFFC23030), Color(0xFF7A0000), Color(0xFFFFEFEF), Color(0xFFFFFFFF), Color(0xFF3A0000))),
+    // Famicom red and cream on charcoal and paper.
+    Palette.FAMICOM to (Keys(Color(0xFFF0263F), Color(0xFFF2E3C4), Color(0xFFA8A8A8), Color(0xFF1A1414), Color(0xFF2A2020), Color(0xFFF2E8D5)) to
+        Keys(Color(0xFFB80F27), Color(0xFF5E5E5E), Color(0xFF7A5A12), Color(0xFFE9E1CF), Color(0xFFF6F0E0), Color(0xFF2B2118))),
+    // The blue screen and light-blue border of the 1982 home computer.
+    Palette.C64 to (Keys(Color(0xFF8E84E8), Color(0xFFFFFFFF), Color(0xFFC8C0FF), Color(0xFF2B2064), Color(0xFF3A2D82), Color(0xFFE4E0FF)) to
+        Keys(Color(0xFF4B3FB0), Color(0xFF6A5ACD), Color(0xFF2B2064), Color(0xFFE8E6FF), Color(0xFFFFFFFF), Color(0xFF1E1750))),
+    // Wood-grain brown and orange, like the 2600 console.
+    Palette.ATARI to (Keys(Color(0xFFFF8C1A), Color(0xFFE9C46A), Color(0xFFE07A3E), Color(0xFF1B0F05), Color(0xFF2B1A0B), Color(0xFFF5E1C8)) to
+        Keys(Color(0xFFA84A00), Color(0xFF7A5A12), Color(0xFF8C3B12), Color(0xFFF3E2C7), Color(0xFFFBF0DC), Color(0xFF2B1708))),
     // An amber phosphor terminal.
     Palette.AMBER to (Keys(Color(0xFFFFB000), Color(0xFFFF7A00), Color(0xFFFFD45C), Color(0xFF0D0900), Color(0xFF1A1206), Color(0xFFFFE2A8)) to
         Keys(Color(0xFF8A5A00), Color(0xFFB34700), Color(0xFF6B4A00), Color(0xFFFFF6E5), Color(0xFFFFFFFF), Color(0xFF2B1D00))),
+    // A green phosphor terminal.
+    Palette.TERMINAL to (Keys(Color(0xFF33FF66), Color(0xFF9CFFAD), Color(0xFF00D4A8), Color(0xFF000A02), Color(0xFF04180A), Color(0xFFBFFFCC)) to
+        Keys(Color(0xFF007A2E), Color(0xFF3B7A00), Color(0xFF00796B), Color(0xFFECFFF1), Color(0xFFFFFFFF), Color(0xFF00300F))),
     // Neon pink and cyan over deep purple, like an eighties album cover.
     Palette.SYNTHWAVE to (Keys(Color(0xFFFF4FB8), Color(0xFF00E5FF), Color(0xFFFFD166), Color(0xFF14061F), Color(0xFF221033), Color(0xFFF5E6FF)) to
         Keys(Color(0xFFB0187A), Color(0xFF007A8C), Color(0xFF8C5A00), Color(0xFFFBF2FF), Color(0xFFFFFFFF), Color(0xFF2A0E3A))),
+    // The most readable one: pure black and white with a yellow (dark) or blue (light) accent.
+    Palette.CONTRAST to (Keys(Color(0xFFFFD60A), Color(0xFF5EEBFF), Color(0xFFFF9EC4), Color(0xFF000000), Color(0xFF141414), Color(0xFFFFFFFF)) to
+        Keys(Color(0xFF0033CC), Color(0xFF7A3E00), Color(0xFF006B3C), Color(0xFFFFFFFF), Color(0xFFF2F2F2), Color(0xFF000000))),
+    // Greys only, calm like an e-ink screen.
+    Palette.MONO to (Keys(Color(0xFFE0E0E0), Color(0xFFB8B8B8), Color(0xFF9C9C9C), Color(0xFF121212), Color(0xFF1E1E1E), Color(0xFFEBEBEB)) to
+        Keys(Color(0xFF2E2E2E), Color(0xFF555555), Color(0xFF6B6B6B), Color(0xFFEDEDED), Color(0xFFFAFAFA), Color(0xFF161616))),
+    // Cool blue-grey with sky blue.
+    Palette.SLATE to (Keys(Color(0xFF38BDF8), Color(0xFFA5B4FC), Color(0xFF5EEAD4), Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFFE2E8F0)) to
+        Keys(Color(0xFF0369A1), Color(0xFF4338CA), Color(0xFF0F766E), Color(0xFFF1F5F9), Color(0xFFFFFFFF), Color(0xFF0F172A))),
+    // Warm sand tones, soft on tired eyes.
+    Palette.SAND to (Keys(Color(0xFFDDA845), Color(0xFFCF8F63), Color(0xFF98C29F), Color(0xFF1E1B16), Color(0xFF2A261F), Color(0xFFEFE6D6)) to
+        Keys(Color(0xFF8A5A12), Color(0xFF9A4A22), Color(0xFF3F6B4A), Color(0xFFF4EBDD), Color(0xFFFBF6EC), Color(0xFF2E2418))),
+    // The Nord palette: frosty blue-greys.
+    Palette.NORD to (Keys(Color(0xFF88C0D0), Color(0xFFA3BE8C), Color(0xFFEBCB8B), Color(0xFF2E3440), Color(0xFF3B4252), Color(0xFFECEFF4)) to
+        Keys(Color(0xFF2E6F8E), Color(0xFF4C7A34), Color(0xFF8A6A12), Color(0xFFECEFF4), Color(0xFFFFFFFF), Color(0xFF2E3440))),
+    // Solarized, the classic low-glare editor palette.
+    Palette.SOLARIZED to (Keys(Color(0xFF3CA0E8), Color(0xFFCDA000), Color(0xFF2AB5A9), Color(0xFF002B36), Color(0xFF073642), Color(0xFFEEE8D5)) to
+        Keys(Color(0xFF1F6FA8), Color(0xFF8A6700), Color(0xFF1F7A72), Color(0xFFFDF6E3), Color(0xFFEEE8D5), Color(0xFF073642))),
+    // Gruvbox: warm retro-groove browns and yellows.
+    Palette.GRUVBOX to (Keys(Color(0xFFFABD2F), Color(0xFF8EC07C), Color(0xFF83A598), Color(0xFF282828), Color(0xFF353230), Color(0xFFEBDBB2)) to
+        Keys(Color(0xFFAF3A03), Color(0xFF79740E), Color(0xFF076678), Color(0xFFFBF1C7), Color(0xFFF6EBC3), Color(0xFF2E2A28))),
+    // Dracula: purple and pink on indigo.
+    Palette.DRACULA to (Keys(Color(0xFFBD93F9), Color(0xFFFF79C6), Color(0xFF50FA7B), Color(0xFF282A36), Color(0xFF343746), Color(0xFFF8F8F2)) to
+        Keys(Color(0xFF6B3FC4), Color(0xFFB3236E), Color(0xFF1F7A3A), Color(0xFFF8F8F2), Color(0xFFFFFFFF), Color(0xFF282A36))),
+    // Deep sea blue and teal.
+    Palette.OCEAN to (Keys(Color(0xFF29B6F6), Color(0xFF26D0CE), Color(0xFFFFD54F), Color(0xFF06141F), Color(0xFF0D2233), Color(0xFFDCEFFB)) to
+        Keys(Color(0xFF0277BD), Color(0xFF00796B), Color(0xFF8A6A00), Color(0xFFE6F4FB), Color(0xFFFFFFFF), Color(0xFF06283D))),
+    // Forest greens.
+    Palette.FOREST to (Keys(Color(0xFF66D17A), Color(0xFFC5E063), Color(0xFFE0B56B), Color(0xFF0B1710), Color(0xFF14261A), Color(0xFFE3F2E1)) to
+        Keys(Color(0xFF2E7D32), Color(0xFF6A7F00), Color(0xFF8D5A1C), Color(0xFFE9F3E6), Color(0xFFF9FDF7), Color(0xFF12261A))),
+    // Orange and rose over a dusk-red black.
+    Palette.SUNSET to (Keys(Color(0xFFFF7043), Color(0xFFFFB74D), Color(0xFFF06292), Color(0xFF1C0F12), Color(0xFF2B1A1F), Color(0xFFFFE8DC)) to
+        Keys(Color(0xFFC2410C), Color(0xFF9A5B00), Color(0xFFB0305F), Color(0xFFFFF1E8), Color(0xFFFFFFFF), Color(0xFF3A1410))),
+    // Bubblegum pink and mint.
+    Palette.CANDY to (Keys(Color(0xFFFF7EB6), Color(0xFF7DF2D0), Color(0xFFFFD66B), Color(0xFF1D1226), Color(0xFF2C1C3A), Color(0xFFFFEAF6)) to
+        Keys(Color(0xFFC2185B), Color(0xFF00796B), Color(0xFF8A6A00), Color(0xFFFFEFF8), Color(0xFFFFFFFF), Color(0xFF3A1030))),
+    // Violet and sky blue.
+    Palette.VIOLET to (Keys(Color(0xFFB388FF), Color(0xFF80D8FF), Color(0xFFFFAB91), Color(0xFF140F26), Color(0xFF211A3D), Color(0xFFEEE8FF)) to
+        Keys(Color(0xFF5B2EC9), Color(0xFF00668A), Color(0xFFA33F1B), Color(0xFFF3EEFF), Color(0xFFFFFFFF), Color(0xFF21134A))),
+    // Cherry red and blush.
+    Palette.CHERRY to (Keys(Color(0xFFFF5A6E), Color(0xFFFFB3BC), Color(0xFFFFD58A), Color(0xFF1A0D10), Color(0xFF2A1519), Color(0xFFFBE6E8)) to
+        Keys(Color(0xFFC01F3D), Color(0xFF8A3A48), Color(0xFF8A6A12), Color(0xFFFDEEF0), Color(0xFFFFFFFF), Color(0xFF3A0F17))),
 )
 
 /** A full colour scheme from a few key colours: containers are the key colour mixed into the background. */
@@ -188,6 +286,28 @@ private val HandheldTypography = Typography(
 )
 
 /**
+ * The same sizes and structure with no pixel face: Plex Sans for everything, semi-bold for titles and numbers, and a
+ * slightly larger body. For people who find the pixel letters hard to read.
+ */
+private val ClearTypography = Typography(
+    displayLarge = style(PlexSans, 56, 60, FontWeight.SemiBold),
+    displayMedium = style(PlexSans, 44, 48, FontWeight.SemiBold),
+    displaySmall = style(PlexSans, 36, 40, FontWeight.SemiBold),
+    headlineLarge = style(PlexSans, 32, 38, FontWeight.SemiBold),
+    headlineMedium = style(PlexSans, 28, 34, FontWeight.SemiBold),
+    headlineSmall = style(PlexSans, 24, 30, FontWeight.SemiBold),
+    titleLarge = style(PlexSans, 22, 28, FontWeight.SemiBold),
+    titleMedium = style(PlexSans, 17, 24, FontWeight.SemiBold),
+    titleSmall = style(PlexSans, 14, 20, FontWeight.SemiBold),
+    bodyLarge = style(PlexSans, 16, 24),
+    bodyMedium = style(PlexSans, 15, 22),
+    bodySmall = style(PlexSans, 13, 18),
+    labelLarge = style(PlexSans, 14, 20, FontWeight.SemiBold),
+    labelMedium = style(PlexSans, 13, 18, FontWeight.SemiBold),
+    labelSmall = style(PlexSans, 12, 16, FontWeight.SemiBold),
+)
+
+/**
  * A rectangle whose corners are cut in pixel steps, like a rounded corner drawn on graph paper: two steps of half the
  * corner size each. The corner size is the usual Material one, so every Material component that takes its shape from the
  * theme gets these corners too.
@@ -255,38 +375,63 @@ private val HandheldShapes = Shapes(
     extraLarge = PixelCornerShape(16.dp),
 )
 
-/** [mode] is "system" (follow the phone), "dark" or "light"; [palette] is a key of [Palette]. */
+/** The colours of a theme in dark or light, as a Material colour scheme. [Palette.DYNAMIC] has no fixed colours and gives Handheld. */
+internal fun colorSchemeFor(palette: Palette, dark: Boolean): androidx.compose.material3.ColorScheme {
+    val (d, l) = PaletteKeys[palette] ?: PaletteKeys.getValue(Palette.HANDHELD)
+    return scheme(if (dark) d else l, dark)
+}
+
+/** The background and the main colour of a theme, for the little swatch next to its name. */
+internal fun paletteSwatch(palette: Palette, dark: Boolean): Pair<Color, Color>? {
+    val (d, l) = PaletteKeys[palette] ?: return null
+    val k = if (dark) d else l
+    return k.background to k.primary
+}
+
+/** [mode] is "system" (follow the phone), "dark" or "light"; [palette] is a key of [Palette]; [letters] a key of [Letters]. */
 @Composable
-fun OpenConnectTheme(mode: String = "system", palette: String = "handheld", content: @Composable () -> Unit) {
+fun OpenConnectTheme(mode: String = "system", palette: String = "handheld", letters: String = "pixel", content: @Composable () -> Unit) {
     val dark = when (mode) {
         "dark" -> true
         "light" -> false
         else -> isSystemInDarkTheme()
     }
     val chosen = Palette.of(palette)
+    val chosenLetters = Letters.of(letters)
     val context = androidx.compose.ui.platform.LocalContext.current
     val colors = when {
         chosen == Palette.DYNAMIC && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S ->
             if (dark) androidx.compose.material3.dynamicDarkColorScheme(context) else androidx.compose.material3.dynamicLightColorScheme(context)
-        else -> PaletteKeys[chosen]?.let { (d, l) -> scheme(if (dark) d else l, dark) } ?: scheme(PaletteKeys.getValue(Palette.HANDHELD).let { (d, l) -> if (dark) d else l }, dark)
+        else -> colorSchemeFor(chosen, dark)
     }
-    CompositionLocalProvider(LocalMetricColors provides metricsFor(chosen, colors, dark)) {
-        MaterialTheme(colorScheme = colors, typography = HandheldTypography, shapes = HandheldShapes, content = content)
+    CompositionLocalProvider(LocalMetricColors provides metricsFor(chosen, colors, dark), LocalLetters provides chosenLetters) {
+        MaterialTheme(
+            colorScheme = colors,
+            typography = if (chosenLetters == Letters.CLEAR) ClearTypography else HandheldTypography,
+            shapes = HandheldShapes,
+            content = content,
+        )
     }
 }
 
 /**
  * The signal colours stay the same in every theme, so a number keeps being recognised by its colour; only steps and
- * readiness follow the theme's main colour. The Game Boy theme is the exception: four shades of green, as on the original.
+ * readiness follow the theme's main colour. The one-colour screens (Game Boy, Virtual Boy, Terminal) are the exception: shades of their colour, as on the originals.
  */
 private fun metricsFor(palette: Palette, colors: androidx.compose.material3.ColorScheme, dark: Boolean): MetricColors {
     val base = if (dark) DarkMetrics else LightMetrics
     if (palette == Palette.HANDHELD) return base
-    if (palette == Palette.GAMEBOY) {
-        val greens = if (dark) listOf(Color(0xFF9BBC0F), Color(0xFF8BAC0F), Color(0xFFC4DE5A), Color(0xFF6FA02A))
+    // The screens that only had one colour keep to its shades, as on the original.
+    val shades: List<Color>? = when (palette) {
+        Palette.GAMEBOY -> if (dark) listOf(Color(0xFF9BBC0F), Color(0xFF8BAC0F), Color(0xFFC4DE5A), Color(0xFF6FA02A))
         else listOf(Color(0xFF306230), Color(0xFF0F380F), Color(0xFF4F7A1E), Color(0xFF5E8C31))
-        return MetricColors(greens[0], greens[1], greens[2], greens[3], greens[1], greens[2], greens[3], greens[0])
+        Palette.VIRTUALBOY -> if (dark) listOf(Color(0xFFFF3B3B), Color(0xFFFF8080), Color(0xFFFFB3B3), Color(0xFFE83A3A))
+        else listOf(Color(0xFFB30000), Color(0xFFC23030), Color(0xFF7A0000), Color(0xFF990000))
+        Palette.TERMINAL -> if (dark) listOf(Color(0xFF33FF66), Color(0xFF9CFFAD), Color(0xFF00D4A8), Color(0xFF66E08A))
+        else listOf(Color(0xFF007A2E), Color(0xFF3B7A00), Color(0xFF00796B), Color(0xFF2E7D32))
+        else -> null
     }
+    if (shades != null) return MetricColors(shades[0], shades[1], shades[2], shades[3], shades[1], shades[2], shades[3], shades[0])
     return MetricColors(
         steps = colors.primary, heart = base.heart, stress = base.stress, battery = base.battery, sleep = base.sleep,
         distance = base.distance, calories = base.calories, readiness = colors.primary,
