@@ -109,7 +109,7 @@ fun CoachContent(
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         for (id in SUGGESTIONS) {
                             val text = stringResource(id)
-                            AssistChip(onClick = { send(text) }, label = { Text(text) }, enabled = !state.busy, modifier = Modifier.fillMaxWidth())
+                            SecondaryButton(onClick = { send(text) }, modifier = Modifier.fillMaxWidth(), enabled = !state.busy) { Text(text) }
                         }
                     }
                 }
