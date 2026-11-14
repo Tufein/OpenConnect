@@ -1,14 +1,16 @@
-<!-- Template: watch/build.sh fills in __APP_ID__, __PRODUCT__, __ENTRY__ and __TYPE__ and writes the result to watch/gen/manifest.xml. -->
+<!-- Template: watch/build.sh fills in the app id, the products, the entry class, the type and the version, and writes the result to watch/gen/manifest.xml. -->
 <iq:manifest xmlns:iq="http://www.garmin.com/xml/connectiq" version="3">
-    <iq:application entry="__ENTRY__" id="__APP_ID__" launcherIcon="@Drawables.LauncherIcon" minApiLevel="4.0.0" name="@Strings.AppName" type="__TYPE__" version="0.23.0">
+    <iq:application entry="__ENTRY__" id="__APP_ID__" launcherIcon="@Drawables.LauncherIcon" minApiLevel="4.0.0" name="@Strings.AppName" type="__TYPE__" version="__VERSION__">
         <iq:products>
-            <iq:product id="__PRODUCT__" />
+__PRODUCTS__
         </iq:products>
         <iq:permissions>
             <iq:uses-permission id="SensorHistory" />
             <iq:uses-permission id="UserProfile" />
         </iq:permissions>
-        <iq:languages />
+        <iq:languages>
+            <iq:language>nld</iq:language>
+        </iq:languages>
         <iq:barrels />
     </iq:application>
 </iq:manifest>

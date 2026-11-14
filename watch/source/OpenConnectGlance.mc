@@ -11,8 +11,8 @@ class OpenConnectGlance extends WatchUi.GlanceView {
 
     function onUpdate(dc) {
         var h = dc.getHeight();
-        var fields = Config.FIELDS;
-        dc.setColor(Config.COLOR, Graphics.COLOR_TRANSPARENT);
+        var fields = Prefs.fields();
+        dc.setColor(Prefs.color(), Graphics.COLOR_TRANSPARENT);
         dc.drawText(0, h * 28 / 100, Graphics.FONT_GLANCE, "OPENCONNECT", Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
         dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         var line = "";

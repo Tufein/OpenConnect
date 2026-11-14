@@ -47,9 +47,10 @@ module Faces {
         var w = dc.getWidth();
         var h = dc.getHeight();
         var cx = w / 2;
-        var fields = Config.FIELDS;
+        var fields = Prefs.fields();
+        var accent = Prefs.color();
         var main = fields[0];
-        var color = Data.color(main, Config.COLOR);
+        var color = Data.color(main, accent);
         var pen = w * 3 / 100;
         var radius = w / 2 - pen;
 
@@ -63,13 +64,13 @@ module Faces {
             dc.setColor(color, Graphics.COLOR_TRANSPARENT);
             dc.drawArc(cx, h / 2, radius, Graphics.ARC_CLOCKWISE, 90, 90 - (360 * f).toNumber());
         }
-        dc.setColor(Config.COLOR, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(accent, Graphics.COLOR_TRANSPARENT);
         center(dc, cx, h * 13 / 100, Graphics.FONT_XTINY, "OPENCONNECT");
         for (var i = 0; i < 4; i++) {
             var y = h * (28 + 12 * i) / 100;
             dc.setColor(MUTED, Graphics.COLOR_TRANSPARENT);
             dc.drawText(w * 24 / 100, y, Graphics.FONT_XTINY, Data.label(fields[i]), Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
-            dc.setColor(Data.color(fields[i], Config.COLOR), Graphics.COLOR_TRANSPARENT);
+            dc.setColor(Data.color(fields[i], accent), Graphics.COLOR_TRANSPARENT);
             dc.drawText(w * 76 / 100, y, Graphics.FONT_SMALL, Data.text(fields[i]), Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
         }
         var points = Data.bodyBatteryHistory();
@@ -98,9 +99,10 @@ module Faces {
         var h = dc.getHeight();
         var cx = w / 2;
         var cy = h / 2;
-        var fields = Config.FIELDS;
+        var fields = Prefs.fields();
+        var accent = Prefs.color();
         var main = fields[0];
-        var color = Data.color(main, Config.COLOR);
+        var color = Data.color(main, accent);
         var pen = w * 4 / 100;
         var radius = w / 2 - pen;
 
@@ -122,7 +124,7 @@ module Faces {
         center(dc, cx, h * 62 / 100, Graphics.FONT_SMALL, Data.label(main) + " " + Data.text(main));
         for (var i = 1; i <= 2; i++) {
             var x = (i == 1) ? w * 36 / 100 : w * 64 / 100;
-            dc.setColor(Data.color(fields[i], Config.COLOR), Graphics.COLOR_TRANSPARENT);
+            dc.setColor(Data.color(fields[i], accent), Graphics.COLOR_TRANSPARENT);
             center(dc, x, h * 76 / 100, Graphics.FONT_MEDIUM, Data.text(fields[i]));
             dc.setColor(MUTED, Graphics.COLOR_TRANSPARENT);
             center(dc, x, h * 85 / 100, Graphics.FONT_XTINY, Data.label(fields[i]));
@@ -134,7 +136,8 @@ module Faces {
         var w = dc.getWidth();
         var h = dc.getHeight();
         var cx = w / 2;
-        var fields = Config.FIELDS;
+        var fields = Prefs.fields();
+        var accent = Prefs.color();
         var tw = w * 33 / 100;
         var th = h * 25 / 100;
         var gap = w * 2 / 100;
@@ -147,7 +150,7 @@ module Faces {
             var y = (i < 2) ? h * 27 / 100 : h * 27 / 100 + th + gap;
             dc.setColor(0x12161B, 0x12161B);
             dc.fillRoundedRectangle(x, y, tw, th, w * 4 / 100);
-            dc.setColor(Data.color(fields[i], Config.COLOR), Graphics.COLOR_TRANSPARENT);
+            dc.setColor(Data.color(fields[i], accent), Graphics.COLOR_TRANSPARENT);
             center(dc, x + tw / 2, y + th * 28 / 100, Graphics.FONT_XTINY, Data.label(fields[i]));
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
             center(dc, x + tw / 2, y + th * 66 / 100, Graphics.FONT_NUMBER_MILD, Data.text(fields[i]));
@@ -159,7 +162,7 @@ module Faces {
         dc.fillRoundedRectangle(cx - barW / 2, barY, barW, barH, barH / 2);
         var steps = Data.fraction("steps", Data.value("steps"));
         if (steps > 0.0) {
-            dc.setColor(Config.COLOR, Config.COLOR);
+            dc.setColor(accent, accent);
             dc.fillRoundedRectangle(cx - barW / 2, barY, (barW * steps).toNumber(), barH, barH / 2);
         }
     }
@@ -170,7 +173,8 @@ module Faces {
         var w = dc.getWidth();
         var h = dc.getHeight();
         var cx = w / 2;
-        var fields = Config.FIELDS;
+        var fields = Prefs.fields();
+        var accent = Prefs.color();
         var main = fields[0];
         var bw = w * 5 / 100;
         var gap = w * 1 / 100;
@@ -183,11 +187,11 @@ module Faces {
         dc.setColor(0xA9A4D6, Graphics.COLOR_TRANSPARENT);
         center(dc, cx, h * 50 / 100, Graphics.FONT_XTINY, Data.label(main) + " " + Data.text(main));
         for (var i = 0; i < 10; i++) {
-            dc.setColor((i < lit) ? Config.COLOR : 0x2E2970, Graphics.COLOR_TRANSPARENT);
+            dc.setColor((i < lit) ? accent : 0x2E2970, Graphics.COLOR_TRANSPARENT);
             dc.fillRectangle(x0 + i * (bw + gap), h * 56 / 100, bw, h * 6 / 100);
         }
         for (var i = 1; i <= 3; i++) {
-            dc.setColor(Data.color(fields[i], Config.COLOR), Graphics.COLOR_TRANSPARENT);
+            dc.setColor(Data.color(fields[i], accent), Graphics.COLOR_TRANSPARENT);
             center(dc, cx, h * (66 + 8 * (i - 1)) / 100, Graphics.FONT_XTINY, Data.label(fields[i]) + " " + Data.text(fields[i]));
         }
     }

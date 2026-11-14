@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
+import nl.tufein.openconnect.core.watch.ConnectIqStore
 import nl.tufein.openconnect.core.watch.InMemoryWatchSource
 import nl.tufein.openconnect.data.SettingsStore
 import nl.tufein.openconnect.data.SqliteRepository
@@ -91,5 +92,19 @@ class ThemesAndWatchFaceTest : AppTestBase() {
         scenario.onActivity { it.viewModel.installWatchFace(Uri.fromFile(photo)) }
         waitForText("That is not a watch face file", substring = true)
         shot("47-settings-watchface")
+    }
+
+    @Test
+    fun theStoreCardSaysSoUntilTheAppsHaveAStoreId() {
+        launchApp()
+        waitForText("Load demo data")
+        tab("Settings").performClick()
+        scrollToText("Connect IQ store")
+        if (ConnectIqStore.links().isEmpty()) {
+            waitForText("Not in Garmin's Connect IQ store yet", substring = true)
+        } else {
+            // Once ids are filled in, every published app has its own button.
+            waitForText("in the store", substring = true)
+        }
     }
 }
