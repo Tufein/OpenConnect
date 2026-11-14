@@ -612,6 +612,8 @@
     <string name="design_note">Een ontwerp kiest ook zijn eigen kleuren en stijl; die kun je hieronder nog aanpassen.</string>
     <string name="onboarding_design">Kies een ontwerp</string>
     <string name="home_my_day">Mijn dag</string>
+    <string name="wf_build_title">Bouw deze face</string>
+    <string name="wf_build_copy">Kopieer bouwcommando</string>
     <string name="wf_title">Voorvertoning watchface</string>
     <string name="wf_design">Face</string>
     <string name="wf_colour">Kleur van de face</string>
@@ -627,10 +629,10 @@
     <string name="wf_field_battery">Body Battery</string>
     <string name="wf_field_heart">Hartslag</string>
     <string name="wf_field_stress">Stress</string>
-    <string name="wf_field_sleep">Slaap</string>
+    <string name="wf_field_floors">Verdiepingen</string>
     <string name="wf_field_steps">Stappen</string>
     <string name="wf_fields_note">Het eerste veld is het grote. Tik op een gekozen veld om het het grote te maken, tik op een ander om het laatste te vervangen.</string>
-    <string name="wf_preview_note">Een tekening met de cijfers van vandaag. De echte face wordt gebouwd uit de map watch/; het horloge zelf toont zijn eigen live waarden.</string>
+    <string name="wf_preview_note">Een tekening met de cijfers van vandaag. De echte face wordt gebouwd uit de map watch/; het horloge zelf toont zijn eigen live waarden. Een horloge kent geen slaapduur om te tonen, dus er is geen veld Slaap.</string>
     <string name="wf_preview_description">Voorvertoning watchface, %1$s, %2$s</string>
     <string name="wf_retro_level">LVL 12  P1</string>
 </resources>

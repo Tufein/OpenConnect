@@ -39,8 +39,8 @@ enum class WatchField(val key: String, val label: Int) {
     BATTERY("battery", R.string.wf_field_battery),
     HEART("heart", R.string.wf_field_heart),
     STRESS("stress", R.string.wf_field_stress),
-    SLEEP("sleep", R.string.wf_field_sleep),
-    STEPS("steps", R.string.wf_field_steps);
+    STEPS("steps", R.string.wf_field_steps),
+    FLOORS("floors", R.string.wf_field_floors);
 
     companion object {
         fun of(key: String) = entries.firstOrNull { it.key == key }
@@ -48,7 +48,7 @@ enum class WatchField(val key: String, val label: Int) {
         /** Four different fields, in order; anything unusable falls back to the defaults. */
         fun parse(text: String?): List<WatchField> {
             val list = text.orEmpty().split(',').mapNotNull { of(it.trim()) }.distinct().take(4)
-            return if (list.size == 4) list else listOf(BATTERY, HEART, STRESS, SLEEP)
+            return if (list.size == 4) list else listOf(BATTERY, HEART, STRESS, STEPS)
         }
     }
 }
@@ -72,7 +72,7 @@ enum class WatchColor(val key: String, val argb: Long, val label: Int) {
 data class WatchFaceConfig(
     val design: String = "clean",
     val color: String = "blue",
-    val fields: List<String> = listOf("battery", "heart", "stress", "sleep"),
+    val fields: List<String> = listOf("battery", "heart", "stress", "steps"),
 ) {
     val designValue: Design get() = Design.of(design)
     val colorValue: WatchColor get() = WatchColor.of(color)
@@ -90,7 +90,7 @@ data class WatchFaceData(
     val battery: Int?,
     val heart: Int?,
     val stress: Int?,
-    val sleepHours: Double?,
+    val floors: Int?,
     val steps: Int?,
     val stepsGoal: Int = 10_000,
 ) {
@@ -98,8 +98,8 @@ data class WatchFaceData(
         WatchField.BATTERY -> battery?.toString()
         WatchField.HEART -> heart?.toString()
         WatchField.STRESS -> stress?.toString()
-        WatchField.SLEEP -> sleepHours?.let { String.format(java.util.Locale.ROOT, "%d:%02d", it.toInt(), Math.round((it - it.toInt()) * 60).toInt()) }
         WatchField.STEPS -> steps?.let { Fmt.thousands(it) }
+        WatchField.FLOORS -> floors?.toString()
     } ?: "–"
 
     /** 0 to 1 for the field's ring or bar. */
@@ -107,8 +107,8 @@ data class WatchFaceData(
         WatchField.BATTERY -> (battery ?: 0) / 100f
         WatchField.HEART -> ((heart ?: 0) / 120f)
         WatchField.STRESS -> (stress ?: 0) / 100f
-        WatchField.SLEEP -> ((sleepHours ?: 0.0) / 9.0).toFloat()
         WatchField.STEPS -> (steps ?: 0).toFloat() / stepsGoal.coerceAtLeast(1)
+        WatchField.FLOORS -> (floors ?: 0) / 10f
     }.coerceIn(0f, 1f)
 }
 
@@ -123,8 +123,8 @@ private fun fieldColor(field: WatchField, accent: Color, m: MetricColors): Color
     WatchField.BATTERY -> m.battery
     WatchField.HEART -> m.heart
     WatchField.STRESS -> m.stress
-    WatchField.SLEEP -> m.sleep
     WatchField.STEPS -> accent
+    WatchField.FLOORS -> m.battery
 }
 
 /**

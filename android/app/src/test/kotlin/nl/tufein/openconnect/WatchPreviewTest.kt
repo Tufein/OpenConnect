@@ -52,10 +52,11 @@ class WatchPreviewTest : AppTestBase() {
         clickText("Retro face")
         clickText("Pink")
         // A new field replaces the last one; tapping a chosen field then makes it the big one.
-        clickText("Steps")
-        rule.waitUntil(5_000) { settings().watchFields == "battery,heart,stress,steps" }
-        clickText("4 Steps")
-        rule.waitUntil(5_000) { settings().watchDesign == "retro" && settings().watchColor == "pink" && settings().watchFields == "steps,battery,heart,stress" }
+        clickText("Floors")
+        rule.waitUntil(5_000) { settings().watchFields == "battery,heart,stress,floors" }
+        clickText("4 Floors")
+        rule.waitUntil(5_000) { settings().watchDesign == "retro" && settings().watchColor == "pink" && settings().watchFields == "floors,battery,heart,stress" }
+        scrollToText("watch/build.sh --device fenix847mm --design retro --color pink --fields floors,battery,heart,stress")
         rule.waitUntil(5_000) { rule.onAllNodes(hasContentDescription("Watch face preview, Retro Pro", substring = true)).fetchSemanticsNodes().isNotEmpty() }
         shot("61-watch-preview-retro")
     }
@@ -66,6 +67,6 @@ class WatchPreviewTest : AppTestBase() {
         assertEquals("watch/build.sh --device fenix847mm --design retro --color pink --fields steps,battery,heart,stress", config.buildCommand())
         assertEquals(WatchColor.BLUE, WatchColor.of("nonsense"))
         // Anything that is not four different known fields falls back to the defaults.
-        assertEquals(listOf(WatchField.BATTERY, WatchField.HEART, WatchField.STRESS, WatchField.SLEEP), WatchField.parse("steps,steps,heart"))
+        assertEquals(listOf(WatchField.BATTERY, WatchField.HEART, WatchField.STRESS, WatchField.STEPS), WatchField.parse("sleep,steps,heart"))
     }
 }

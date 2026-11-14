@@ -612,6 +612,8 @@
     <string name="design_note">A design also picks its own colours and style; you can change both below.</string>
     <string name="onboarding_design">Pick a design</string>
     <string name="home_my_day">My day</string>
+    <string name="wf_build_title">Build this face</string>
+    <string name="wf_build_copy">Copy build command</string>
     <string name="wf_title">Watch face preview</string>
     <string name="wf_design">Face</string>
     <string name="wf_colour">Face colour</string>
@@ -627,10 +629,10 @@
     <string name="wf_field_battery">Body Battery</string>
     <string name="wf_field_heart">Heart rate</string>
     <string name="wf_field_stress">Stress</string>
-    <string name="wf_field_sleep">Sleep</string>
+    <string name="wf_field_floors">Floors</string>
     <string name="wf_field_steps">Steps</string>
     <string name="wf_fields_note">The first field is the big one. Tap a chosen field to make it the big one, tap another to replace the last.</string>
-    <string name="wf_preview_note">A drawing with today\'s numbers. The real face is built from the watch/ folder; the watch itself shows its own live values.</string>
+    <string name="wf_preview_note">A drawing with today\'s numbers. The real face is built from the watch/ folder; the watch itself shows its own live values. A watch has no sleep length to show, so there is no Sleep field.</string>
     <string name="wf_preview_description">Watch face preview, %1$s, %2$s</string>
     <string name="wf_retro_level">LVL 12  P1</string>
 </resources>

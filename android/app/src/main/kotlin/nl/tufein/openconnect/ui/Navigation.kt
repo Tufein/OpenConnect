@@ -360,7 +360,7 @@ private fun watchFaceData(home: HomeState, now: java.time.Instant, zone: java.ti
         battery = today?.bodyBatteryHigh,
         heart = today?.restingHr?.takeIf { it > 0 },
         stress = today?.avgStress,
-        sleepHours = home.sleep?.takeIf { it.durationS > 0 }?.let { it.durationS / 3600.0 },
+        floors = today?.floorsClimbed,
         steps = today?.steps,
         stepsGoal = (today?.stepsGoal ?: 10_000),
     )

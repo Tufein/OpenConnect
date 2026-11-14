@@ -93,6 +93,11 @@ tracking their own Garmin data, and by how well they can be tested without a wat
 
 26. **Round preview of the watch face** in Settings (Clean, Dashboard, Retro; five colours; four fields), with your numbers.
 
+## v0.21.0: watch faces (source) ✅
+
+27. **Three watch faces as Connect IQ source** (`watch/`) with `build.sh`; the app shows and copies the build command.
+    Not compiled yet: the device files need the owner's Garmin login.
+
 ## Later 💡
 
 - Wear OS or a watch face is out of scope; the project is about the phone side.
