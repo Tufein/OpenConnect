@@ -312,6 +312,28 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // These four are filled by refreshAll(), which the init block below starts on another thread, so they have to
+    // exist before it (a property declared after an init block is still null while that block runs).
+    private val _zones = MutableStateFlow(ZonesState())
+
+    /** Heart-rate zones: the maximum, the zone table and the last four weeks. */
+    val zones: StateFlow<ZonesState> = _zones.asStateFlow()
+
+    private val _calendar = MutableStateFlow(CalendarState())
+
+    /** The month calendar and the streaks. */
+    val calendar: StateFlow<CalendarState> = _calendar.asStateFlow()
+
+    private val _gear = MutableStateFlow(GearState())
+
+    /** The shoes and what each pair has done. */
+    val gear: StateFlow<GearState> = _gear.asStateFlow()
+
+    private val _plan = MutableStateFlow(PlanState())
+
+    /** The training plan and how far it has got. */
+    val plan: StateFlow<PlanState> = _plan.asStateFlow()
+
     init {
         container.health.refresh()
         refreshAll()
@@ -574,11 +596,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     /** Switches between week, month and year, starting at the current one. */
     fun setReportPeriod(period: ReportPeriod) = loadReports(LocalDate.now(ZoneOffset.UTC), period)
 
-    private val _zones = MutableStateFlow(ZonesState())
-
-    /** Heart-rate zones: the maximum, the zone table and the last four weeks. */
-    val zones: StateFlow<ZonesState> = _zones.asStateFlow()
-
     fun loadZones() = io {
         val today = LocalDate.now(ZoneOffset.UTC)
         val all = repo.listActivities(limit = 10_000)
@@ -601,11 +618,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadZones()
         currentActivityId?.let { openActivity(it) }
     }
-
-    private val _calendar = MutableStateFlow(CalendarState())
-
-    /** The month calendar and the streaks. */
-    val calendar: StateFlow<CalendarState> = _calendar.asStateFlow()
 
     /** The month the person paged to; null means the current one. */
     private var calendarMonth: java.time.YearMonth? = null
@@ -631,11 +643,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadCalendar()
     }
 
-    private val _gear = MutableStateFlow(GearState())
-
-    /** The shoes and what each pair has done. */
-    val gear: StateFlow<GearState> = _gear.asStateFlow()
-
     fun loadGear() = io {
         val book = GearBook.decode(container.settings.gear)
         _gear.value = GearState(loaded = true, usage = Gear.usage(book, repo.listActivities(limit = 10_000)))
@@ -658,11 +665,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadGear()
         currentActivityId?.let { openActivity(it) }
     }
-
-    private val _plan = MutableStateFlow(PlanState())
-
-    /** The training plan and how far it has got. */
-    val plan: StateFlow<PlanState> = _plan.asStateFlow()
 
     fun loadPlan() = io {
         val today = LocalDate.now(ZoneOffset.UTC)
