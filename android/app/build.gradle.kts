@@ -97,7 +97,7 @@ dependencies {
     testImplementation("androidx.test:core-ktx:1.6.1")
     testImplementation("androidx.work:work-testing:2.9.1")
     // The AI tests read the request bodies the app sends, to prove what leaves the phone.
-    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.13.0")
     testImplementation(composeBom)
     testImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
