@@ -814,4 +814,19 @@
     <string name="form_chart_form">Vorm (fitheid min vermoeidheid)</string>
     <string name="form_explain">Fitheid is een traag gemiddelde van je trainingsbelasting, vermoeidheid een snel gemiddelde. Vorm is het verschil: boven nul ben je uitgerust, onder nul draag je vermoeidheid mee. Een zware week verlaagt je vorm meteen en verhoogt je fitheid langzaam; een rustweek doet het omgekeerde.</string>
     <string name="form_note">OpenConnects eigen schatting uit minuten en hartslag, in eigen eenheden. Het is niet Garmins Training Status, geen TSS en geen medisch advies.</string>
+    <string name="shape_title">Conditie per afstand</string>
+    <string name="shape_intro">Hoe goed je laatste zes weken hardlopen bij elke afstand passen: je kilometers per week en je langste loop tegenover wat een gewoon schema vraagt.</string>
+    <string name="shape_row_description">%1$s: %2$d procent, %3$s</string>
+    <string name="shape_ready">Klaar</string>
+    <string name="shape_almost">Bijna</string>
+    <string name="shape_building">Aan het opbouwen</string>
+    <string name="shape_far">Nog ver weg</string>
+    <string name="shape_detail">%1$s vraagt ongeveer %3$s km per week en een langste loop van %5$s km; jij loopt %2$s km per week en je langste loop was %4$s km.</string>
+    <string name="shape_note">Vuistregels uit gewone trainingsschema\'s, geen belofte. Een voorspelling voor een afstand waar je ver van af zit is een gok.</string>
+    <string name="vo2_title">VO2max uit je loopjes</string>
+    <string name="vo2_unit">ml/kg/min</string>
+    <string name="vo2_based_on">De middelste waarde van je laatste loopjes met hartslag in de laatste acht weken (%1$d loopjes).</string>
+    <string name="vo2_predict_title">Racetijden bij deze VO2max</string>
+    <string name="vo2_row">%1$s  %2$s  (%3$s per km)</string>
+    <string name="vo2_note">Berekend uit tempo en hartslag (Daniels en Gilbert, Swain). Grof: een paar ml erbij of eraf, en hitte, heuvels en vermoeide benen tellen niet mee. Het is niet Garmins VO2 max en geen medisch advies.</string>
 </resources>

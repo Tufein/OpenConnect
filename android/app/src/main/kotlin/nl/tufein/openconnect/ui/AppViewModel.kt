@@ -62,6 +62,11 @@ import nl.tufein.openconnect.core.FormCalculator
 import nl.tufein.openconnect.core.FormSeries
 import nl.tufein.openconnect.core.TodayAdvice
 import nl.tufein.openconnect.core.TodayAdviceCalculator
+import nl.tufein.openconnect.core.RaceDistance
+import nl.tufein.openconnect.core.RaceShape
+import nl.tufein.openconnect.core.RaceShapeCalculator
+import nl.tufein.openconnect.core.Vo2Max
+import nl.tufein.openconnect.core.Vo2Summary
 import nl.tufein.openconnect.core.WeeklyGoalProgress
 import nl.tufein.openconnect.core.WeeklyGoals
 import nl.tufein.openconnect.core.RecordEntry
@@ -709,7 +714,18 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             TrainingPlans.progress(it, repo.listActivities(sport = Sport.RUNNING, start = from, end = to, limit = 500), today)
         }
         val baseline = TrainingPlans.baselineKm(repo, today)
-        _plan.value = PlanState(loaded = true, plan = built, progress = progress, baselineKm = baseline, today = today, race = raceState(today))
+        val runs = repo.listActivities(sport = Sport.RUNNING, limit = 10_000)
+        val maxHr = HeartZones.maxHr(container.settings.maxHr, repo.listActivities(limit = 10_000)).bpm
+        _plan.value = PlanState(
+            loaded = true,
+            plan = built,
+            progress = progress,
+            baselineKm = baseline,
+            today = today,
+            race = raceState(today),
+            shapes = RaceDistance.entries.mapNotNull { RaceShapeCalculator.compute(runs, it, today) },
+            vo2 = Vo2Max.summary(runs, maxHr, today),
+        )
     }
 
     private fun raceState(today: LocalDate): RaceState =
@@ -1007,6 +1023,10 @@ data class PlanState(
     val today: LocalDate = LocalDate.now(ZoneOffset.UTC),
     /** Predicted race times and the race goal, if there is one. */
     val race: RaceState = RaceState(),
+    /** How well the last six weeks of running fit each distance; empty without a run in that time. */
+    val shapes: List<RaceShape> = emptyList(),
+    /** VO2max worked out from the pace and heart rate of recent runs; null with fewer than two such runs. */
+    val vo2: Vo2Summary? = null,
 )
 
 /** Whether the app is locked right now (and whether the lock is on at all). */

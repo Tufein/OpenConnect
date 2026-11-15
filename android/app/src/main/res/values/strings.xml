@@ -814,4 +814,19 @@
     <string name="form_chart_form">Form (fitness minus fatigue)</string>
     <string name="form_explain">Fitness is a slow average of your training load, fatigue a fast one. Form is the difference: above zero you are rested, below zero you carry fatigue. A hard week lowers form at once and raises fitness slowly; a rest week does the opposite.</string>
     <string name="form_note">OpenConnect\'s own estimate from minutes and heart rate, in its own units. It is not Garmin\'s Training Status, not TSS, and not medical advice.</string>
+    <string name="shape_title">Shape for each distance</string>
+    <string name="shape_intro">How well your last six weeks of running fit each distance: your weekly kilometres and your longest run against what a typical plan asks.</string>
+    <string name="shape_row_description">%1$s: %2$d percent, %3$s</string>
+    <string name="shape_ready">Ready</string>
+    <string name="shape_almost">Almost there</string>
+    <string name="shape_building">Building</string>
+    <string name="shape_far">Far off</string>
+    <string name="shape_detail">%1$s asks about %3$s km a week and a longest run of %5$s km; you run %2$s km a week and your longest run was %4$s km.</string>
+    <string name="shape_note">Rules of thumb from common training plans, not a promise. A prediction for a distance you are far from is a long shot.</string>
+    <string name="vo2_title">VO2max from your runs</string>
+    <string name="vo2_unit">ml/kg/min</string>
+    <string name="vo2_based_on">The middle value of your last runs with heart rate in the last eight weeks (%1$d runs).</string>
+    <string name="vo2_predict_title">Race times from this VO2max</string>
+    <string name="vo2_row">%1$s  %2$s  (%3$s per km)</string>
+    <string name="vo2_note">Worked out from pace and heart rate (Daniels and Gilbert, Swain). Rough: a few ml either way, and heat, hills and tired legs are not counted. It is not Garmin\'s VO2 max and not medical advice.</string>
 </resources>

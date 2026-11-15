@@ -84,6 +84,7 @@ gaat uit zonder dat CI groen is. Wat zonder horloge of telefoon niet te controle
 Van [APP-VERGELIJKING.md](APP-VERGELIJKING.md) (8 apps naast OpenConnect) wordt alles in losse versies gebouwd:
 
 - **v0.34.0** ✅ fitheid, vermoeidheid en vorm (`Form.kt`, tabblad Vorm) en een trainingsadvies voor vandaag op Home.
+- **v0.35.0** ✅ conditie per afstand (`RaceShape.kt`) en VO2max uit je loopjes met racetijden (`Vo2Max.kt`), in het tabblad Plan.
 
 ## Later 💡
 
