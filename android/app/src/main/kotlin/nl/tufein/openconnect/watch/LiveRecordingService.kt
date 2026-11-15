@@ -96,12 +96,6 @@ class LiveRecordingService : Service() {
             ) {
                 return
             }
-            val manager = context.getSystemService(NotificationManager::class.java) ?: return
-            if (Build.VERSION.SDK_INT >= 26) {
-                manager.createNotificationChannel(
-                    NotificationChannel(CHANNEL, context.getString(R.string.watch_live_title), NotificationManager.IMPORTANCE_LOW),
-                )
-            }
             try {
                 NotificationManagerCompat.from(context).notify(NOTIFICATION_ID, notification(context, state))
             } catch (_: SecurityException) {
@@ -109,7 +103,24 @@ class LiveRecordingService : Service() {
             }
         }
 
+        /**
+         * Makes sure the notification channel exists. Android 8 and newer refuse a foreground-service notification whose
+         * channel does not exist yet and end the app with it, so this runs for every notification that is built,
+         * including the very first one handed to `startForeground`. A channel that exists already is left alone.
+         */
+        fun ensureChannel(context: Context) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+            val manager = context.getSystemService(NotificationManager::class.java) ?: return
+            // The notification is refreshed every second; only ask the system when the channel is not there yet.
+            if (manager.getNotificationChannel(CHANNEL) == null) {
+                manager.createNotificationChannel(
+                    NotificationChannel(CHANNEL, context.getString(R.string.watch_live_title), NotificationManager.IMPORTANCE_LOW),
+                )
+            }
+        }
+
         fun notification(context: Context, live: LiveUi): Notification {
+            ensureChannel(context)
             val content = PendingIntent.getActivity(
                 context, 0, Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
