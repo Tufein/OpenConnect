@@ -93,7 +93,7 @@ dependencies {
 
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("org.robolectric:robolectric:4.17")
     testImplementation("androidx.test:core-ktx:1.6.1")
     testImplementation("androidx.work:work-testing:2.9.1")
     // The AI tests read the request bodies the app sends, to prove what leaves the phone.
