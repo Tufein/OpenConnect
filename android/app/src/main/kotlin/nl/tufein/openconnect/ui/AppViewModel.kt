@@ -58,8 +58,14 @@ import nl.tufein.openconnect.core.MaxHrSource
 import nl.tufein.openconnect.core.ZoneOverview
 import nl.tufein.openconnect.core.ZoneVerdict
 import nl.tufein.openconnect.core.TrainingLoad
+import nl.tufein.openconnect.core.BodyWarning
+import nl.tufein.openconnect.core.EarlyWarning
 import nl.tufein.openconnect.core.FormCalculator
 import nl.tufein.openconnect.core.FormSeries
+import nl.tufein.openconnect.core.JournalBook
+import nl.tufein.openconnect.core.JournalInsights
+import nl.tufein.openconnect.core.JournalTag
+import nl.tufein.openconnect.core.TagEffect
 import nl.tufein.openconnect.core.TodayAdvice
 import nl.tufein.openconnect.core.TodayAdviceCalculator
 import nl.tufein.openconnect.core.RaceDistance
@@ -114,6 +120,10 @@ data class HomeState(
     val form: FormSeries? = null,
     /** How hard today should be, from readiness and form; null when neither is known. */
     val advice: TodayAdvice? = null,
+    /** The days marked in the journal. */
+    val journal: JournalBook = JournalBook(),
+    /** Resting heart rate or HRV off for days in a row compared with your own last four weeks; null when all is as usual. */
+    val warning: BodyWarning? = null,
 )
 
 data class TrophiesState(val loaded: Boolean = false, val achievements: Achievements? = null)
@@ -362,6 +372,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     /** The shoes and what each pair has done. */
     val gear: StateFlow<GearState> = _gear.asStateFlow()
 
+    private val _journal = MutableStateFlow(JournalState())
+
+    /** What the journal says about the nights after the marked days. */
+    val journal: StateFlow<JournalState> = _journal.asStateFlow()
+
     private val _plan = MutableStateFlow(PlanState())
 
     /** The training plan and how far it has got. */
@@ -541,6 +556,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadZones()
         loadGear()
         loadCalendar()
+        loadJournal()
         loadTrophies()
         container.oura.refreshDays()
         currentActivityId?.let { openActivity(it) }
@@ -557,6 +573,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val activities = repo.listActivities(limit = 10_000)
         val todayUtc = LocalDate.now(ZoneOffset.UTC)
         val form = FormCalculator.compute(activities, todayUtc)
+        val todayLocal = LocalDate.now()
+        val warning = EarlyWarning.compute(
+            repo.listDaily(todayLocal.minusDays((EarlyWarning.BASELINE_DAYS + EarlyWarning.RECENT_DAYS + 3).toLong()), todayLocal),
+            todayLocal,
+        )
         _home.value = HomeState(
             loaded = true,
             overview = overview,
@@ -569,6 +590,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             load = TrainingLoadCalculator.compute(activities, todayUtc),
             form = form,
             advice = TodayAdviceCalculator.compute(readiness, form?.status),
+            journal = JournalBook.decode(container.settings.journal),
+            warning = warning,
         )
     }
 
@@ -679,6 +702,27 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun shiftCalendar(months: Int) {
         calendarMonth = (calendarMonth ?: java.time.YearMonth.now(ZoneOffset.UTC)).plusMonths(months.toLong())
         loadCalendar()
+    }
+
+    fun loadJournal() = io {
+        val book = JournalBook.decode(container.settings.journal)
+        val first = book.days.keys.minOrNull()
+        val effects = if (first == null) {
+            emptyList()
+        } else {
+            val end = LocalDate.now().plusDays(1)
+            JournalInsights.effects(book, repo.listDaily(first, end), repo.listSleep(first, end))
+        }
+        _journal.value = JournalState(loaded = true, loggedDays = book.days.size, effects = effects)
+    }
+
+    /** Mark or unmark [tag] on [date]. The home screen shows the change at once; the Journal tab follows. */
+    fun toggleJournal(date: LocalDate, tag: JournalTag) {
+        val settings = container.settings
+        val next = JournalBook.decode(settings.journal).toggle(date, tag)
+        settings.journal = next.encode()
+        _home.value = _home.value.copy(journal = next)
+        loadJournal()
     }
 
     fun loadGear() = io {
@@ -1005,6 +1049,8 @@ data class CalendarState(
 )
 
 /** The Shoes tab: every pair with what it has done so far. */
+data class JournalState(val loaded: Boolean = false, val loggedDays: Int = 0, val effects: List<TagEffect> = emptyList())
+
 data class GearState(val loaded: Boolean = false, val usage: List<ShoeUsage> = emptyList())
 
 /** The Zones tab: nothing to show until [loaded]; without any heart rate the overview has no zones. */
