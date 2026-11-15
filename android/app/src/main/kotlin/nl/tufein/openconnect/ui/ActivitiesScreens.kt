@@ -164,6 +164,7 @@ fun ActivityDetailScreen(
                 SectionTitle(stringResource(R.string.route))
                 SurfaceCard { RouteMap(downsample(positions, 400), description = stringResource(R.string.route)) }
             }
+            state.route?.let { history -> item { RouteHistoryCard(history, activity) } }
         }
         val hr = activity.track.map { it.hr?.toDouble() }
         if (hr.count { it != null } >= 2) {

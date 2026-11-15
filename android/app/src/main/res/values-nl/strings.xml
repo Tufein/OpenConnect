@@ -875,4 +875,17 @@
     <string name="sleep_need_debt_small">Een klein slaaptekort van %1$s u over de laatste %2$d nachten.</string>
     <string name="sleep_need_debt_big">Een groot slaaptekort van %1$s u over de laatste %2$d nachten: een vroege nacht haalt het meeste in.</string>
     <string name="sleep_need_note">Acht uur, wat meer na een zware dag en elke nacht een kwart van het tekort terug (hoogstens een uur). Een suggestie, geen medisch advies.</string>
+    <string name="insights_map">Kaart</string>
+    <string name="map_title">Waar je komt</string>
+    <string name="map_routes">%1$d routes met een positie</string>
+    <string name="map_none">Nog geen routes met een positie. Activiteiten met GPS komen hier te staan.</string>
+    <string name="map_legend">Hoe feller een vierkantje, hoe meer verschillende hardloop-, fiets- of wandelrondes erdoorheen gingen.</string>
+    <string name="map_note">Alleen je eigen routes op een kaal raster: geen kaartleverancier ziet waar je komt.</string>
+    <string name="route_title">Dezelfde route</string>
+    <string name="route_count">%1$d keer op deze route, deze meegeteld.</string>
+    <string name="route_rank">Nummer %1$d van %2$d qua tijd</string>
+    <string name="route_best">Je beste tijd op deze route.</string>
+    <string name="route_behind">%1$s trager dan je beste hier (%2$s op %3$s).</string>
+    <string name="route_vs_slower">%1$s trager dan je gemiddelde op deze route.</string>
+    <string name="route_vs_faster">%1$s sneller dan je gemiddelde op deze route.</string>
 </resources>

@@ -875,4 +875,17 @@
     <string name="sleep_need_debt_small">A small sleep debt of %1$s h over the last %2$d nights.</string>
     <string name="sleep_need_debt_big">A big sleep debt of %1$s h over the last %2$d nights: an early night pays back most.</string>
     <string name="sleep_need_note">Eight hours, a little more after a hard day and a quarter of the debt back each night (at most an hour). A suggestion, not medical advice.</string>
+    <string name="insights_map">Map</string>
+    <string name="map_title">Where you go</string>
+    <string name="map_routes">%1$d routes with a position</string>
+    <string name="map_none">No routes with a position yet. Activities with GPS show up here.</string>
+    <string name="map_legend">The brighter a square, the more different runs, rides or walks went through it.</string>
+    <string name="map_note">Only your own routes on a plain grid: no map provider sees where you go.</string>
+    <string name="route_title">Same route</string>
+    <string name="route_count">%1$d times on this route, this one included.</string>
+    <string name="route_rank">Number %1$d of %2$d by time</string>
+    <string name="route_best">Your best time on this route.</string>
+    <string name="route_behind">%1$s slower than your best here (%2$s on %3$s).</string>
+    <string name="route_vs_slower">%1$s slower than your average on this route.</string>
+    <string name="route_vs_faster">%1$s faster than your average on this route.</string>
 </resources>
