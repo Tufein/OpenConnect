@@ -86,6 +86,7 @@ Van [APP-VERGELIJKING.md](APP-VERGELIJKING.md) (8 apps naast OpenConnect) wordt 
 - **v0.34.0** ✅ fitheid, vermoeidheid en vorm (`Form.kt`, tabblad Vorm) en een trainingsadvies voor vandaag op Home.
 - **v0.35.0** ✅ conditie per afstand (`RaceShape.kt`) en VO2max uit je loopjes met racetijden (`Vo2Max.kt`), in het tabblad Plan.
 - **v0.36.0** ✅ dagboek (`Journal.kt`, kaart op Home, tabblad Dagboek met het effect op je nachten) en een vroege waarschuwing bij rusthartslag of HRV (`EarlyWarning.kt`).
+- **v0.37.0** ✅ eentonigheid en belasting van je week (`Recovery.kt`, tabblad Vorm) en een slaapdoel voor vannacht op Home.
 
 ## Later 💡
 

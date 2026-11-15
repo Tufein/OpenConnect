@@ -856,4 +856,23 @@
     <string name="warning_resting">Resting heart rate: %1$d beats above your normal.</string>
     <string name="warning_hrv">HRV: %1$d percent below your normal.</string>
     <string name="warning_note">Compared with your own last four weeks. It often goes with getting ill or too little rest. A rule of thumb from two numbers, not a diagnosis.</string>
+    <string name="monotony_title">Monotony and strain</string>
+    <string name="monotony_verdict_varied">Varied week</string>
+    <string name="monotony_verdict_uniform">A bit uniform</string>
+    <string name="monotony_verdict_monotonous">Very monotonous</string>
+    <string name="monotony_text_varied">Hard and easy days alternate and there is rest in between: the pattern that is easiest on the body for the load.</string>
+    <string name="monotony_text_uniform">The days look alike. An easy day or a rest day in the week would help.</string>
+    <string name="monotony_text_monotonous">Almost the same load every day. That tires you more than the same load spread with easy and hard days.</string>
+    <string name="monotony_value">Monotony</string>
+    <string name="monotony_strain">Strain</string>
+    <string name="monotony_rest_days">Rest days</string>
+    <string name="monotony_usual">Usual strain</string>
+    <string name="monotony_note">Foster\'s monotony (mean daily load divided by its spread) of the last seven days; strain is the week\'s load times it. OpenConnect\'s own load units, an estimate, not medical advice.</string>
+    <string name="sleep_need_title">Sleep tonight</string>
+    <string name="sleep_need_value">%1$s h</string>
+    <string name="sleep_need_last">Last night: %1$s h</string>
+    <string name="sleep_need_debt_none">No sleep debt over the last %1$d nights.</string>
+    <string name="sleep_need_debt_small">A small sleep debt of %1$s h over the last %2$d nights.</string>
+    <string name="sleep_need_debt_big">A big sleep debt of %1$s h over the last %2$d nights: an early night pays back most.</string>
+    <string name="sleep_need_note">Eight hours, a little more after a hard day and a quarter of the debt back each night (at most an hour). A suggestion, not medical advice.</string>
 </resources>

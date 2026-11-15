@@ -161,6 +161,7 @@ fun HomeScreen(
             signalGrid()
             stepsCard()
             goalsAndLoad()
+            state.sleepNeed?.let { need -> item { SleepNeedCard(need) } }
             item { JournalCard(state.journal, java.time.LocalDate.now(), onToggleJournal) }
 
             item {
