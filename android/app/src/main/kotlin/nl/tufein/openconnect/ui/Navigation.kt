@@ -266,6 +266,7 @@ fun OpenConnectRoot(
                     form = home.form,
                     advice = home.advice,
                     journal = journal,
+                    monotony = home.monotony,
                     onShiftWeek = vm::shiftWeek,
                     onPeriod = vm::setReportPeriod,
                     onGenerate = vm::generateWeeklyReport,

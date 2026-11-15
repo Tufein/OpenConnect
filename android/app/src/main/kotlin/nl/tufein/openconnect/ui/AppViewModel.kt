@@ -65,6 +65,11 @@ import nl.tufein.openconnect.core.FormSeries
 import nl.tufein.openconnect.core.JournalBook
 import nl.tufein.openconnect.core.JournalInsights
 import nl.tufein.openconnect.core.JournalTag
+import nl.tufein.openconnect.core.MonotonyCalculator
+import nl.tufein.openconnect.core.MonotonyResult
+import nl.tufein.openconnect.core.Recovery
+import nl.tufein.openconnect.core.SleepNeed
+import nl.tufein.openconnect.core.SleepNeedCalculator
 import nl.tufein.openconnect.core.TagEffect
 import nl.tufein.openconnect.core.TodayAdvice
 import nl.tufein.openconnect.core.TodayAdviceCalculator
@@ -124,6 +129,10 @@ data class HomeState(
     val journal: JournalBook = JournalBook(),
     /** Resting heart rate or HRV off for days in a row compared with your own last four weeks; null when all is as usual. */
     val warning: BodyWarning? = null,
+    /** How alike the last seven days of training were, and the strain; null until there are two weeks of activities. */
+    val monotony: MonotonyResult? = null,
+    /** How long to sleep tonight; null while fewer than four of the last seven nights are known. */
+    val sleepNeed: SleepNeed? = null,
 )
 
 data class TrophiesState(val loaded: Boolean = false, val achievements: Achievements? = null)
@@ -578,6 +587,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             repo.listDaily(todayLocal.minusDays((EarlyWarning.BASELINE_DAYS + EarlyWarning.RECENT_DAYS + 3).toLong()), todayLocal),
             todayLocal,
         )
+        val sleepNeed = SleepNeedCalculator.compute(
+            repo.listSleep(todayLocal.minusDays((SleepNeedCalculator.WINDOW - 1).toLong()), todayLocal),
+            Recovery.dayLoad(activities, todayUtc),
+            todayLocal,
+        )
         _home.value = HomeState(
             loaded = true,
             overview = overview,
@@ -592,6 +606,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             advice = TodayAdviceCalculator.compute(readiness, form?.status),
             journal = JournalBook.decode(container.settings.journal),
             warning = warning,
+            monotony = MonotonyCalculator.compute(activities, todayUtc),
+            sleepNeed = sleepNeed,
         )
     }
 

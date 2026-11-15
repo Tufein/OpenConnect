@@ -99,3 +99,17 @@ resting heart rate and shorter sleep are coloured as worse. It shows what goes t
 days of values). A day is odd when the resting heart rate is 4 or more beats above normal or the HRV is 20 percent or more below it.
 Two odd days in a row ending today give a mild heads-up; three, or both signals odd on the latest day, give a strong one. It often goes
 with getting ill or too little rest, but it is a rule of thumb from two numbers, not a diagnosis. Code: `core/.../EarlyWarning.kt`.
+
+## Monotony and strain (v0.37.0)
+
+*Insights, Form.* Foster's measures over the last seven days of daily training load (the same load as the form chart): monotony is the mean
+divided by the standard deviation of the seven daily loads (capped at 5; the same load every day is the cap), strain is the week's load
+times monotony. Below 1.5 is a varied week, below 2.0 a bit uniform, from 2.0 very monotonous. The usual strain is the average of the four
+weeks before that had any training. It needs two weeks of activities and some load in the last week. Code: `core/.../Recovery.kt`.
+
+## Sleep tonight (v0.37.0)
+
+*Home.* The need for tonight is 8 hours, plus 15 minutes after a day with a load of 150 or more and 30 minutes from 300, plus a quarter of
+the sleep debt (how far the last seven nights fall short of 8 hours each, never below zero) up to one hour. Debt under 1 hour is none,
+under 4 hours small, from 4 hours big. It needs four nights with sleep time. It is a suggestion in the spirit of WHOOP's sleep need,
+not medical advice. Code: `SleepNeedCalculator` in `core/.../Recovery.kt`.

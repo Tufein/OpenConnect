@@ -856,4 +856,23 @@
     <string name="warning_resting">Rusthartslag: %1$d slagen boven je normaal.</string>
     <string name="warning_hrv">HRV: %1$d procent onder je normaal.</string>
     <string name="warning_note">Vergeleken met je eigen laatste vier weken. Het gaat vaak samen met ziek worden of te weinig rust. Een vuistregel uit twee cijfers, geen diagnose.</string>
+    <string name="monotony_title">Eentonigheid en belasting</string>
+    <string name="monotony_verdict_varied">Gevarieerde week</string>
+    <string name="monotony_verdict_uniform">Een beetje gelijkvormig</string>
+    <string name="monotony_verdict_monotonous">Erg eentonig</string>
+    <string name="monotony_text_varied">Zware en makkelijke dagen wisselen af en er zit rust tussen: het patroon dat het lichaam bij deze belasting het minst vermoeit.</string>
+    <string name="monotony_text_uniform">De dagen lijken op elkaar. Een makkelijke dag of een rustdag in de week zou helpen.</string>
+    <string name="monotony_text_monotonous">Bijna elke dag dezelfde belasting. Dat vermoeit meer dan dezelfde belasting verdeeld over makkelijke en zware dagen.</string>
+    <string name="monotony_value">Eentonigheid</string>
+    <string name="monotony_strain">Belasting</string>
+    <string name="monotony_rest_days">Rustdagen</string>
+    <string name="monotony_usual">Gebruikelijke belasting</string>
+    <string name="monotony_note">Fosters eentonigheid (gemiddelde dagbelasting gedeeld door de spreiding) van de laatste zeven dagen; belasting is de weekbelasting maal dat getal. Eigen belastingseenheden van OpenConnect, een schatting, geen medisch advies.</string>
+    <string name="sleep_need_title">Slaap vannacht</string>
+    <string name="sleep_need_value">%1$s u</string>
+    <string name="sleep_need_last">Afgelopen nacht: %1$s u</string>
+    <string name="sleep_need_debt_none">Geen slaaptekort over de laatste %1$d nachten.</string>
+    <string name="sleep_need_debt_small">Een klein slaaptekort van %1$s u over de laatste %2$d nachten.</string>
+    <string name="sleep_need_debt_big">Een groot slaaptekort van %1$s u over de laatste %2$d nachten: een vroege nacht haalt het meeste in.</string>
+    <string name="sleep_need_note">Acht uur, wat meer na een zware dag en elke nacht een kwart van het tekort terug (hoogstens een uur). Een suggestie, geen medisch advies.</string>
 </resources>
