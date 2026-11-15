@@ -58,6 +58,10 @@ import nl.tufein.openconnect.core.MaxHrSource
 import nl.tufein.openconnect.core.ZoneOverview
 import nl.tufein.openconnect.core.ZoneVerdict
 import nl.tufein.openconnect.core.TrainingLoad
+import nl.tufein.openconnect.core.FormCalculator
+import nl.tufein.openconnect.core.FormSeries
+import nl.tufein.openconnect.core.TodayAdvice
+import nl.tufein.openconnect.core.TodayAdviceCalculator
 import nl.tufein.openconnect.core.WeeklyGoalProgress
 import nl.tufein.openconnect.core.WeeklyGoals
 import nl.tufein.openconnect.core.RecordEntry
@@ -101,6 +105,10 @@ data class HomeState(
     val goalProgress: WeeklyGoalProgress? = null,
     /** This week's training load against your four-week average; null until there are two weeks of activities. */
     val load: TrainingLoad? = null,
+    /** Fitness, fatigue and form over the last 90 days; null until there are two weeks of activities. */
+    val form: FormSeries? = null,
+    /** How hard today should be, from readiness and form; null when neither is known. */
+    val advice: TodayAdvice? = null,
 )
 
 data class TrophiesState(val loaded: Boolean = false, val achievements: Achievements? = null)
@@ -541,6 +549,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val readiness = today?.let {
             ReadinessCalculator.compute(it, sleep, repo.listDaily(it.date.minusDays(ReadinessCalculator.BASELINE_DAYS.toLong()), it.date.minusDays(1)))
         }
+        val activities = repo.listActivities(limit = 10_000)
+        val todayUtc = LocalDate.now(ZoneOffset.UTC)
+        val form = FormCalculator.compute(activities, todayUtc)
         _home.value = HomeState(
             loaded = true,
             overview = overview,
@@ -550,7 +561,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             level = AchievementsCalculator.compute(repo, ZoneId.systemDefault()).player,
             goals = goals,
             goalProgress = goals.progress(overview.thisWeek),
-            load = TrainingLoadCalculator.compute(repo.listActivities(limit = 10_000), LocalDate.now(ZoneOffset.UTC)),
+            load = TrainingLoadCalculator.compute(activities, todayUtc),
+            form = form,
+            advice = TodayAdviceCalculator.compute(readiness, form?.status),
         )
     }
 

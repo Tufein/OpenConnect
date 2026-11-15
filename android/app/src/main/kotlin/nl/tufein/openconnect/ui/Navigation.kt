@@ -232,6 +232,7 @@ fun OpenConnectRoot(
                     onOpenHealth = ::openHealth,
                     onOpenActivities = { openTab(Tab.Activities) },
                     onOpenInsights = { openInsights(InsightsTab.Week) },
+                    onOpenForm = { openInsights(InsightsTab.Form) },
                     useGarmin = sources.garmin,
                     onOura = if (sources.oura) ::openOura else null,
                 )
@@ -260,6 +261,8 @@ fun OpenConnectRoot(
                     onGear = vm::gearAction,
                     calendar = calendar,
                     onShiftCalendar = vm::shiftCalendar,
+                    form = home.form,
+                    advice = home.advice,
                     onShiftWeek = vm::shiftWeek,
                     onPeriod = vm::setReportPeriod,
                     onGenerate = vm::generateWeeklyReport,

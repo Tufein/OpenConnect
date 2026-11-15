@@ -50,3 +50,19 @@ In a spreadsheet with Dutch settings, use *Data, From text/CSV* with a comma as 
 See [GARMIN.md](GARMIN.md). In short: opening the app syncs (and every 10 minutes while it stays open), pulling the
 Home screen down syncs now, a background job runs about every 15 minutes, and the pill at the top of Home says when
 the last sync was or how far a running one is.
+
+## Fitness, fatigue and form (v0.34.0)
+
+*Insights, Form.* The picture TrainingPeaks calls the Performance Management Chart, worked out without a power meter from the
+daily training load that the weekly load card already uses (minutes times an effort weight from average heart rate against the
+highest heart rate seen). **Fitness** is an exponential average of that load over 42 days, **fatigue** over 7 days, and **form** is
+fitness minus fatigue. The averages start on the day of the first activity; days without an activity count as zero; it needs two
+weeks of history. The status compares form with fitness: 20 percent or more is *Fresh*, down to minus 5 percent *In balance*, down
+to minus 30 percent *Building*, below that *Strained*; with almost no fitness (under 10 units, about ten easy minutes a day) there
+is no status. The units are OpenConnect's own, not TSS. Code: `core/.../Form.kt`.
+
+## Training advice (v0.34.0)
+
+On Home, under readiness. Readiness (low, moderate, good, excellent) and form (strained, building or in balance, fresh) are put on
+two small scales of 0 to 3 and the lower one decides: rest, easy, as planned, or a good day for a hard one. The card says which of
+the two holds you back. It is a suggestion from two estimates, not medical advice. Code: `TodayAdviceCalculator` in `core/.../Form.kt`.
