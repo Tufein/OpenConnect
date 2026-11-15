@@ -84,3 +84,18 @@ median of the last five estimates of the last 56 days, with at least two. The ra
 you can hold for a given time and are found by halving an interval; a VO2max of 50 gives 19:57 for 5 km, 41:21 for 10 km, 1:31:35 for a
 half marathon and 3:10:49 for a marathon, as in the published tables. It is an estimate, a few ml either way, and not Garmin's VO2 max.
 Code: `core/.../Vo2Max.kt`.
+
+## Journal (v0.36.0)
+
+*Home, bottom card; Insights, Journal.* Six marks (alcohol, late meal, late caffeine, stressful day, travel, feeling ill) can be put on
+today or yesterday. A mark on day D is compared with the night that ends on D+1: the HRV and resting heart rate of that day and the
+sleep that ended on it. For each mark and each of the three numbers there must be at least four nights with the mark and four
+without. A difference is *notable* from 5 percent in HRV, 2 beats in resting heart rate or 24 minutes of sleep; lower HRV, a higher
+resting heart rate and shorter sleep are coloured as worse. It shows what goes together, not what causes what. Code: `core/.../Journal.kt`.
+
+## Heads-up (v0.36.0)
+
+*Home, under the advice.* The normal is the average resting heart rate and HRV of the 28 days before the last three (at least 7
+days of values). A day is odd when the resting heart rate is 4 or more beats above normal or the HRV is 20 percent or more below it.
+Two odd days in a row ending today give a mild heads-up; three, or both signals odd on the latest day, give a strong one. It often goes
+with getting ill or too little rest, but it is a rule of thumb from two numbers, not a diagnosis. Code: `core/.../EarlyWarning.kt`.

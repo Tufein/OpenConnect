@@ -36,6 +36,7 @@ enum class InsightsTab(val label: Int) {
     Shoes(R.string.insights_shoes),
     Calendar(R.string.insights_calendar),
     Form(R.string.insights_form),
+    Journal(R.string.insights_journal),
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -71,6 +72,7 @@ fun InsightsScreen(
     onShiftCalendar: (Int) -> Unit = {},
     form: nl.tufein.openconnect.core.FormSeries? = null,
     advice: nl.tufein.openconnect.core.TodayAdvice? = null,
+    journal: JournalState = JournalState(),
 ) {
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
         Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -91,6 +93,7 @@ fun InsightsScreen(
             InsightsTab.Shoes -> GearContent(gear, onGear, contentPadding)
             InsightsTab.Calendar -> CalendarContent(calendar, onShiftCalendar, onOpenActivity, contentPadding)
             InsightsTab.Form -> FormContent(form, advice, contentPadding)
+            InsightsTab.Journal -> JournalContent(journal, contentPadding)
         }
     }
 }

@@ -118,6 +118,11 @@ class SettingsStore(
         get() = prefs.getInt(KEY_MAX_HR, 0)
         set(value) = prefs.edit().putInt(KEY_MAX_HR, value).apply()
 
+    /** The days marked in the journal, as [nl.tufein.openconnect.core.JournalBook] writes them. */
+    var journal: String
+        get() = prefs.getString(KEY_JOURNAL, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_JOURNAL, value).apply()
+
     /** The shoes and the activities put on a pair by hand, as [nl.tufein.openconnect.core.GearBook] writes them. */
     var gear: String
         get() = prefs.getString(KEY_GEAR, "") ?: ""
@@ -336,6 +341,7 @@ class SettingsStore(
         private const val KEY_RACE = "race_goal"
         private const val KEY_MAX_HR = "max_hr"
         private const val KEY_GEAR = "gear"
+        private const val KEY_JOURNAL = "journal"
         private const val KEY_APP_LOCK = "app_lock"
         private const val KEY_SYNC_LOG = "sync_log"
         private const val KEY_HEALTH_AUTO = "health_connect_auto"

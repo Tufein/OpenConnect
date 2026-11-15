@@ -156,6 +156,7 @@ fun OpenConnectRoot(
     val zones by vm.zones.collectAsState()
     val gear by vm.gear.collectAsState()
     val calendar by vm.calendar.collectAsState()
+    val journal by vm.journal.collectAsState()
     val lock by vm.lock.collectAsState()
     val healthConnect by vm.healthConnect.collectAsState()
     val syncLog by vm.syncLog.collectAsState()
@@ -233,6 +234,7 @@ fun OpenConnectRoot(
                     onOpenActivities = { openTab(Tab.Activities) },
                     onOpenInsights = { openInsights(InsightsTab.Week) },
                     onOpenForm = { openInsights(InsightsTab.Form) },
+                    onToggleJournal = vm::toggleJournal,
                     useGarmin = sources.garmin,
                     onOura = if (sources.oura) ::openOura else null,
                 )
@@ -263,6 +265,7 @@ fun OpenConnectRoot(
                     onShiftCalendar = vm::shiftCalendar,
                     form = home.form,
                     advice = home.advice,
+                    journal = journal,
                     onShiftWeek = vm::shiftWeek,
                     onPeriod = vm::setReportPeriod,
                     onGenerate = vm::generateWeeklyReport,
