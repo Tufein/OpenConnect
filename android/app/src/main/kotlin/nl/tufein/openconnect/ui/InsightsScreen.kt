@@ -38,6 +38,7 @@ enum class InsightsTab(val label: Int) {
     Form(R.string.insights_form),
     Journal(R.string.insights_journal),
     HeatMap(R.string.insights_map),
+    Score(R.string.insights_score),
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -76,6 +77,8 @@ fun InsightsScreen(
     journal: JournalState = JournalState(),
     monotony: nl.tufein.openconnect.core.MonotonyResult? = null,
     map: MapState = MapState(),
+    score: ScoreState = ScoreState(),
+    onScoreYear: (Int) -> Unit = {},
 ) {
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
         Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -98,6 +101,7 @@ fun InsightsScreen(
             InsightsTab.Form -> FormContent(form, advice, monotony, contentPadding)
             InsightsTab.Journal -> JournalContent(journal, contentPadding)
             InsightsTab.HeatMap -> MapContent(map, contentPadding)
+            InsightsTab.Score -> ScoreContent(score, onScoreYear, contentPadding)
         }
     }
 }

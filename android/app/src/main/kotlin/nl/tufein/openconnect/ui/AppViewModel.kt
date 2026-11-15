@@ -73,6 +73,10 @@ import nl.tufein.openconnect.core.Recovery
 import nl.tufein.openconnect.core.SleepNeed
 import nl.tufein.openconnect.core.SleepNeedCalculator
 import nl.tufein.openconnect.core.RouteHistory
+import nl.tufein.openconnect.core.SeasonPlan
+import nl.tufein.openconnect.core.SeasonPlanner
+import nl.tufein.openconnect.core.YearScore
+import nl.tufein.openconnect.core.YearScoreCalculator
 import nl.tufein.openconnect.core.RouteMatcher
 import nl.tufein.openconnect.core.TagEffect
 import nl.tufein.openconnect.core.TodayAdvice
@@ -392,6 +396,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     /** What the journal says about the nights after the marked days. */
     val journal: StateFlow<JournalState> = _journal.asStateFlow()
 
+    private val _score = MutableStateFlow(ScoreState())
+
+    /** The hi-score card of one year. */
+    val score: StateFlow<ScoreState> = _score.asStateFlow()
+
     private val _map = MutableStateFlow(MapState())
 
     /** The heatmap of all routes. Worked out when the Map tab is opened, and again after the data changes. */
@@ -585,6 +594,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadGear()
         loadCalendar()
         loadJournal()
+        loadScore(_score.value.selected)
         loadTrophies()
         container.oura.refreshDays()
         currentActivityId?.let { openActivity(it) }
@@ -767,6 +777,20 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         return RouteMatcher.history(activity, candidates)
     }
 
+    /** The card of [year], or of the newest year with data when [year] is null or has none. */
+    fun loadScore(year: Int? = null) = io {
+        val activities = repo.listActivities(limit = 100_000)
+        val dailies = repo.listDaily(LocalDate.of(2000, 1, 1), LocalDate.now().plusDays(1))
+        val years = YearScoreCalculator.years(activities, dailies)
+        val selected = year?.takeIf { it in years } ?: years.firstOrNull()
+        _score.value = ScoreState(
+            loaded = true,
+            years = years,
+            selected = selected,
+            score = selected?.let { YearScoreCalculator.compute(activities, dailies, it) },
+        )
+    }
+
     fun loadJournal() = io {
         val book = JournalBook.decode(container.settings.journal)
         val first = book.days.keys.minOrNull()
@@ -832,8 +856,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             race = raceState(today),
             shapes = RaceDistance.entries.mapNotNull { RaceShapeCalculator.compute(runs, it, today) },
             vo2 = Vo2Max.summary(runs, maxHr, today),
+            season = seasonFor(today),
         )
     }
+
+    private fun seasonFor(today: LocalDate): SeasonPlan? =
+        RaceGoal.decode(container.settings.raceGoal)?.let { SeasonPlanner.plan(it, today) }
 
     private fun raceState(today: LocalDate): RaceState =
         Races.state(_reports.value.efforts, RaceGoal.decode(container.settings.raceGoal), today)
@@ -841,7 +869,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     /** Works out the race predictions and outlook again, after the efforts or the goal changed. */
     private fun publishRace() {
         val today = LocalDate.now(ZoneOffset.UTC)
-        _plan.update { it.copy(race = raceState(today)) }
+        _plan.update { it.copy(race = raceState(today), season = seasonFor(today)) }
     }
 
     /** A change to the race goal: start one, move its date by weeks, move its target by seconds, or remove it. */
@@ -1112,6 +1140,8 @@ data class CalendarState(
 )
 
 /** The Shoes tab: every pair with what it has done so far. */
+data class ScoreState(val loaded: Boolean = false, val years: List<Int> = emptyList(), val selected: Int? = null, val score: YearScore? = null)
+
 data class MapState(val loaded: Boolean = false, val grid: HeatGrid? = null)
 
 data class JournalState(val loaded: Boolean = false, val loggedDays: Int = 0, val effects: List<TagEffect> = emptyList())
@@ -1138,6 +1168,8 @@ data class PlanState(
     val shapes: List<RaceShape> = emptyList(),
     /** VO2max worked out from the pace and heart rate of recent runs; null with fewer than two such runs. */
     val vo2: Vo2Summary? = null,
+    /** The phases from now to the race goal; null without a goal or when the race is not in the future. */
+    val season: SeasonPlan? = null,
 )
 
 /** Whether the app is locked right now (and whether the lock is on at all). */

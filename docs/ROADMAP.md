@@ -88,6 +88,7 @@ Van [APP-VERGELIJKING.md](APP-VERGELIJKING.md) (8 apps naast OpenConnect) wordt 
 - **v0.36.0** ✅ dagboek (`Journal.kt`, kaart op Home, tabblad Dagboek met het effect op je nachten) en een vroege waarschuwing bij rusthartslag of HRV (`EarlyWarning.kt`).
 - **v0.37.0** ✅ eentonigheid en belasting van je week (`Recovery.kt`, tabblad Vorm) en een slaapdoel voor vannacht op Home.
 - **v0.38.0** ✅ persoonlijke heatmap van je routes (`Heatmap.kt`, tabblad Kaart) en dezelfde route vergeleken (`RouteMatcher.kt`, kaart bij een activiteit).
+- **v0.39.0** ✅ hi-scorekaart per jaar (`YearScore.kt`, tabblad Hi-score) en een seizoensplan in fases onder het racedoel (`SeasonPlan.kt`). Hiermee is de lijst uit de vergelijking klaar, op wat niet past (vermogensanalyse, horlogecompanion, upload naar Intervals.icu, segmenten en sociaal, labuitslagen, biologische leeftijd).
 
 ## Later 💡
 

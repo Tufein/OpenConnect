@@ -117,6 +117,7 @@ fun PlanContent(
 
 /** What the last weeks of running say: the shape for each distance and the VO2max. They come after the plan, which is the main thing here. */
 private fun LazyListScope.analysisItems(state: PlanState) {
+    state.season?.let { season -> item { SeasonCard(season, state.baselineKm) } }
     if (state.shapes.isNotEmpty()) item { ShapeCard(state.shapes, state.race.outlook?.goal?.distance) }
     state.vo2?.let { vo2 -> item { Vo2Card(vo2) } }
 }
