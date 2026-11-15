@@ -66,3 +66,21 @@ is no status. The units are OpenConnect's own, not TSS. Code: `core/.../Form.kt`
 On Home, under readiness. Readiness (low, moderate, good, excellent) and form (strained, building or in balance, fresh) are put on
 two small scales of 0 to 3 and the lower one decides: rest, easy, as planned, or a good day for a hard one. The card says which of
 the two holds you back. It is a suggestion from two estimates, not medical advice. Code: `TodayAdviceCalculator` in `core/.../Form.kt`.
+
+## Shape for each distance (v0.35.0)
+
+*Insights, Plan.* The last 42 days of runs (running only) give the average weekly kilometres and the longest run. For each race
+distance these are compared with what a typical plan asks (5 km: 20 km a week and an 8 km long run, 10 km: 30 and 12, half marathon:
+40 and 18, marathon: 55 and 30), each as a share capped at 100 percent; the shape is the mean of the two. 90 percent or more is
+*Ready*, 70 *Almost there*, 40 *Building*, below that *Far off*. The idea is Runalyze's *Marathon Shape*; the numbers are rules of thumb.
+Code: `core/.../RaceShape.kt`.
+
+## VO2max from your runs (v0.35.0)
+
+*Insights, Plan.* A run of at least 15 minutes and 2.5 km, with an average heart rate between 62 and 95 percent of your maximum, gives
+an estimate: the oxygen cost of its pace (Daniels and Gilbert: `-4.60 + 0.182258 v + 0.000104 v^2`, v in metres a minute) divided by the
+share of VO2max its heart rate says it took (Swain: heart rate share = 0.64 times VO2max share plus 0.37). The number shown is the
+median of the last five estimates of the last 56 days, with at least two. The race times use Daniels' formula for the share of VO2max
+you can hold for a given time and are found by halving an interval; a VO2max of 50 gives 19:57 for 5 km, 41:21 for 10 km, 1:31:35 for a
+half marathon and 3:10:49 for a marathon, as in the published tables. It is an estimate, a few ml either way, and not Garmin's VO2 max.
+Code: `core/.../Vo2Max.kt`.

@@ -10,12 +10,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -46,7 +49,10 @@ fun PlanContent(
     onSendWorkouts: () -> Unit,
     contentPadding: PaddingValues,
 ) {
+    // Creating or deleting the plan changes the list a lot: start from the top again instead of landing somewhere in the middle.
+    val listState = remember(state.plan == null) { LazyListState() }
     LazyColumn(
+        state = listState,
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = contentPadding.calculateBottomPadding() + 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -56,6 +62,7 @@ fun PlanContent(
         val progress = state.progress
         if (plan == null || progress == null) {
             item { PlanSetup(state, onCreate) }
+            analysisItems(state)
             return@LazyColumn
         }
         item {
@@ -104,7 +111,14 @@ fun PlanContent(
             Text(stringResource(R.string.plan_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             SecondaryButton(onClick = onDelete, modifier = Modifier.padding(top = 8.dp)) { Text(stringResource(R.string.plan_delete)) }
         }
+        analysisItems(state)
     }
+}
+
+/** What the last weeks of running say: the shape for each distance and the VO2max. They come after the plan, which is the main thing here. */
+private fun LazyListScope.analysisItems(state: PlanState) {
+    if (state.shapes.isNotEmpty()) item { ShapeCard(state.shapes, state.race.outlook?.goal?.distance) }
+    state.vo2?.let { vo2 -> item { Vo2Card(vo2) } }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
