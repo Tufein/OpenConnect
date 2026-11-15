@@ -37,6 +37,7 @@ enum class InsightsTab(val label: Int) {
     Calendar(R.string.insights_calendar),
     Form(R.string.insights_form),
     Journal(R.string.insights_journal),
+    HeatMap(R.string.insights_map),
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -74,6 +75,7 @@ fun InsightsScreen(
     advice: nl.tufein.openconnect.core.TodayAdvice? = null,
     journal: JournalState = JournalState(),
     monotony: nl.tufein.openconnect.core.MonotonyResult? = null,
+    map: MapState = MapState(),
 ) {
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
         Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -95,6 +97,7 @@ fun InsightsScreen(
             InsightsTab.Calendar -> CalendarContent(calendar, onShiftCalendar, onOpenActivity, contentPadding)
             InsightsTab.Form -> FormContent(form, advice, monotony, contentPadding)
             InsightsTab.Journal -> JournalContent(journal, contentPadding)
+            InsightsTab.HeatMap -> MapContent(map, contentPadding)
         }
     }
 }

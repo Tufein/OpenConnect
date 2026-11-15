@@ -62,6 +62,8 @@ import nl.tufein.openconnect.core.BodyWarning
 import nl.tufein.openconnect.core.EarlyWarning
 import nl.tufein.openconnect.core.FormCalculator
 import nl.tufein.openconnect.core.FormSeries
+import nl.tufein.openconnect.core.HeatGrid
+import nl.tufein.openconnect.core.Heatmap
 import nl.tufein.openconnect.core.JournalBook
 import nl.tufein.openconnect.core.JournalInsights
 import nl.tufein.openconnect.core.JournalTag
@@ -70,6 +72,8 @@ import nl.tufein.openconnect.core.MonotonyResult
 import nl.tufein.openconnect.core.Recovery
 import nl.tufein.openconnect.core.SleepNeed
 import nl.tufein.openconnect.core.SleepNeedCalculator
+import nl.tufein.openconnect.core.RouteHistory
+import nl.tufein.openconnect.core.RouteMatcher
 import nl.tufein.openconnect.core.TagEffect
 import nl.tufein.openconnect.core.TodayAdvice
 import nl.tufein.openconnect.core.TodayAdviceCalculator
@@ -153,6 +157,8 @@ data class DetailState(
     /** Time per heart-rate zone of this activity, and the maximum the zones were worked out from. */
     val zones: ActivityZones? = null,
     val zonesMaxHr: Int = 0,
+    /** The other runs on the same route, when there are any. */
+    val route: RouteHistory? = null,
     /** The pair of shoes this activity went on, the pairs it could be put on, and whether it was chosen by hand. */
     val shoe: Shoe? = null,
     val shoeChoices: List<Shoe> = emptyList(),
@@ -386,6 +392,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     /** What the journal says about the nights after the marked days. */
     val journal: StateFlow<JournalState> = _journal.asStateFlow()
 
+    private val _map = MutableStateFlow(MapState())
+
+    /** The heatmap of all routes. Worked out when the Map tab is opened, and again after the data changes. */
+    val map: StateFlow<MapState> = _map.asStateFlow()
+
     private val _plan = MutableStateFlow(PlanState())
 
     /** The training plan and how far it has got. */
@@ -436,6 +447,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private companion object {
         val OPEN_GAP: java.time.Duration = java.time.Duration.ofMinutes(1)
         val TICK: java.time.Duration = java.time.Duration.ofMinutes(10)
+
+        /** The heatmap reads this many of the newest activities, with at most this many positions each. */
+        const val MAP_ACTIVITIES = 300
+        const val MAP_POINTS = 500
+
+        /** The most other activities whose track is read to look for the same route. */
+        const val ROUTE_CANDIDATES = 60
     }
 
     // ------------------------------------------------------------------------------------ AI
@@ -555,6 +573,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     // ------------------------------------------------------------------------------- loading
 
     fun refreshAll() {
+        _map.value = MapState() // stale: the Map tab works it out again when it is open
         io { _overview.value = DataOverview.of(repo) }
         loadHome()
         loadActivities(_activities.value.sport)
@@ -642,6 +661,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 laps = activity?.let { BestEfforts.laps(it.track) }.orEmpty(),
                 efforts = activity?.takeIf { it.sport == Sport.RUNNING }?.let { BestEfforts.efforts(it.track) }.orEmpty(),
                 report = container.reports.cached("activity", id),
+                route = activity?.let { routeFor(it) },
             )
         }
     }
@@ -718,6 +738,33 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun shiftCalendar(months: Int) {
         calendarMonth = (calendarMonth ?: java.time.YearMonth.now(ZoneOffset.UTC)).plusMonths(months.toLong())
         loadCalendar()
+    }
+
+    /** Reads the tracks of the newest 300 activities with a distance one at a time and thins each to at most 500 positions. */
+    fun loadMap() = io {
+        val tracks = repo.listActivities(limit = 10_000).asSequence()
+            .filter { it.distanceM > 0 }
+            .take(MAP_ACTIVITIES)
+            .mapNotNull { repo.getActivity(it.id)?.track }
+            .map { track ->
+                val positioned = track.filter { it.hasPosition }
+                val stride = (positioned.size / MAP_POINTS).coerceAtLeast(1)
+                positioned.filterIndexed { i, _ -> i % stride == 0 || i == positioned.lastIndex }
+            }
+            .toList()
+        _map.value = MapState(loaded = true, grid = Heatmap.build(tracks))
+    }
+
+    /** The other runs on the same route as [activity], read with their tracks only when their distance is close enough. */
+    private fun routeFor(activity: Activity): RouteHistory? {
+        if (activity.distanceM <= 0 || !activity.hasGps) return null
+        val candidates = repo.listActivities(sport = activity.sport, limit = 10_000).asSequence()
+            .filter { it.id != activity.id && it.distanceM > 0 }
+            .filter { kotlin.math.abs(it.distanceM - activity.distanceM) / maxOf(it.distanceM, activity.distanceM) <= RouteMatcher.DISTANCE_TOLERANCE }
+            .take(ROUTE_CANDIDATES)
+            .mapNotNull { repo.getActivity(it.id) }
+            .toList()
+        return RouteMatcher.history(activity, candidates)
     }
 
     fun loadJournal() = io {
@@ -1065,6 +1112,8 @@ data class CalendarState(
 )
 
 /** The Shoes tab: every pair with what it has done so far. */
+data class MapState(val loaded: Boolean = false, val grid: HeatGrid? = null)
+
 data class JournalState(val loaded: Boolean = false, val loggedDays: Int = 0, val effects: List<TagEffect> = emptyList())
 
 data class GearState(val loaded: Boolean = false, val usage: List<ShoeUsage> = emptyList())

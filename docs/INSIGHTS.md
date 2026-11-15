@@ -113,3 +113,18 @@ weeks before that had any training. It needs two weeks of activities and some lo
 the sleep debt (how far the last seven nights fall short of 8 hours each, never below zero) up to one hour. Debt under 1 hour is none,
 under 4 hours small, from 4 hours big. It needs four nights with sleep time. It is a suggestion in the spirit of WHOOP's sleep need,
 not medical advice. Code: `SleepNeedCalculator` in `core/.../Recovery.kt`.
+
+## Map (v0.38.0)
+
+*Insights, Map.* The tracks of the newest 300 activities with a distance, each thinned to at most 500 positions, are laid on one grid of at
+most 48 by 48 squares, with longitude scaled by the cosine of the latitude so squares are square. The bounds cut 1 percent of the
+positions off each end of both axes (from 200 positions up) so one stray point does not shrink the rest into a corner. A square counts
+once per activity; sparse tracks are joined in steps of half a square. Brightness has four steps on a log scale up to the busiest square.
+There is no background map and nothing leaves the phone. Code: `core/.../Heatmap.kt`.
+
+## Same route (v0.38.0)
+
+*On an activity.* Two activities are the same route when they have the same sport, their distances differ by at most 10 percent, and the first,
+the middle and the last position are each within 300 metres. The place is by time at the distance of the activity you look at (a
+route run a bit long is not punished); the card also shows how far behind your best it was, with the date of that best, and the difference
+with the average of the others. Code: `core/.../RouteMatcher.kt`.
