@@ -128,3 +128,19 @@ There is no background map and nothing leaves the phone. Code: `core/.../Heatmap
 the middle and the last position are each within 300 metres. The place is by time at the distance of the activity you look at (a
 route run a bit long is not punished); the card also shows how far behind your best it was, with the date of that best, and the difference
 with the average of the others. Code: `core/.../RouteMatcher.kt`.
+
+## Hi-score (v0.39.0)
+
+*Insights, Hi-score.* For a year (UTC days, like the calendar): the number of activities, the summed distance and time, the days with an
+activity and the longest run of days in a row, the longest running and cycling activity by distance, the biggest climb of one activity,
+the month with the most kilometres, the steps and the best day of steps from the daily summaries, and the distance of the year before for
+the change in percent. Years with an activity or a day of steps can be picked. Sharing sends one line of text through the share sheet.
+Code: `core/.../YearScore.kt`.
+
+## Season plan (v0.39.0)
+
+*Insights, Plan, under the race goal.* Counted back from the race date: taper 1 week (5K, 10K), 2 (half marathon) or 3 (marathon); peak 2, 3
+or 3 weeks; build 3, 4 or 4 weeks; base for all the weeks before. The weeks run from today and a part of a week counts as a week; with too few weeks
+the front phases fall away, and a race more than a year away plans the last 52 weeks. Kilometres a week per phase are a range around what
+you run now (base 95 to 105 percent, build 105 to 120, peak 120 to 130, taper 50 to 70). A rule of thumb for how a season is usually cut up,
+not a coach. Code: `core/.../SeasonPlan.kt`.

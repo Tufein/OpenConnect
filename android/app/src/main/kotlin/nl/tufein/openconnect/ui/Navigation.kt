@@ -158,6 +158,7 @@ fun OpenConnectRoot(
     val calendar by vm.calendar.collectAsState()
     val journal by vm.journal.collectAsState()
     val map by vm.map.collectAsState()
+    val score by vm.score.collectAsState()
     val lock by vm.lock.collectAsState()
     val healthConnect by vm.healthConnect.collectAsState()
     val syncLog by vm.syncLog.collectAsState()
@@ -271,6 +272,8 @@ fun OpenConnectRoot(
                     journal = journal,
                     monotony = home.monotony,
                     map = map,
+                    score = score,
+                    onScoreYear = vm::loadScore,
                     onShiftWeek = vm::shiftWeek,
                     onPeriod = vm::setReportPeriod,
                     onGenerate = vm::generateWeeklyReport,
