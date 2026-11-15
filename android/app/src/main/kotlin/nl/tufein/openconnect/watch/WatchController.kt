@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import nl.tufein.openconnect.core.Repository
@@ -113,13 +115,39 @@ class WatchController(
     private val onBleBackgroundWanted: (Boolean) -> Unit = {},
     /** Waits before reconnect attempt number [attempt] (1, 2, ...). Tests replace it. */
     private val reconnectDelay: suspend (attempt: Int) -> Unit = { attempt -> delay(minOf(2_000L * attempt, 10_000L)) },
+    /** Keeps the recording alive while the screen is off. The real one shows a notification; tests use a fake. */
+    private val keeper: LiveRecordingKeeper = NoLiveRecordingKeeper,
 ) {
     private val _state = MutableStateFlow(WatchUi(garmin = GarminBleUi(remembered = garminMemory.load(), archiveAfterRead = garminOptions.archiveAfterRead, background = garminOptions.background)))
 
+    /** True while the recording notification is shown; [keep] moves it with the live state. */
+    private var keeping = false
+
     init {
         onBleBackgroundWanted(garminOptions.background)
+        // A recording keeps a notification (and so the process) alive while it streams or reconnects, and lets it go
+        // as soon as the recording ends. Watching the state covers every path: start, stop, and the last failed retry.
+        scope.launch {
+            _state.map { it.live }.distinctUntilChanged().collect { keep(it) }
+        }
     }
     val state: StateFlow<WatchUi> = _state.asStateFlow()
+
+    /** Shows, refreshes or removes the recording notification as [live] moves between streaming and stopped. */
+    private fun keep(live: LiveUi) {
+        val recording = live.phase == LivePhase.STREAMING || live.phase == LivePhase.RECONNECTING
+        if (recording) {
+            if (!keeping) {
+                keeping = true
+                keeper.start(live) { stopLive() }
+            } else {
+                keeper.update(live)
+            }
+        } else if (keeping) {
+            keeping = false
+            keeper.stop()
+        }
+    }
 
     // ------------------------------------------------------------------------------------- USB
 

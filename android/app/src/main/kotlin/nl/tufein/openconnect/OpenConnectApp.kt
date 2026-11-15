@@ -39,9 +39,12 @@ import nl.tufein.openconnect.garmin.GarminSettings
 import nl.tufein.openconnect.watch.AndroidGarminBleLink
 import nl.tufein.openconnect.watch.BleHeartRateLink
 import nl.tufein.openconnect.watch.FolderLink
+import nl.tufein.openconnect.watch.ForegroundLiveRecording
 import nl.tufein.openconnect.watch.GarminBleLink
 import nl.tufein.openconnect.watch.HeartRateLink
+import nl.tufein.openconnect.watch.LiveRecordingKeeper
 import nl.tufein.openconnect.watch.NoGarminBleLink
+import nl.tufein.openconnect.watch.NoLiveRecordingKeeper
 import nl.tufein.openconnect.watch.SafFolderLink
 import nl.tufein.openconnect.watch.UsbWatchLink
 import nl.tufein.openconnect.watch.WatchController
@@ -87,6 +90,8 @@ class AppContainer(
     ouraSettings: nl.tufein.openconnect.oura.OuraSettings = settings.oura,
     /** Starts and stops the Oura job. Tests pass a fake; the app passes WorkManager. */
     ouraSync: BackgroundSync = BackgroundSync { },
+    /** Keeps a live heart-rate recording alive with the screen off. Tests pass a fake; the app posts a notification. */
+    keeper: LiveRecordingKeeper = NoLiveRecordingKeeper,
 ) {
     val stats = StatsService(repository)
 
@@ -155,6 +160,7 @@ class AppContainer(
         onSynced = syncLog::record,
         garminOptions = bleOptions,
         onBleBackgroundWanted = bleBackgroundSync::set,
+        keeper = keeper,
     )
 
     val garmin = GarminController(
@@ -231,6 +237,7 @@ class OpenConnectApp : Application() {
             healthConnect = AndroidHealthConnectGateway(this),
             widgetRefresh = { summary -> HomeWidget.refresh(this, summary) },
             ouraSync = nl.tufein.openconnect.sync.WorkManagerOuraSync(this),
+            keeper = ForegroundLiveRecording(this),
         ) }
     }
 }

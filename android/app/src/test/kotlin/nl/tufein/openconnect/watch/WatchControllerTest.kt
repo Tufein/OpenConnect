@@ -21,6 +21,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -46,6 +47,7 @@ class WatchControllerTest {
         folder: FolderLink = FolderLink { throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN) },
         reconnectDelay: suspend (Int) -> Unit = {},
         maxReconnects: Int = 5,
+        keeper: LiveRecordingKeeper = NoLiveRecordingKeeper,
     ) = WatchController(
         repo = repo,
         usb = usb,
@@ -58,6 +60,7 @@ class WatchControllerTest {
         folder = folder,
         reconnectDelay = reconnectDelay,
         maxReconnects = maxReconnects,
+        keeper = keeper,
     )
 
     private val forerunner = WatchInfo("usb-1", "Forerunner 265")
@@ -487,5 +490,62 @@ class WatchControllerTest {
         assertEquals(100, live.max, "the old connection's reading is not part of the recording")
         assertEquals(LivePhase.STREAMING, live.phase)
         assertEquals(2, ble.connectCalls)
+    }
+
+    // ------------------------------------------------------------------- recording notification
+
+    @Test
+    fun `a streaming recording shows a notification, refreshes it, and removes it on stop`() {
+        val keeper = FakeLiveRecordingKeeper()
+        val c = controller(FakeUsb { opened() }, keeper = keeper)
+        c.connect(BleSensor("AA:01", "Strap"))
+        assertTrue(keeper.updates.isEmpty(), "connecting alone does not show a notification yet")
+        ble.listener!!.onConnected()
+        assertTrue(keeper.onStop != null, "streaming shows a notification with a stop action")
+        assertEquals(LivePhase.STREAMING, keeper.updates.last().phase)
+
+        clock = Instant.parse("2026-06-12T09:00:00Z")
+        ble.listener!!.onMeasurement(hr(120))
+        assertEquals(120, keeper.updates.last().bpm, "each reading refreshes the notification")
+
+        c.stopLive()
+        assertEquals(1, keeper.stopped)
+        assertNull(keeper.onStop, "the notification is gone and its stop action no longer points anywhere")
+    }
+
+    @Test
+    fun `the notification stop ends the recording`() {
+        val keeper = FakeLiveRecordingKeeper()
+        val c = controller(FakeUsb { opened() }, keeper = keeper)
+        streaming(c, 100)
+        assertNotNull(keeper.onStop)
+
+        keeper.onStop!!()
+        assertEquals(LivePhase.STOPPED, c.state.value.live.phase)
+        assertEquals(1, keeper.stopped)
+        assertTrue(c.state.value.live.hasData, "what was recorded stays so it can still be saved")
+    }
+
+    @Test
+    fun `a dropped connection keeps the notification while it reconnects`() {
+        val keeper = FakeLiveRecordingKeeper()
+        val c = controller(FakeUsb { opened() }, keeper = keeper)
+        streaming(c, 100)
+        ble.listener!!.onDisconnected("lost")
+
+        assertEquals(LivePhase.RECONNECTING, c.state.value.live.phase)
+        assertEquals(0, keeper.stopped, "the notification is still there while the phone tries again")
+        assertEquals(LivePhase.RECONNECTING, keeper.updates.last().phase)
+    }
+
+    @Test
+    fun `a recording that ends after failed retries removes the notification`() {
+        val keeper = FakeLiveRecordingKeeper()
+        val c = controller(FakeUsb { opened() }, keeper = keeper, maxReconnects = 0)
+        streaming(c, 100)
+        ble.listener!!.onDisconnected("Connection lost")
+
+        assertEquals(LivePhase.STOPPED, c.state.value.live.phase)
+        assertEquals(1, keeper.stopped)
     }
 }

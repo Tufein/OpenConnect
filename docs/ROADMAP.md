@@ -90,10 +90,17 @@ Van [APP-VERGELIJKING.md](APP-VERGELIJKING.md) (8 apps naast OpenConnect) wordt 
 - **v0.38.0** ✅ persoonlijke heatmap van je routes (`Heatmap.kt`, tabblad Kaart) en dezelfde route vergeleken (`RouteMatcher.kt`, kaart bij een activiteit).
 - **v0.39.0** ✅ hi-scorekaart per jaar (`YearScore.kt`, tabblad Hi-score) en een seizoensplan in fases onder het racedoel (`SeasonPlan.kt`). Hiermee is de lijst uit de vergelijking klaar, op wat niet past (vermogensanalyse, horlogecompanion, upload naar Intervals.icu, segmenten en sociaal, labuitslagen, biologische leeftijd).
 
+## v0.40.0: live hartslag blijft opnemen met het scherm uit ✅
+
+16. **Voorgrondservice voor live hartslag:** zodra een hartslagmeting loopt, toont OpenConnect een vaste melding met de
+    hartslag en de verstreken tijd (en een Stop-knop). Die melding houdt het proces en de Bluetooth-verbinding in leven,
+    zodat een training doorloopt als het scherm uitgaat of de app op de achtergrond komt. Stoppen kan in de app of vanaf
+    de melding; wat al is opgenomen blijft bewaard en kan daarna als activiteit worden opgeslagen. Niet geprobeerd op een
+    echte telefoon.
+
 ## Later 💡
 
 - Het nieuwere Garmin-protobuf-synchronisatieprotocol voor horloges die de klassieke mapsynchronisatie niet meer gebruiken.
-- Live hartslag als voorgrondservice (een training blijft opnemen met scherm uit).
 - Wear OS of een eigen horloge-app buiten Garmin valt buiten dit project.
 
 ## Heeft de eigenaar nodig ❓

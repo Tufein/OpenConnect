@@ -145,5 +145,5 @@ what is verified, is in [GARMIN.md](GARMIN.md) and [WATCH.md](WATCH.md).
 ## Roadmap
 
 Trying the watch routes and the background job on real devices and fixing what that turns up, a live Claude and Gemini
-check with real keys, the watch's `Metrics` folder (VO2 max, training status), a foreground service for live heart rate,
+check with real keys, the watch's `Metrics` folder (VO2 max, training status),
 Health Connect as a source, a home-screen widget, laps and zoomable charts, and a signed Play Store build.
