@@ -59,7 +59,7 @@ jobs:
           mkdir -p apk
           cp android/app/build/outputs/apk/release/app-release.apk "apk/openconnect-${TAG}.apk"
           (cd apk && sha256sum "openconnect-${TAG}.apk" > "openconnect-${TAG}.apk.sha256")
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: apk
           path: apk/
