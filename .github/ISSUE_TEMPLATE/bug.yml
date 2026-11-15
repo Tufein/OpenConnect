@@ -1,0 +1,28 @@
+name: Bug report
+description: Report a sync, health-data or report problem against a known version.
+body:
+  - type: markdown
+    attributes:
+      value: Never attach a real openconnect.db, FIT/GPX/TCX export, Garmin token or AI key. Use the mock source or synthetic fixtures.
+  - type: input
+    id: version
+    attributes:
+      label: Version and download source
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: OpenConnect version (server and/or app) and install route (Docker, pip, APK)
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps, expected result, and actual result
+    validations:
+      required: true
+  - type: textarea
+    id: conditions
+    attributes:
+      label: Data source (mock, OAuth live, Personal API, Health Connect, watch) and what the sync reported

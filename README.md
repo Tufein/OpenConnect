@@ -9,7 +9,7 @@ machine, with a dashboard, FIT/GPX/TCX import and export, and optional AI-writte
 
 ![OpenConnect dashboard](docs/img/dashboard.png)
 
-> **Status: v0.16.0, an early foundation.** It runs end to end on demo data with no credentials.
+> **Status: v0.40.0, an early foundation.** It runs end to end on demo data with no credentials.
 > Live Garmin access needs Garmin Developer Program credentials (see [Garmin access](#garmin-access)).
 > Not affiliated with or endorsed by Garmin.
 
@@ -71,7 +71,7 @@ trophies with a level, activity search and sorting, and CSV export. See **[docs/
 
 ## What is in the box
 
-| Area (server) | v0.1.0 |
+| Area (server) | What it does |
 |------|--------|
 | **Activities** | List and detail, GPS route map, HR and elevation charts, kilometre splits, personal records |
 | **Daily health** | Steps, intensity minutes, resting HR, sleep stages and score, stress, Body Battery |
@@ -167,7 +167,8 @@ Check Garmin's Developer Program Agreement before sending Garmin-derived data to
 
 ## Security
 
-OpenConnect v0.1.0 has **no login**. Keep it on `localhost` or a trusted network, or put a reverse
+OpenConnect has **no login** (the server still runs the security model documented as v0.1.0 in
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)). Keep it on `localhost` or a trusted network, or put a reverse
 proxy with authentication in front of it. Built in: loopback bind by default, `Host` allow-list,
 refusal of cross-origin POSTs, strict Content-Security-Policy, size-limited and validated uploads,
 XXE-safe XML parsing, and an optional webhook secret. OAuth tokens are stored in the SQLite file in
@@ -217,3 +218,7 @@ Courses API publishing, monthly reports, and optional authentication. See
 [AGPL-3.0-or-later](LICENSE) since v0.6.0 (MIT up to v0.5.0). The Garmin Bluetooth sync is ported from
 [Gadgetbridge](https://codeberg.org/Freeyourgadget/Gadgetbridge) (AGPL-3.0), see [NOTICE](NOTICE).
 Garmin and Garmin Connect are trademarks of Garmin Ltd.
+
+## Documentation
+
+[Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Roadmap](docs/ROADMAP.md) · [Release notes](docs/releases)
