@@ -69,6 +69,8 @@ fun HomeScreen(
     onOpenHealth: (ChartMetric) -> Unit = {},
     onOpenActivities: () -> Unit = {},
     onOpenInsights: () -> Unit = {},
+    /** The advice card was tapped: open the Form tab. */
+    onOpenForm: () -> Unit = {},
     /** False for someone who said at the first start that they have no Garmin: no sync status, no Garmin buttons. */
     useGarmin: Boolean = true,
     /** Opens the Oura tab; null for someone without a ring. */
@@ -152,6 +154,7 @@ fun HomeScreen(
 
             // One order: how ready you are, today's four signals, the day so far, then the week.
             readiness()
+            state.advice?.let { advice -> item { Box(Modifier.tappable(onOpenForm)) { AdviceCard(advice) } } }
             signalGrid()
             stepsCard()
             goalsAndLoad()

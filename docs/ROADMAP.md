@@ -79,6 +79,12 @@ gaat uit zonder dat CI groen is. Wat zonder horloge of telefoon niet te controle
 15. Een **stijlkeuze**: Retro (de pixelstijl), **Strak** (afgeronde hoeken, dunne lijnen, duidelijke letters) en **Deftig**
     (kleine hoeken, titels met schreef). Alle 24 kleurthema's werken in alle drie. Zie [DESIGN.md](DESIGN.md).
 
+## Uit de app-vergelijking ✅ / 🚧
+
+Van [APP-VERGELIJKING.md](APP-VERGELIJKING.md) (8 apps naast OpenConnect) wordt alles in losse versies gebouwd:
+
+- **v0.34.0** ✅ fitheid, vermoeidheid en vorm (`Form.kt`, tabblad Vorm) en een trainingsadvies voor vandaag op Home.
+
 ## Later 💡
 
 - Het nieuwere Garmin-protobuf-synchronisatieprotocol voor horloges die de klassieke mapsynchronisatie niet meer gebruiken.
