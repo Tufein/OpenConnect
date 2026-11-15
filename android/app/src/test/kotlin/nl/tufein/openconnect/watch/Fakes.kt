@@ -62,3 +62,27 @@ class FakeGarminBle(
         return open.invoke(watch, onStep)
     }
 }
+
+/** A recording notification that records what the controller asked of it, so tests can assert on it. */
+class FakeLiveRecordingKeeper : LiveRecordingKeeper {
+    /** Every [LiveUi] given to [start] or [update], oldest first. */
+    val updates = java.util.concurrent.CopyOnWriteArrayList<LiveUi>()
+
+    @Volatile var onStop: (() -> Unit)? = null
+
+    @Volatile var stopped = 0
+
+    override fun start(state: LiveUi, onStop: () -> Unit) {
+        updates.add(state)
+        this.onStop = onStop
+    }
+
+    override fun update(state: LiveUi) {
+        updates.add(state)
+    }
+
+    override fun stop() {
+        stopped++
+        onStop = null
+    }
+}

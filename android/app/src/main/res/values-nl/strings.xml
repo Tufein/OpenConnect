@@ -142,6 +142,7 @@
     <string name="watch_folder_pick">Kies een map</string>
     <string name="watch_fail_folder_files">In die map zijn geen .fit-bestanden gevonden.</string>
     <string name="watch_live_reconnecting">Verbinding weg, opnieuw proberen (%1$d)…</string>
+    <string name="live_notification_text">%1$s bpm · %2$s</string>
     <string name="action_garmin">Garmin-account</string>
     <string name="garmin_title">Garmin-account</string>
     <string name="garmin_intro">Je horloge praat via Bluetooth met de Garmin Connect-app op je telefoon, en Garmin bewaart je gegevens in zijn cloud. OpenConnect leest je eigen gegevens daar uit met een persoonlijke key die alleen jij kunt maken. Er zit geen server van ons tussen.</string>

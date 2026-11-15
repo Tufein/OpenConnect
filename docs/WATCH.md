@@ -102,7 +102,9 @@ Sleep for a night is replaced only by a file that is at least as complete as the
 The standard Heart Rate Measurement characteristic is decoded exactly as the Bluetooth specification describes:
 flag bit 0 selects 8 or 16 bit heart rate, bits 1 and 2 report sensor contact, bit 3 an energy field to skip, and
 bit 4 a list of RR intervals in 1/1024 second. From the RR intervals the app computes HRV as **RMSSD**, ignoring
-intervals outside 300 to 2000 ms (artefacts). A live session can be saved as an activity.
+intervals outside 300 to 2000 ms (artefacts). A live session can be saved as an activity. Since v0.40.0 a
+**foreground service** keeps the recording running with the screen off: while the sensor streams, a persistent
+notification shows the heart rate and the elapsed time, and its *Stop* action ends the recording.
 
 On many Garmin watches the broadcast has to be switched on first (in the watch's settings, "Broadcast Heart Rate"
 or similar, the exact name depends on the model), because the watch only advertises the heart rate service while it
@@ -138,6 +140,8 @@ is on.
 - The USB permission flow and `MtpDevice` itself. The app uses `-1` as the root handle when listing a storage, as
   Android's documentation describes, but phone makers differ and this has not run on a device.
 - The Bluetooth scan and GATT connection to a real watch or chest strap.
+- The foreground service that keeps a recording running with the screen off: on a real phone Android decides whether
+  and when a foreground service may keep running (Doze, battery saver, background start limits).
 - Whether **real** Garmin files match the assumptions above. They follow the FIT profile (SDK 21.221.0), but they
   have only been checked against synthetic files made with the official encoder. Models differ in which folders
   they fill and which messages they write.
@@ -172,6 +176,5 @@ shipped in the app.
 ## Where this can go next
 
 Health Connect as an extra source (for watches or apps that do not expose files), the `Metrics` folder for VO2 max
-and training status, an export for people who already run Gadgetbridge, a foreground service so a live heart rate
-recording survives the screen switching off, and syncing in the background. The Personal API route is built, see
-[GARMIN.md](GARMIN.md).
+and training status, an export for people who already run Gadgetbridge, and syncing in the background. The Personal
+API route is built, see [GARMIN.md](GARMIN.md).

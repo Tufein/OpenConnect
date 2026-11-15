@@ -106,3 +106,27 @@ object NoGarminBleLink : GarminBleLink {
     override suspend fun open(watch: GarminBleWatch, onStep: (GarminStep) -> Unit): OpenedWatch =
         throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, "Bluetooth is not available")
 }
+
+/**
+ * Keeps a live heart-rate recording running while the screen is off: a persistent notification that also holds the
+ * process (and so the Bluetooth connection) alive. The real one is [ForegroundLiveRecording]; tests use a fake.
+ */
+interface LiveRecordingKeeper {
+    /** Shows the notification. [onStop] is called when the person taps Stop on it, so the recording ends too. */
+    fun start(state: LiveUi, onStop: () -> Unit)
+
+    /** Refreshes the notification with the latest numbers while the recording runs. */
+    fun update(state: LiveUi)
+
+    /** Removes the notification and lets the process drop back to the background. */
+    fun stop()
+}
+
+/** The default for tests and for phones without a foreground service: the recording works while the app is open. */
+object NoLiveRecordingKeeper : LiveRecordingKeeper {
+    override fun start(state: LiveUi, onStop: () -> Unit) {}
+
+    override fun update(state: LiveUi) {}
+
+    override fun stop() {}
+}
