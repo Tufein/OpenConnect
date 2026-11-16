@@ -28,7 +28,7 @@ class RampScreenTest : AppTestBase() {
         waitForText("Fitness, fatigue and form")
         scrollToText("Training ramp")
         scrollToText("Last 7 days:", substring = true)
-        scrollToText("not medical advice", substring = true)
+        scrollToText("against the average week of the four weeks before", substring = true)
         shot("80-ramp")
     }
 }

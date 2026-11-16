@@ -2,9 +2,14 @@ package nl.tufein.openconnect.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import nl.tufein.openconnect.R
@@ -12,7 +17,12 @@ import nl.tufein.openconnect.core.MonotonyResult
 import nl.tufein.openconnect.core.MonotonyVerdict
 import nl.tufein.openconnect.core.RampLevel
 import nl.tufein.openconnect.core.RampRate
+import nl.tufein.openconnect.core.RestingHrDirection
+import nl.tufein.openconnect.core.RestingHrTrend
+import nl.tufein.openconnect.core.SleepConsistency
 import nl.tufein.openconnect.core.SleepDebtLevel
+import nl.tufein.openconnect.core.SleepRhythm
+import nl.tufein.openconnect.core.StepGoalWeek
 import nl.tufein.openconnect.core.SleepNeed
 import kotlin.math.roundToInt
 
@@ -123,5 +133,103 @@ internal fun RampCard(r: RampRate) {
         )
         Text(stringResource(rampText(r.level)), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
         Text(stringResource(R.string.ramp_note), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+    }
+}
+
+private fun rhythmLabel(r: SleepRhythm): Int = when (r) {
+    SleepRhythm.STEADY -> R.string.sleep_rhythm_steady
+    SleepRhythm.VARIABLE -> R.string.sleep_rhythm_variable
+    SleepRhythm.ERRATIC -> R.string.sleep_rhythm_erratic
+}
+
+private fun rhythmText(r: SleepRhythm): Int = when (r) {
+    SleepRhythm.STEADY -> R.string.sleep_rhythm_text_steady
+    SleepRhythm.VARIABLE -> R.string.sleep_rhythm_text_variable
+    SleepRhythm.ERRATIC -> R.string.sleep_rhythm_text_erratic
+}
+
+/** How alike the last two weeks of nights were in length (Oura and WHOOP call it sleep consistency). Lives on Home. */
+@Composable
+internal fun SleepConsistencyCard(c: SleepConsistency) {
+    val colors = MaterialTheme.colorScheme
+    val metrics = OpenConnectColors.metrics
+    val tint = when (c.rhythm) {
+        SleepRhythm.STEADY -> metrics.sleep
+        SleepRhythm.VARIABLE -> metrics.stress
+        SleepRhythm.ERRATIC -> colors.error
+    }
+    SurfaceCard(accent = tint) {
+        Text(stringResource(R.string.sleep_rhythm_title), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(rhythmLabel(c.rhythm)), style = MaterialTheme.typography.titleLarge, color = tint)
+        Text(
+            stringResource(
+                R.string.sleep_rhythm_numbers,
+                Fmt.hours((c.averageHours * 3600).roundToInt()),
+                c.spreadMinutes,
+                Fmt.hours((c.shortestHours * 3600).roundToInt()),
+                Fmt.hours((c.longestHours * 3600).roundToInt()),
+            ),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Text(stringResource(rhythmText(c.rhythm)), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+        Text(stringResource(R.string.sleep_rhythm_note, c.nights), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+    }
+}
+
+private fun restingLabel(d: RestingHrDirection): Int = when (d) {
+    RestingHrDirection.LOWER -> R.string.resting_trend_lower
+    RestingHrDirection.STABLE -> R.string.resting_trend_stable
+    RestingHrDirection.HIGHER -> R.string.resting_trend_higher
+}
+
+private fun restingText(d: RestingHrDirection): Int = when (d) {
+    RestingHrDirection.LOWER -> R.string.resting_trend_text_lower
+    RestingHrDirection.STABLE -> R.string.resting_trend_text_stable
+    RestingHrDirection.HIGHER -> R.string.resting_trend_text_higher
+}
+
+/** Resting heart rate of the last week against your own normal of the four weeks before. Lives on Home. */
+@Composable
+internal fun RestingHrTrendCard(t: RestingHrTrend) {
+    val colors = MaterialTheme.colorScheme
+    val metrics = OpenConnectColors.metrics
+    val tint = when (t.direction) {
+        RestingHrDirection.LOWER -> metrics.readiness
+        RestingHrDirection.STABLE -> metrics.heart
+        RestingHrDirection.HIGHER -> metrics.stress
+    }
+    SurfaceCard(accent = tint) {
+        Text(stringResource(R.string.resting_trend_title), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(restingLabel(t.direction)), style = MaterialTheme.typography.titleLarge, color = tint)
+        Text(
+            stringResource(R.string.resting_trend_numbers, t.recent.roundToInt(), t.normal.roundToInt()),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Text(stringResource(restingText(t.direction)), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+        Text(stringResource(R.string.resting_trend_note), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+    }
+}
+
+/** How many of the last seven days reached the step goal, as a bar of seven blocks. Lives on Home under the steps. */
+@Composable
+internal fun StepGoalWeekCard(w: StepGoalWeek) {
+    val colors = MaterialTheme.colorScheme
+    val metrics = OpenConnectColors.metrics
+    val tint = if (w.daysReached * 2 >= w.daysWithData) metrics.readiness else metrics.stress
+    SurfaceCard(accent = tint) {
+        Text(stringResource(R.string.step_week_title), style = MaterialTheme.typography.titleMedium)
+        val headline = stringResource(R.string.step_week_days, w.daysReached, w.daysWithData)
+        Text(headline, style = MaterialTheme.typography.titleLarge, color = tint)
+        SegmentBar(
+            w.daysReached.toFloat() / w.daysWithData,
+            tint,
+            Modifier.fillMaxWidth().height(18.dp).semantics { contentDescription = headline },
+            segments = w.daysWithData,
+        )
+        Text(
+            stringResource(R.string.step_week_numbers, Fmt.thousands(w.averageSteps), Fmt.thousands(w.bestSteps), Fmt.shortDate(w.bestDay)),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Text(stringResource(R.string.step_week_note, Fmt.thousands(w.goal)), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
     }
 }

@@ -71,6 +71,12 @@ import nl.tufein.openconnect.core.MonotonyCalculator
 import nl.tufein.openconnect.core.MonotonyResult
 import nl.tufein.openconnect.core.RampRate
 import nl.tufein.openconnect.core.RampRateCalculator
+import nl.tufein.openconnect.core.RestingHrTrend
+import nl.tufein.openconnect.core.RestingHrTrendCalculator
+import nl.tufein.openconnect.core.SleepConsistency
+import nl.tufein.openconnect.core.StepGoalWeek
+import nl.tufein.openconnect.core.StepGoalWeekCalculator
+import nl.tufein.openconnect.core.SleepConsistencyCalculator
 import nl.tufein.openconnect.core.Recovery
 import nl.tufein.openconnect.core.SleepNeed
 import nl.tufein.openconnect.core.SleepNeedCalculator
@@ -144,6 +150,9 @@ data class HomeState(
     val ramp: RampRate? = null,
     /** How long to sleep tonight; null while fewer than four of the last seven nights are known. */
     val sleepNeed: SleepNeed? = null,
+    val sleepConsistency: SleepConsistency? = null,
+    val stepGoalWeek: StepGoalWeek? = null,
+    val restingHrTrend: RestingHrTrend? = null,
 )
 
 data class TrophiesState(val loaded: Boolean = false, val achievements: Achievements? = null)
@@ -641,6 +650,18 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             monotony = MonotonyCalculator.compute(activities, todayUtc),
             ramp = RampRateCalculator.compute(activities, todayUtc),
             sleepNeed = sleepNeed,
+            restingHrTrend = RestingHrTrendCalculator.compute(
+                repo.listDaily(todayLocal.minusDays((RestingHrTrendCalculator.RECENT_DAYS + RestingHrTrendCalculator.NORMAL_DAYS - 1).toLong()), todayLocal),
+                todayLocal,
+            ),
+            stepGoalWeek = StepGoalWeekCalculator.compute(
+                repo.listDaily(todayLocal.minusDays((StepGoalWeekCalculator.DAYS - 1).toLong()), todayLocal),
+                todayLocal,
+            ),
+            sleepConsistency = SleepConsistencyCalculator.compute(
+                repo.listSleep(todayLocal.minusDays((SleepConsistencyCalculator.WINDOW - 1).toLong()), todayLocal),
+                todayLocal,
+            ),
         )
     }
 
