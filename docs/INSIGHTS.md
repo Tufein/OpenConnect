@@ -151,3 +151,21 @@ not a coach. Code: `core/.../SeasonPlan.kt`.
 7-day windows before it. Under 0.8 is *lighter than usual*, 0.8 up to 1.3 *right on your usual*, 1.3 up to 1.5 *more than usual*, 1.5 and up
 *a big jump*. It needs 35 days of history and a non-empty four weeks before. A rule of thumb in OpenConnect's own load units, not
 medical advice. Code: `core/.../RampRate.kt`.
+
+## Sleep rhythm (v0.42.0)
+
+*Home.* The population standard deviation of the length of the nights of the last 14 days that have a duration, in minutes (at least
+7 nights needed). Under 30 minutes is *steady*, 30 up to 60 *variable*, 60 and more *erratic*. Bedtimes are not stored, so it measures
+how alike the nights are in length, not in timing. Code: `core/.../SleepConsistency.kt`.
+
+## Resting heart rate trend (v0.42.0)
+
+*Home.* The average resting heart rate (days with a value above 0) of the last 7 days minus the average of the 28 days before. 2 beats or
+more lower is *lower*, 2 beats or more higher is *higher*, in between *stable*. Needs 4 days in the last week and 10 in the 28 before.
+A rule of thumb from one number, not medical advice. Code: `core/.../RestingHrTrend.kt`.
+
+## Step goal this week (v0.42.0)
+
+*Home.* Of the last 7 days that have steps, the number whose steps reach that day's step goal (the watch's goal, or 10,000 when none is
+given). At least 3 days with steps are needed. Also shows the rounded average, the busiest day and the goal of the latest day. Code:
+`core/.../StepGoalWeek.kt`.

@@ -158,10 +158,13 @@ fun HomeScreen(
             readiness()
             state.advice?.let { advice -> item { Box(Modifier.tappable(onOpenForm)) { AdviceCard(advice) } } }
             state.warning?.let { warning -> item { WarningCard(warning) } }
+            state.restingHrTrend?.let { t -> item { RestingHrTrendCard(t) } }
             signalGrid()
             stepsCard()
+            state.stepGoalWeek?.let { w -> item { StepGoalWeekCard(w) } }
             goalsAndLoad()
             state.sleepNeed?.let { need -> item { SleepNeedCard(need) } }
+            state.sleepConsistency?.let { c -> item { SleepConsistencyCard(c) } }
             item { JournalCard(state.journal, java.time.LocalDate.now(), onToggleJournal) }
 
             item {

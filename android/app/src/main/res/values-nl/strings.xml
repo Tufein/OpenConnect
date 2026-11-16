@@ -939,4 +939,26 @@
     <string name="ramp_text_high">Meer dan je gewend bent. Af en toe prima, maar laat er een rustige dag op volgen.</string>
     <string name="ramp_text_spike">Een grote sprong in één week. Dat is het patroon dat bij overbelastingsblessures hoort: doe het een paar dagen rustig aan.</string>
     <string name="ramp_note">Je laatste 7 dagen tegenover de gemiddelde week van de vier weken ervoor. Eigen belastingseenheden van OpenConnect, een vuistregel, geen medisch advies.</string>
+    <string name="sleep_rhythm_title">Slaapritme</string>
+    <string name="sleep_rhythm_steady">Vaste nachten</string>
+    <string name="sleep_rhythm_variable">Wat schommelingen</string>
+    <string name="sleep_rhythm_erratic">Lange en korte nachten wisselen sterk</string>
+    <string name="sleep_rhythm_numbers">Gemiddeld %1$s u, ongeveer %2$d min verschil (kortste %3$s u, langste %4$s u)</string>
+    <string name="sleep_rhythm_text_steady">Je nachten zijn ongeveer even lang, zodat je lichaam op slaap kan rekenen.</string>
+    <string name="sleep_rhythm_text_variable">Sommige nachten zijn duidelijk langer of korter dan andere. Een vaste bedtijd maakt het gelijker.</string>
+    <string name="sleep_rhythm_text_erratic">Je nachten verschillen sterk in lengte. Dat voelt als jetlag thuis: een vaste bedtijd en opstaantijd helpen het meest.</string>
+    <string name="sleep_rhythm_note">De spreiding in de lengte van je laatste %1$d nachten. Bedtijden worden niet bewaard, dus dit kijkt alleen naar de lengte. Geen medisch advies.</string>
+    <string name="resting_trend_title">Trend rusthartslag</string>
+    <string name="resting_trend_lower">Lager dan je normaal</string>
+    <string name="resting_trend_stable">Precies je normaal</string>
+    <string name="resting_trend_higher">Hoger dan je normaal</string>
+    <string name="resting_trend_numbers">Laatste 7 dagen: %1$d slagen/min, je normaal: %2$d slagen/min</string>
+    <string name="resting_trend_text_lower">Een lagere rusthartslag gaat meestal samen met goed herstel en groeiende conditie.</string>
+    <string name="resting_trend_text_stable">Je rusthartslag zit waar hij normaal zit.</string>
+    <string name="resting_trend_text_higher">Hoger dan gewoonlijk. Vaak vermoeidheid, stress, hitte, alcohol of het begin van een ziekte: houd het in de gaten.</string>
+    <string name="resting_trend_note">Je laatste 7 dagen tegenover het gemiddelde van de 28 dagen ervoor. Een vuistregel uit één getal, geen medisch advies.</string>
+    <string name="step_week_title">Stappendoel deze week</string>
+    <string name="step_week_days">Gehaald op %1$d van %2$d dagen</string>
+    <string name="step_week_numbers">Gemiddeld %1$s stappen, drukste dag %2$s (%3$s)</string>
+    <string name="step_week_note">De laatste 7 dagen tegenover je stappendoel van %1$s (10.000 als je horloge er geen geeft). Dagen zonder stappen tellen niet mee.</string>
 </resources>

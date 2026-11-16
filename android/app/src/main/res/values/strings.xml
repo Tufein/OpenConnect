@@ -939,4 +939,26 @@
     <string name="ramp_text_high">More than you are used to. Fine now and then, but follow it with an easy day.</string>
     <string name="ramp_text_spike">A big jump in one week. That is the pattern that goes with overuse injuries: take it easy for a few days.</string>
     <string name="ramp_note">Your last 7 days against the average week of the four weeks before. OpenConnect\'s own load units, a rule of thumb, not medical advice.</string>
+    <string name="sleep_rhythm_title">Sleep rhythm</string>
+    <string name="sleep_rhythm_steady">Steady nights</string>
+    <string name="sleep_rhythm_variable">Some ups and downs</string>
+    <string name="sleep_rhythm_erratic">Long and short nights swing</string>
+    <string name="sleep_rhythm_numbers">Average %1$s h, give or take %2$d min (shortest %3$s h, longest %4$s h)</string>
+    <string name="sleep_rhythm_text_steady">Your nights are about equally long, which lets the body plan for sleep.</string>
+    <string name="sleep_rhythm_text_variable">Some nights are clearly longer or shorter than others. A fixed bedtime evens it out.</string>
+    <string name="sleep_rhythm_text_erratic">Your nights swing a lot in length. That feels like jet lag at home: a fixed bedtime and wake-up time help most.</string>
+    <string name="sleep_rhythm_note">The spread of the length of your last %1$d nights. Bedtimes are not stored, so this looks at length only. Not medical advice.</string>
+    <string name="resting_trend_title">Resting heart rate trend</string>
+    <string name="resting_trend_lower">Lower than your normal</string>
+    <string name="resting_trend_stable">Right on your normal</string>
+    <string name="resting_trend_higher">Higher than your normal</string>
+    <string name="resting_trend_numbers">Last 7 days: %1$d bpm, your normal: %2$d bpm</string>
+    <string name="resting_trend_text_lower">A lower resting heart rate usually goes with good recovery and growing fitness.</string>
+    <string name="resting_trend_text_stable">Your resting heart rate sits where it normally does.</string>
+    <string name="resting_trend_text_higher">Higher than usual. Often tiredness, stress, heat, alcohol or the start of an illness: keep an eye on it.</string>
+    <string name="resting_trend_note">Your last 7 days against the average of the 28 days before. A rule of thumb from one number, not medical advice.</string>
+    <string name="step_week_title">Step goal this week</string>
+    <string name="step_week_days">Reached on %1$d of %2$d days</string>
+    <string name="step_week_numbers">Average %1$s steps, busiest day %2$s (%3$s)</string>
+    <string name="step_week_note">The last 7 days against your step goal of %1$s (10,000 when your watch gives none). Days without steps are left out.</string>
 </resources>

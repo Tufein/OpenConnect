@@ -100,6 +100,10 @@ Van [APP-VERGELIJKING.md](APP-VERGELIJKING.md) (8 apps naast OpenConnect) wordt 
 
 - **v0.41.0** ✅ trainingsopbouw: deze week tegenover je gebruikelijke week (`RampRate.kt`, kaart onder Inzichten, Vorm).
 
+- **v0.42.0** ✅ drie kleine kaarten op Home: slaapritme (`SleepConsistency.kt`), trend rusthartslag (`RestingHrTrend.kt`) en stappendoel deze week (`StepGoalWeek.kt`).
+
+
+
 ## Later 💡
 
 - Het nieuwere Garmin-protobuf-synchronisatieprotocol voor horloges die de klassieke mapsynchronisatie niet meer gebruiken.
