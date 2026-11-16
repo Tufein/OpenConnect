@@ -928,4 +928,15 @@
     <string name="score_share">Share as text</string>
     <string name="score_share_text">OpenConnect %1$d: %2$s km in %3$d activities, %4$s hours, %5$d active days, longest streak %6$d days.</string>
     <string name="score_note">Worked out on the phone from your activities and daily summaries. Nothing is sent anywhere until you press share.</string>
+    <string name="ramp_title">Training ramp</string>
+    <string name="ramp_low">Lighter than usual</string>
+    <string name="ramp_steady">Right on your usual</string>
+    <string name="ramp_high">More than usual</string>
+    <string name="ramp_spike">A big jump</string>
+    <string name="ramp_numbers">Last 7 days: %1$d load, your usual week: %2$d (×%3$s)</string>
+    <string name="ramp_text_low">Clearly less than your last four weeks: a rest week, or time to build up again step by step.</string>
+    <string name="ramp_text_steady">About what your body is used to: a good base to keep building from.</string>
+    <string name="ramp_text_high">More than you are used to. Fine now and then, but follow it with an easy day.</string>
+    <string name="ramp_text_spike">A big jump in one week. That is the pattern that goes with overuse injuries: take it easy for a few days.</string>
+    <string name="ramp_note">Your last 7 days against the average week of the four weeks before. OpenConnect\'s own load units, a rule of thumb, not medical advice.</string>
 </resources>

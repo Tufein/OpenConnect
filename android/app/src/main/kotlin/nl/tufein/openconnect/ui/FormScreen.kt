@@ -19,6 +19,7 @@ import nl.tufein.openconnect.core.AdviceLimit
 import nl.tufein.openconnect.core.FormSeries
 import nl.tufein.openconnect.core.FormStatus
 import nl.tufein.openconnect.core.MonotonyResult
+import nl.tufein.openconnect.core.RampRate
 import nl.tufein.openconnect.core.TodayAdvice
 import kotlin.math.roundToInt
 
@@ -70,7 +71,7 @@ internal fun AdviceCard(advice: TodayAdvice) {
 
 /** The Form tab: fitness, fatigue and form over the last 90 days, with today's advice on top. */
 @Composable
-fun FormContent(form: FormSeries?, advice: TodayAdvice?, monotony: MonotonyResult?, contentPadding: PaddingValues) {
+fun FormContent(form: FormSeries?, advice: TodayAdvice?, monotony: MonotonyResult?, ramp: RampRate?, contentPadding: PaddingValues) {
     val colors = MaterialTheme.colorScheme
     val metrics = OpenConnectColors.metrics
     LazyColumn(
@@ -137,6 +138,7 @@ fun FormContent(form: FormSeries?, advice: TodayAdvice?, monotony: MonotonyResul
                 LineChart(form.points.map { it.form }, stringResource(R.string.form_chart_form), color = metrics.readiness, includeZero = true, labels = labels, format = { signed(it) })
             }
         }
+        if (ramp != null) item { RampCard(ramp) }
         if (monotony != null) {
             item { MonotonyCard(monotony) }
             item { MonotonyTiles(monotony) }

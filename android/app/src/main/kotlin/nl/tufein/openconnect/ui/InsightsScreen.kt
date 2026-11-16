@@ -76,6 +76,7 @@ fun InsightsScreen(
     advice: nl.tufein.openconnect.core.TodayAdvice? = null,
     journal: JournalState = JournalState(),
     monotony: nl.tufein.openconnect.core.MonotonyResult? = null,
+    ramp: nl.tufein.openconnect.core.RampRate? = null,
     map: MapState = MapState(),
     score: ScoreState = ScoreState(),
     onScoreYear: (Int) -> Unit = {},
@@ -98,7 +99,7 @@ fun InsightsScreen(
             InsightsTab.Zones -> ZonesContent(zones, onZones, contentPadding)
             InsightsTab.Shoes -> GearContent(gear, onGear, contentPadding)
             InsightsTab.Calendar -> CalendarContent(calendar, onShiftCalendar, onOpenActivity, contentPadding)
-            InsightsTab.Form -> FormContent(form, advice, monotony, contentPadding)
+            InsightsTab.Form -> FormContent(form, advice, monotony, ramp, contentPadding)
             InsightsTab.Journal -> JournalContent(journal, contentPadding)
             InsightsTab.HeatMap -> MapContent(map, contentPadding)
             InsightsTab.Score -> ScoreContent(score, onScoreYear, contentPadding)

@@ -98,6 +98,8 @@ Van [APP-VERGELIJKING.md](APP-VERGELIJKING.md) (8 apps naast OpenConnect) wordt 
     de melding; wat al is opgenomen blijft bewaard en kan daarna als activiteit worden opgeslagen. Niet geprobeerd op een
     echte telefoon.
 
+- **v0.41.0** ✅ trainingsopbouw: deze week tegenover je gebruikelijke week (`RampRate.kt`, kaart onder Inzichten, Vorm).
+
 ## Later 💡
 
 - Het nieuwere Garmin-protobuf-synchronisatieprotocol voor horloges die de klassieke mapsynchronisatie niet meer gebruiken.

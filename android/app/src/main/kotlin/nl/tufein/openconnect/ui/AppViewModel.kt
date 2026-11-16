@@ -69,6 +69,8 @@ import nl.tufein.openconnect.core.JournalInsights
 import nl.tufein.openconnect.core.JournalTag
 import nl.tufein.openconnect.core.MonotonyCalculator
 import nl.tufein.openconnect.core.MonotonyResult
+import nl.tufein.openconnect.core.RampRate
+import nl.tufein.openconnect.core.RampRateCalculator
 import nl.tufein.openconnect.core.Recovery
 import nl.tufein.openconnect.core.SleepNeed
 import nl.tufein.openconnect.core.SleepNeedCalculator
@@ -139,6 +141,7 @@ data class HomeState(
     val warning: BodyWarning? = null,
     /** How alike the last seven days of training were, and the strain; null until there are two weeks of activities. */
     val monotony: MonotonyResult? = null,
+    val ramp: RampRate? = null,
     /** How long to sleep tonight; null while fewer than four of the last seven nights are known. */
     val sleepNeed: SleepNeed? = null,
 )
@@ -636,6 +639,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             journal = JournalBook.decode(container.settings.journal),
             warning = warning,
             monotony = MonotonyCalculator.compute(activities, todayUtc),
+            ramp = RampRateCalculator.compute(activities, todayUtc),
             sleepNeed = sleepNeed,
         )
     }

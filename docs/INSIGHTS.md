@@ -144,3 +144,10 @@ or 3 weeks; build 3, 4 or 4 weeks; base for all the weeks before. The weeks run 
 the front phases fall away, and a race more than a year away plans the last 52 weeks. Kilometres a week per phase are a range around what
 you run now (base 95 to 105 percent, build 105 to 120, peak 120 to 130, taper 50 to 70). A rule of thumb for how a season is usually cut up,
 not a coach. Code: `core/.../SeasonPlan.kt`.
+
+## Training ramp (v0.41.0)
+
+*Insights, Form.* The load of the last 7 days (UTC days, the same per-activity load as the Form tab) divided by the average load of the four
+7-day windows before it. Under 0.8 is *lighter than usual*, 0.8 up to 1.3 *right on your usual*, 1.3 up to 1.5 *more than usual*, 1.5 and up
+*a big jump*. It needs 35 days of history and a non-empty four weeks before. A rule of thumb in OpenConnect's own load units, not
+medical advice. Code: `core/.../RampRate.kt`.

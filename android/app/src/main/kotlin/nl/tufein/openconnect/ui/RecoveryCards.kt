@@ -10,6 +10,8 @@ import androidx.compose.ui.unit.dp
 import nl.tufein.openconnect.R
 import nl.tufein.openconnect.core.MonotonyResult
 import nl.tufein.openconnect.core.MonotonyVerdict
+import nl.tufein.openconnect.core.RampLevel
+import nl.tufein.openconnect.core.RampRate
 import nl.tufein.openconnect.core.SleepDebtLevel
 import nl.tufein.openconnect.core.SleepNeed
 import kotlin.math.roundToInt
@@ -84,5 +86,42 @@ internal fun SleepNeedCard(need: SleepNeed) {
             color = colors.onSurfaceVariant,
         )
         Text(stringResource(R.string.sleep_need_note), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+    }
+}
+
+private fun rampLabel(l: RampLevel): Int = when (l) {
+    RampLevel.LOW -> R.string.ramp_low
+    RampLevel.STEADY -> R.string.ramp_steady
+    RampLevel.HIGH -> R.string.ramp_high
+    RampLevel.SPIKE -> R.string.ramp_spike
+}
+
+private fun rampText(l: RampLevel): Int = when (l) {
+    RampLevel.LOW -> R.string.ramp_text_low
+    RampLevel.STEADY -> R.string.ramp_text_steady
+    RampLevel.HIGH -> R.string.ramp_text_high
+    RampLevel.SPIKE -> R.string.ramp_text_spike
+}
+
+/** This week's training against your own last four weeks, so a jump shows before it hurts. Lives on the Form tab. */
+@Composable
+internal fun RampCard(r: RampRate) {
+    val colors = MaterialTheme.colorScheme
+    val metrics = OpenConnectColors.metrics
+    val tint = when (r.level) {
+        RampLevel.SPIKE -> colors.error
+        RampLevel.HIGH -> metrics.stress
+        RampLevel.STEADY -> metrics.readiness
+        RampLevel.LOW -> metrics.distance
+    }
+    SurfaceCard(accent = tint) {
+        Text(stringResource(R.string.ramp_title), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(rampLabel(r.level)), style = MaterialTheme.typography.titleLarge, color = tint)
+        Text(
+            stringResource(R.string.ramp_numbers, r.weekLoad.roundToInt(), r.usualWeekLoad.roundToInt(), Fmt.oneDecimal(r.ratio)),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Text(stringResource(rampText(r.level)), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+        Text(stringResource(R.string.ramp_note), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
     }
 }
