@@ -271,6 +271,7 @@ fun OpenConnectRoot(
                     advice = home.advice,
                     journal = journal,
                     monotony = home.monotony,
+                    ramp = home.ramp,
                     map = map,
                     score = score,
                     onScoreYear = vm::loadScore,

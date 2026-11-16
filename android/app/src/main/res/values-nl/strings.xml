@@ -928,4 +928,15 @@
     <string name="score_share">Deel als tekst</string>
     <string name="score_share_text">OpenConnect %1$d: %2$s km in %3$d activiteiten, %4$s uur, %5$d actieve dagen, langste reeks %6$d dagen.</string>
     <string name="score_note">Op de telefoon berekend uit je activiteiten en dagoverzichten. Er wordt niets verstuurd tot je op delen drukt.</string>
+    <string name="ramp_title">Trainingsopbouw</string>
+    <string name="ramp_low">Lichter dan gebruikelijk</string>
+    <string name="ramp_steady">Precies je gebruikelijke</string>
+    <string name="ramp_high">Meer dan gebruikelijk</string>
+    <string name="ramp_spike">Een grote sprong</string>
+    <string name="ramp_numbers">Laatste 7 dagen: %1$d belasting, je gebruikelijke week: %2$d (×%3$s)</string>
+    <string name="ramp_text_low">Duidelijk minder dan je laatste vier weken: een rustweek, of tijd om stap voor stap weer op te bouwen.</string>
+    <string name="ramp_text_steady">Ongeveer wat je lichaam gewend is: een goede basis om verder op te bouwen.</string>
+    <string name="ramp_text_high">Meer dan je gewend bent. Af en toe prima, maar laat er een rustige dag op volgen.</string>
+    <string name="ramp_text_spike">Een grote sprong in één week. Dat is het patroon dat bij overbelastingsblessures hoort: doe het een paar dagen rustig aan.</string>
+    <string name="ramp_note">Je laatste 7 dagen tegenover de gemiddelde week van de vier weken ervoor. Eigen belastingseenheden van OpenConnect, een vuistregel, geen medisch advies.</string>
 </resources>
