@@ -34,11 +34,23 @@ object Fmt {
     fun dateTime(instant: Instant, zone: ZoneId = ZoneId.systemDefault(), locale: Locale = Locale.getDefault()): String =
         DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT).withLocale(locale).withZone(zone).format(instant)
 
+    /** The time of day only, such as `7:05 AM` or `07:05`, on the phone's clock. */
+    fun time(instant: Instant, zone: ZoneId = ZoneId.systemDefault(), locale: Locale = Locale.getDefault()): String =
+        DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(locale).withZone(zone).format(instant)
+
     fun date(day: LocalDate, locale: Locale = Locale.getDefault()): String =
         DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale).format(day)
 
     fun shortDate(day: LocalDate, locale: Locale = Locale.getDefault()): String =
         DateTimeFormatter.ofPattern("d MMM", locale).format(day)
+
+    /** A day for a list to choose from: weekday, day and month, such as `Tue 17 Nov`. */
+    fun dayLabel(day: LocalDate, locale: Locale = Locale.getDefault()): String =
+        DateTimeFormatter.ofPattern("EEE d MMM", locale).format(day)
+
+    /** A day in full for a title: `Tuesday 17 November 2026`. */
+    fun longDate(day: LocalDate, locale: Locale = Locale.getDefault()): String =
+        DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", locale).format(day).replaceFirstChar { it.uppercase() }
 
     fun thousands(value: Int, locale: Locale = Locale.getDefault()): String = String.format(locale, "%,d", value)
 

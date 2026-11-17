@@ -40,6 +40,9 @@ import nl.tufein.openconnect.core.DataOverview
 import nl.tufein.openconnect.core.SyncLogEntry
 import nl.tufein.openconnect.health.HealthUi
 import nl.tufein.openconnect.core.DailySummary
+import nl.tufein.openconnect.core.DayInsights
+import nl.tufein.openconnect.core.DayRecords
+import nl.tufein.openconnect.core.DaySeries
 import nl.tufein.openconnect.core.DemoData
 import nl.tufein.openconnect.core.Overview
 import nl.tufein.openconnect.core.PlayerLevel
@@ -198,6 +201,17 @@ data class HealthState(
     val sleepScores: List<Pair<LocalDate, Double?>> = emptyList(),
 )
 
+/**
+ * What the Insights "Day" tab picks from (v0.44.0): the last stretch of days of each device the person uses, read once. The day,
+ * the source and the measure are chosen on screen, so they cost no new read. A source is null when its device is not in use.
+ */
+data class DayState(
+    val loaded: Boolean = false,
+    val today: LocalDate = LocalDate.now(),
+    val garmin: DaySeries? = null,
+    val oura: DaySeries? = null,
+)
+
 data class ReportsState(
     val loaded: Boolean = false,
     /** The first day of the week, month or year on screen (the name is from when only weeks existed). */
@@ -247,6 +261,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private val _health = MutableStateFlow(HealthState())
     val health: StateFlow<HealthState> = _health.asStateFlow()
 
+    private val _days = MutableStateFlow(DayState())
+    val days: StateFlow<DayState> = _days.asStateFlow()
+
     private val _reports = MutableStateFlow(ReportsState())
     val reports: StateFlow<ReportsState> = _reports.asStateFlow()
 
@@ -286,6 +303,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         settings.onboarded = true
         _sources.value = sourcesNow()
         container.applySources()
+        loadDays()
         if (oura) container.oura.syncIfDue(OPEN_GAP)
     }
 
@@ -589,6 +607,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadHome()
         loadActivities(_activities.value.sport)
         loadHealth()
+        loadDays()
         loadReports(_reports.value.weekStart)
         loadEfforts()
         loadPlan()
@@ -713,6 +732,33 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             dailies = repo.listDaily(start, today),
             readiness = container.stats.readinessSeries(start, today),
             sleepScores = container.stats.sleepScoreSeries(start, today),
+        )
+    }
+
+    /** Reads the days of the watch and of the ring, whichever are in use, for the Day tab of Insights. */
+    private fun loadDays() = io {
+        val zone = ZoneId.systemDefault()
+        val today = LocalDate.now(zone)
+        val start = today.minusDays(DayInsights.HISTORY_DAYS.toLong())
+        val useOura = container.settings.useOura
+        // Someone who chose neither device still has days from files and imports: those are read as the watch's.
+        val useGarmin = container.settings.useGarmin || !useOura
+        _days.value = DayState(
+            loaded = true,
+            today = today,
+            garmin = if (useGarmin) {
+                DayRecords.garmin(
+                    start, today,
+                    dailies = repo.listDaily(start, today),
+                    sleeps = repo.listSleep(start, today),
+                    readiness = container.stats.readinessSeries(start, today),
+                    activities = repo.listActivities(start = start.atStartOfDay(zone).toInstant(), end = today.plusDays(1).atStartOfDay(zone).toInstant(), limit = 10_000),
+                    zone = zone,
+                )
+            } else {
+                null
+            },
+            oura = if (useOura) DayRecords.oura(start, today, repo.listOuraDays(start, today)) else null,
         )
     }
 

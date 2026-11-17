@@ -350,7 +350,6 @@
     <string name="insight_better">beter</string>
     <string name="insight_worse">slechter</string>
     <string name="insight_goal_days">%1$d van %2$d dagen 10.000 stappen gehaald</string>
-    <string name="insight_axis">%1$s tot %2$s</string>
     <string name="insight_note">Algemene richtlijn, geen medisch advies.</string>
     <string name="insight_explain_steps">Stappen die je horloge per dag telt. Rond 7.000 tot 10.000 per dag hangt samen met een goede gezondheid; de stippellijn is 10.000.</string>
     <string name="insight_explain_sleep">Uren slaap per nacht. De meeste volwassenen doen het goed met 7 tot 9 uur; de stippellijn is 8.</string>
@@ -954,4 +953,33 @@
     <string name="around_gap_ring_no_day">De ring heeft hier geen dag: niet gedragen, of nog niet gesynchroniseerd met de Oura-app.</string>
     <string name="around_gap_ring_hr">De hartslag van de ring tijdens de inspanning staat er niet bij: OpenConnect vraagt die niet op bij Oura.</string>
     <string name="around_not_live">Niets hiervan is live: het is wat het horloge en de ring bij hun laatste synchronisatie hadden.</string>
+    <string name="insights_day">Dag</string>
+    <string name="day_source">Bron</string>
+    <string name="day_source_garmin">Garmin</string>
+    <string name="day_source_oura">Oura</string>
+    <string name="day_pick">Dag</string>
+    <string name="day_measure">Meting</string>
+    <string name="day_previous">Dag ervoor</string>
+    <string name="day_next">Dag erna</string>
+    <string name="day_summary">%1$d van de %2$d metingen in een goed bereik</string>
+    <string name="day_none">Niets van %1$s op deze dag.</string>
+    <string name="day_none_hint">Kies een andere dag, of synchroniseer eerst.</string>
+    <string name="day_usual">gebruikelijk %1$s</string>
+    <string name="day_higher">%1$s%% hoger</string>
+    <string name="day_lower">%1$s%% lager</string>
+    <string name="day_same">ongeveer gelijk</string>
+    <string name="day_highest">hoogste in 4 weken</string>
+    <string name="day_lowest">laagste in 4 weken</string>
+    <string name="day_missing">Geen meting: %1$s</string>
+    <string name="day_tap_hint">Tik op een meting om hem als grafiek te zien.</string>
+    <string name="day_chart_title">%1$s, 30 dagen tot deze dag</string>
+    <string name="day_workouts">Activiteiten op deze dag</string>
+    <string name="metric_activity_score">Activiteitsscore</string>
+    <string name="insight_explain_steps_ring">Stappen die je ring per dag telt. Rond 7.000 tot 10.000 per dag hangt samen met een goede gezondheid; de stippellijn is 10.000.</string>
+    <string name="insight_explain_spo2_ring" formatted="false">Zuurstof in het bloed. 95 tot 100% is normaal; lagere waarden op hoogte of door een losse ring komen vaak voor, blijvend onder 90% is iets om met een arts te bespreken.</string>
+    <string name="insight_explain_readiness_ring">De eigen gereedheidsscore van Oura, van 0 tot 100, uit je slaap, rusthartslag, HRV en temperatuur ten opzichte van jouw eigen normaal. 70 of meer is klaar voor een zware dag, onder 40 neem je het rustig aan.</string>
+    <string name="insight_explain_sleep_score_ring">De slaapscore die je ring elke nacht geeft, van 0 tot 100: 80 of meer is goed, 60 tot 79 redelijk, onder 60 slecht. Hij weegt duur, diepe en REM-slaap en onrust mee.</string>
+    <string name="insight_explain_activity_score">De activiteitsscore van Oura, van 0 tot 100, uit hoeveel je bewoog, hoe vaak je trainde en hoe goed je ertussen rustte. 70 of meer is goed, onder 50 is een rustige periode.</string>
+    <string name="insight_explain_lowest_hr">De laagste hartslag van de nacht zoals je ring die meet, meestal een paar slagen onder de rusthartslag van de dag. Lager betekent beter herstel; een stijging over meerdere nachten kan wijzen op stress of ziekte.</string>
+    <string name="insight_explain_temperature">Hoe ver je huidtemperatuur tijdens de nacht van jouw eigen normaal lag, in graden Celsius. Binnen een halve graad is gebruikelijk; een stijging van een graad of meer over meerdere nachten kan bij ziekte horen.</string>
 </resources>

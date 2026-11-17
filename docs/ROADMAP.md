@@ -106,6 +106,8 @@ Van [APP-VERGELIJKING.md](APP-VERGELIJKING.md) (8 apps naast OpenConnect) wordt 
 
 - **v0.43.0** ✅ uiterlijk-instellingen in één inklapbare sectie, Connect IQ opent Garmins eigen app, watchface uit de app, activiteiten aangevuld met horloge en Oura Ring (`ActivityAround.kt`).
 
+- **v0.44.0** ✅ Inzichten per dag (`DayInsights.kt`, tabblad Dag) met een keuze uit Garmin of Oura Ring in uitklaplijsten, en datums onder alle grafieken (`AxisTicks.kt`).
+
 ## Later 💡
 
 - Het nieuwere Garmin-protobuf-synchronisatieprotocol voor horloges die de klassieke mapsynchronisatie niet meer gebruiken.

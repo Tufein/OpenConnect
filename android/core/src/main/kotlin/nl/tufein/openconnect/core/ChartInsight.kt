@@ -15,14 +15,23 @@ enum class ChartMetric {
     STRESS,
     READINESS,
     SLEEP_SCORE,
+
+    /** The Oura Ring's own activity score (v0.44.0; only the ring has one). */
+    ACTIVITY_SCORE,
+
+    /** The lowest heart rate of the night as the ring measures it; not the same as the watch's resting heart rate. */
+    LOWEST_HR,
+
+    /** How far the skin was from its normal temperature during the night, in degrees Celsius. */
+    TEMPERATURE,
     ;
 
     /** Whether a rising line is good news; null when neither direction is better (breathing rate). */
     val higherIsBetter: Boolean?
         get() = when (this) {
-            STEPS, SLEEP, BODY_BATTERY, HRV, SPO2, READINESS, SLEEP_SCORE -> true
-            RESTING_HR, STRESS -> false
-            RESPIRATION -> null
+            STEPS, SLEEP, BODY_BATTERY, HRV, SPO2, READINESS, SLEEP_SCORE, ACTIVITY_SCORE -> true
+            RESTING_HR, STRESS, LOWEST_HR -> false
+            RESPIRATION, TEMPERATURE -> null
         }
 }
 
@@ -67,7 +76,8 @@ data class ChartInsight(
             val latest = values.last()
             var trend: Trend? = null
             var change: Double? = null
-            if (values.size >= 6) {
+            // A temperature difference sits around zero, so a percentage of it says nothing: no trend for it.
+            if (values.size >= 6 && metric != ChartMetric.TEMPERATURE) {
                 val n = minOf(7, values.size / 2)
                 val recent = values.takeLast(n).average()
                 val before = values.dropLast(n).takeLast(n).average()
@@ -113,6 +123,18 @@ data class ChartInsight(
             ChartMetric.STRESS -> pick(avg <= 25, avg <= 50)
             ChartMetric.READINESS -> pick(avg >= 70, avg >= 40)
             ChartMetric.SLEEP_SCORE -> pick(avg >= 80, avg >= 60)
+            ChartMetric.ACTIVITY_SCORE -> pick(avg >= 70, avg >= 50)
+            ChartMetric.LOWEST_HR -> pick(avg <= 55, avg <= 70)
+            ChartMetric.TEMPERATURE -> pick(abs(avg) <= 0.5, abs(avg) <= 1.0)
+        }
+
+        /**
+         * How one day looks, with the same limits as the period average. Heart rate variability is personal, so it is held against
+         * [usual] (the person's own average of the days before) and gets no verdict without one.
+         */
+        fun verdictOfDay(metric: ChartMetric, value: Double, usual: Double?): Verdict? = when (metric) {
+            ChartMetric.HRV -> usual?.let { verdictOf(metric, it, value) }
+            else -> verdictOf(metric, value, value)
         }
 
         private fun pick(good: Boolean, fair: Boolean) = if (good) Verdict.GOOD else if (fair) Verdict.FAIR else Verdict.WATCH

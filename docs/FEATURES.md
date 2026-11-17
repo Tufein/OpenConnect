@@ -114,6 +114,7 @@ flow; Personal API support is the first item on the roadmap (§7).
 | Monthly/yearly reports | local | ⏳ | |
 | Trends over time | local | 🟡 | 30-day trends; longer ranges planned |
 | Insights (Connect+ *Active Intelligence*, paid) | not exposed | ✅ | **AI reports** per activity and per week, written by Claude (or an offline template) |
+| Insights per day, from the watch or the Oura Ring | local | ✅ | Android app, *Insights, Day*: a day read against your own last 28 days, source, day and measure chosen in dropdowns; dates under every chart (v0.44.0) |
 | Badges and challenges | not exposed | 🟡 | Local **achievements** computed from your data ("Player One", "Everest Climber", …); Garmin's own badges are not available |
 | Custom goals | partly (`stepsGoal`) | 🟡 | Step goal is read from Garmin; custom goals planned |
 

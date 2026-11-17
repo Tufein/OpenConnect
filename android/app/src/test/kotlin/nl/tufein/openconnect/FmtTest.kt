@@ -49,6 +49,15 @@ class FmtTest {
     }
 
     @Test
+    fun daysForTheDayList() {
+        val day = LocalDate.parse("2026-11-17")
+        assertEquals("Tue 17 Nov", Fmt.dayLabel(day, Locale.US))
+        assertEquals("Tuesday 17 November 2026", Fmt.longDate(day, Locale.US))
+        // In Dutch the weekday starts with a small letter; the title makes it a capital.
+        assertEquals("Dinsdag 17 november 2026", Fmt.longDate(day, Locale("nl", "NL")))
+    }
+
+    @Test
     fun inlineMarkdownBoldsOnlyPairedMarkers() {
         val text = inlineMarkdown("a **bold** and **more** b")
         assertEquals("a bold and more b", text.text)

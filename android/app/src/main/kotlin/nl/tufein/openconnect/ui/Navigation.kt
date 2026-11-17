@@ -165,6 +165,7 @@ fun OpenConnectRoot(
     val ai by vm.ai.collectAsState()
     val garmin by vm.garmin.collectAsState()
     val oura by vm.oura.collectAsState()
+    val days by vm.days.collectAsState()
     val theme by vm.theme.collectAsState()
     val look by vm.look.collectAsState()
     val appIcon by vm.appIcon.collectAsState()
@@ -272,6 +273,7 @@ fun OpenConnectRoot(
                     map = map,
                     score = score,
                     onScoreYear = vm::loadScore,
+                    day = days,
                     onShiftWeek = vm::shiftWeek,
                     onPeriod = vm::setReportPeriod,
                     onGenerate = vm::generateWeeklyReport,
