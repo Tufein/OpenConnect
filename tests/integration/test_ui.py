@@ -59,6 +59,7 @@ def test_health_page(synced):
         assert label in html
     assert "Vital signs" in html and "HRV status" in html
     assert "Through the day" in html and "Body Battery" in html
+    assert "Health snapshot and epochs" in html
 
 
 def test_records_page_lists_records_achievements_and_devices(synced):

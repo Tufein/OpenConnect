@@ -30,6 +30,8 @@ def test_fake_payload_has_all_kinds_and_maps_cleanly():
         "bloodPressures",
         "skinTemp",
         "userMetrics",
+        "healthSnapshot",
+        "epochSummaries",
     }
     assert len(payload["dailies"]) >= 27
     assert len(payload["sleeps"]) >= 27

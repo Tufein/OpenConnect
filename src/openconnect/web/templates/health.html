@@ -41,6 +41,25 @@
   {% endfor %}
 </section>
 <section class="card">
+  <h2>Health snapshot and epochs</h2>
+  {% if snapshot_rows or epoch_rows %}
+    {% if snapshot_rows %}
+    <h3>Snapshot</h3>
+    <table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>
+      {% for key, value in snapshot_rows %}<tr><td>{{ key }}</td><td>{{ value }}</td></tr>{% endfor %}
+    </tbody></table>
+    {% endif %}
+    {% if epoch_rows %}
+    <h3>Epoch summary</h3>
+    <table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody>
+      {% for key, value in epoch_rows %}<tr><td>{{ key }}</td><td>{{ value }}</td></tr>{% endfor %}
+    </tbody></table>
+    {% endif %}
+  {% else %}
+    <p class="muted">No snapshot or epoch summary yet. Garmin sends these occasionally; the field names are stored as received.</p>
+  {% endif %}
+</section>
+<section class="card">
   <h2>Sleep, last 14 nights</h2>
   {{ bar_chart(sleep_bars, 560, 140) }}
   <table>

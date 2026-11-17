@@ -157,12 +157,29 @@ def ingest_payload(repo: Repository, payload: dict) -> IngestResult:
             for name, values in series.items():
                 repo.upsert_series(day, name, values)
 
+    for kind, series_name in (
+        ("healthSnapshot", "health_snapshot"),
+        ("epochSummaries", "epoch_summary"),
+    ):
+        for item in payload.get(kind) or []:
+            try:
+                day, name, values = mapper.map_observation(item, series_name)
+            except (mapper.MappingError, TypeError, ValueError):
+                continue
+            if values:
+                repo.upsert_series(day, name, values)
+                result.extra_metrics += 1
+
     details = payload.get("activityDetails") or []
     detailed_ids = set()
     for item in details:
         summary = item.get("summary") or {}
         key = summary.get("activityId", summary.get("summaryId", item.get("summaryId")))
         detailed_ids.add(str(key))
+    files = payload.get("activityFiles") or []
+    for activity in files:
+        if activity.external_id:
+            detailed_ids.add(str(activity.external_id))
 
     def store_summary(item: dict) -> bool:
         activity = mapper.map_activity(item)
@@ -181,4 +198,7 @@ def ingest_payload(repo: Repository, payload: dict) -> IngestResult:
         lambda i: repo.upsert_activity(mapper.map_activity_details(i)),
     )
     result.activities = stored_summaries + stored_details
+    for activity in files:
+        repo.upsert_activity(activity)
+    result.activities += len(files)
     return result

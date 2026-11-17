@@ -112,6 +112,8 @@ Van [APP-VERGELIJKING.md](APP-VERGELIJKING.md) (8 apps naast OpenConnect) wordt 
 
 - **v0.46.0** ✅ de server kan met een **persoonlijke Garmin-sleutel** (`GARMIN_PERSONAL_KEY`) daggegevens, slaap, HRV, SpO2, ademhaling en Body Battery ophalen zonder ontwikkelaarsaccount; stress- en Body Battery-metingen en slaapseries worden per dag bewaard en getoond; kilometer-splittingen en beste prestaties (1K/5K/10K) komen uit tracks; wekelijkse rapporten noemen de nachtelijke vitale waarden; bloeddruk, huidtemperatuur, VO2max en fitte leeftijd worden gelezen (veldnamen **verify**) en in live-modus staat er een backfill-knop in Instellingen. ❓ Activiteiten via de persoonlijke sleutel en het volgen van Ping/Pull-URL's zijn er nog niet; optionele aanmelding vraagt een ontwerpkeuze.
 
+- **v0.47.0** ✅ de laatste roadmappunten: activiteiten (met originele FIT-bestanden) via de persoonlijke Garmin-sleutel, Ping/Pull-callbacks die alleen van een HTTPS-allowlist worden opgehaald, optionele aanmelding met één wachtwoord, en health snapshots/epoch summaries zoals ontvangen opgeslagen. ❓ Veldnamen van de laatste twee typen en de callback-layouts zijn nog niet met een echt account gecontroleerd.
+
 ## Later 💡
 
 - Het nieuwere Garmin-protobuf-synchronisatieprotocol voor horloges die de klassieke mapsynchronisatie niet meer gebruiken.

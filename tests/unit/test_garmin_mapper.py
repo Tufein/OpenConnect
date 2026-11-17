@@ -291,6 +291,23 @@ def test_map_body_composition_requires_a_date():
         mapper.map_body_composition({"weightInGrams": 74200})
 
 
+def test_map_observation_keeps_numeric_fields_under_a_date():
+    day, kind, values = mapper.map_observation(
+        {
+            "calendarDate": "2026-05-02",
+            "measurements": {"overallScore": 72, "recovery": 0.8, "note": "fine"},
+        },
+        "health_snapshot",
+    )
+    assert (day, kind) == (date(2026, 5, 2), "health_snapshot")
+    assert values == {
+        "overallScore": 72.0,
+        "recovery": 0.8,
+        "measurements.overallScore": 72.0,
+        "measurements.recovery": 0.8,
+    }
+
+
 def test_map_extra_metrics_reads_blood_pressure_skin_temp_and_vo2max():
     day, patch = mapper.map_extra_metrics(
         {

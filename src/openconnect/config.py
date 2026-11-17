@@ -37,6 +37,8 @@ class Settings:
     garmin_api_base_url: str | None = None
     garmin_personal_key: str | None = None
     webhook_token: str | None = None
+    callback_hosts: tuple[str, ...] = ("apis.garmin.com",)
+    password: str | None = None
     ai_provider: str = "auto"
     ai_model: str = "claude-opus-5-5"
     ai_effort: str = "medium"
@@ -81,6 +83,12 @@ class Settings:
             garmin_api_base_url=get("GARMIN_API_BASE_URL"),
             garmin_personal_key=get("GARMIN_PERSONAL_KEY"),
             webhook_token=get("OPENCONNECT_WEBHOOK_TOKEN"),
+            callback_hosts=tuple(
+                h.strip().lower()
+                for h in (env.get("OPENCONNECT_CALLBACK_HOSTS") or "apis.garmin.com").split(",")
+                if h.strip()
+            ),
+            password=get("OPENCONNECT_PASSWORD"),
             ai_provider=_choice(env, "OPENCONNECT_AI_PROVIDER", AI_PROVIDERS, "auto"),
             ai_model=env.get("OPENCONNECT_AI_MODEL") or "claude-opus-5-5",
             ai_effort=_choice(env, "OPENCONNECT_AI_EFFORT", AI_EFFORTS, "medium"),

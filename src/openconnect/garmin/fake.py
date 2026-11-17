@@ -244,6 +244,8 @@ class FakeGarminSource:
             "bloodPressures": [],
             "skinTemp": [],
             "userMetrics": [],
+            "healthSnapshot": [],
+            "epochSummaries": [],
         }
         for day in self._day_range(start, end):
             made = self._activity(day)
@@ -290,4 +292,23 @@ class FakeGarminSource:
                     "fitnessAge": 32 + rng.randint(-3, 4),
                 }
             )
+            if day.weekday() == 2:
+                payload["healthSnapshot"].append(
+                    {
+                        **stamp,
+                        "summaryId": f"hs{day:%Y%m%d}",
+                        "measurements": {
+                            "overallScore": 60 + rng.randint(0, 35),
+                            "recovery": round(rng.uniform(0.3, 0.9), 2),
+                        },
+                    }
+                )
+                payload["epochSummaries"].append(
+                    {
+                        **stamp,
+                        "summaryId": f"ep{day:%Y%m%d}",
+                        "activeSeconds": 1800 + rng.randint(0, 3600),
+                        "calories": 200 + rng.randint(0, 400),
+                    }
+                )
         return payload

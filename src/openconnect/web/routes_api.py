@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import hmac
 from datetime import date, datetime, timedelta
+from urllib.parse import urlparse
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, UploadFile
 from fastapi.responses import RedirectResponse
 from starlette.concurrency import run_in_threadpool
@@ -11,7 +13,7 @@ from openconnect.ai.provider import ReportError
 from openconnect.domain import Activity, DailySummary, GeneratedReport, Sport
 from openconnect.formats import SUPPORTED_FORMATS, FormatError, export_activity, import_activity
 from openconnect.garmin.client import KINDS, GarminAPIError, GarminRateLimitError
-from openconnect.garmin.ingest import ingest_payload
+from openconnect.garmin.ingest import IngestResult, ingest_payload
 from openconnect.garmin.oauth import GarminAuthError
 from openconnect.services.achievements import compute_achievements
 from openconnect.services.records import activity_splits, best_efforts, personal_records
@@ -19,6 +21,7 @@ from openconnect.web.context import AppContext
 
 MAX_UPLOAD_BYTES = 25 * 1024 * 1024
 MAX_RANGE_DAYS = 366
+MAX_CALLBACK_BYTES = 5 * 1024 * 1024
 
 router = APIRouter(prefix="/api")
 
@@ -320,6 +323,23 @@ def garmin_backfill(kind: str, days_back: int = Query(30, ge=1, le=365), ctx: Ap
     return {"kind": kind, "requests": count}
 
 
+async def _follow_callback(url: str, repo, hosts: tuple[str, ...]) -> IngestResult:
+    """Fetch one Ping/Pull callback, but only from Garmin over HTTPS."""
+    parsed = urlparse(url)
+    if parsed.scheme != "https" or (parsed.hostname or "").lower() not in hosts:
+        raise ValueError("callback host not allowed")
+    async with httpx.AsyncClient(timeout=10.0, follow_redirects=False) as client:
+        response = await client.get(url)
+    if response.status_code != 200:
+        raise ValueError(f"HTTP {response.status_code}")
+    if len(response.content) > MAX_CALLBACK_BYTES:
+        raise ValueError("callback response too large")
+    body = response.json()
+    if not isinstance(body, dict):
+        raise ValueError("callback response is not a JSON object")
+    return await run_in_threadpool(ingest_payload, repo, body)
+
+
 @router.post("/garmin/webhook")
 async def garmin_webhook(request: Request, token: str | None = None, ctx: AppContext = Ctx):
     expected = ctx.settings.webhook_token
@@ -333,14 +353,24 @@ async def garmin_webhook(request: Request, token: str | None = None, ctx: AppCon
         raise HTTPException(400, "Expected a JSON object keyed by data type")
 
     # Ping/Pull notifications only carry a callbackURL, not data; they are counted, not ingested.
-    pings, data = 0, {}
+    pings, data, callbacks = 0, {}, []
     for kind, items in payload.items():
         if not isinstance(items, list):
             continue
         real = [i for i in items if isinstance(i, dict) and "callbackURL" not in i]
+        callbacks.extend(
+            (kind, i["callbackURL"]) for i in items if isinstance(i, dict) and i.get("callbackURL")
+        )
         pings += len(items) - len(real)
         data[kind] = real
     result = await run_in_threadpool(ingest_payload, ctx.repo, data)
+    followed, callback_errors = 0, []
+    for kind, url in callbacks:
+        try:
+            result += await _follow_callback(url, ctx.repo, ctx.settings.callback_hosts)
+            followed += 1
+        except Exception as exc:  # a bad callback must not fail the whole webhook
+            callback_errors.append(f"{kind}: {exc}")
     return {
         "ingested": {
             "activities": result.activities,
@@ -353,6 +383,8 @@ async def garmin_webhook(request: Request, token: str | None = None, ctx: AppCon
             "extra_metrics": result.extra_metrics,
         },
         "ping_notifications": pings,
+        "callbacks_followed": followed,
+        "callback_errors": callback_errors,
         "errors": result.errors,
     }
 

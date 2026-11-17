@@ -56,6 +56,12 @@ def test_invalid_configuration_is_rejected_with_a_clear_error(env):
         Settings.from_env(env)
 
 
+def test_callback_hosts_default_and_override():
+    assert Settings.from_env({}).callback_hosts == ("apis.garmin.com",)
+    s = Settings.from_env({"OPENCONNECT_CALLBACK_HOSTS": "garmin.example, apis.garmin.com"})
+    assert s.callback_hosts == ("garmin.example", "apis.garmin.com")
+
+
 def test_personal_mode_uses_the_personal_key():
     s = Settings.from_env(
         {

@@ -1,3 +1,4 @@
+import httpx
 import pytest
 
 from openconnect.formats import export_activity
@@ -6,7 +7,28 @@ from tests.fakes import FakeAnthropic
 
 
 def test_healthz(app):
-    assert app.client.get("/healthz").json() == {"status": "ok", "version": "0.46.0"}
+    assert app.client.get("/healthz").json() == {"status": "ok", "version": "0.47.0"}
+
+
+def test_password_protects_pages_and_api(make_app):
+    app = make_app(password="secret")
+    assert app.client.get("/healthz").status_code == 200
+    assert app.client.get("/", follow_redirects=False).status_code == 303
+    assert app.client.get("/api/activities").status_code == 401
+
+    wrong = app.client.post("/ui/login", data={"password": "nope"}, follow_redirects=False)
+    assert wrong.status_code == 303 and wrong.headers["location"] == "/login?error=1"
+    good = app.client.post("/ui/login", data={"password": "secret"}, follow_redirects=False)
+    assert good.status_code == 303 and good.headers["location"] == "/"
+    assert "oc_session=" in good.headers["set-cookie"]
+    assert app.client.get("/api/activities").status_code == 200
+    assert "password required" in app.client.get("/settings").text
+
+    out = app.client.post("/ui/logout", follow_redirects=False)
+    assert out.status_code == 303 and out.headers["location"] == "/login"
+    assert app.client.get("/", follow_redirects=False).status_code == 303
+    app.client.cookies.set("oc_session", "forged.token")
+    assert app.client.get("/", follow_redirects=False).status_code == 303
 
 
 # --------------------------------------------------------------------- sync and activities
@@ -152,6 +174,8 @@ def test_series_endpoint(synced):
     assert "stress" in body and "body_battery" in body
     assert all(0 <= value <= 100 for value in body["body_battery"].values())
     assert synced.client.get("/api/health/series", params={"day": "nope"}).status_code == 422
+    snapshot = synced.client.get("/api/health/series", params={"day": "2026-05-27"}).json()
+    assert "health_snapshot" in snapshot and "epoch_summary" in snapshot
 
 
 def test_dashboard_endpoints(synced):
@@ -300,6 +324,61 @@ def test_webhook_ingests_pushed_vitals_and_weigh_ins(app):
         "/api/health/body-composition", params={"start": "2026-05-30", "end": "2026-05-30"}
     ).json()
     assert body[0]["weight_kg"] == 74.0 and body[0]["body_fat_pct"] == 18.0
+
+
+def test_webhook_follows_an_allowed_callback(app, monkeypatch):
+    class FakeClient:
+        def __init__(self, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            return False
+
+        async def get(self, url):
+            return httpx.Response(
+                200,
+                json={
+                    "dailies": [{"summaryId": "cb", "calendarDate": "2026-05-29", "steps": 1234}]
+                },
+            )
+
+    monkeypatch.setattr("openconnect.web.routes_api.httpx.AsyncClient", FakeClient)
+    body = app.client.post(
+        "/api/garmin/webhook",
+        json={"dailies": [{"callbackURL": "https://apis.garmin.com/wellness-api/rest/x"}]},
+    ).json()
+    assert body["ping_notifications"] == 1 and body["callbacks_followed"] == 1
+    assert body["callback_errors"] == []
+    days = app.client.get(
+        "/api/health/daily", params={"start": "2026-05-29", "end": "2026-05-29"}
+    ).json()
+    assert days[0]["steps"] == 1234
+
+
+def test_webhook_refuses_a_foreign_callback(app, monkeypatch):
+    class FakeClient:
+        def __init__(self, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            return False
+
+        async def get(self, url):
+            raise AssertionError("a foreign callback must never be fetched")
+
+    monkeypatch.setattr("openconnect.web.routes_api.httpx.AsyncClient", FakeClient)
+    body = app.client.post(
+        "/api/garmin/webhook",
+        json={"dailies": [{"callbackURL": "https://evil.example/x"}]},
+    ).json()
+    assert body["callbacks_followed"] == 0
+    assert "not allowed" in body["callback_errors"][0]
 
 
 def test_webhook_requires_the_token_when_configured(make_app):

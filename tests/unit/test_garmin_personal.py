@@ -1,10 +1,13 @@
 import base64
+import io
 import json
+import zipfile
 from datetime import UTC, date, datetime, timedelta
 
 import httpx
 import pytest
 
+from openconnect.formats import export_activity
 from openconnect.garmin.ingest import ingest_payload
 from openconnect.garmin.personal import (
     BASE_URL,
@@ -16,6 +19,7 @@ from openconnect.garmin.personal import (
     map_personal_payload,
 )
 from openconnect.storage import Database, Repository
+from tests.factories import make_activity
 
 NOW = datetime(2026, 5, 31, 12, 0, tzinfo=UTC)
 
@@ -145,6 +149,47 @@ def test_empty_days_are_not_stored():
         {"dailySummaries": [{"calendarDate": "2026-05-02", "steps": {"value": 0}}]}
     )
     assert payload["dailies"] == []
+
+
+def test_source_imports_activities_with_their_original_fit_file():
+    fit, _, _ = export_activity(make_activity(), "fit")
+    archive = io.BytesIO()
+    with zipfile.ZipFile(archive, "w") as zipped:
+        zipped.writestr("activity.fit", fit)
+
+    def handler(request: httpx.Request):
+        if request.method == "POST":
+            return httpx.Response(200, text=jwt())
+        if "activities/search" in request.url.path:
+            return httpx.Response(
+                200,
+                json=[
+                    {
+                        "activityId": "99001",
+                        "activityName": "Morning Run",
+                        "activityType": {"typeKey": "running"},
+                        "startTimeGMT": "2026-05-30 07:00:00",
+                        "duration": 1800.0,
+                        "distance": 5000.0,
+                    }
+                ],
+            )
+        if "download-service" in request.url.path:
+            return httpx.Response(200, content=archive.getvalue())
+        return httpx.Response(200, json=[])
+
+    source = PersonalApiSource("secret", http=client(handler), clock=lambda: NOW)
+    payload = source.fetch(NOW - timedelta(days=2), NOW)
+    assert str(payload["activities"][0]["activityId"]) == "99001"
+    assert len(payload["activityFiles"]) == 1
+    activity = payload["activityFiles"][0]
+    assert activity.id == "garmin:99001" and activity.source == "garmin" and activity.track
+    assert activity.name == "Morning Run" and activity.sport.value == "running"
+
+    repo = Repository(Database(":memory:"))
+    result = ingest_payload(repo, payload)
+    assert result.activities == 1
+    assert repo.get_activity("garmin:99001").track
 
 
 def test_source_skips_a_denied_data_type_and_reports_it():

@@ -9,15 +9,19 @@ Everything is returned in Garmin-shaped summaries so all sources share one inges
 from __future__ import annotations
 
 import base64
+import io
 import json
 import re
 import time
+import zipfile
 from collections.abc import Callable, Mapping
 from datetime import date, datetime, timedelta
 from typing import Any
 
 import httpx
 
+from openconnect.domain import Activity, ensure_utc
+from openconnect.formats import FormatError, import_activity
 from openconnect.garmin.client import GarminAPIError, GarminRateLimitError
 from openconnect.services.sync import utcnow
 
@@ -37,6 +41,14 @@ PLANS = (
     ("sleep", "/sleep-service/sleep/dailySleepSummariesByDate", 31, True),
     ("bodyBattery", "/wellness-service/wellness/bodyBattery/reports/daily", 31, True),
 )
+
+
+ACTIVITY_LIST_PATH = "/activitylist-service/activities/search/activities"
+ACTIVITY_FILE_PATH = "/download-service/files/activity/{id}"
+ACTIVITY_PAGE = 50
+MAX_ACTIVITY_PAGES = 4
+MAX_ACTIVITY_FILES = 30
+MAX_ACTIVITY_FILE_BYTES = 25 * 1024 * 1024
 
 
 class PersonalAPIError(GarminAPIError):
@@ -321,6 +333,78 @@ def map_personal_payload(collected: Mapping[str, list[Any]]) -> dict[str, list[d
     }
 
 
+def _stamp(text: Any) -> datetime | None:
+    """Garmin uses 'yyyy-MM-dd HH:mm:ss', ISO text and sometimes a trailing Z."""
+    if not isinstance(text, str) or not text.strip():
+        return None
+    try:
+        return ensure_utc(datetime.fromisoformat(text.strip().replace("Z", "+00:00")))
+    except ValueError:
+        try:
+            return ensure_utc(datetime.fromisoformat(text.strip().replace(" ", "T")))
+        except ValueError:
+            return None
+
+
+def activity_summary(item: dict) -> dict | None:
+    """A Personal API activity row, in the shape the existing activity mapper understands."""
+    external = item.get("activityId")
+    start = _stamp(item.get("startTimeGMT") or item.get("startTimeLocal"))
+    if external is None or start is None:
+        return None
+    activity_type = item.get("activityType")
+    type_key = activity_type.get("typeKey") if isinstance(activity_type, dict) else activity_type
+
+    def number(*names: str) -> float | None:
+        for name in names:
+            value = item.get(name)
+            if isinstance(value, (int, float)) and not isinstance(value, bool):
+                return float(value)
+        return None
+
+    return {
+        "activityId": external,
+        "activityName": item.get("activityName") or "",
+        "activityType": type_key,
+        "startTimeInSeconds": start.timestamp(),
+        "durationInSeconds": number("duration", "durationInSeconds") or 0,
+        "distanceInMeters": number("distance", "distanceInMeters") or 0,
+        "totalElevationGainInMeters": number("elevationGain", "totalElevationGainInMeters") or 0,
+        "averageHeartRateInBeatsPerMinute": number("averageHR", "averageHeartRateInBeatsPerMinute"),
+        "maxHeartRateInBeatsPerMinute": number("maxHR", "maxHeartRateInBeatsPerMinute"),
+        "activeKilocalories": number("calories", "activeKilocalories"),
+        "deviceName": item.get("deviceName"),
+    }
+
+
+def _fit_from_download(data: bytes) -> bytes:
+    """Garmin wraps a FIT file in a ZIP; accept both shapes."""
+    if data[:2] == b"PK":
+        with zipfile.ZipFile(io.BytesIO(data)) as archive:
+            for name in archive.namelist():
+                if name.lower().endswith(".fit"):
+                    return archive.read(name)
+    return data
+
+
+def activity_from_download(data: bytes, summary: dict) -> Activity | None:
+    """Import the original FIT file, keeping the account's id and name."""
+    try:
+        activity = import_activity(
+            _fit_from_download(data), f"activity-{summary['activityId']}.fit"
+        )
+    except (FormatError, ValueError, zipfile.BadZipFile, OSError):
+        return None
+    return activity.model_copy(
+        update={
+            "id": f"garmin:{summary['activityId']}",
+            "source": "garmin",
+            "external_id": str(summary["activityId"]),
+            "name": summary["activityName"] or activity.name,
+        }
+    )
+
+
 class PersonalApiSource:
     """GarminSource for a personal key. Missing data types are skipped, not fatal."""
 
@@ -348,7 +432,65 @@ class PersonalApiSource:
             yield cursor, min(cursor + step, end)
             cursor += step
 
-    def fetch(self, start: datetime, end: datetime) -> dict[str, list[dict]]:
+    def _fetch_activities(
+        self, start: datetime, end: datetime
+    ) -> tuple[list[dict], list[Activity]]:
+        """Activity summaries, plus the ones whose original FIT file could be downloaded."""
+        summaries: list[dict] = []
+        first, last = start.date().isoformat(), end.date().isoformat()
+        for page in range(MAX_ACTIVITY_PAGES):
+            response = self._http.get(
+                self._base + ACTIVITY_LIST_PATH,
+                params={
+                    "start": page * ACTIVITY_PAGE,
+                    "limit": ACTIVITY_PAGE,
+                    "startDate": first,
+                    "endDate": last,
+                },
+                headers={"Authorization": f"Bearer {self.token()}", "Accept": "application/json"},
+            )
+            if response.status_code == 403:
+                self.skipped["activities"] = "HTTP 403"
+                return summaries, []
+            if response.status_code == 429:
+                raise GarminRateLimitError(None)
+            if response.status_code != 200:
+                raise GarminAPIError(
+                    f"Personal API returned HTTP {response.status_code} for activities",
+                    response.status_code,
+                )
+            try:
+                body = response.json()
+            except ValueError as exc:
+                raise PersonalAPIError("Personal API returned invalid JSON for activities") from exc
+            if isinstance(body, list):
+                items = body
+            elif isinstance(body, dict):
+                items = next((v for v in body.values() if isinstance(v, list)), [])
+            else:
+                items = []
+            summaries.extend(s for item in items if (s := activity_summary(item)))
+            if len(items) < ACTIVITY_PAGE:
+                break
+
+        files: list[Activity] = []
+        for summary in summaries[:MAX_ACTIVITY_FILES]:
+            response = self._http.get(
+                self._base + ACTIVITY_FILE_PATH.format(id=summary["activityId"]),
+                headers={"Authorization": f"Bearer {self.token()}", "Accept": "*/*"},
+            )
+            if response.status_code == 403 or response.status_code == 404:
+                continue
+            if response.status_code == 429:
+                raise GarminRateLimitError(None)
+            if response.status_code != 200 or len(response.content) > MAX_ACTIVITY_FILE_BYTES:
+                continue
+            activity = activity_from_download(response.content, summary)
+            if activity is not None:
+                files.append(activity)
+        return summaries, files
+
+    def fetch(self, start: datetime, end: datetime) -> dict[str, list]:
         collected: dict[str, list[Any]] = {}
         self.skipped = {}
         for kind, path, chunk_days, use_query in PLANS:
@@ -383,4 +525,8 @@ class PersonalApiSource:
                         f"Personal API returned invalid JSON for {kind}"
                     ) from exc
                 collected[kind].append(body)
-        return map_personal_payload(collected)
+        payload = map_personal_payload(collected)
+        summaries, files = self._fetch_activities(start, end)
+        payload["activities"] = summaries
+        payload["activityFiles"] = files
+        return payload

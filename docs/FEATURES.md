@@ -52,7 +52,7 @@ technical specifications sit behind the developer portal login, so a few details
 
 **Practical path for a self-hosted, single-user app:** the *Personal API* fits best (no business
 agreement, your own data). OpenConnect v0.1.0 implements the business-tier OAuth2 + push + pull
-flow; Personal API support is the first item on the roadmap (§7).
+flow; Personal API support is built into the server (§7).
 
 ## 2. Activities
 
@@ -89,7 +89,7 @@ flow; Personal API support is the first item on the roadmap (§7).
 | Body composition (weight, body fat, BMI) | `bodyComps` | ✅ | One row per weigh-in: weight, body fat, BMI, muscle, water, bone, visceral fat and BMR |
 | Blood pressure | `bloodPressures` | ✅ | Systolic and diastolic; field names from docs, **verify** against a real account |
 | Skin temperature | `skinTemp` | ✅ | Celsius; field names from docs, **verify** against a real account |
-| Health snapshot | `healthSnapshot` | ⏳ | |
+| Health snapshot | `healthSnapshot` | ✅ | Named values stored as received; **verify** against a real account |
 | VO2 max, fitness age | `userMetrics` | ✅ | From Garmin's own values; field names from docs, **verify** against a real account |
 | Women's health (cycle, pregnancy) | Women's Health API | ⏳ | Highly sensitive; will be opt-in |
 | Training Readiness, Training Status, Endurance/Hill score, Race predictor | not exposed | 🚫 | |
@@ -129,7 +129,7 @@ flow; Personal API support is the first item on the roadmap (§7).
 | Device → cloud sync | handled by Garmin | ✅ | OpenConnect reads from Garmin's cloud, not from the watch |
 | OAuth 2.0 PKCE, token refresh | Developer Program | ✅ | Refresh tokens are rotated and stored; a rejected refresh disconnects cleanly |
 | Push webhook (Starter requires it) | Developer Program | ✅ | `POST /api/garmin/webhook`, optional shared-secret token |
-| Ping/Pull callbacks | Enterprise | 🟡 | Notifications are counted but not yet followed |
+| Ping/Pull callbacks | Enterprise | ✅ | Notifications are counted; callback URLs on an HTTPS allow-list (default `apis.garmin.com`) are fetched and ingested |
 | Pull (by upload time, 24 h windows) | Enterprise / Personal | ✅ | Chunked, token refresh on 401, rate-limit aware |
 | Backfill of history | Enterprise | 🟡 | Client method implemented and tested; no UI yet |
 | Offline demo mode | n/a | ✅ | Deterministic Garmin-shaped fake data, no credentials needed |
@@ -138,13 +138,13 @@ flow; Personal API support is the first item on the roadmap (§7).
 
 1. ~~**Personal API support** (exchange the personal API key for access tokens at
    `personal.connectapi.garmin.com`, then pull) so a single user needs no business agreement.~~ ✅ in the server:
-   `OPENCONNECT_GARMIN_MODE=personal` + `GARMIN_PERSONAL_KEY`. Health data only; activity files still to come.
-2. The health snapshot and epoch summaries. Blood pressure, skin temperature and user metrics are read, but their
-   field names still need a check against a real account; the stress, Body Battery and sleep series are now stored.
+   `OPENCONNECT_GARMIN_MODE=personal` + `GARMIN_PERSONAL_KEY`, including activity files.
+2. Health snapshots and epoch summaries are stored as named values. Blood pressure, skin temperature and user
+   metrics are read, but their field names still need a check against a real account.
 3. Lap table, interactive charts and best efforts (fastest 1K/5K/10K) from tracks.
-4. Follow Ping/Pull `callbackURL`s; backfill UI.
+4. ~~Follow Ping/Pull `callbackURL`s; backfill UI.~~ ✅
 5. Training API (workouts and plans) and Courses API publishing for business-tier users.
-6. Monthly and yearly reports, optional app-level authentication. (Custom weekly goals shipped in v0.9.0; the full plan is in [ROADMAP.md](ROADMAP.md).)
+6. Monthly and yearly reports remain. ~~Optional app-level authentication.~~ ✅ (single password). (Custom weekly goals shipped in v0.9.0; the full plan is in [ROADMAP.md](ROADMAP.md).)
 
 ## 8. Legal and privacy notes
 

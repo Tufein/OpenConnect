@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Sign in · OpenConnect{% endblock %}
+{% block content %}
+<h1>Sign in</h1>
+<section class="card">
+  {% if error %}<p class="error">Wrong password. Try again.</p>{% endif %}
+  <p class="muted">This server has <code>OPENCONNECT_PASSWORD</code> set. The cookie that signs you in
+    lasts seven days and is bound to that password.</p>
+  <form method="post" action="/ui/login">
+    <label for="password">Password</label>
+    <input id="password" type="password" name="password" autocomplete="current-password" required autofocus>
+    <button type="submit">Sign in</button>
+  </form>
+</section>
+{% endblock %}

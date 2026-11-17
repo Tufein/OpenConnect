@@ -26,6 +26,8 @@ KINDS = (
     "bloodPressures",
     "skinTemp",
     "userMetrics",
+    "healthSnapshot",
+    "epochSummaries",
 )
 DEFAULT_BASE_URL = "https://apis.garmin.com"
 DEFAULT_API_PREFIX = "/wellness-api/rest"

@@ -256,6 +256,34 @@ def map_respiration(item: dict) -> tuple[date, dict[str, Any]]:
     return _calendar_date(item), {k: v for k, v in patch.items() if v is not None}
 
 
+def map_observation(item: dict, kind: str) -> tuple[date, str, dict[str, float]]:
+    """A health snapshot or epoch summary: keep every numeric value under a dated object.
+
+    Garmin does not publish these layouts, so this stores the observed field names verbatim rather
+    than guessing at meanings. A layout change yields fewer values, not a crash.
+    """
+    day = _calendar_date(item)
+    values: dict[str, float] = {}
+
+    def visit(node: Any, parent: str | None = None) -> None:
+        if isinstance(node, dict):
+            for key, value in node.items():
+                if isinstance(value, bool):
+                    continue
+                if isinstance(value, (int, float)):
+                    values.setdefault(key, float(value))
+                    if parent:
+                        values.setdefault(f"{parent}.{key}", float(value))
+                elif isinstance(value, (dict, list)):
+                    visit(value, key)
+        elif isinstance(node, list):
+            for value in node:
+                visit(value, parent)
+
+    visit(item)
+    return day, kind, values
+
+
 def map_extra_metrics(item: dict) -> tuple[date, dict[str, Any]]:
     """Blood pressure, skin temperature and user metrics; layouts are not fully documented."""
     patch: dict[str, Any] = {}

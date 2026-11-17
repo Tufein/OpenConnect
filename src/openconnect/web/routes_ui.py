@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hmac
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Annotated
@@ -16,6 +17,7 @@ from openconnect.services.achievements import compute_achievements
 from openconnect.services.dashboard import week_start
 from openconnect.services.records import activity_splits, best_efforts, personal_records
 from openconnect.web import charts, formatting
+from openconnect.web.auth import SESSION_COOKIE, make_session
 from openconnect.web.context import AppContext
 from openconnect.web.markup import render_markdown
 from openconnect.web.routes_api import garmin_backfill, get_ctx, run_sync, store_upload
@@ -153,6 +155,8 @@ def health(request: Request, ctx: AppContext = Ctx):
         latest_body=body[-1] if body else None,
         series_day=series_day,
         series_charts=series_charts,
+        snapshot_rows=sorted(series.get("health_snapshot", {}).items()),
+        epoch_rows=sorted(series.get("epoch_summary", {}).items()),
     )
 
 
@@ -208,9 +212,40 @@ def settings_page(request: Request, connected: int = 0, backfill: int = 0, ctx: 
         just_connected=bool(connected),
         just_backfilled=bool(backfill),
         kinds=KINDS,
+        authenticated=bool(ctx.settings.password),
         provider=ctx.provider,
         last_sync=ctx.repo.get_state("last_sync"),
     )
+
+
+@router.get("/login", response_class=HTMLResponse)
+def login_page(request: Request, error: int = 0):
+    return render(request, "login.html", error=bool(error))
+
+
+@router.post("/ui/login")
+def ui_login(
+    password: Annotated[str, Form()],
+    ctx: AppContext = Ctx,
+):
+    if not ctx.settings.password or not hmac.compare_digest(password, ctx.settings.password):
+        return RedirectResponse("/login?error=1", status_code=303)
+    response = RedirectResponse("/", status_code=303)
+    response.set_cookie(
+        SESSION_COOKIE,
+        make_session(ctx.settings.password),
+        httponly=True,
+        samesite="lax",
+        max_age=7 * 24 * 60 * 60,
+    )
+    return response
+
+
+@router.post("/ui/logout")
+def ui_logout():
+    response = RedirectResponse("/login", status_code=303)
+    response.delete_cookie(SESSION_COOKIE)
+    return response
 
 
 # ---------------------------------------------------------- form actions (POST/redirect/GET)

@@ -10,6 +10,7 @@
   <dl class="facts">
     <dt>Mode</dt><dd>{{ mode }}</dd>
     <dt>Status</dt><dd>{{ "connected" if connected else "not connected" }}</dd>
+    <dt>Sign-in</dt><dd>{{ "password required" if authenticated else "off (localhost or trusted network)" }}</dd>
     <dt>Last sync</dt><dd>{{ last_sync or "never" }}</dd>
   </dl>
   {% if mode == "mock" %}
@@ -62,4 +63,9 @@
   <h2>Storage</h2>
   <dl class="facts"><dt>Database</dt><dd>{{ s.db_path }}</dd></dl>
 </section>
+{% if authenticated %}
+<section class="card">
+  <form method="post" action="/ui/logout"><button type="submit">Sign out</button></form>
+</section>
+{% endif %}
 {% endblock %}

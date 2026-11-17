@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 
 import httpx
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -18,6 +18,7 @@ from openconnect.ai.provider import ReportProvider
 from openconnect.config import Settings
 from openconnect.garmin.client import GarminSource
 from openconnect.services.sync import utcnow
+from openconnect.web.auth import SESSION_COOKIE, valid_session
 from openconnect.web.context import build_context
 
 WEB_DIR = Path(__file__).parent
@@ -73,6 +74,24 @@ def create_app(
         response.headers["Referrer-Policy"] = "same-origin"
         response.headers["X-Frame-Options"] = "DENY"
         return response
+
+    # When a password is configured, everything except the login page and static files needs a
+    # signed cookie. Health checks stay public so a Reverse proxy can still poll /healthz.
+    if settings.password:
+
+        @app.middleware("http")
+        async def require_login(request: Request, call_next):
+            path = request.url.path
+            if path in {"/healthz", "/login", "/ui/login", "/ui/logout"} or path.startswith(
+                "/static/"
+            ):
+                return await call_next(request)
+            cookie = request.cookies.get(SESSION_COOKIE, "")
+            if not valid_session(cookie, settings.password or ""):
+                if path.startswith("/api"):
+                    return JSONResponse({"detail": "Not authenticated"}, status_code=401)
+                return RedirectResponse("/login", status_code=303)
+            return await call_next(request)
 
     # Added last so it runs first: reject unknown Host headers before anything else (DNS rebinding).
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts)
