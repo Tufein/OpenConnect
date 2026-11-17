@@ -179,11 +179,11 @@ object Workouts {
         for (f in files) {
             try {
                 if (!source.installWorkout(f.name, f.bytes)) {
-                    throw nl.tufein.openconnect.core.watch.WatchFaceException(nl.tufein.openconnect.core.watch.WatchFaceException.Kind.CANNOT_WRITE)
+                    throw nl.tufein.openconnect.core.watch.WatchWriteException(nl.tufein.openconnect.core.watch.WatchWriteException.Kind.CANNOT_WRITE)
                 }
                 sent += f.name
-            } catch (e: nl.tufein.openconnect.core.watch.WatchFaceException) {
-                if (e.kind == nl.tufein.openconnect.core.watch.WatchFaceException.Kind.ALREADY_THERE) already += f.name else throw e
+            } catch (e: nl.tufein.openconnect.core.watch.WatchWriteException) {
+                if (e.kind == nl.tufein.openconnect.core.watch.WatchWriteException.Kind.ALREADY_THERE) already += f.name else throw e
             }
         }
         return WorkoutTransferResult(sent, already)

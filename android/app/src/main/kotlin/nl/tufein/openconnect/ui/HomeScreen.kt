@@ -373,8 +373,10 @@ fun ActivityRow(activity: Activity, onOpen: (String) -> Unit, modifier: Modifier
             SportBadge(activity.sport)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(activity.name, style = MaterialTheme.typography.titleMedium, maxLines = 1)
+                // A workout that only the Oura Ring recorded says so in the list (v0.43.0).
+                val fromRing = activity.source == nl.tufein.openconnect.core.RingWorkouts.SOURCE
                 Text(
-                    stringResource(sportLabel(activity.sport)) + " · " + Fmt.dateTime(activity.startTime),
+                    stringResource(sportLabel(activity.sport)) + " · " + Fmt.dateTime(activity.startTime) + if (fromRing) " · " + stringResource(R.string.source_oura) else "",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,

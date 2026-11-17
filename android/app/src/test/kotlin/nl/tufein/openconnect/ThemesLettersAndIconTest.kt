@@ -80,7 +80,7 @@ class ThemesLettersAndIconTest : AppTestBase() {
         launchFresh { app -> app.containerOverride = container(app) }
         loadDemo()
         tab("Settings").performClick()
-        waitForText("Colours")
+        openAppearance()
         shot("62-settings-many-themes")
         for ((name, key) in listOf("Virtual Boy" to "virtualboy", "Terminal" to "terminal", "High contrast" to "contrast", "Dracula" to "dracula", "Candy" to "candy")) {
             clickText(name)
@@ -92,6 +92,7 @@ class ThemesLettersAndIconTest : AppTestBase() {
         waitForText("Readiness")
         shot("63-home-high-contrast")
         tab("Settings").performClick()
+        openAppearance()
         clickText("Terminal")
         rule.waitUntil(5_000) { settings().palette == "terminal" }
         tab("Health").performClick()
@@ -105,7 +106,7 @@ class ThemesLettersAndIconTest : AppTestBase() {
         loadDemo()
         assertEquals("pixel", settings().letters)
         tab("Settings").performClick()
-        waitForText("Clear letters")
+        openAppearance()
         clickText("Clear letters")
         rule.waitUntil(5_000) { settings().letters == "clear" }
         scenario.onActivity { assertEquals("clear", it.viewModel.look.value.letters) }
@@ -117,6 +118,7 @@ class ThemesLettersAndIconTest : AppTestBase() {
         waitForText("Activities")
         shot("67-activities-clear-letters")
         tab("Settings").performClick()
+        openAppearance()
         clickText("Pixel letters")
         rule.waitUntil(5_000) { settings().letters == "pixel" }
     }
@@ -127,7 +129,7 @@ class ThemesLettersAndIconTest : AppTestBase() {
         loadDemo()
         assertEquals("retro", settings().style)
         tab("Settings").performClick()
-        waitForText("Sleek")
+        openAppearance()
         clickText("Sleek")
         rule.waitUntil(5_000) { settings().style == "clean" }
         scenario.onActivity { assertEquals("clean", it.viewModel.look.value.style) }
@@ -137,6 +139,7 @@ class ThemesLettersAndIconTest : AppTestBase() {
         waitForText("Readiness")
         shot("70-home-sleek")
         tab("Settings").performClick()
+        openAppearance()
         clickText("Classic")
         rule.waitUntil(5_000) { settings().style == "classic" }
         tab("Home").performClick()
@@ -146,6 +149,7 @@ class ThemesLettersAndIconTest : AppTestBase() {
         waitForText("Scores")
         shot("72-health-classic")
         tab("Settings").performClick()
+        openAppearance()
         clickText("Retro")
         rule.waitUntil(5_000) { settings().style == "retro" }
         waitForText("Clear letters")
@@ -158,9 +162,8 @@ class ThemesLettersAndIconTest : AppTestBase() {
         val context = ApplicationProvider.getApplicationContext<OpenConnectApp>()
         assertEquals(AppIcon.HANDHELD, AppIcons.current(context), "a fresh install has the first icon")
         tab("Settings").performClick()
-        // The settings list is lazy and the icon section sits far below the fold, so wait for the top of the list and
-        // scroll down to it instead of waiting for it to appear by itself.
-        waitForText("Clear letters")
+        // The icons sit at the end of the Appearance section, which is folded away until it is opened.
+        openAppearance()
         scrollToText("App icon")
         rule.waitForIdle()
         scrollToText("Night heart")

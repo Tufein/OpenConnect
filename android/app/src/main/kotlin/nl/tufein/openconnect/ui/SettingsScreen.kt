@@ -39,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,7 +66,6 @@ import nl.tufein.openconnect.core.SyncLogEntry
 import nl.tufein.openconnect.core.WeeklyGoals
 import nl.tufein.openconnect.core.reports.AiVendor
 import nl.tufein.openconnect.core.watch.ConnectIqStore
-import nl.tufein.openconnect.core.watch.StoreApp
 
 data class SettingsUi(
     val ai: AiUi,
@@ -82,9 +82,6 @@ data class SettingsUi(
     val look: Look = Look(),
     /** The icon on the launcher. */
     val appIcon: AppIcon = AppIcon.HANDHELD,
-    val watchFace: WatchFaceConfig = WatchFaceConfig(),
-    /** The numbers the preview shows; null until there is data. */
-    val watchData: WatchFaceData? = null,
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -117,10 +114,6 @@ fun SettingsScreen(
     onStyle: (style: String) -> Unit = {},
     /** A launcher icon was picked. */
     onAppIcon: (AppIcon) -> Unit = {},
-    /** The watch face preview changed: design, colour and four fields. */
-    onWatchFaceLook: (WatchFaceConfig) -> Unit = {},
-    /** Pick a watch face file to copy to the watch over USB. */
-    onWatchFace: () -> Unit = {},
     onBackup: () -> Unit = {},
     onRestore: () -> Unit = {},
     onClearLog: () -> Unit = {},
@@ -134,6 +127,8 @@ fun SettingsScreen(
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     var confirmClear by remember { mutableStateOf(false) }
+    // Folded away at first; kept while the app is open, also when another tab is looked at in between.
+    var lookOpen by rememberSaveable { mutableStateOf(false) }
     LazyColumn(
         contentPadding = PaddingValues(
             start = 16.dp, end = 16.dp,
@@ -145,9 +140,16 @@ fun SettingsScreen(
         item {
             Text(stringResource(R.string.tab_settings), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
         }
+        // Everything about the look (dark or light, style, letters, colours and the launcher icon) sits in one section that
+        // is folded away until it is tapped, so the settings people come for more often are not three screens down.
         item {
-            SectionTitle(stringResource(R.string.settings_appearance))
-            SurfaceCard {
+            FoldSection(
+                title = stringResource(R.string.settings_appearance),
+                summary = lookSummary(ui.look),
+                open = lookOpen,
+                onToggle = { lookOpen = !lookOpen },
+                modifier = Modifier.testTag("appearance-fold"),
+            ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     for ((mode, label) in listOf("system" to R.string.theme_system, "dark" to R.string.theme_dark, "light" to R.string.theme_light)) {
                         PixelChip(selected = ui.theme == mode, onClick = { onTheme(mode) }, label = { Text(stringResource(label)) })
@@ -188,30 +190,13 @@ fun SettingsScreen(
                     }
                 }
                 Text(stringResource(R.string.look_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-        item {
-            SectionTitle(stringResource(R.string.settings_app_icon))
-            SurfaceCard {
+                Text(stringResource(R.string.settings_app_icon), style = MaterialTheme.typography.titleMedium)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     for (icon in AppIcon.entries) {
                         AppIconChoice(icon, selected = ui.appIcon == icon, onClick = { onAppIcon(icon) })
                     }
                 }
                 Text(stringResource(R.string.icon_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-        item { WatchFacePreviewCard(ui.watchFace, ui.watchData ?: WatchFaceData("08:42", "", null, null, null, null, null), onWatchFaceLook) }
-        item {
-            SectionTitle(stringResource(R.string.settings_watchface))
-            SurfaceCard {
-                Text(stringResource(R.string.watchface_body), style = MaterialTheme.typography.bodyMedium)
-                PrimaryButton(onClick = onWatchFace, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.watchface_install)) }
-                val uri = androidx.compose.ui.platform.LocalUriHandler.current
-                SecondaryButton(onClick = { uri.openUri(ConnectIqStore.watchFaceUrl ?: ConnectIqStore.HOME) }, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.watchface_store))
-                }
-                Text(stringResource(R.string.watchface_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         item {
@@ -231,6 +216,7 @@ fun SettingsScreen(
                 if (ui.sources.garmin) {
                     PrimaryButton(onClick = onGarmin, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_garmin)) }
                     PrimaryButton(onClick = onWatch, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_watch)) }
+                    ConnectIqButton()
                 }
                 DeviceSwitch(stringResource(R.string.device_oura), stringResource(R.string.device_oura_body), ui.sources.oura) { onSources(ui.sources.garmin, it) }
                 if (ui.sources.oura) {
@@ -656,96 +642,33 @@ private fun AppIconChoice(icon: AppIcon, selected: Boolean, onClick: () -> Unit)
     }
 }
 
-fun designName(d: Design): Int = when (d) {
-    Design.CLEAN -> R.string.design_clean
-    Design.DASHBOARD -> R.string.design_dashboard
-    Design.RETRO -> R.string.design_retro
-}
-
-/** A round preview of the watch face with the choices that decide how it is built. */
-@OptIn(ExperimentalLayoutApi::class)
+/** What is chosen now, for the header of the folded Appearance section: colour theme, style and, in retro, the letters. */
 @Composable
-private fun WatchFacePreviewCard(config: WatchFaceConfig, data: WatchFaceData, onChange: (WatchFaceConfig) -> Unit) {
-    SectionTitle(stringResource(R.string.wf_title))
-    SurfaceCard {
-        androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) { WatchFacePreview(config, data) }
-        Text(stringResource(R.string.wf_design), style = MaterialTheme.typography.titleMedium)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            for (design in Design.entries) {
-                PixelChip(
-                    selected = config.design == design.key,
-                    onClick = { onChange(config.copy(design = design.key)) },
-                    label = { Text(stringResource(wfDesignName(design))) },
-                )
-            }
-        }
-        Text(stringResource(R.string.wf_colour), style = MaterialTheme.typography.titleMedium)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            for (color in WatchColor.entries) {
-                PixelChip(
-                    selected = config.color == color.key,
-                    onClick = { onChange(config.copy(color = color.key)) },
-                    label = { Text(stringResource(color.label)) },
-                    leadingIcon = { ColorDot(color.color, Modifier.size(14.dp)) },
-                )
-            }
-        }
-        Text(stringResource(R.string.wf_fields), style = MaterialTheme.typography.titleMedium)
-        val chosen = config.fieldValues
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            for (field in WatchField.entries) {
-                val place = chosen.indexOf(field)
-                PixelChip(
-                    selected = place >= 0,
-                    onClick = {
-                        // A chosen field becomes the big one; another one replaces the last.
-                        val next = if (place >= 0) listOf(field) + chosen.filter { it != field } else chosen.dropLast(1) + field
-                        onChange(config.copy(fields = next.map { it.key }))
-                    },
-                    label = { Text((if (place >= 0) "${place + 1} " else "") + stringResource(field.label)) },
-                )
-            }
-        }
-        Text(stringResource(R.string.wf_device), style = MaterialTheme.typography.titleMedium)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            for (device in WatchDevice.entries) {
-                PixelChip(selected = config.device == device.id, onClick = { onChange(config.copy(device = device.id)) }, label = { Text(device.label) })
-            }
-        }
-        Text(stringResource(R.string.wf_fields_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(stringResource(R.string.wf_preview_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        // The command that builds exactly this face; it can be copied to a terminal (see docs/WATCH_FACES.md).
-        Text(stringResource(R.string.wf_build_title), style = MaterialTheme.typography.titleMedium)
-        Text(stringResource(R.string.wf_file, config.fileName()), style = MaterialTheme.typography.bodySmall)
-        Text(config.buildCommand(), style = MaterialTheme.typography.bodySmall.copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace))
-        val clipboard = androidx.compose.ui.platform.LocalClipboardManager.current
-        SecondaryButton(onClick = { clipboard.setText(androidx.compose.ui.text.AnnotatedString(config.buildCommand())) }, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.wf_build_copy))
-        }
-        // The widget and its glance (the glance list on the watch) in the same colour and fields.
-        Text(stringResource(R.string.wf_widget_title), style = MaterialTheme.typography.titleMedium)
-        Text(stringResource(R.string.wf_widget_note, config.widgetFileName()), style = MaterialTheme.typography.bodySmall)
-        SecondaryButton(onClick = { clipboard.setText(androidx.compose.ui.text.AnnotatedString(config.widgetCommand())) }, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.wf_widget_copy))
-        }
-        // A direct link to the apps in Garmin's Connect IQ store, once they are published (ConnectIqStore holds the ids).
-        Text(stringResource(R.string.wf_store_title), style = MaterialTheme.typography.titleMedium)
-        val storeLinks = ConnectIqStore.links()
-        if (storeLinks.isEmpty()) {
-            Text(stringResource(R.string.wf_store_none), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        } else {
-            val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
-            for (link in storeLinks) {
-                SecondaryButton(onClick = { uriHandler.openUri(link.url) }, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(if (link.app == StoreApp.WATCHFACE) R.string.wf_store_face else R.string.wf_store_widget))
-                }
-            }
-        }
+private fun lookSummary(look: Look): String {
+    val style = when (look.style) {
+        "clean" -> R.string.style_clean
+        "classic" -> R.string.style_classic
+        else -> R.string.style_retro
     }
+    val parts = mutableListOf(stringResource(Palette.of(look.palette).label), stringResource(style))
+    if (look.style == "retro") parts += stringResource(if (look.letters == "clear") R.string.letters_clear else R.string.letters_pixel)
+    return parts.joinToString(" · ")
 }
 
-private fun wfDesignName(d: Design): Int = when (d) {
-    Design.CLEAN -> R.string.wf_face_clean
-    Design.DASHBOARD -> R.string.wf_face_dashboard
-    Design.RETRO -> R.string.wf_face_retro
+/**
+ * Opens Garmin's Connect IQ app itself, not a web page (v0.43.0). The order of what is tried is worked out by
+ * [ConnectIqStore.steps]; [openConnectIq] walks it. Only when nothing on the phone could open any of it is that said.
+ */
+@Composable
+private fun ConnectIqButton() {
+    val context = LocalContext.current
+    var failed by remember { mutableStateOf(false) }
+    SecondaryButton(onClick = { failed = openConnectIq(context) == null }, modifier = Modifier.fillMaxWidth()) {
+        Text(stringResource(if (ConnectIqStore.hasListing) R.string.connect_iq_open_listing else R.string.connect_iq_open))
+    }
+    Text(
+        stringResource(if (failed) R.string.connect_iq_failed else R.string.connect_iq_note),
+        style = MaterialTheme.typography.bodySmall,
+        color = if (failed) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }

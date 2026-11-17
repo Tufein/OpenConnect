@@ -17,6 +17,9 @@ import nl.tufein.openconnect.R
 import nl.tufein.openconnect.core.Achievements
 import nl.tufein.openconnect.core.AchievementsCalculator
 import nl.tufein.openconnect.core.Activity
+import nl.tufein.openconnect.core.ActivityAround
+import nl.tufein.openconnect.core.ActivityAroundCalculator
+import nl.tufein.openconnect.core.RingWorkouts
 import nl.tufein.openconnect.core.Backup
 import nl.tufein.openconnect.core.BestEfforts
 import nl.tufein.openconnect.core.Effort
@@ -179,6 +182,10 @@ data class DetailState(
     val shoe: Shoe? = null,
     val shoeChoices: List<Shoe> = emptyList(),
     val shoeByHand: Boolean = false,
+    /** What the watch and the Oura Ring measured around this activity (v0.43.0); null when neither has anything to say. */
+    val around: ActivityAround? = null,
+    /** True for a workout that only the Oura Ring recorded: it is not stored as an activity, so it cannot be deleted, exported or reported on. */
+    val fromRing: Boolean = false,
 )
 
 data class HealthState(
@@ -312,23 +319,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun setAppIcon(icon: AppIcon) {
         AppIcons.select(getApplication(), icon)
         _appIcon.value = AppIcons.current(getApplication())
-    }
-
-    private fun watchFaceNow() = container.settings.let {
-        WatchFaceConfig(Design.of(it.watchDesign).key, WatchColor.of(it.watchColor).key, WatchField.parse(it.watchFields).map { f -> f.key }, WatchDevice.of(it.watchDevice).id)
-    }
-
-    private val _watchFace = MutableStateFlow(watchFaceNow())
-
-    /** The watch face shown in the preview and handed to watch/build.sh. */
-    val watchFace: StateFlow<WatchFaceConfig> = _watchFace.asStateFlow()
-
-    fun setWatchFace(config: WatchFaceConfig) {
-        container.settings.watchDesign = Design.of(config.design).key
-        container.settings.watchColor = WatchColor.of(config.color).key
-        container.settings.watchFields = WatchField.parse(config.fields.joinToString(",")).joinToString(",") { it.key }
-        container.settings.watchDevice = WatchDevice.of(config.device).id
-        _watchFace.value = watchFaceNow()
     }
 
     private val _now = MutableStateFlow(Instant.now())
@@ -670,7 +660,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loadActivities(sport: Sport?) = io {
-        val all = repo.listActivities(limit = 10_000)
+        val recorded = repo.listActivities(limit = 10_000)
+        // For someone who chose the Oura Ring, what the ring recorded and no watch or file did is listed too (v0.43.0).
+        // These rows are made here from the ring's stored days and are not written to the activities table, so totals,
+        // training load, records and trophies keep counting only what a watch or a file recorded.
+        val ring = if (container.settings.useOura) RingWorkouts.extra(repo.listOuraDays(FIRST_DAY, LAST_DAY), recorded) else emptyList()
+        val all = if (ring.isEmpty()) recorded else (recorded + ring).sortedByDescending { it.startTime }
         _activities.value = ActivitiesState(
             loaded = true,
             sport = sport,
@@ -682,14 +677,21 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun openActivity(id: String) {
         currentActivityId = id
         io {
-            val activity = repo.getActivity(id)
+            val useWatch = container.settings.useGarmin
+            val useRing = container.settings.useOura
+            // A row of the Oura Ring is not in the activities table: it is made again from the ring's stored days.
+            val ringWorkout = if (useRing && RingWorkouts.isRing(id)) RingWorkouts.find(id, repo.listOuraDays(FIRST_DAY, LAST_DAY)) else null
+            val fromRing = ringWorkout != null
+            val activity = ringWorkout?.let(RingWorkouts::toActivity) ?: repo.getActivity(id)
             val maxHr = HeartZones.maxHr(container.settings.maxHr, repo.listActivities(limit = 10_000)).bpm
             val book = GearBook.decode(container.settings.gear)
             _detail.value = DetailState(
                 loaded = true,
                 activity = activity,
-                shoe = activity?.let { Gear.shoeFor(book, it) },
-                shoeChoices = activity?.let { Gear.choices(book, it) }.orEmpty(),
+                fromRing = fromRing,
+                around = activity?.let { ActivityAroundCalculator.load(repo, it, ZoneId.systemDefault(), useWatch, useRing) }?.takeIf { !it.isEmpty },
+                shoe = activity?.takeIf { !fromRing }?.let { Gear.shoeFor(book, it) },
+                shoeChoices = activity?.takeIf { !fromRing }?.let { Gear.choices(book, it) }.orEmpty(),
                 shoeByHand = activity != null && activity.id in book.overrides,
                 zones = activity?.let { HeartZones.activityZones(it, maxHr) },
                 zonesMaxHr = maxHr,
@@ -1042,39 +1044,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Copies a watch face (.prg) to a Garmin on the USB cable, into GARMIN/Apps. The person then picks it on the watch;
-     * no open protocol can switch the active face from the phone.
-     */
-    fun installWatchFace(source: Uri) = io {
-        val app = getApplication<Application>()
-        val name = app.contentResolver.query(source, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
-            if (c.moveToFirst()) c.getString(0) else null
-        } ?: source.lastPathSegment.orEmpty()
-        val message = try {
-            val bytes = app.contentResolver.openInputStream(source)?.use { readLimited(it, nl.tufein.openconnect.core.watch.WatchFace.MAX_BYTES + 1) }
-                ?: throw IOException("unreadable")
-            nl.tufein.openconnect.core.watch.WatchFace.check(name, bytes)
-            val watch = container.usb.attached().firstOrNull()
-                ?: throw nl.tufein.openconnect.core.watch.WatchFaceException(nl.tufein.openconnect.core.watch.WatchFaceException.Kind.NO_USB_WATCH)
-            val saved = container.usb.open(watch).use { nl.tufein.openconnect.core.watch.WatchFace.install(it.source, name, bytes) }
-            text(R.string.watchface_done, saved)
-        } catch (e: nl.tufein.openconnect.core.watch.WatchFaceException) {
-            text(
-                when (e.kind) {
-                    nl.tufein.openconnect.core.watch.WatchFaceException.Kind.NOT_PRG -> R.string.watchface_not_prg
-                    nl.tufein.openconnect.core.watch.WatchFaceException.Kind.TOO_BIG, nl.tufein.openconnect.core.watch.WatchFaceException.Kind.EMPTY -> R.string.watchface_bad_file
-                    nl.tufein.openconnect.core.watch.WatchFaceException.Kind.NO_USB_WATCH -> R.string.watchface_no_usb
-                    nl.tufein.openconnect.core.watch.WatchFaceException.Kind.CANNOT_WRITE -> R.string.watchface_cannot_write
-                    nl.tufein.openconnect.core.watch.WatchFaceException.Kind.ALREADY_THERE -> R.string.watchface_already
-                },
-            )
-        } catch (e: nl.tufein.openconnect.watch.WatchLinkException) {
-            text(R.string.watchface_cannot_write)
-        }
-        tell(message)
-    }
-
-    /**
      * Copies the workouts of the next seven days of the training plan to a Garmin on the USB cable, into
      * GARMIN/NewFiles. Tempo and interval steps get a pace window from the predicted 10 km pace when there is one.
      */
@@ -1088,13 +1057,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val files = Workouts.files(sessions, TrainingPaces.from(state.race.predictions), java.time.Instant.now())
                 val watch = container.usb.attached().firstOrNull()
-                    ?: throw nl.tufein.openconnect.core.watch.WatchFaceException(nl.tufein.openconnect.core.watch.WatchFaceException.Kind.NO_USB_WATCH)
+                    ?: throw nl.tufein.openconnect.core.watch.WatchWriteException(nl.tufein.openconnect.core.watch.WatchWriteException.Kind.NO_USB_WATCH)
                 val result = container.usb.open(watch).use { Workouts.send(it.source, files) }
                 text(R.string.workouts_done, result.sent.size, result.alreadyThere.size)
-            } catch (e: nl.tufein.openconnect.core.watch.WatchFaceException) {
-                text(if (e.kind == nl.tufein.openconnect.core.watch.WatchFaceException.Kind.NO_USB_WATCH) R.string.watchface_no_usb else R.string.watchface_cannot_write)
+            } catch (e: nl.tufein.openconnect.core.watch.WatchWriteException) {
+                text(if (e.kind == nl.tufein.openconnect.core.watch.WatchWriteException.Kind.NO_USB_WATCH) R.string.watch_no_usb else R.string.watch_cannot_write)
             } catch (e: nl.tufein.openconnect.watch.WatchLinkException) {
-                text(R.string.watchface_cannot_write)
+                text(R.string.watch_cannot_write)
             }
         }
         tell(message)

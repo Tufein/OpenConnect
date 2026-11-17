@@ -3,10 +3,12 @@ package nl.tufein.openconnect.ui
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,8 +31,10 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -103,6 +107,45 @@ fun SectionTitle(text: String, modifier: Modifier = Modifier) {
         Box(Modifier.size(10.dp).background(MaterialTheme.colorScheme.primary))
         Text(text, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onBackground)
         DottedRule(Modifier.weight(1f))
+    }
+}
+
+/**
+ * A section that folds away (v0.43.0): a panel whose top row holds the title with the same cursor square as
+ * [SectionTitle], a line on what is chosen now, and a pixel arrow that points down while closed and up while open.
+ * Tapping the row opens or closes it. The body is only composed while open, so a long section costs nothing folded.
+ */
+@Composable
+fun FoldSection(
+    title: String,
+    summary: String,
+    open: Boolean,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val state = stringResource(if (open) R.string.fold_open else R.string.fold_closed)
+    Panel(modifier.fillMaxWidth().padding(top = 8.dp)) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clickable(role = Role.Button, onClick = onToggle)
+                .semantics { stateDescription = state }
+                .padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Box(Modifier.size(10.dp).background(MaterialTheme.colorScheme.primary))
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(title, style = MaterialTheme.typography.titleMedium)
+                Text(summary, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            PixelIcon(if (open) PixelIcons.ChevronUp else PixelIcons.ChevronDown, size = 18.dp, tint = MaterialTheme.colorScheme.onSurface)
+        }
+        if (open) {
+            DottedRule(Modifier.fillMaxWidth())
+            content()
+        }
     }
 }
 

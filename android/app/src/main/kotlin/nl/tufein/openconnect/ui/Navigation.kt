@@ -119,8 +119,6 @@ fun OpenConnectRoot(
     onExportCsv: (kind: String) -> Unit,
     onBackup: () -> Unit = {},
     onRestore: () -> Unit = {},
-    /** Picks a watch face file (.prg) to copy to the watch over USB. */
-    onWatchFace: () -> Unit = {},
     /** Whether the phone has a screen lock or fingerprint the app lock can use. */
     lockAvailable: Boolean = false,
     /** Switches the lock on (after the person passed the check) or off. */
@@ -170,7 +168,6 @@ fun OpenConnectRoot(
     val theme by vm.theme.collectAsState()
     val look by vm.look.collectAsState()
     val appIcon by vm.appIcon.collectAsState()
-    val watchFace by vm.watchFace.collectAsState()
     val goals by vm.goals.collectAsState()
     val now by vm.now.collectAsState()
     val busy by vm.busy.collectAsState()
@@ -289,13 +286,11 @@ fun OpenConnectRoot(
             }
             composable(Tab.Settings.route) {
                 SettingsScreen(
-                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources, look = look, appIcon = appIcon, watchFace = watchFace, watchData = watchFaceData(home, now)),
+                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources, look = look, appIcon = appIcon),
                     onLook = vm::setLook,
                     onLetters = vm::setLetters,
                     onStyle = vm::setStyle,
                     onAppIcon = vm::setAppIcon,
-                    onWatchFaceLook = vm::setWatchFace,
-                    onWatchFace = onWatchFace,
                     onSources = vm::setSources,
                     onAppLock = onAppLock,
                     onNudges = vm::setNudges,
@@ -391,20 +386,4 @@ fun OpenConnectRoot(
             }
         }
     }
-}
-
-/** The numbers the watch face preview shows: today's, from the same data as Home. */
-private fun watchFaceData(home: HomeState, now: java.time.Instant, zone: java.time.ZoneId = java.time.ZoneId.systemDefault()): WatchFaceData {
-    val today = home.overview?.today
-    val local = now.atZone(zone)
-    return WatchFaceData(
-        time = String.format(java.util.Locale.ROOT, "%02d:%02d", local.hour, local.minute),
-        date = Fmt.shortDate(local.toLocalDate()),
-        battery = today?.bodyBatteryHigh,
-        heart = today?.restingHr?.takeIf { it > 0 },
-        stress = today?.avgStress,
-        floors = today?.floorsClimbed,
-        steps = today?.steps,
-        stepsGoal = (today?.stepsGoal ?: 10_000),
-    )
 }

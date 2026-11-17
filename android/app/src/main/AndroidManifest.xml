@@ -37,6 +37,8 @@
 
     <queries>
         <package android:name="com.google.android.apps.healthdata" />
+        <!-- Garmin's Connect IQ app: Settings opens it directly, which needs to see whether it is installed. -->
+        <package android:name="com.garmin.connectiq" />
     </queries>
 
     <application

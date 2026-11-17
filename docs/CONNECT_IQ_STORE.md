@@ -1,6 +1,28 @@
 # OpenConnect in the Connect IQ store
 
-*Written 2026-11-14 for v0.24.0, from Garmin's developer pages and forum threads (sources at the end).*
+*Written 2026-11-14 for v0.24.0, from Garmin's developer pages and forum threads (sources at the end). Updated for v0.43.0.*
+
+## What the button in the app does (v0.43.0)
+
+*Settings, Your devices, Open Garmin Connect IQ* **starts Garmin's own "Connect IQ" app on the phone**, not a web page.
+`ConnectIqStore.steps` decides the order, `ConnectIqLauncher` (`ui/ConnectIq.kt`) walks it and stops at the first step the
+phone can open:
+
+| Situation | What opens |
+|---|---|
+| Garmin's Connect IQ app is installed, no listing of ours | that app, at its start (`getLaunchIntentForPackage("com.garmin.connectiq")`) |
+| Garmin's app is not installed | its Play Store page (`market://details?id=com.garmin.connectiq`), else the same page on the web |
+| `ConnectIqStore.LISTING_ID` is filled in and the app is installed | OpenConnect's own page, handed to Garmin's app (`https://apps.garmin.com/apps/<store id>`), else the browser |
+
+Seeing whether Garmin's app is installed needs `<queries><package android:name="com.garmin.connectiq"/></queries>` in the
+manifest (Android 11 and newer hide other apps otherwise). **What is not known:** whether Garmin's app takes a store address
+handed to it; if it does not, the same address opens in the browser (the second step). It was tested with fakes only; no
+phone with that app was available.
+
+**What is missing for "straight to OpenConnect's own page":** OpenConnect is not in Garmin's store yet, so it has no store
+id. After the first upload (steps below), paste the id or the address into `ConnectIqStore.LISTING_ID`; nothing else changes.
+Since v0.43.0 there is one constant, not two: the watch face is no longer part of the app and the widget has no button of
+its own.
 
 ## Can the app link straight to the store listing?
 
@@ -10,10 +32,9 @@
   (`/en-US/`) out and the store opens in the reader's own language.
 - The **store id** is a UUID that Garmin issues when the app is uploaded for the first time. It is **not** the id inside
   the app's manifest: Garmin's forum says plainly that "the Store UUID is distinct from the App UUID".
-- So until the first upload there is nothing to link to. The app is ready for it: `ConnectIqStore.kt` has two empty
-  constants, `WATCHFACE_ID` and `WIDGET_ID`. Paste the store id **or the whole store address** of each published app
-  into them, release a new version, and *Settings, Watch face preview, Connect IQ store* shows a button per app that
-  opens it. While they are empty the app says that the apps are not in the store yet.
+- So until the first upload there is nothing to link to. The app is ready for it: `ConnectIqStore.kt` has one empty
+  constant, `LISTING_ID`. Paste the store id **or the whole store address** into it and release a new version; the button
+  in Settings then opens that page. While it is empty the button opens Garmin's Connect IQ app itself (see above).
 
 ## What is prepared in the repository
 

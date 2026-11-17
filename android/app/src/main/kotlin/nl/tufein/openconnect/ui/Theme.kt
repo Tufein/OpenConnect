@@ -119,18 +119,6 @@ enum class Style(val key: String) {
 
 val LocalStyle = staticCompositionLocalOf { Style.RETRO }
 
-/**
- * The designs of the watch faces (v0.20.0). The app itself has one look since v0.31.0; this list only decides which of
- * the three Connect IQ faces the preview in Settings shows and `watch/build.sh --design` builds.
- */
-enum class Design(val key: String) {
-    CLEAN("clean"), DASHBOARD("dashboard"), RETRO("retro");
-
-    companion object {
-        fun of(key: String?): Design = entries.firstOrNull { it.key == key } ?: RETRO
-    }
-}
-
 /** The key colours of one theme, for its dark and its light version. [onAccent] is the colour of text on the three accents. */
 private class Keys(
     val primary: Color, val secondary: Color, val tertiary: Color, val background: Color, val surface: Color, val text: Color,

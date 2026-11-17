@@ -81,23 +81,6 @@ class SettingsStore(
         get() = prefs.getString(KEY_STYLE, "retro")?.takeIf { it == "clean" || it == "classic" } ?: "retro"
         set(value) = prefs.edit().putString(KEY_STYLE, if (value == "clean" || value == "classic") value else "retro").apply()
 
-    /** The watch face preview and build choices (v0.20.0): design, accent colour and four fields, comma separated. */
-    var watchDesign: String
-        get() = prefs.getString(KEY_WF_DESIGN, "clean") ?: "clean"
-        set(value) = prefs.edit().putString(KEY_WF_DESIGN, value).apply()
-
-    var watchColor: String
-        get() = prefs.getString(KEY_WF_COLOR, "blue") ?: "blue"
-        set(value) = prefs.edit().putString(KEY_WF_COLOR, value).apply()
-
-    var watchFields: String
-        get() = prefs.getString(KEY_WF_FIELDS, "battery,heart,stress,sleep") ?: "battery,heart,stress,sleep"
-        set(value) = prefs.edit().putString(KEY_WF_FIELDS, value).apply()
-
-    var watchDevice: String
-        get() = prefs.getString(KEY_WF_DEVICE, "fenix847mm") ?: "fenix847mm"
-        set(value) = prefs.edit().putString(KEY_WF_DEVICE, value).apply()
-
     /** The record of the last syncs, as the text [nl.tufein.openconnect.core.SyncLog] writes. */
     var syncLogText: String
         get() = prefs.getString(KEY_SYNC_LOG, "") ?: ""
@@ -322,10 +305,6 @@ class SettingsStore(
         private const val KEY_PALETTE = "theme_palette"
         private const val KEY_LETTERS = "theme_letters"
         private const val KEY_STYLE = "theme_style"
-        private const val KEY_WF_DESIGN = "wf_design"
-        private const val KEY_WF_COLOR = "wf_color"
-        private const val KEY_WF_FIELDS = "wf_fields"
-        private const val KEY_WF_DEVICE = "wf_device"
         private const val KEY_OURA_CLIENT = "oura_client_id"
         private const val KEY_OURA_SECRET = "oura_client_secret"
         private const val KEY_OURA_REDIRECT = "oura_redirect"

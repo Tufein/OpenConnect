@@ -39,34 +39,25 @@ interface WatchSource {
     fun archive(files: List<WatchFileInfo>): Int = 0
 
     /**
-     * Copies a Connect IQ app or watch face (`.prg`) into `GARMIN/Apps`, the way sideloading over a USB cable works.
-     * False when this link cannot write to the watch (only a USB cable can).
-     */
-    fun installApp(name: String, bytes: ByteArray): Boolean = false
-
-    /**
      * Copies a workout (`.fit`) into `GARMIN/NewFiles`, where a Garmin watch picks up new workouts and courses.
      * False when this link cannot write to the watch (only a USB cable can).
      */
     fun installWorkout(name: String, bytes: ByteArray): Boolean = false
 }
 
+/** Why a file could not be copied to the watch, in terms the screen can explain. */
+class WatchWriteException(val kind: Kind) : Exception(kind.name) {
+    enum class Kind { NO_USB_WATCH, CANNOT_WRITE, ALREADY_THERE }
+}
+
 /** A watch that lives in memory: for tests, and for trying the sync flow without a watch. Keys look like `Monitor/ABC.FIT`. */
 class InMemoryWatchSource(override val deviceName: String, val files: Map<String, ByteArray>) : WatchSource {
-    /** What was copied to `GARMIN/Apps`, by file name. */
-    val installed = LinkedHashMap<String, ByteArray>()
-
     /** What was copied to `GARMIN/NewFiles`, by file name. */
     val workouts = LinkedHashMap<String, ByteArray>()
 
     override fun installWorkout(name: String, bytes: ByteArray): Boolean {
-        if (name in workouts) throw WatchFaceException(WatchFaceException.Kind.ALREADY_THERE)
+        if (name in workouts) throw WatchWriteException(WatchWriteException.Kind.ALREADY_THERE)
         workouts[name] = bytes
-        return true
-    }
-
-    override fun installApp(name: String, bytes: ByteArray): Boolean {
-        installed[name] = bytes
         return true
     }
 

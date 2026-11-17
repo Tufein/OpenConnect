@@ -17,9 +17,9 @@ device that you build for (that is how they look on the real screen).
 1. The glance in the glance list (`Battery 72  HR 52  Stress 28`).
 2. The widget screen: ring, four rows and the Body Battery line.
 
-**Draft pictures** without the simulator: the Android app draws all faces with your numbers (*Settings, Watch face
-preview*); the UI test run writes screenshots of them to `app/build/screenshots`. Use them for the first look, but the
-store listing should show the real thing from the simulator.
+**Draft pictures** without the simulator: the Android app drew all faces with your numbers until v0.42.0 (the
+preview is gone since v0.43.0, use the Connect IQ simulator). Use the simulator for the pictures: the store listing should
+show the real thing.
 
 **Icon:** the launcher icon is `watch/resources/drawables/launcher_icon.png` (80 x 80 PNG). If the upload form asks for a
 store icon of another size, make that from the same drawing.
