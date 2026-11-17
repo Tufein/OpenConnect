@@ -49,6 +49,41 @@ SLEEP = {
     "overallSleepScore": {"value": 84, "qualifierKey": "GOOD"},
 }
 
+HRV = {
+    "summaryId": "h1",
+    "calendarDate": "2026-05-02",
+    "lastNightAvg": 62,
+    "weeklyAvg": 58,
+    "status": "BALANCED",
+}
+
+PULSE_OX = {
+    "summaryId": "px1",
+    "calendarDate": "2026-05-02",
+    "timeOffsetSpo2Values": {"0": 96, "7200": 94, "14400": -1, "21600": 98},
+}
+
+RESPIRATION = {
+    "summaryId": "r1",
+    "calendarDate": "2026-05-02",
+    "timeOffsetRespirationValues": {"0": 14.0, "7200": 16.0, "14400": 15.0},
+}
+
+BODY = {
+    "summaryId": "bc1",
+    "calendarDate": "2026-05-02",
+    "measurementTimeInSeconds": 1777705200,
+    "weightInGrams": 74200,
+    "bodyFatInPercent": 18.4,
+    "bodyMassIndex": 22.9,
+    "muscleMassInGrams": 31900,
+    "bodyWaterInPercent": 55.1,
+    "boneMassInGrams": 3200,
+    "visceralFatInPercent": 8.0,
+    "basalMetabolicRateInKilocalories": 1650,
+    "deviceName": "Index S2",
+}
+
 
 def test_map_activity_basic_fields():
     act = mapper.map_activity(ACTIVITY)
@@ -172,3 +207,85 @@ def test_map_stress_details_without_body_battery_gives_empty_patch():
         {"calendarDate": "2026-05-02", "timeOffsetStressLevelValues": {"0": 25}}
     )
     assert day == date(2026, 5, 2) and patch == {}
+
+
+def test_map_hrv():
+    day, patch = mapper.map_hrv(HRV)
+    assert day == date(2026, 5, 2)
+    assert patch == {
+        "hrv_last_night_ms": 62,
+        "hrv_weekly_avg_ms": 58,
+        "hrv_status": "BALANCED",
+    }
+
+
+def test_map_hrv_ignores_missing_and_negative_values():
+    day, patch = mapper.map_hrv(
+        {"calendarDate": "2026-05-02", "lastNightAvg": -1, "weeklyAvg": -2, "status": "  "}
+    )
+    assert day == date(2026, 5, 2) and patch == {}
+
+
+def test_map_hrv_requires_calendar_date():
+    with pytest.raises(mapper.MappingError):
+        mapper.map_hrv({"lastNightAvg": 62})
+
+
+def test_map_pulse_ox_averages_and_ignores_not_measured():
+    day, patch = mapper.map_pulse_ox(PULSE_OX)
+    assert day == date(2026, 5, 2)
+    assert patch == {"spo2_avg_pct": 96.0, "spo2_min_pct": 94.0}
+
+
+def test_map_pulse_ox_without_readings_is_an_empty_patch():
+    day, patch = mapper.map_pulse_ox({"calendarDate": "2026-05-02"})
+    assert day == date(2026, 5, 2) and patch == {}
+
+
+def test_map_respiration_summarises_the_series():
+    day, patch = mapper.map_respiration(RESPIRATION)
+    assert day == date(2026, 5, 2)
+    assert patch == {
+        "respiration_avg_brpm": 15.0,
+        "respiration_max_brpm": 16.0,
+        "respiration_min_brpm": 14.0,
+    }
+
+
+def test_map_respiration_prefers_garmins_own_values():
+    _, patch = mapper.map_respiration(
+        {
+            "calendarDate": "2026-05-02",
+            "avgRespirationValue": 14.5,
+            "highestRespirationValue": 18.0,
+            "lowestRespirationValue": 11.0,
+            "timeOffsetRespirationValues": {"0": 1.0, "60": 99.0},
+        }
+    )
+    assert patch == {
+        "respiration_avg_brpm": 14.5,
+        "respiration_max_brpm": 18.0,
+        "respiration_min_brpm": 11.0,
+    }
+
+
+def test_map_body_composition():
+    body = mapper.map_body_composition(BODY)
+    assert body.measured_at == datetime.fromtimestamp(1777705200, UTC)
+    assert body.date == date(2026, 5, 2)
+    assert body.weight_kg == 74.2 and body.muscle_mass_kg == 31.9
+    assert body.bone_mass_kg == 3.2 and body.body_fat_pct == 18.4
+    assert body.bmi == 22.9 and body.body_water_pct == 55.1
+    assert body.visceral_fat == 8.0 and body.basal_metabolic_rate_kcal == 1650
+    assert body.device_name == "Index S2"
+
+
+def test_map_body_composition_falls_back_to_noon_on_the_calendar_date():
+    body = mapper.map_body_composition({"calendarDate": "2026-05-02", "weightInGrams": 80000})
+    assert body.measured_at == datetime(2026, 5, 2, 12, tzinfo=UTC)
+    assert body.weight_kg == 80.0 and body.body_fat_pct is None
+
+
+def test_map_body_composition_requires_a_date():
+    with pytest.raises(mapper.MappingError):
+        mapper.map_body_composition({"weightInGrams": 74200})

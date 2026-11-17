@@ -96,6 +96,23 @@ class DailySummary(BaseModel):
     max_stress: int | None = None
     body_battery_high: int | None = None
     body_battery_low: int | None = None
+    # Nightly HRV, Pulse Ox and respiration arrive as their own Garmin summaries and are merged in.
+    hrv_last_night_ms: int | None = None
+    hrv_weekly_avg_ms: int | None = None
+    hrv_status: str | None = None  # Garmin's own word: BALANCED, UNBALANCED, LOW, HIGH
+    spo2_avg_pct: float | None = None
+    spo2_min_pct: float | None = None
+    respiration_avg_brpm: float | None = None  # breaths per minute
+    respiration_min_brpm: float | None = None
+    respiration_max_brpm: float | None = None
+
+    @property
+    def has_vitals(self) -> bool:
+        return (
+            self.hrv_last_night_ms is not None
+            or self.spo2_avg_pct is not None
+            or self.respiration_avg_brpm is not None
+        )
 
     @property
     def intensity_minutes(self) -> int:
@@ -115,6 +132,31 @@ class SleepSummary(BaseModel):
     @property
     def hours(self) -> float:
         return self.duration_s / 3600.0
+
+
+class BodyComposition(BaseModel):
+    """One measurement from a smart scale (Garmin Health API 'bodyComps').
+
+    Kept per measurement instant rather than per day: a scale can weigh more than once a day and
+    the history should not collapse into the last reading.
+    """
+
+    measured_at: datetime
+    weight_kg: float | None = None
+    body_fat_pct: float | None = None
+    bmi: float | None = None
+    muscle_mass_kg: float | None = None
+    body_water_pct: float | None = None
+    bone_mass_kg: float | None = None
+    visceral_fat: float | None = None
+    basal_metabolic_rate_kcal: int | None = None
+    device_name: str | None = None
+
+    _utc = field_validator("measured_at")(ensure_utc)
+
+    @property
+    def date(self) -> date:
+        return self.measured_at.date()
 
 
 class GeneratedReport(BaseModel):

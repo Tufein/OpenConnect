@@ -4,7 +4,7 @@ import pytest
 
 from openconnect.domain import GeneratedReport, Sport
 from openconnect.storage import Database, Repository
-from tests.factories import make_activity, make_daily, make_sleep
+from tests.factories import make_activity, make_body_composition, make_daily, make_sleep
 
 
 @pytest.fixture
@@ -87,6 +87,35 @@ def test_sleep_upsert_and_range(repo):
     repo.upsert_sleep(make_sleep(d0 + timedelta(days=1), hours=7))
     nights = repo.list_sleep(d0, d0 + timedelta(days=1))
     assert [round(n.hours) for n in nights] == [8, 7]
+
+
+def test_daily_summaries_keep_the_nightly_vitals(repo):
+    day = date(2026, 5, 2)
+    repo.upsert_daily(
+        make_daily(day, hrv_last_night_ms=62, hrv_status="BALANCED", spo2_avg_pct=96.0)
+    )
+    loaded = repo.get_daily(day)
+    assert (loaded.hrv_last_night_ms, loaded.hrv_status, loaded.spo2_avg_pct) == (
+        62,
+        "BALANCED",
+        96.0,
+    )
+    assert loaded.has_vitals
+    assert not make_daily(day).has_vitals
+
+
+def test_body_compositions_upsert_by_measurement_instant_and_range(repo):
+    base = datetime(2026, 5, 2, 7, 0, tzinfo=UTC)
+    assert repo.latest_body_composition() is None
+    repo.upsert_body_composition(make_body_composition(base))
+    repo.upsert_body_composition(make_body_composition(base, weight_kg=75.0))  # same instant
+    repo.upsert_body_composition(make_body_composition(base + timedelta(days=3), weight_kg=73.5))
+    measured = repo.list_body_compositions(date(2026, 5, 1), date(2026, 5, 5))
+    assert [b.weight_kg for b in measured] == [75.0, 73.5]
+    assert repo.latest_body_composition().weight_kg == 73.5
+    assert repo.list_body_compositions(date(2026, 4, 1), date(2026, 4, 30)) == []
+    # the range is by calendar day, inclusive on both ends
+    assert len(repo.list_body_compositions(date(2026, 5, 5), date(2026, 5, 5))) == 1
 
 
 def test_reports_return_latest_for_subject(repo):

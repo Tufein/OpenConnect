@@ -175,6 +175,56 @@ class FakeGarminSource:
         }
         return daily, sleep, stress
 
+    def _vitals(self, day: date, ran: bool) -> tuple[dict, dict, dict]:
+        rng = self._rng("vitals", day)
+        stamp = {"calendarDate": day.isoformat(), "startTimeOffsetInSeconds": 7200}
+        base = 52 + rng.randint(-8, 14) + (6 if ran else 0)
+        hrv = {
+            **stamp,
+            "summaryId": f"h{day:%Y%m%d}",
+            "lastNightAvg": base,
+            "weeklyAvg": base + rng.randint(-4, 4),
+            "status": "BALANCED" if base >= 45 else "LOW",
+        }
+        pulseox = {
+            **stamp,
+            "summaryId": f"px{day:%Y%m%d}",
+            "timeOffsetSpo2Values": {
+                str(i * 7200): round(96 + rng.uniform(-2.5, 2.5), 1) for i in range(12)
+            },
+        }
+        respiration = {
+            **stamp,
+            "summaryId": f"r{day:%Y%m%d}",
+            "timeOffsetRespirationValues": {
+                str(i * 7200): round(14 + rng.uniform(-2, 3) + (1 if ran else 0), 1)
+                for i in range(12)
+            },
+        }
+        return hrv, pulseox, respiration
+
+    def _body_composition(self, day: date) -> dict | None:
+        """A weigh-in on Monday and Thursday morning, drifting slowly downwards over the year."""
+        if day.weekday() not in (0, 3):
+            return None
+        rng = self._rng("body", day)
+        weeks_ago = (self.today.date() - day).days / 7
+        weight = 74.0 - 0.06 * weeks_ago + rng.uniform(-0.4, 0.4)
+        return {
+            "summaryId": f"bc{day:%Y%m%d}",
+            "calendarDate": day.isoformat(),
+            "measurementTimeInSeconds": int(datetime.combine(day, time(7), UTC).timestamp()),
+            "weightInGrams": round(weight * 1000),
+            "bodyFatInPercent": round(18.5 + rng.uniform(-1, 1), 1),
+            "bodyMassIndex": round(weight / 1.8**2, 1),
+            "muscleMassInGrams": round(weight * 0.43 * 1000),
+            "bodyWaterInPercent": round(55 + rng.uniform(-2, 2), 1),
+            "boneMassInGrams": 3200 + rng.randint(-100, 100),
+            "visceralFatInPercent": round(8 + rng.uniform(-1, 1), 1),
+            "basalMetabolicRateInKilocalories": 1650 + rng.randint(-40, 40),
+            "deviceName": "Index S2",
+        }
+
     # ---- GarminSource
 
     def fetch(self, start: datetime, end: datetime) -> dict[str, list[dict]]:
@@ -184,6 +234,10 @@ class FakeGarminSource:
             "dailies": [],
             "sleeps": [],
             "stressDetails": [],
+            "hrv": [],
+            "allDayRespiration": [],
+            "pulseox": [],
+            "bodyComps": [],
         }
         for day in self._day_range(start, end):
             made = self._activity(day)
@@ -198,4 +252,11 @@ class FakeGarminSource:
             payload["dailies"].append(daily)
             payload["sleeps"].append(sleep)
             payload["stressDetails"].append(stress)
+            hrv, pulseox, respiration = self._vitals(day, ran)
+            payload["hrv"].append(hrv)
+            payload["pulseox"].append(pulseox)
+            payload["allDayRespiration"].append(respiration)
+            body = self._body_composition(day)
+            if body is not None:
+                payload["bodyComps"].append(body)
         return payload

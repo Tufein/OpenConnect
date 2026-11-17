@@ -7,7 +7,15 @@ from openconnect.garmin.fake import FakeGarminSource
 from openconnect.garmin.ingest import ingest_payload
 from openconnect.services.sync import SyncService
 from openconnect.storage import Database, Repository
-from tests.unit.test_garmin_mapper import ACTIVITY, DAILY, SLEEP
+from tests.unit.test_garmin_mapper import (
+    ACTIVITY,
+    BODY,
+    DAILY,
+    HRV,
+    PULSE_OX,
+    RESPIRATION,
+    SLEEP,
+)
 
 NOW = datetime(2026, 5, 31, 12, 0, tzinfo=UTC)
 
@@ -63,6 +71,59 @@ def test_reingesting_dailies_keeps_previously_merged_body_battery(repo):
     ingest_payload(repo, {"dailies": [{**DAILY, "steps": 9000}]})
     day = repo.get_daily(date(2026, 5, 2))
     assert day.steps == 9000 and day.body_battery_high == 90
+
+
+@pytest.mark.parametrize("vitals_first", [True, False])
+def test_nightly_vitals_merge_into_the_daily_and_survive_a_later_daily(repo, vitals_first):
+    vitals = {"hrv": [HRV], "pulseox": [PULSE_OX], "allDayRespiration": [RESPIRATION]}
+    first, second = (vitals, {"dailies": [DAILY]})
+    if not vitals_first:
+        first, second = second, first
+    ingest_payload(repo, first)
+    ingest_payload(repo, second)
+    day = repo.get_daily(date(2026, 5, 2))
+    assert (day.hrv_last_night_ms, day.hrv_weekly_avg_ms, day.hrv_status) == (
+        62,
+        58,
+        "BALANCED",
+    )
+    assert (day.spo2_avg_pct, day.spo2_min_pct) == (96.0, 94.0)
+    assert (day.respiration_avg_brpm, day.respiration_max_brpm) == (15.0, 16.0)
+    assert day.steps == 8123 and day.has_vitals
+
+
+def test_reingesting_dailies_keeps_previously_merged_vitals(repo):
+    ingest_payload(repo, {"dailies": [DAILY], "hrv": [HRV]})
+    ingest_payload(repo, {"dailies": [{**DAILY, "steps": 9000}]})
+    day = repo.get_daily(date(2026, 5, 2))
+    assert day.steps == 9000 and day.hrv_last_night_ms == 62
+
+
+def test_vitals_counts_are_reported_separately(repo):
+    result = ingest_payload(
+        repo,
+        {
+            "hrv": [HRV, {"calendarDate": "2026-05-02"}],
+            "pulseox": [PULSE_OX],
+            "allDayRespiration": [RESPIRATION],
+        },
+    )
+    assert (result.hrv, result.pulseox, result.respiration) == (1, 1, 1)
+    assert result.errors == []
+
+
+def test_body_compositions_are_stored_per_measurement(repo):
+    result = ingest_payload(repo, {"bodyComps": [BODY, {**BODY, "weightInGrams": 74300}]})
+    assert result.body_comps == 2
+    stored = repo.list_body_compositions(date(2026, 5, 2), date(2026, 5, 2))
+    assert [b.weight_kg for b in stored] == [74.3]  # same instant: the later item wins
+    assert repo.latest_body_composition().device_name == "Index S2"
+
+
+def test_body_composition_without_a_date_is_collected_as_an_error(repo):
+    result = ingest_payload(repo, {"bodyComps": [{"summaryId": "bc-bad", "weightInGrams": 74200}]})
+    assert result.body_comps == 0 and len(result.errors) == 1
+    assert repo.latest_body_composition() is None
 
 
 def test_activity_details_supersede_summary_and_add_track(repo):

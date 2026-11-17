@@ -83,10 +83,10 @@ flow; Personal API support is the first item on the roadmap (§7).
 | Sleep: duration, stages, score | `sleeps` | ✅ | Sleep SpO2/respiration series planned |
 | Stress: average and maximum | `dailies` | ✅ | Stress time series planned |
 | Body Battery | `stressDetails` | ✅ | Daily high and low; time series planned |
-| HRV (nightly, status) | `hrv` | ⏳ | |
-| Respiration | `allDayRespiration` | ⏳ | |
-| Pulse Ox (SpO2) | `pulseox` | ⏳ | |
-| Body composition (weight, body fat, BMI) | `bodyComps` | ⏳ | |
+| HRV (nightly, status) | `hrv` | ✅ | Last night's average, the weekly average and Garmin's status, on *Health* |
+| Respiration | `allDayRespiration` | ✅ | Daily average, lowest and highest |
+| Pulse Ox (SpO2) | `pulseox` | ✅ | Daily average and lowest reading |
+| Body composition (weight, body fat, BMI) | `bodyComps` | ✅ | One row per weigh-in: weight, body fat, BMI, muscle, water, bone, visceral fat and BMR |
 | Blood pressure | `bloodPressures` | ⏳ | |
 | Skin temperature | `skinTemp` | ⏳ | |
 | Health snapshot | `healthSnapshot` | ⏳ | |
@@ -138,8 +138,8 @@ flow; Personal API support is the first item on the roadmap (§7).
 
 1. **Personal API support** (exchange the personal API key for access tokens at
    `personal.connectapi.garmin.com`, then pull) so a single user needs no business agreement.
-2. Remaining Health API data types: HRV, respiration, Pulse Ox, body composition, blood pressure,
-   skin temperature, user metrics, and the time series behind stress and Body Battery.
+2. Remaining Health API data types: blood pressure, skin temperature and user metrics, plus the time
+   series behind stress and Body Battery.
 3. Lap table, interactive charts and best efforts (fastest 1K/5K/10K) from tracks.
 4. Follow Ping/Pull `callbackURL`s; backfill UI.
 5. Training API (workouts and plans) and Courses API publishing for business-tier users.

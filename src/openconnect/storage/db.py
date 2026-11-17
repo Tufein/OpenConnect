@@ -28,6 +28,7 @@ CREATE INDEX IF NOT EXISTS idx_activities_sport ON activities (sport);
 
 CREATE TABLE IF NOT EXISTS daily_summaries (date TEXT PRIMARY KEY, data TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS sleep_summaries (date TEXT PRIMARY KEY, data TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS body_compositions (measured_at TEXT PRIMARY KEY, data TEXT NOT NULL);
 
 CREATE TABLE IF NOT EXISTS reports (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

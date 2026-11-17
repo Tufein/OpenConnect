@@ -17,7 +17,17 @@ def test_fake_source_is_deterministic():
 
 def test_fake_payload_has_all_kinds_and_maps_cleanly():
     payload = FakeGarminSource(seed=3, today=TODAY).fetch(TODAY - timedelta(days=28), TODAY)
-    assert set(payload) == {"activities", "activityDetails", "dailies", "sleeps", "stressDetails"}
+    assert set(payload) == {
+        "activities",
+        "activityDetails",
+        "dailies",
+        "sleeps",
+        "stressDetails",
+        "hrv",
+        "allDayRespiration",
+        "pulseox",
+        "bodyComps",
+    }
     assert len(payload["dailies"]) >= 27
     assert len(payload["sleeps"]) >= 27
     assert len(payload["activities"]) >= 8
@@ -30,6 +40,21 @@ def test_fake_payload_has_all_kinds_and_maps_cleanly():
     for item in payload["stressDetails"]:
         _, patch = mapper.map_stress_details(item)
         assert patch["body_battery_high"] > patch["body_battery_low"]
+    for item in payload["hrv"]:
+        _, patch = mapper.map_hrv(item)
+        assert patch["hrv_last_night_ms"] > 0 and patch["hrv_status"]
+    for item in payload["pulseox"]:
+        _, patch = mapper.map_pulse_ox(item)
+        assert 90 <= patch["spo2_avg_pct"] <= 100
+        assert patch["spo2_min_pct"] <= patch["spo2_avg_pct"]
+    for item in payload["allDayRespiration"]:
+        _, patch = mapper.map_respiration(item)
+        assert 8 <= patch["respiration_avg_brpm"] <= 25
+        assert patch["respiration_min_brpm"] <= patch["respiration_max_brpm"]
+    assert payload["bodyComps"]
+    for item in payload["bodyComps"]:
+        body = mapper.map_body_composition(item)
+        assert 60 < body.weight_kg < 90 and body.bmi and body.device_name
     sports = set()
     for item in payload["activityDetails"]:
         act = mapper.map_activity_details(item)

@@ -8,7 +8,7 @@ from fastapi.responses import RedirectResponse
 from starlette.concurrency import run_in_threadpool
 
 from openconnect.ai.provider import ReportError
-from openconnect.domain import Activity, GeneratedReport, Sport
+from openconnect.domain import Activity, DailySummary, GeneratedReport, Sport
 from openconnect.formats import SUPPORTED_FORMATS, FormatError, export_activity, import_activity
 from openconnect.garmin.client import GarminAPIError, GarminRateLimitError
 from openconnect.garmin.ingest import ingest_payload
@@ -132,6 +132,33 @@ def health_sleep(start: date, end: date, ctx: AppContext = Ctx):
     return [s.model_dump(mode="json") for s in ctx.repo.list_sleep(start, end)]
 
 
+def vitals_out(d: DailySummary) -> dict:
+    """The night-time vitals that live on a daily summary, in one compact shape."""
+    return {
+        "date": d.date.isoformat(),
+        "hrv_last_night_ms": d.hrv_last_night_ms,
+        "hrv_weekly_avg_ms": d.hrv_weekly_avg_ms,
+        "hrv_status": d.hrv_status,
+        "spo2_avg_pct": d.spo2_avg_pct,
+        "spo2_min_pct": d.spo2_min_pct,
+        "respiration_avg_brpm": d.respiration_avg_brpm,
+        "respiration_min_brpm": d.respiration_min_brpm,
+        "respiration_max_brpm": d.respiration_max_brpm,
+    }
+
+
+@router.get("/health/vitals")
+def health_vitals(start: date, end: date, ctx: AppContext = Ctx):
+    start, end = date_range(start, end)
+    return [vitals_out(d) for d in ctx.repo.list_daily(start, end) if d.has_vitals]
+
+
+@router.get("/health/body-composition")
+def health_body_composition(start: date, end: date, ctx: AppContext = Ctx):
+    start, end = date_range(start, end)
+    return [b.model_dump(mode="json") for b in ctx.repo.list_body_compositions(start, end)]
+
+
 @router.get("/dashboard/weekly")
 def dashboard_weekly(week: date | None = None, ctx: AppContext = Ctx):
     return ctx.dashboard.weekly_summary(week or ctx.clock().date()).model_dump(mode="json")
@@ -195,6 +222,10 @@ def run_sync(ctx: AppContext, days_back: int | None = None) -> dict:
         "activities": result.ingest.activities,
         "dailies": result.ingest.dailies,
         "sleeps": result.ingest.sleeps,
+        "hrv": result.ingest.hrv,
+        "respiration": result.ingest.respiration,
+        "pulseox": result.ingest.pulseox,
+        "body_comps": result.ingest.body_comps,
         "errors": result.ingest.errors,
         "skipped": getattr(ctx.source, "skipped", {}),
     }
@@ -273,6 +304,10 @@ async def garmin_webhook(request: Request, token: str | None = None, ctx: AppCon
             "activities": result.activities,
             "dailies": result.dailies,
             "sleeps": result.sleeps,
+            "hrv": result.hrv,
+            "respiration": result.respiration,
+            "pulseox": result.pulseox,
+            "body_comps": result.body_comps,
         },
         "ping_notifications": pings,
         "errors": result.errors,

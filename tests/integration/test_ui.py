@@ -54,6 +54,9 @@ def test_unknown_activity_page_is_a_404(app):
 def test_health_page(synced):
     html = synced.client.get("/health").text
     assert "Sleep" in html and "Stress" in html and "Body Battery" in html and "<svg" in html
+    for label in ("HRV", "Pulse Ox", "Respiration", "Body composition", "Index S2"):
+        assert label in html
+    assert "Vital signs" in html and "HRV status" in html
 
 
 def test_records_page_lists_records_achievements_and_devices(synced):

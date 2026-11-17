@@ -45,7 +45,8 @@ runs and is tested offline.
     Garmin-shaped payload and share this one ingest path**, so there is no second code path to
     test or to drift.
   * `fake.py` generates deterministic Garmin-shaped data (activities with GPS tracks, dailies,
-    sleep, Body Battery). `OPENCONNECT_GARMIN_MODE=mock` (the default) uses it.
+    sleep, Body Battery, HRV, Pulse Ox, respiration and weigh-ins).
+    `OPENCONNECT_GARMIN_MODE=mock` (the default) uses it.
 * `formats/` converts between files and the domain model. FIT export is a small hand-written
   encoder (header, CRC, `file_id`, `record`, `lap`, `session`, `activity`); tests validate it with
   the independent `fitdecode` parser. XML is parsed with `defusedxml`.

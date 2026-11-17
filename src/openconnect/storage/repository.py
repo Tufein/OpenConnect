@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 import zlib
-from datetime import date, datetime
+from datetime import UTC, date, datetime, time, timedelta
 
 from openconnect.domain import (
     Activity,
+    BodyComposition,
     DailySummary,
     GeneratedReport,
     SleepSummary,
@@ -188,6 +189,35 @@ class Repository:
                 (start.isoformat(), end.isoformat()),
             ).fetchall()
         return [SleepSummary.model_validate_json(r["data"]) for r in rows]
+
+    # ---- body composition
+
+    def upsert_body_composition(self, b: BodyComposition) -> None:
+        with self.db.transaction() as conn:
+            conn.execute(
+                "INSERT INTO body_compositions (measured_at, data) VALUES (?, ?) "
+                "ON CONFLICT(measured_at) DO UPDATE SET data = excluded.data",
+                (b.measured_at.isoformat(), b.model_dump_json()),
+            )
+
+    def list_body_compositions(self, start: date, end: date) -> list[BodyComposition]:
+        """Inclusive date range, oldest first."""
+        lo = datetime.combine(start, time.min, UTC).isoformat()
+        hi = datetime.combine(end + timedelta(days=1), time.min, UTC).isoformat()
+        with self.db.transaction() as conn:
+            rows = conn.execute(
+                "SELECT data FROM body_compositions "
+                "WHERE measured_at >= ? AND measured_at < ? ORDER BY measured_at",
+                (lo, hi),
+            ).fetchall()
+        return [BodyComposition.model_validate_json(r["data"]) for r in rows]
+
+    def latest_body_composition(self) -> BodyComposition | None:
+        with self.db.transaction() as conn:
+            row = conn.execute(
+                "SELECT data FROM body_compositions ORDER BY measured_at DESC LIMIT 1"
+            ).fetchone()
+        return BodyComposition.model_validate_json(row["data"]) if row else None
 
     # ---- reports
 

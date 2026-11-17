@@ -6,11 +6,12 @@ partial or older payloads still import; only the identifying fields are required
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, time
 from typing import Any
 
 from openconnect.domain import (
     Activity,
+    BodyComposition,
     DailySummary,
     SleepSummary,
     Sport,
@@ -56,6 +57,30 @@ def _ts(seconds: int | float) -> datetime:
 
 def _int(value: Any) -> int | None:
     return None if value is None else int(round(float(value)))
+
+
+def _float(value: Any) -> float | None:
+    return None if value is None else float(value)
+
+
+def _decimal(value: Any, digits: int = 1) -> float | None:
+    number = _float(value)
+    return None if number is None else round(number, digits)
+
+
+def _kilograms(grams: Any) -> float | None:
+    value = _float(grams)
+    return round(value / 1000, 2) if value else None
+
+
+def _readings(raw: Any) -> list[float]:
+    """Numbers from Garmin's offset->value maps (or plain lists), minus 'not measured' markers."""
+    values = raw.values() if isinstance(raw, dict) else raw if isinstance(raw, list) else []
+    return [
+        float(value)
+        for value in values
+        if isinstance(value, int | float) and not isinstance(value, bool) and value >= 0
+    ]
 
 
 def _non_negative(value: Any) -> int | None:
@@ -168,3 +193,66 @@ def map_stress_details(item: dict) -> tuple[date, dict[str, int]]:
         else {}
     )
     return _calendar_date(item), patch
+
+
+def map_hrv(item: dict) -> tuple[date, dict[str, Any]]:
+    """Nightly HRV: ``lastNightAvg`` and ``weeklyAvg`` in ms, with Garmin's status."""
+    patch: dict[str, Any] = {}
+    last_night = _non_negative(item.get("lastNightAvg"))
+    if last_night is not None:
+        patch["hrv_last_night_ms"] = last_night
+    weekly = _non_negative(item.get("weeklyAvg"))
+    if weekly is not None:
+        patch["hrv_weekly_avg_ms"] = weekly
+    status = item.get("status")
+    if isinstance(status, str) and status.strip():
+        patch["hrv_status"] = status.strip()
+    return _calendar_date(item), patch
+
+
+def map_pulse_ox(item: dict) -> tuple[date, dict[str, Any]]:
+    """Pulse Ox arrives as an offset->SpO2 series; keep its average and lowest reading."""
+    values = _readings(item.get("timeOffsetSpo2Values") or item.get("spo2Values"))
+    patch: dict[str, Any] = {}
+    if values:
+        patch["spo2_avg_pct"] = round(sum(values) / len(values), 1)
+        patch["spo2_min_pct"] = round(min(values), 1)
+    return _calendar_date(item), patch
+
+
+def map_respiration(item: dict) -> tuple[date, dict[str, Any]]:
+    """All-day respiration: prefer Garmin's own values, else summarise the offset->value series."""
+    values = _readings(item.get("timeOffsetRespirationValues") or item.get("respirationValues"))
+    average = _decimal(item.get("avgRespirationValue"))
+    highest = _decimal(item.get("highestRespirationValue"))
+    lowest = _decimal(item.get("lowestRespirationValue"))
+    if values:
+        average = average or round(sum(values) / len(values), 1)
+        highest = highest or round(max(values), 1)
+        lowest = lowest or round(min(values), 1)
+    patch = {
+        "respiration_avg_brpm": average,
+        "respiration_max_brpm": highest,
+        "respiration_min_brpm": lowest,
+    }
+    return _calendar_date(item), {k: v for k, v in patch.items() if v is not None}
+
+
+def map_body_composition(item: dict) -> BodyComposition:
+    """A smart-scale measurement. Garmin sends masses in grams and the rest as percentages."""
+    stamp = item.get("measurementTimeInSeconds") or item.get("startTimeInSeconds")
+    measured_at = (
+        _ts(stamp) if stamp is not None else datetime.combine(_calendar_date(item), time(12), UTC)
+    )
+    return BodyComposition(
+        measured_at=measured_at,
+        weight_kg=_kilograms(item.get("weightInGrams")),
+        body_fat_pct=_decimal(item.get("bodyFatInPercent")),
+        bmi=_decimal(item.get("bodyMassIndex")),
+        muscle_mass_kg=_kilograms(item.get("muscleMassInGrams")),
+        body_water_pct=_decimal(item.get("bodyWaterInPercent")),
+        bone_mass_kg=_kilograms(item.get("boneMassInGrams")),
+        visceral_fat=_decimal(item.get("visceralFatInPercent")),
+        basal_metabolic_rate_kcal=_non_negative(item.get("basalMetabolicRateInKilocalories")),
+        device_name=item.get("deviceName"),
+    )

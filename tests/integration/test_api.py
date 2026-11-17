@@ -6,7 +6,7 @@ from tests.fakes import FakeAnthropic
 
 
 def test_healthz(app):
-    assert app.client.get("/healthz").json() == {"status": "ok", "version": "0.44.0"}
+    assert app.client.get("/healthz").json() == {"status": "ok", "version": "0.45.0"}
 
 
 # --------------------------------------------------------------------- sync and activities
@@ -15,6 +15,8 @@ def test_healthz(app):
 def test_sync_in_mock_mode_populates_everything(app):
     body = app.client.post("/api/sync", params={"days_back": 28}).json()
     assert body["activities"] >= 8 and body["dailies"] >= 27 and body["sleeps"] >= 27
+    assert body["hrv"] >= 27 and body["pulseox"] >= 27 and body["respiration"] >= 27
+    assert body["body_comps"] >= 6
     assert body["errors"] == []
     listing = app.client.get("/api/activities").json()
     assert listing["total"] == body["activities"]
@@ -117,6 +119,32 @@ def test_health_endpoints(synced):
     )
 
 
+def test_health_vitals_and_body_composition_endpoints(synced):
+    c = synced.client
+    vitals = c.get("/api/health/vitals", params={"start": "2026-05-20", "end": "2026-05-25"}).json()
+    assert [v["date"] for v in vitals] == [f"2026-05-{d}" for d in range(20, 26)]
+    first = vitals[0]
+    assert first["hrv_last_night_ms"] > 0 and first["hrv_weekly_avg_ms"] > 0
+    assert first["hrv_status"] in {"BALANCED", "LOW"}
+    assert 90 <= first["spo2_avg_pct"] <= 100
+    assert first["spo2_min_pct"] <= first["spo2_avg_pct"]
+    assert 8 <= first["respiration_avg_brpm"] <= 25
+    assert first["respiration_min_brpm"] <= first["respiration_max_brpm"]
+
+    body = c.get(
+        "/api/health/body-composition", params={"start": "2026-05-01", "end": "2026-05-31"}
+    ).json()
+    assert len(body) >= 6
+    assert body[0]["measured_at"] < body[-1]["measured_at"]
+    assert 60 < body[-1]["weight_kg"] < 90 and body[-1]["device_name"] == "Index S2"
+    assert (
+        c.get(
+            "/api/health/body-composition", params={"start": "2026-05-31", "end": "2026-05-01"}
+        ).status_code
+        == 422
+    )
+
+
 def test_dashboard_endpoints(synced):
     c = synced.client
     week = c.get("/api/dashboard/weekly", params={"week": "2026-05-20"}).json()
@@ -124,6 +152,8 @@ def test_dashboard_endpoints(synced):
     overview = c.get("/api/dashboard/overview").json()
     assert overview["today"]["date"] == "2026-05-31" and len(overview["trend"]) == 30
     assert overview["this_week"]["week_start"] == "2026-05-25"
+    assert overview["trend"][-1]["hrv_last_night_ms"] > 0
+    assert overview["this_week"]["avg_spo2_pct"] > 90
 
 
 def test_records_achievements_devices(synced):
@@ -187,11 +217,69 @@ PUSH = {
 def test_webhook_ingests_pushed_summaries(app):
     response = app.client.post("/api/garmin/webhook", json=PUSH)
     assert response.status_code == 200
-    assert response.json()["ingested"] == {"activities": 0, "dailies": 1, "sleeps": 1}
+    assert response.json()["ingested"] == {
+        "activities": 0,
+        "dailies": 1,
+        "sleeps": 1,
+        "hrv": 0,
+        "respiration": 0,
+        "pulseox": 0,
+        "body_comps": 0,
+    }
     days = app.client.get(
         "/api/health/daily", params={"start": "2026-05-30", "end": "2026-05-30"}
     ).json()
     assert days[0]["steps"] == 4321
+
+
+def test_webhook_ingests_pushed_vitals_and_weigh_ins(app):
+    response = app.client.post(
+        "/api/garmin/webhook",
+        json={
+            "hrv": [
+                {
+                    "summaryId": "h1",
+                    "calendarDate": "2026-05-30",
+                    "lastNightAvg": 61,
+                    "weeklyAvg": 57,
+                    "status": "BALANCED",
+                }
+            ],
+            "pulseox": [
+                {
+                    "summaryId": "px1",
+                    "calendarDate": "2026-05-30",
+                    "timeOffsetSpo2Values": {"0": 96, "3600": 94},
+                }
+            ],
+            "allDayRespiration": [
+                {
+                    "summaryId": "r1",
+                    "calendarDate": "2026-05-30",
+                    "timeOffsetRespirationValues": {"0": 14, "3600": 16},
+                }
+            ],
+            "bodyComps": [
+                {
+                    "summaryId": "bc1",
+                    "calendarDate": "2026-05-30",
+                    "weightInGrams": 74000,
+                    "bodyFatInPercent": 18.0,
+                }
+            ],
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["ingested"]["body_comps"] == 1
+    assert response.json()["ingested"]["hrv"] == 1
+    vitals = app.client.get(
+        "/api/health/vitals", params={"start": "2026-05-30", "end": "2026-05-30"}
+    ).json()
+    assert vitals[0]["hrv_last_night_ms"] == 61 and vitals[0]["spo2_min_pct"] == 94.0
+    body = app.client.get(
+        "/api/health/body-composition", params={"start": "2026-05-30", "end": "2026-05-30"}
+    ).json()
+    assert body[0]["weight_kg"] == 74.0 and body[0]["body_fat_pct"] == 18.0
 
 
 def test_webhook_requires_the_token_when_configured(make_app):

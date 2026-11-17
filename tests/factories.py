@@ -5,7 +5,14 @@ from __future__ import annotations
 import math
 from datetime import UTC, date, datetime, timedelta
 
-from openconnect.domain import Activity, DailySummary, SleepSummary, Sport, TrackPoint
+from openconnect.domain import (
+    Activity,
+    BodyComposition,
+    DailySummary,
+    SleepSummary,
+    Sport,
+    TrackPoint,
+)
 
 
 def make_track(
@@ -93,3 +100,20 @@ def make_sleep(day: date, hours: float = 7.5, score: int | None = 80) -> SleepSu
         awake_s=int(total * 0.08),
         score=score,
     )
+
+
+def make_body_composition(measured_at: datetime | None = None, **overrides) -> BodyComposition:
+    data = dict(
+        measured_at=measured_at or datetime(2026, 5, 2, 7, 0, tzinfo=UTC),
+        weight_kg=74.2,
+        body_fat_pct=18.4,
+        bmi=22.9,
+        muscle_mass_kg=31.9,
+        body_water_pct=55.1,
+        bone_mass_kg=3.2,
+        visceral_fat=8.0,
+        basal_metabolic_rate_kcal=1650,
+        device_name="Index S2",
+    )
+    data.update(overrides)
+    return BodyComposition(**data)

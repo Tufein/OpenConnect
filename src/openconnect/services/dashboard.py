@@ -39,6 +39,9 @@ class WeeklySummary(BaseModel):
     avg_body_battery_high: float | None = None
     avg_sleep_hours: float | None = None
     avg_sleep_score: float | None = None
+    avg_hrv_ms: float | None = None
+    avg_spo2_pct: float | None = None
+    avg_respiration_brpm: float | None = None
 
 
 def _mean(values: list[float | int]) -> float | None:
@@ -86,6 +89,13 @@ class DashboardService:
         summary.avg_body_battery_high = _mean(
             [d.body_battery_high for d in dailies if d.body_battery_high is not None]
         )
+        summary.avg_hrv_ms = _mean([d.hrv_last_night_ms for d in dailies if d.hrv_last_night_ms])
+        summary.avg_spo2_pct = _mean(
+            [d.spo2_avg_pct for d in dailies if d.spo2_avg_pct is not None]
+        )
+        summary.avg_respiration_brpm = _mean(
+            [d.respiration_avg_brpm for d in dailies if d.respiration_avg_brpm is not None]
+        )
         sleeps = self.repo.list_sleep(start, end)
         summary.avg_sleep_hours = _mean([s.hours for s in sleeps if s.duration_s])
         summary.avg_sleep_score = _mean([s.score for s in sleeps if s.score is not None])
@@ -112,6 +122,10 @@ class DashboardService:
                     "resting_hr": d.resting_hr if d else None,
                     "avg_stress": d.avg_stress if d else None,
                     "body_battery_high": d.body_battery_high if d else None,
+                    "hrv_last_night_ms": d.hrv_last_night_ms if d else None,
+                    "hrv_status": d.hrv_status if d else None,
+                    "spo2_avg_pct": d.spo2_avg_pct if d else None,
+                    "respiration_avg_brpm": d.respiration_avg_brpm if d else None,
                     "sleep_hours": round(s.hours, 2) if s and s.duration_s else None,
                     "sleep_score": s.score if s else None,
                     "distance_m": distance.get(day, 0.0),

@@ -115,6 +115,9 @@ def health(request: Request, ctx: AppContext = Ctx):
     today = ctx.clock().date()
     trend = ctx.dashboard.trend_series(today - timedelta(days=29), today)
     sleeps = ctx.repo.list_sleep(today - timedelta(days=13), today)
+    body = ctx.repo.list_body_compositions(today - timedelta(days=89), today)
+    dailies = ctx.repo.list_daily(today - timedelta(days=29), today)
+    vitals = [d for d in reversed(dailies) if d.has_vitals]
     return render(
         request,
         "health.html",
@@ -126,6 +129,14 @@ def health(request: Request, ctx: AppContext = Ctx):
         sleep_hours=[r["sleep_hours"] for r in trend],
         sleep_bars=[(s.date.strftime("%d"), s.hours) for s in sleeps],
         sleeps=list(reversed(sleeps)),
+        hrv=[r["hrv_last_night_ms"] for r in trend],
+        spo2=[r["spo2_avg_pct"] for r in trend],
+        respiration=[r["respiration_avg_brpm"] for r in trend],
+        vitals=vitals,
+        latest_vitals=vitals[0] if vitals else None,
+        body=list(reversed(body)),
+        weight=[b.weight_kg for b in body],
+        latest_body=body[-1] if body else None,
     )
 
 

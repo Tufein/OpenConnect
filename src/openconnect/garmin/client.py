@@ -13,7 +13,17 @@ from typing import Protocol
 
 import httpx
 
-KINDS = ("activities", "activityDetails", "dailies", "sleeps", "stressDetails")
+KINDS = (
+    "activities",
+    "activityDetails",
+    "dailies",
+    "sleeps",
+    "stressDetails",
+    "hrv",
+    "allDayRespiration",
+    "pulseox",
+    "bodyComps",
+)
 DEFAULT_BASE_URL = "https://apis.garmin.com"
 DEFAULT_API_PREFIX = "/wellness-api/rest"
 BACKFILL_MAX_DAYS = 90

@@ -5,12 +5,18 @@ import httpx
 import pytest
 
 from openconnect.garmin.client import (
+    KINDS,
     GarminAPIError,
     GarminRateLimitError,
     HttpGarminSource,
 )
 
 T0 = datetime(2026, 5, 1, 0, 0, tzinfo=UTC)
+
+
+def test_default_kinds_cover_the_health_data_types():
+    assert {"dailies", "sleeps", "stressDetails"} <= set(KINDS)
+    assert {"hrv", "allDayRespiration", "pulseox", "bodyComps"} <= set(KINDS)
 
 
 class Tokens:

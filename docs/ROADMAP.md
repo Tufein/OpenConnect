@@ -108,6 +108,8 @@ Van [APP-VERGELIJKING.md](APP-VERGELIJKING.md) (8 apps naast OpenConnect) wordt 
 
 - **v0.44.0** ✅ Inzichten per dag (`DayInsights.kt`, tabblad Dag) met een keuze uit Garmin of Oura Ring in uitklaplijsten, en datums onder alle grafieken (`AxisTicks.kt`).
 
+- **v0.45.0** ✅ de server leest nu ook nachtelijke HRV, Pulse Ox, ademhaling en lichaamssamenstelling (`domain.py`, `garmin/mapper.py`, `web/templates/health.html`), per dag samengevoegd met de bestaande daggegevens en met twee nieuwe JSON-endpoints (`/api/health/vitals` en `/api/health/body-composition`). ❓ Nog niet met een echt Garmin-account opgehaald; de demo-bron maakt ze alle vier.
+
 ## Later 💡
 
 - Het nieuwere Garmin-protobuf-synchronisatieprotocol voor horloges die de klassieke mapsynchronisatie niet meer gebruiken.

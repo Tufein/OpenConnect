@@ -9,6 +9,27 @@
   {{ stat("Sleep", "", "hours per night", sleep_hours) }}
   {{ stat("Body Battery", "", "daily high", battery) }}
   {{ stat("Stress", "", "daily average", stress) }}
+  {{ stat("HRV", latest_vitals.hrv_last_night_ms if latest_vitals and latest_vitals.hrv_last_night_ms is not none else "–", "ms, last night", hrv) }}
+  {{ stat("Pulse Ox", latest_vitals.spo2_avg_pct if latest_vitals and latest_vitals.spo2_avg_pct is not none else "–", "% SpO2, daily average", spo2) }}
+  {{ stat("Respiration", latest_vitals.respiration_avg_brpm if latest_vitals and latest_vitals.respiration_avg_brpm is not none else "–", "breaths/min, daily average", respiration) }}
+  {{ stat("Weight", latest_body.weight_kg if latest_body and latest_body.weight_kg is not none else "–", "kg, last weigh-in", weight) }}
+</section>
+<section class="card">
+  <h2>Vital signs, last 30 days</h2>
+  <table>
+    <thead><tr><th>Date</th><th>HRV overnight</th><th>HRV status</th><th>SpO2</th><th>Respiration</th></tr></thead>
+    <tbody>
+    {% for r in vitals %}
+      <tr><td>{{ r.date }}</td>
+          <td>{% if r.hrv_last_night_ms is not none %}{{ r.hrv_last_night_ms }} ms{% else %}–{% endif %}</td>
+          <td>{{ r.hrv_status|title if r.hrv_status else "–" }}</td>
+          <td>{% if r.spo2_avg_pct is not none %}{{ r.spo2_avg_pct }}%{% else %}–{% endif %}</td>
+          <td>{% if r.respiration_avg_brpm is not none %}{{ r.respiration_avg_brpm }} br/min{% else %}–{% endif %}</td></tr>
+    {% else %}
+      <tr><td colspan="5" class="muted">No HRV, Pulse Ox or respiration data yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
 </section>
 <section class="card">
   <h2>Sleep, last 14 nights</h2>
@@ -25,6 +46,29 @@
     {% endfor %}
     </tbody>
   </table>
+</section>
+<section class="card">
+  <h2>Body composition, last 90 days</h2>
+  {% if latest_body %}
+    <p class="muted">Last weigh-in {{ latest_body.measured_at.strftime("%Y-%m-%d %H:%M") }} UTC
+      {% if latest_body.device_name %}on {{ latest_body.device_name }}{% endif %}.</p>
+    <table>
+      <thead><tr><th>Measured</th><th>Weight</th><th>Body fat</th><th>BMI</th><th>Muscle</th><th>Water</th><th>Visceral fat</th></tr></thead>
+      <tbody>
+      {% for b in body %}
+        <tr><td>{{ b.measured_at.strftime("%Y-%m-%d %H:%M") }}</td>
+            <td>{% if b.weight_kg is not none %}{{ b.weight_kg }} kg{% else %}–{% endif %}</td>
+            <td>{% if b.body_fat_pct is not none %}{{ b.body_fat_pct }}%{% else %}–{% endif %}</td>
+            <td>{{ b.bmi if b.bmi is not none else "–" }}</td>
+            <td>{% if b.muscle_mass_kg is not none %}{{ b.muscle_mass_kg }} kg{% else %}–{% endif %}</td>
+            <td>{% if b.body_water_pct is not none %}{{ b.body_water_pct }}%{% else %}–{% endif %}</td>
+            <td>{{ b.visceral_fat if b.visceral_fat is not none else "–" }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No weigh-ins yet. Garmin sends these when a scale syncs with your account.</p>
+  {% endif %}
 </section>
 <section class="card">
   <h2>Daily summaries</h2>
