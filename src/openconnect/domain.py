@@ -105,6 +105,11 @@ class DailySummary(BaseModel):
     respiration_avg_brpm: float | None = None  # breaths per minute
     respiration_min_brpm: float | None = None
     respiration_max_brpm: float | None = None
+    systolic_bp: int | None = None
+    diastolic_bp: int | None = None
+    skin_temp_c: float | None = None
+    vo2max: float | None = None
+    fitness_age: int | None = None
 
     @property
     def has_vitals(self) -> bool:

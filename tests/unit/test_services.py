@@ -2,10 +2,10 @@ from datetime import UTC, date, datetime, timedelta
 
 import pytest
 
-from openconnect.domain import Sport
+from openconnect.domain import Sport, TrackPoint
 from openconnect.services.achievements import compute_achievements
 from openconnect.services.dashboard import DashboardService, week_start
-from openconnect.services.records import personal_records
+from openconnect.services.records import activity_splits, best_efforts, personal_records
 from openconnect.storage import Database, Repository
 from tests.factories import make_activity, make_daily, make_sleep
 
@@ -91,6 +91,22 @@ def test_weekly_summary_for_an_empty_week(repo):
     w = DashboardService(repo).weekly_summary(MONDAY)
     assert w.activity_count == 0 and w.total_distance_m == 0 and w.by_sport == {}
     assert w.avg_steps is None and w.avg_sleep_hours is None and w.days_with_data == 0
+
+
+def test_best_efforts_and_splits_come_from_the_track(repo):
+    base = datetime(2026, 5, 2, 7, 0, tzinfo=UTC)
+    track = [TrackPoint(time=base + timedelta(seconds=i), distance_m=100.0 * i) for i in range(101)]
+    activity = make_activity(track=track, distance_m=10000.0, duration_s=100.0)
+    repo.upsert_activity(activity)
+
+    efforts = best_efforts(repo)
+    assert efforts["1000"]["seconds_s"] == 10
+    assert efforts["5000"]["seconds_s"] == 50
+    assert efforts["10000"]["seconds_s"] == 100
+    assert efforts["1000"]["activity_id"] == activity.id
+    assert [s["seconds_s"] for s in activity_splits(activity)][:3] == [10, 10, 10]
+    assert len(activity_splits(activity)) == 10
+    assert best_efforts(repo, Sport.CYCLING) == {}
 
 
 def test_weekly_summary_normalises_any_day_to_its_monday(repo):

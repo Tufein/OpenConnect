@@ -87,10 +87,10 @@ flow; Personal API support is the first item on the roadmap (§7).
 | Respiration | `allDayRespiration` | ✅ | Daily average, lowest and highest |
 | Pulse Ox (SpO2) | `pulseox` | ✅ | Daily average and lowest reading |
 | Body composition (weight, body fat, BMI) | `bodyComps` | ✅ | One row per weigh-in: weight, body fat, BMI, muscle, water, bone, visceral fat and BMR |
-| Blood pressure | `bloodPressures` | ⏳ | |
-| Skin temperature | `skinTemp` | ⏳ | |
+| Blood pressure | `bloodPressures` | ✅ | Systolic and diastolic; field names from docs, **verify** against a real account |
+| Skin temperature | `skinTemp` | ✅ | Celsius; field names from docs, **verify** against a real account |
 | Health snapshot | `healthSnapshot` | ⏳ | |
-| VO2 max, fitness age | `userMetrics` | ⏳ | |
+| VO2 max, fitness age | `userMetrics` | ✅ | From Garmin's own values; field names from docs, **verify** against a real account |
 | Women's health (cycle, pregnancy) | Women's Health API | ⏳ | Highly sensitive; will be opt-in |
 | Training Readiness, Training Status, Endurance/Hill score, Race predictor | not exposed | 🚫 | |
 | Hydration, nutrition | not exposed | 🚫 | |
@@ -136,10 +136,11 @@ flow; Personal API support is the first item on the roadmap (§7).
 
 ## 7. Roadmap
 
-1. **Personal API support** (exchange the personal API key for access tokens at
-   `personal.connectapi.garmin.com`, then pull) so a single user needs no business agreement.
-2. Remaining Health API data types: blood pressure, skin temperature and user metrics, plus the time
-   series behind stress and Body Battery.
+1. ~~**Personal API support** (exchange the personal API key for access tokens at
+   `personal.connectapi.garmin.com`, then pull) so a single user needs no business agreement.~~ ✅ in the server:
+   `OPENCONNECT_GARMIN_MODE=personal` + `GARMIN_PERSONAL_KEY`. Health data only; activity files still to come.
+2. The health snapshot and epoch summaries. Blood pressure, skin temperature and user metrics are read, but their
+   field names still need a check against a real account; the stress, Body Battery and sleep series are now stored.
 3. Lap table, interactive charts and best efforts (fastest 1K/5K/10K) from tracks.
 4. Follow Ping/Pull `callbackURL`s; backfill UI.
 5. Training API (workouts and plans) and Courses API publishing for business-tier users.

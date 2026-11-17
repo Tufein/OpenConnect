@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlparse
 
-GARMIN_MODES = ("mock", "live")
+GARMIN_MODES = ("mock", "live", "personal")
 AI_PROVIDERS = ("auto", "anthropic", "template")
 AI_EFFORTS = ("low", "medium", "high", "xhigh", "max")
 
@@ -35,6 +35,7 @@ class Settings:
     garmin_authorize_url: str | None = None
     garmin_token_url: str | None = None
     garmin_api_base_url: str | None = None
+    garmin_personal_key: str | None = None
     webhook_token: str | None = None
     ai_provider: str = "auto"
     ai_model: str = "claude-opus-5-5"
@@ -78,6 +79,7 @@ class Settings:
             garmin_authorize_url=get("GARMIN_AUTHORIZE_URL"),
             garmin_token_url=get("GARMIN_TOKEN_URL"),
             garmin_api_base_url=get("GARMIN_API_BASE_URL"),
+            garmin_personal_key=get("GARMIN_PERSONAL_KEY"),
             webhook_token=get("OPENCONNECT_WEBHOOK_TOKEN"),
             ai_provider=_choice(env, "OPENCONNECT_AI_PROVIDER", AI_PROVIDERS, "auto"),
             ai_model=env.get("OPENCONNECT_AI_MODEL") or "claude-opus-5-5",
@@ -94,5 +96,10 @@ class Settings:
         ):
             raise ConfigError(
                 "OPENCONNECT_GARMIN_MODE=live requires GARMIN_CLIENT_ID and GARMIN_CLIENT_SECRET"
+            )
+        if settings.garmin_mode == "personal" and not settings.garmin_personal_key:
+            raise ConfigError(
+                "OPENCONNECT_GARMIN_MODE=personal requires GARMIN_PERSONAL_KEY (your key from "
+                "the Garmin Connect website)"
             )
         return settings

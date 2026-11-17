@@ -23,7 +23,25 @@ DAILY_PATCH_FIELDS = (
     "respiration_avg_brpm",
     "respiration_min_brpm",
     "respiration_max_brpm",
+    "systolic_bp",
+    "diastolic_bp",
+    "skin_temp_c",
+    "vo2max",
+    "fitness_age",
 )
+
+# Offset->value series carried by summaries we already store; kept as raw series for charts.
+SERIES_KINDS = {
+    "dailies": {"timeOffsetHeartRateValues": "heart_rate"},
+    "stressDetails": {
+        "timeOffsetStressLevelValues": "stress",
+        "timeOffsetBodyBatteryValues": "body_battery",
+    },
+    "sleeps": {
+        "timeOffsetSpo2Values": "sleep_spo2",
+        "timeOffsetRespirationValues": "sleep_respiration",
+    },
+}
 
 
 @dataclass
@@ -35,6 +53,7 @@ class IngestResult:
     respiration: int = 0
     pulseox: int = 0
     body_comps: int = 0
+    extra_metrics: int = 0
     errors: list[str] = field(default_factory=list)
 
     def __iadd__(self, other: IngestResult) -> IngestResult:
@@ -45,6 +64,7 @@ class IngestResult:
         self.respiration += other.respiration
         self.pulseox += other.pulseox
         self.body_comps += other.body_comps
+        self.extra_metrics += other.extra_metrics
         self.errors += other.errors
         return self
 
@@ -116,11 +136,26 @@ def ingest_payload(repo: Repository, payload: dict) -> IngestResult:
         payload.get("pulseox"),
         lambda i: apply_day_patch(repo, *mapper.map_pulse_ox(i)),
     )
+    for kind in ("bloodPressures", "skinTemp", "userMetrics"):
+        result.extra_metrics += guarded(
+            kind,
+            payload.get(kind),
+            lambda i: apply_day_patch(repo, *mapper.map_extra_metrics(i)),
+        )
     result.body_comps = guarded(
         "bodyComps",
         payload.get("bodyComps"),
         lambda i: _store_body_composition(repo, i),
     )
+
+    for kind, fields in SERIES_KINDS.items():
+        for item in payload.get(kind) or []:
+            try:
+                day, series = mapper.map_series(item, fields)
+            except (mapper.MappingError, TypeError, ValueError):
+                continue  # the main mapper already reports the malformed item
+            for name, values in series.items():
+                repo.upsert_series(day, name, values)
 
     details = payload.get("activityDetails") or []
     detailed_ids = set()

@@ -167,6 +167,9 @@ class FakeGarminSource:
         stress = {
             **stamp,
             "summaryId": f"st{day:%Y%m%d}",
+            "timeOffsetStressLevelValues": {
+                str(i * 3600): 15 + rng.randint(0, 35) for i in range(8)
+            },
             "timeOffsetBodyBatteryValues": {
                 str(i * 3600): round(high - (high - low) * i / 7 + rng.randint(-2, 2))
                 for i in range(8)
@@ -238,6 +241,9 @@ class FakeGarminSource:
             "allDayRespiration": [],
             "pulseox": [],
             "bodyComps": [],
+            "bloodPressures": [],
+            "skinTemp": [],
+            "userMetrics": [],
         }
         for day in self._day_range(start, end):
             made = self._activity(day)
@@ -259,4 +265,29 @@ class FakeGarminSource:
             body = self._body_composition(day)
             if body is not None:
                 payload["bodyComps"].append(body)
+            stamp = {"calendarDate": day.isoformat(), "startTimeOffsetInSeconds": 7200}
+            rng = self._rng("extra", day)
+            payload["bloodPressures"].append(
+                {
+                    **stamp,
+                    "summaryId": f"bp{day:%Y%m%d}",
+                    "systolicInMillimetersOfMercury": 118 + rng.randint(-6, 8),
+                    "diastolicInMillimetersOfMercury": 76 + rng.randint(-5, 5),
+                }
+            )
+            payload["skinTemp"].append(
+                {
+                    **stamp,
+                    "summaryId": f"stmp{day:%Y%m%d}",
+                    "skinTempCelsius": round(32 + rng.uniform(-0.7, 0.7), 2),
+                }
+            )
+            payload["userMetrics"].append(
+                {
+                    **stamp,
+                    "summaryId": f"um{day:%Y%m%d}",
+                    "vo2MaxValue": round(48 + rng.uniform(-3, 3), 1),
+                    "fitnessAge": 32 + rng.randint(-3, 4),
+                }
+            )
         return payload

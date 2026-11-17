@@ -3,6 +3,7 @@
 {% block content %}
 <h1>Settings</h1>
 {% if just_connected %}<p class="notice">Garmin connected.</p>{% endif %}
+{% if just_backfilled %}<p class="notice">Garmin was asked to resend the selected data type.</p>{% endif %}
 
 <section class="card">
   <h2>Garmin</h2>
@@ -13,8 +14,14 @@
   </dl>
   {% if mode == "mock" %}
   <p>Running in <strong>mock</strong> mode with generated demo data, so no Garmin credentials are
-  needed. Set <code>OPENCONNECT_GARMIN_MODE=live</code>, <code>GARMIN_CLIENT_ID</code> and
-  <code>GARMIN_CLIENT_SECRET</code> to use the real Garmin Connect Developer API.</p>
+  needed. Set <code>OPENCONNECT_GARMIN_MODE=personal</code> and <code>GARMIN_PERSONAL_KEY</code> for
+  your own data without a developer agreement, or <code>OPENCONNECT_GARMIN_MODE=live</code>,
+  <code>GARMIN_CLIENT_ID</code> and <code>GARMIN_CLIENT_SECRET</code> for the Developer API.</p>
+  {% elif mode == "personal" %}
+  <p>Reading your own Garmin data with a <strong>personal key</strong> from
+  <code>personal.connectapi.garmin.com</code>. Set <code>GARMIN_PERSONAL_KEY</code> on the server;
+  the key is only sent to Garmin to request a short-lived token, so there is no connect or disconnect
+  step. Activities are not imported yet in this mode.</p>
   {% else %}
     {% if connected %}
     <form method="post" action="/api/garmin/disconnect"><button type="submit">Disconnect</button></form>
@@ -22,6 +29,12 @@
     <p><a class="button" href="/api/garmin/connect">Connect to Garmin</a></p>
     <p class="muted">Redirect URI to register with Garmin: <code>{{ s.redirect_uri }}</code></p>
     {% endif %}
+    <h3>Backfill</h3>
+    <form method="post" action="/ui/backfill">
+      <select name="kind">{% for kind in kinds %}<option value="{{ kind }}">{{ kind }}</option>{% endfor %}</select>
+      <label>Days <input type="number" name="days_back" value="30" min="1" max="365"></label>
+      <button type="submit">Ask Garmin to resend</button>
+    </form>
     <p class="muted">Push endpoint for the Garmin developer portal:
     <code>{{ s.base_url }}/api/garmin/webhook{% if s.webhook_token %}?token=…{% endif %}</code></p>
   {% endif %}

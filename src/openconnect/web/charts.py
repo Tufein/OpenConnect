@@ -27,6 +27,7 @@ def route_svg(
     points = _downsample([p for p in track if p.has_position], MAX_ROUTE_POINTS)
     if len(points) < 2:
         return Markup('<p class="muted">No GPS data for this activity.</p>')
+    title = "<title>Route, with start and finish</title>"
 
     lats = [p.lat for p in points]
     lons = [p.lon for p in points]
@@ -51,7 +52,8 @@ def route_svg(
     return Markup(
         f'<svg class="route" viewBox="0 0 {width} {height}" role="img" aria-label="Route map" '
         f'xmlns="http://www.w3.org/2000/svg">'
-        f'<polyline points="{path}" fill="none" stroke="currentColor" stroke-width="3" '
+        + title
+        + f'<polyline points="{path}" fill="none" stroke="currentColor" stroke-width="3" '
         f'stroke-linejoin="round" stroke-linecap="round"/>'
         f'<circle cx="{sx:.1f}" cy="{sy:.1f}" r="5" class="start"/>'
         f'<circle cx="{ex:.1f}" cy="{ey:.1f}" r="5" class="finish"/></svg>'
@@ -60,9 +62,15 @@ def route_svg(
 
 def sparkline(values: Sequence[float | None], width: int = 120, height: int = 28) -> Markup:
     real = [v for v in values if v is not None]
+    summary = (
+        f"<title>{len(real)} readings: min {min(real):g}, max {max(real):g}, "
+        f"average {sum(real) / len(real):.1f}</title>"
+        if real
+        else ""
+    )
     head = (
         f'<svg class="spark" viewBox="0 0 {width} {height}" preserveAspectRatio="none" '
-        f'xmlns="http://www.w3.org/2000/svg">'
+        f'xmlns="http://www.w3.org/2000/svg">' + summary
     )
     if not real:
         return Markup(head + "</svg>")
@@ -108,7 +116,7 @@ def bar_chart(
             h = value / peak * plot_h
             parts.append(
                 f'<rect x="{x:.1f}" y="{top + plot_h - h:.1f}" width="{bar_w:.1f}" '
-                f'height="{h:.1f}" rx="2"/>'
+                f'height="{h:.1f}" rx="2"><title>{escape(label)}: {value:g}</title></rect>'
             )
         parts.append(
             f'<text x="{i * slot + slot / 2:.1f}" y="{height - 3}" text-anchor="middle">'

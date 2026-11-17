@@ -114,15 +114,17 @@ class Repository:
         end: datetime | None = None,
         limit: int = 50,
         offset: int = 0,
+        include_track: bool = False,
     ) -> list[Activity]:
         where, params = self._filters(sport, start, end)
+        columns = "*" if include_track else _LIST_COLUMNS
         with self.db.transaction() as conn:
             rows = conn.execute(
-                f"SELECT {_LIST_COLUMNS} FROM activities{where} "
+                f"SELECT {columns} FROM activities{where} "
                 "ORDER BY start_time DESC LIMIT ? OFFSET ?",
                 [*params, limit, offset],
             ).fetchall()
-        return [_activity_from_row(r, include_track=False) for r in rows]
+        return [_activity_from_row(r, include_track) for r in rows]
 
     def count_activities(
         self,
@@ -218,6 +220,29 @@ class Repository:
                 "SELECT data FROM body_compositions ORDER BY measured_at DESC LIMIT 1"
             ).fetchone()
         return BodyComposition.model_validate_json(row["data"]) if row else None
+
+    # ---- per-day time series
+
+    def upsert_series(self, day: date, kind: str, values: dict[str, float]) -> None:
+        with self.db.transaction() as conn:
+            conn.execute(
+                "INSERT INTO day_series (date, kind, data) VALUES (?, ?, ?) "
+                "ON CONFLICT(date, kind) DO UPDATE SET data = excluded.data",
+                (day.isoformat(), kind, json.dumps(values)),
+            )
+
+    def get_series(self, day: date) -> dict[str, dict[str, float]]:
+        """Offset->value series for one day, keyed by kind."""
+        with self.db.transaction() as conn:
+            rows = conn.execute(
+                "SELECT kind, data FROM day_series WHERE date = ? ORDER BY kind", (day.isoformat(),)
+            ).fetchall()
+        return {r["kind"]: json.loads(r["data"]) for r in rows}
+
+    def latest_series_date(self) -> date | None:
+        with self.db.transaction() as conn:
+            row = conn.execute("SELECT MAX(date) AS day FROM day_series").fetchone()
+        return date.fromisoformat(row["day"]) if row and row["day"] else None
 
     # ---- reports
 

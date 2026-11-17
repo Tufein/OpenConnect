@@ -23,6 +23,9 @@ KINDS = (
     "allDayRespiration",
     "pulseox",
     "bodyComps",
+    "bloodPressures",
+    "skinTemp",
+    "userMetrics",
 )
 DEFAULT_BASE_URL = "https://apis.garmin.com"
 DEFAULT_API_PREFIX = "/wellness-api/rest"

@@ -31,5 +31,17 @@
   </div>
 </section>
 
+{% if splits %}
+<section class="card">
+  <h2>Kilometre splits</h2>
+  <table>
+    <thead><tr><th>Km</th><th>Time</th></tr></thead>
+    <tbody>
+    {% for s in splits %}<tr><td>{{ s.km }}</td><td>{{ s.seconds_s|duration }}</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
 {{ report_block(report, "/ui/reports/activity/" ~ a.id, error=error) }}
 {% endblock %}

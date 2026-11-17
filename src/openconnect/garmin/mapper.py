@@ -195,6 +195,24 @@ def map_stress_details(item: dict) -> tuple[date, dict[str, int]]:
     return _calendar_date(item), patch
 
 
+def map_series(item: dict, kinds: dict[str, str]) -> tuple[date, dict[str, dict[str, float]]]:
+    """Extract offset->value series from one summary, skipping missing and negative readings."""
+    day = _calendar_date(item)
+    result: dict[str, dict[str, float]] = {}
+    for field, name in kinds.items():
+        raw = item.get(field)
+        if not isinstance(raw, dict):
+            continue
+        values = {
+            str(offset): float(value)
+            for offset, value in raw.items()
+            if isinstance(value, int | float) and not isinstance(value, bool) and value >= 0
+        }
+        if values:
+            result[name] = values
+    return day, result
+
+
 def map_hrv(item: dict) -> tuple[date, dict[str, Any]]:
     """Nightly HRV: ``lastNightAvg`` and ``weeklyAvg`` in ms, with Garmin's status."""
     patch: dict[str, Any] = {}
@@ -236,6 +254,28 @@ def map_respiration(item: dict) -> tuple[date, dict[str, Any]]:
         "respiration_min_brpm": lowest,
     }
     return _calendar_date(item), {k: v for k, v in patch.items() if v is not None}
+
+
+def map_extra_metrics(item: dict) -> tuple[date, dict[str, Any]]:
+    """Blood pressure, skin temperature and user metrics; layouts are not fully documented."""
+    patch: dict[str, Any] = {}
+    for key, name in (
+        ("systolic", "systolic_bp"),
+        ("diastolic", "diastolic_bp"),
+    ):
+        value = _non_negative(item.get(f"{key}InMillimetersOfMercury") or item.get(key))
+        if value:
+            patch[name] = value
+    temp = _decimal(item.get("skinTempCelsius") or item.get("skinTemperatureCelsius"), 2)
+    if temp is not None:
+        patch["skin_temp_c"] = temp
+    vo2 = _decimal(item.get("vo2MaxValue") or item.get("vo2Max"), 1)
+    if vo2 is not None:
+        patch["vo2max"] = vo2
+    age = _non_negative(item.get("fitnessAge"))
+    if age:
+        patch["fitness_age"] = age
+    return _calendar_date(item), patch
 
 
 def map_body_composition(item: dict) -> BodyComposition:

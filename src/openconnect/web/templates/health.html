@@ -32,6 +32,15 @@
   </table>
 </section>
 <section class="card">
+  <h2>Through the day{% if series_day %}, {{ series_day }}{% endif %}</h2>
+  {% for name, values in series_charts %}
+  <p class="muted">{{ name|replace("_", " ")|title }}</p>
+  {{ sparkline(values, 560, 90) }}
+  {% else %}
+  <p class="muted">No readings through the day yet. Garmin sends these with stress, Body Battery and sleep summaries.</p>
+  {% endfor %}
+</section>
+<section class="card">
   <h2>Sleep, last 14 nights</h2>
   {{ bar_chart(sleep_bars, 560, 140) }}
   <table>
@@ -73,13 +82,16 @@
 <section class="card">
   <h2>Daily summaries</h2>
   <table>
-    <thead><tr><th>Date</th><th>Steps</th><th>Resting HR</th><th>Stress</th><th>Body Battery</th><th>Sleep</th></tr></thead>
+    <thead><tr><th>Date</th><th>Steps</th><th>Resting HR</th><th>Stress</th><th>Body Battery</th><th>Sleep</th><th>BP</th><th>Skin</th><th>VO2max</th></tr></thead>
     <tbody>
     {% for r in trend|reverse %}{% if r.steps is not none %}
       <tr><td>{{ r.date }}</td><td>{{ "{:,}".format(r.steps) }}</td><td>{{ r.resting_hr or "–" }}</td>
           <td>{{ r.avg_stress if r.avg_stress is not none else "–" }}</td>
           <td>{{ r.body_battery_high if r.body_battery_high is not none else "–" }}</td>
-          <td>{{ r.sleep_hours|hours }}</td></tr>
+          <td>{{ r.sleep_hours|hours }}</td>
+          <td>{% if r.systolic_bp is not none and r.diastolic_bp is not none %}{{ r.systolic_bp }}/{{ r.diastolic_bp }}{% else %}–{% endif %}</td>
+          <td>{{ r.skin_temp_c if r.skin_temp_c is not none else "–" }}</td>
+          <td>{{ r.vo2max if r.vo2max is not none else "–" }}</td></tr>
     {% endif %}{% endfor %}
     </tbody>
   </table>

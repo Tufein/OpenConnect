@@ -1,9 +1,73 @@
 from __future__ import annotations
 
-from openconnect.domain import Activity, Sport
+from openconnect.ai.facts import kilometre_splits
+from openconnect.domain import Activity, Sport, haversine_m
 from openconnect.storage import Repository
 
 MIN_PACE_DISTANCE_M = 1000.0
+BEST_EFFORT_DISTANCES = (1000.0, 5000.0, 10000.0)
+
+
+def _distance_points(activity: Activity) -> list[tuple[float, float]]:
+    """(timestamp, cumulative metres) pairs, from FIT distances or from GPS."""
+    track = activity.track
+    if track and all(p.distance_m is not None for p in track):
+        return [(p.time.timestamp(), float(p.distance_m)) for p in track]  # type: ignore[arg-type]
+    positioned = [p for p in track if p.has_position]
+    if len(positioned) < 2:
+        return []
+    points, total = [], 0.0
+    for previous, point in zip(positioned, positioned[1:], strict=False):
+        total += haversine_m(previous.lat, previous.lon, point.lat, point.lon)  # type: ignore[arg-type]
+        points.append((previous.time.timestamp(), total))
+    last = positioned[-1]
+    points.append((last.time.timestamp(), total))
+    return points
+
+
+def fastest_segment(activity: Activity, distance_m: float) -> float | None:
+    """Fastest time over any continuous stretch of ``distance_m`` metres in one activity."""
+    points = _distance_points(activity)
+    best: float | None = None
+    for index, (start_time, start_distance) in enumerate(points):
+        target = start_distance + distance_m
+        for end_time, end_distance in points[index + 1 :]:
+            if end_distance < target:
+                continue
+            fraction = (target - start_distance) / (end_distance - start_distance)
+            elapsed = (end_time - start_time) * fraction
+            best = elapsed if best is None else min(best, elapsed)
+            break
+    return best
+
+
+def activity_splits(activity: Activity) -> list[dict]:
+    """One row per completed kilometre, with the seconds taken for that kilometre."""
+    return [
+        {"km": index + 1, "seconds_s": seconds}
+        for index, seconds in enumerate(kilometre_splits(activity.track))
+    ]
+
+
+def best_efforts(repo: Repository, sport: Sport = Sport.RUNNING) -> dict[str, dict]:
+    """Fastest 1K/5K/10K per sport, found in the stored tracks."""
+    result: dict[str, dict] = {}
+    for activity in repo.list_activities(limit=100_000, include_track=True):
+        if activity.sport is not sport:
+            continue
+        for distance in BEST_EFFORT_DISTANCES:
+            seconds = fastest_segment(activity, distance)
+            if seconds is None:
+                continue
+            key = str(int(distance))
+            if key not in result or seconds < result[key]["seconds_s"]:
+                result[key] = {
+                    "seconds_s": round(seconds),
+                    "activity_id": activity.id,
+                    "name": activity.name,
+                    "date": activity.start_time.date().isoformat(),
+                }
+    return result
 
 
 def _entry(a: Activity, value: float) -> dict:

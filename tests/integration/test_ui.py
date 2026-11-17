@@ -36,6 +36,7 @@ def test_activity_page_shows_map_stats_exports_and_report_button(synced):
     for fmt in ("fit", "gpx", "tcx"):
         assert f"/api/activities/{run['id']}/export?format={fmt}" in html
     assert f'action="/ui/reports/activity/{run["id"]}"' in html
+    assert "Kilometre splits" in html
 
 
 def test_activity_names_are_html_escaped(app):
@@ -57,12 +58,14 @@ def test_health_page(synced):
     for label in ("HRV", "Pulse Ox", "Respiration", "Body composition", "Index S2"):
         assert label in html
     assert "Vital signs" in html and "HRV status" in html
+    assert "Through the day" in html and "Body Battery" in html
 
 
 def test_records_page_lists_records_achievements_and_devices(synced):
     html = synced.client.get("/records").text
     assert "Longest distance" in html and "Player One" in html and "Forerunner 965" in html
     assert "unlocked" in html and "locked" in html
+    assert "Best efforts" in html and "1 km" in html
 
 
 def test_weekly_page_generates_and_renders_a_report(synced):

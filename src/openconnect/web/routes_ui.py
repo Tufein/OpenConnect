@@ -11,13 +11,14 @@ from fastapi.templating import Jinja2Templates
 from openconnect import __version__
 from openconnect.ai.provider import ReportError
 from openconnect.domain import Sport
+from openconnect.garmin.client import KINDS
 from openconnect.services.achievements import compute_achievements
 from openconnect.services.dashboard import week_start
-from openconnect.services.records import personal_records
+from openconnect.services.records import activity_splits, best_efforts, personal_records
 from openconnect.web import charts, formatting
 from openconnect.web.context import AppContext
 from openconnect.web.markup import render_markdown
-from openconnect.web.routes_api import get_ctx, run_sync, store_upload
+from openconnect.web.routes_api import garmin_backfill, get_ctx, run_sync, store_upload
 
 PAGE_SIZE = 25
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
@@ -101,6 +102,7 @@ def activity_page(request: Request, ctx: AppContext, activity_id: str, error: st
         report=ctx.repo.get_report("activity", activity_id),
         hr=[p.hr for p in activity.track[:: max(1, len(activity.track) // 120)]],
         elevation=[p.ele for p in activity.track[:: max(1, len(activity.track) // 120)]],
+        splits=activity_splits(activity),
         error=error,
     )
 
@@ -116,6 +118,18 @@ def health(request: Request, ctx: AppContext = Ctx):
     trend = ctx.dashboard.trend_series(today - timedelta(days=29), today)
     sleeps = ctx.repo.list_sleep(today - timedelta(days=13), today)
     body = ctx.repo.list_body_compositions(today - timedelta(days=89), today)
+    series_day = ctx.repo.latest_series_date()
+    series = ctx.repo.get_series(series_day) if series_day else {}
+    series_charts = [
+        (
+            name,
+            [
+                value
+                for _, value in sorted((int(offset), value) for offset, value in values.items())
+            ],
+        )
+        for name, values in sorted(series.items())
+    ]
     dailies = ctx.repo.list_daily(today - timedelta(days=29), today)
     vitals = [d for d in reversed(dailies) if d.has_vitals]
     return render(
@@ -137,6 +151,8 @@ def health(request: Request, ctx: AppContext = Ctx):
         body=list(reversed(body)),
         weight=[b.weight_kg for b in body],
         latest_body=body[-1] if body else None,
+        series_day=series_day,
+        series_charts=series_charts,
     )
 
 
@@ -170,6 +186,7 @@ def records(request: Request, ctx: AppContext = Ctx):
         request,
         "records.html",
         records=personal_records(ctx.repo),
+        best_efforts=best_efforts(ctx.repo),
         achievements=compute_achievements(ctx.repo),
         devices=ctx.repo.list_devices(),
     )
@@ -181,7 +198,7 @@ def import_page(request: Request):
 
 
 @router.get("/settings", response_class=HTMLResponse)
-def settings_page(request: Request, connected: int = 0, ctx: AppContext = Ctx):
+def settings_page(request: Request, connected: int = 0, backfill: int = 0, ctx: AppContext = Ctx):
     return render(
         request,
         "settings.html",
@@ -189,12 +206,24 @@ def settings_page(request: Request, connected: int = 0, ctx: AppContext = Ctx):
         mode=ctx.mode,
         connected=ctx.garmin_connected,
         just_connected=bool(connected),
+        just_backfilled=bool(backfill),
+        kinds=KINDS,
         provider=ctx.provider,
         last_sync=ctx.repo.get_state("last_sync"),
     )
 
 
 # ---------------------------------------------------------- form actions (POST/redirect/GET)
+
+
+@router.post("/ui/backfill")
+def ui_backfill(
+    kind: Annotated[str, Form()],
+    days_back: Annotated[int, Form()] = 30,
+    ctx: AppContext = Ctx,
+):
+    garmin_backfill(kind, days_back, ctx)
+    return RedirectResponse("/settings?backfill=1", status_code=303)
 
 
 @router.post("/ui/sync")

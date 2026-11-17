@@ -126,6 +126,24 @@ def test_body_composition_without_a_date_is_collected_as_an_error(repo):
     assert repo.latest_body_composition() is None
 
 
+def test_series_from_summaries_are_stored_for_charts(repo):
+    ingest_payload(
+        repo,
+        {
+            "stressDetails": [STRESS],
+            "sleeps": [
+                {
+                    "calendarDate": "2026-05-02",
+                    "timeOffsetSpo2Values": {"0": 96, "3600": 94},
+                }
+            ],
+        },
+    )
+    series = repo.get_series(date(2026, 5, 2))
+    assert series["body_battery"] == {"0": 90.0, "3600": 25.0}
+    assert series["sleep_spo2"] == {"0": 96.0, "3600": 94.0}
+
+
 def test_activity_details_supersede_summary_and_add_track(repo):
     result = ingest_payload(repo, {"activities": [ACTIVITY], "activityDetails": [DETAILS]})
     assert result.activities == 1  # one activity, not two

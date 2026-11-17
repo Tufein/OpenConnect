@@ -6,7 +6,7 @@ from tests.fakes import FakeAnthropic
 
 
 def test_healthz(app):
-    assert app.client.get("/healthz").json() == {"status": "ok", "version": "0.45.0"}
+    assert app.client.get("/healthz").json() == {"status": "ok", "version": "0.46.0"}
 
 
 # --------------------------------------------------------------------- sync and activities
@@ -130,6 +130,8 @@ def test_health_vitals_and_body_composition_endpoints(synced):
     assert first["spo2_min_pct"] <= first["spo2_avg_pct"]
     assert 8 <= first["respiration_avg_brpm"] <= 25
     assert first["respiration_min_brpm"] <= first["respiration_max_brpm"]
+    assert first["vo2max"] > 40 and first["fitness_age"] > 20
+    assert first["systolic_bp"] > first["diastolic_bp"] and first["skin_temp_c"] > 30
 
     body = c.get(
         "/api/health/body-composition", params={"start": "2026-05-01", "end": "2026-05-31"}
@@ -145,6 +147,13 @@ def test_health_vitals_and_body_composition_endpoints(synced):
     )
 
 
+def test_series_endpoint(synced):
+    body = synced.client.get("/api/health/series", params={"day": "2026-05-30"}).json()
+    assert "stress" in body and "body_battery" in body
+    assert all(0 <= value <= 100 for value in body["body_battery"].values())
+    assert synced.client.get("/api/health/series", params={"day": "nope"}).status_code == 422
+
+
 def test_dashboard_endpoints(synced):
     c = synced.client
     week = c.get("/api/dashboard/weekly", params={"week": "2026-05-20"}).json()
@@ -154,6 +163,16 @@ def test_dashboard_endpoints(synced):
     assert overview["this_week"]["week_start"] == "2026-05-25"
     assert overview["trend"][-1]["hrv_last_night_ms"] > 0
     assert overview["this_week"]["avg_spo2_pct"] > 90
+
+
+def test_activity_splits_and_best_efforts(synced):
+    c = synced.client
+    run = c.get("/api/activities", params={"sport": "running"}).json()["items"][0]
+    splits = c.get(f"/api/activities/{run['id']}/splits").json()
+    assert splits and splits[0]["km"] == 1 and splits[0]["seconds_s"] > 0
+    efforts = c.get("/api/records/best-efforts").json()
+    assert "1000" in efforts and efforts["1000"]["seconds_s"] > 0
+    assert efforts["1000"]["activity_id"].startswith("garmin:")
 
 
 def test_records_achievements_devices(synced):
@@ -225,6 +244,7 @@ def test_webhook_ingests_pushed_summaries(app):
         "respiration": 0,
         "pulseox": 0,
         "body_comps": 0,
+        "extra_metrics": 0,
     }
     days = app.client.get(
         "/api/health/daily", params={"start": "2026-05-30", "end": "2026-05-30"}
@@ -319,6 +339,47 @@ def live(make_app):
         garmin_client_id="cid",
         garmin_client_secret="sec",
     )
+
+
+def test_personal_mode_syncs_with_a_key(make_app, monkeypatch):
+    class Source:
+        skipped = {}
+
+        def fetch(self, start, end):
+            return {
+                "dailies": [{"calendarDate": "2026-05-30", "steps": 4321, "stepsGoal": 10000}],
+                "hrv": [{"calendarDate": "2026-05-30", "lastNightAvg": 55}],
+            }
+
+    monkeypatch.setattr("openconnect.web.context.PersonalApiSource", lambda key: Source())
+    app = make_app(garmin_mode="personal", garmin_personal_key="key")
+    assert app.client.get("/api/garmin/status").json() == {"mode": "personal", "connected": True}
+    assert app.client.get("/api/garmin/connect", follow_redirects=False).status_code == 409
+    result = app.client.post("/api/sync").json()
+    assert result["dailies"] == 1 and result["hrv"] == 1 and result["errors"] == []
+    day = app.client.get(
+        "/api/health/daily", params={"start": "2026-05-30", "end": "2026-05-30"}
+    ).json()[0]
+    assert day["steps"] == 4321 and day["hrv_last_night_ms"] == 55
+    assert "personal key" in app.client.get("/settings").text
+
+
+def test_backfill_endpoint_and_ui(app):
+    app.ctx.source.request_backfill = lambda kind, start, end: 3
+    body = app.client.post(
+        "/api/garmin/backfill", params={"kind": "dailies", "days_back": 30}
+    ).json()
+    assert body == {"kind": "dailies", "requests": 3}
+    assert app.client.post("/api/garmin/backfill", params={"kind": "nope"}).status_code == 422
+    done = app.client.post(
+        "/ui/backfill", data={"kind": "dailies", "days_back": 30}, follow_redirects=False
+    )
+    assert done.status_code == 303 and done.headers["location"] == "/settings?backfill=1"
+    assert "asked to resend" in app.client.get(done.headers["location"]).text
+
+
+def test_backfill_unavailable_in_mock_mode(app):
+    assert app.client.post("/api/garmin/backfill", params={"kind": "dailies"}).status_code == 409
 
 
 def test_status_in_mock_mode(app):

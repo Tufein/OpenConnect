@@ -48,11 +48,22 @@ def test_reads_environment_overrides():
         {"OPENCONNECT_AI_EFFORT": "ultra"},
         {"OPENCONNECT_PORT": "not-a-number"},
         {"OPENCONNECT_GARMIN_MODE": "live"},  # live needs client credentials
+        {"OPENCONNECT_GARMIN_MODE": "personal"},  # personal needs a key
     ],
 )
 def test_invalid_configuration_is_rejected_with_a_clear_error(env):
     with pytest.raises(ConfigError):
         Settings.from_env(env)
+
+
+def test_personal_mode_uses_the_personal_key():
+    s = Settings.from_env(
+        {
+            "OPENCONNECT_GARMIN_MODE": "personal",
+            "GARMIN_PERSONAL_KEY": "my-personal-key",
+        }
+    )
+    assert s.garmin_mode == "personal" and s.garmin_personal_key == "my-personal-key"
 
 
 def test_empty_values_count_as_unset():

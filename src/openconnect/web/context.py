@@ -13,6 +13,7 @@ from openconnect.config import Settings
 from openconnect.garmin.client import GarminSource, HttpGarminSource
 from openconnect.garmin.fake import FakeGarminSource
 from openconnect.garmin.oauth import GarminOAuth
+from openconnect.garmin.personal import PersonalApiSource
 from openconnect.services.dashboard import DashboardService
 from openconnect.services.sync import SyncService, utcnow
 from openconnect.storage import Database, Repository
@@ -69,6 +70,8 @@ def build_context(
                 {"base_url": settings.garmin_api_base_url} if settings.garmin_api_base_url else {}
             )
             source = HttpGarminSource(oauth.access_token, **extra)
+    elif settings.garmin_mode == "personal" and source is None:
+        source = PersonalApiSource(settings.garmin_personal_key or "")
     elif source is None:
         source = FakeGarminSource(today=clock)
 

@@ -52,6 +52,12 @@ def test_sparkline_handles_gaps_and_flat_series():
     assert "<svg" in str(sparkline([]))
 
 
+def test_charts_have_native_tooltips():
+    assert "<title>" in str(sparkline([1, 2]))
+    assert "<title>Mon: 10</title>" in str(bar_chart([("Mon", 10)]))
+    assert "<title>" in str(route_svg(make_track(20)))
+
+
 def test_bar_chart_scales_bars_and_labels_them():
     svg = str(bar_chart([("Mon", 10), ("Tue", 5), ("Wed", None)], width=300, height=100))
     assert svg.count("<rect") == 2  # the missing value draws no bar

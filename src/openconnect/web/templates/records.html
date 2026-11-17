@@ -29,6 +29,22 @@
 <section class="card empty"><p>No records yet. Sync or import some activities first.</p></section>
 {% endfor %}
 
+<h1>Best efforts</h1>
+<section class="card">
+  <table>
+    <thead><tr><th>Distance</th><th>Time</th><th>Activity</th><th>Date</th></tr></thead>
+    <tbody>
+    {% for distance, e in best_efforts.items() %}
+      <tr><td>{{ (distance|int / 1000)|int }} km</td><td>{{ e.seconds_s|duration }}</td>
+          <td><a href="/activities/{{ e.activity_id }}">{{ e.name or e.date }}</a></td>
+          <td>{{ e.date }}</td></tr>
+    {% else %}
+      <tr><td colspan="4" class="muted">No best efforts yet — runs with a track are needed.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+
 <h1>Achievements</h1>
 <section class="grid badges">
   {% for a in achievements %}

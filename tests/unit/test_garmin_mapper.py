@@ -289,3 +289,41 @@ def test_map_body_composition_falls_back_to_noon_on_the_calendar_date():
 def test_map_body_composition_requires_a_date():
     with pytest.raises(mapper.MappingError):
         mapper.map_body_composition({"weightInGrams": 74200})
+
+
+def test_map_extra_metrics_reads_blood_pressure_skin_temp_and_vo2max():
+    day, patch = mapper.map_extra_metrics(
+        {
+            "calendarDate": "2026-05-02",
+            "systolicInMillimetersOfMercury": 118,
+            "diastolicInMillimetersOfMercury": 76,
+            "skinTempCelsius": 32.4,
+            "vo2MaxValue": 48.7,
+            "fitnessAge": 31,
+        }
+    )
+    assert day == date(2026, 5, 2)
+    assert patch == {
+        "systolic_bp": 118,
+        "diastolic_bp": 76,
+        "skin_temp_c": 32.4,
+        "vo2max": 48.7,
+        "fitness_age": 31,
+    }
+
+
+def test_map_series_reads_offset_values_and_skips_negative_readings():
+    item = {
+        "calendarDate": "2026-05-02",
+        "timeOffsetStressLevelValues": {"0": 25, "180": -1},
+        "timeOffsetBodyBatteryValues": {"0": 38, "180": 91},
+    }
+    day, series = mapper.map_series(
+        item,
+        {
+            "timeOffsetStressLevelValues": "stress",
+            "timeOffsetBodyBatteryValues": "body_battery",
+        },
+    )
+    assert day == date(2026, 5, 2)
+    assert series == {"stress": {"0": 25.0}, "body_battery": {"0": 38.0, "180": 91.0}}

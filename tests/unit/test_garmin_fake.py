@@ -27,6 +27,9 @@ def test_fake_payload_has_all_kinds_and_maps_cleanly():
         "allDayRespiration",
         "pulseox",
         "bodyComps",
+        "bloodPressures",
+        "skinTemp",
+        "userMetrics",
     }
     assert len(payload["dailies"]) >= 27
     assert len(payload["sleeps"]) >= 27
@@ -55,6 +58,15 @@ def test_fake_payload_has_all_kinds_and_maps_cleanly():
     for item in payload["bodyComps"]:
         body = mapper.map_body_composition(item)
         assert 60 < body.weight_kg < 90 and body.bmi and body.device_name
+    for item in payload["bloodPressures"]:
+        _, patch = mapper.map_extra_metrics(item)
+        assert 100 < patch["systolic_bp"] < 140 and patch["diastolic_bp"] > 60
+    for item in payload["skinTemp"]:
+        _, patch = mapper.map_extra_metrics(item)
+        assert 30 < patch["skin_temp_c"] < 34
+    for item in payload["userMetrics"]:
+        _, patch = mapper.map_extra_metrics(item)
+        assert 40 < patch["vo2max"] < 55 and 25 < patch["fitness_age"] < 40
     sports = set()
     for item in payload["activityDetails"]:
         act = mapper.map_activity_details(item)

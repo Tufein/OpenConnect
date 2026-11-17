@@ -10,11 +10,11 @@ from starlette.concurrency import run_in_threadpool
 from openconnect.ai.provider import ReportError
 from openconnect.domain import Activity, DailySummary, GeneratedReport, Sport
 from openconnect.formats import SUPPORTED_FORMATS, FormatError, export_activity, import_activity
-from openconnect.garmin.client import GarminAPIError, GarminRateLimitError
+from openconnect.garmin.client import KINDS, GarminAPIError, GarminRateLimitError
 from openconnect.garmin.ingest import ingest_payload
 from openconnect.garmin.oauth import GarminAuthError
 from openconnect.services.achievements import compute_achievements
-from openconnect.services.records import personal_records
+from openconnect.services.records import activity_splits, best_efforts, personal_records
 from openconnect.web.context import AppContext
 
 MAX_UPLOAD_BYTES = 25 * 1024 * 1024
@@ -84,6 +84,11 @@ def delete_activity(activity_id: str, ctx: AppContext = Ctx):
     return Response(status_code=204)
 
 
+@router.get("/activities/{activity_id}/splits")
+def activity_kilometre_splits(activity_id: str, ctx: AppContext = Ctx):
+    return activity_splits(require_activity(ctx, activity_id))
+
+
 @router.get("/activities/{activity_id}/export")
 def export(activity_id: str, format: str = "fit", ctx: AppContext = Ctx):
     activity = require_activity(ctx, activity_id)
@@ -144,6 +149,11 @@ def vitals_out(d: DailySummary) -> dict:
         "respiration_avg_brpm": d.respiration_avg_brpm,
         "respiration_min_brpm": d.respiration_min_brpm,
         "respiration_max_brpm": d.respiration_max_brpm,
+        "systolic_bp": d.systolic_bp,
+        "diastolic_bp": d.diastolic_bp,
+        "skin_temp_c": d.skin_temp_c,
+        "vo2max": d.vo2max,
+        "fitness_age": d.fitness_age,
     }
 
 
@@ -157,6 +167,11 @@ def health_vitals(start: date, end: date, ctx: AppContext = Ctx):
 def health_body_composition(start: date, end: date, ctx: AppContext = Ctx):
     start, end = date_range(start, end)
     return [b.model_dump(mode="json") for b in ctx.repo.list_body_compositions(start, end)]
+
+
+@router.get("/health/series")
+def health_series(day: date, ctx: AppContext = Ctx):
+    return ctx.repo.get_series(day)
 
 
 @router.get("/dashboard/weekly")
@@ -181,6 +196,11 @@ def dashboard_overview(ctx: AppContext = Ctx):
 @router.get("/records")
 def records(ctx: AppContext = Ctx):
     return _jsonable(personal_records(ctx.repo))
+
+
+@router.get("/records/best-efforts")
+def records_best_efforts(sport: Sport = Sport.RUNNING, ctx: AppContext = Ctx):
+    return best_efforts(ctx.repo, sport)
 
 
 @router.get("/achievements")
@@ -226,6 +246,7 @@ def run_sync(ctx: AppContext, days_back: int | None = None) -> dict:
         "respiration": result.ingest.respiration,
         "pulseox": result.ingest.pulseox,
         "body_comps": result.ingest.body_comps,
+        "extra_metrics": result.ingest.extra_metrics,
         "errors": result.ingest.errors,
         "skipped": getattr(ctx.source, "skipped", {}),
     }
@@ -244,6 +265,10 @@ def garmin_status(ctx: AppContext = Ctx):
 @router.get("/garmin/connect")
 def garmin_connect(ctx: AppContext = Ctx):
     if ctx.oauth is None:
+        if ctx.mode == "personal":
+            raise HTTPException(
+                409, "Personal mode uses GARMIN_PERSONAL_KEY; there is no connect flow"
+            )
         raise HTTPException(
             409, "Running in mock mode; set OPENCONNECT_GARMIN_MODE=live to connect"
         )
@@ -278,6 +303,23 @@ def garmin_disconnect(ctx: AppContext = Ctx):
     return Response(status_code=204)
 
 
+@router.post("/garmin/backfill")
+def garmin_backfill(kind: str, days_back: int = Query(30, ge=1, le=365), ctx: AppContext = Ctx):
+    if kind not in KINDS:
+        raise HTTPException(422, f"Unknown data type {kind!r}; use one of {', '.join(KINDS)}")
+    method = getattr(ctx.source, "request_backfill", None)
+    if method is None:
+        raise HTTPException(409, "Backfill is only available in live Garmin mode")
+    end = ctx.clock()
+    try:
+        count = method(kind, end - timedelta(days=days_back), end)
+    except GarminRateLimitError as exc:
+        raise HTTPException(429, str(exc)) from exc
+    except GarminAPIError as exc:
+        raise HTTPException(502, str(exc)) from exc
+    return {"kind": kind, "requests": count}
+
+
 @router.post("/garmin/webhook")
 async def garmin_webhook(request: Request, token: str | None = None, ctx: AppContext = Ctx):
     expected = ctx.settings.webhook_token
@@ -308,6 +350,7 @@ async def garmin_webhook(request: Request, token: str | None = None, ctx: AppCon
             "respiration": result.respiration,
             "pulseox": result.pulseox,
             "body_comps": result.body_comps,
+            "extra_metrics": result.extra_metrics,
         },
         "ping_notifications": pings,
         "errors": result.errors,

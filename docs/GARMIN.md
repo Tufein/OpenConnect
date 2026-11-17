@@ -8,6 +8,11 @@ been verified.
 
 *Rendered by the app's UI tests on a computer, with a **fake** Garmin answering. It is not a capture from a phone.*
 
+**On the server**, the same personal key works with `OPENCONNECT_GARMIN_MODE=personal` and
+`GARMIN_PERSONAL_KEY`: daily health, sleep, HRV, SpO2, respiration and Body Battery are pulled into
+SQLite and appear on the dashboard and Health page. Activity files are not imported in server personal
+mode yet. The Android app's key stays on the phone; the server's key stays in its environment.
+
 ## The short version
 
 | Route | What it gives | Needs | Status |

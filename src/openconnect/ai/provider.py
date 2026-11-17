@@ -57,6 +57,8 @@ _TEXT = {
         "vs": "Distance vs previous week: {pct:+.0f}%",
         "steps": "Steps: {avg:.0f} per day on average, goal reached on {goal} of {days} days",
         "sleep": "Sleep: {hours:.1f} h per night on average",
+        "vitals": "Nightly recovery: HRV {hrv} ms, SpO2 {spo2}%, "
+        "respiration {resp} per min on average",
         "none": "No activities recorded this week.",
     },
     "nl": {
@@ -75,6 +77,8 @@ _TEXT = {
         "vs": "Afstand t.o.v. vorige week: {pct:+.0f}%",
         "steps": "Stappen: gemiddeld {avg:.0f} per dag, doel gehaald op {goal} van {days} dagen",
         "sleep": "Slaap: gemiddeld {hours:.1f} u per nacht",
+        "vitals": "Nachtelijk herstel: HRV {hrv} ms, SpO2 {spo2}%, "
+        "ademhaling {resp} per min gemiddeld",
         "none": "Geen activiteiten deze week.",
     },
 }
@@ -143,6 +147,22 @@ class TemplateReportProvider:
             )
         if w["avg_sleep_hours"] is not None:
             lines.append("- " + t["sleep"].format(hours=w["avg_sleep_hours"]))
+        if any(
+            w.get(k) is not None for k in ("avg_hrv_ms", "avg_spo2_pct", "avg_respiration_brpm")
+        ):
+
+            def shown(key: str, spec: str) -> str:
+                value = w.get(key)
+                return format(value, spec) if value is not None else "–"
+
+            lines.append(
+                "- "
+                + t["vitals"].format(
+                    hrv=shown("avg_hrv_ms", ".0f"),
+                    spo2=shown("avg_spo2_pct", ".1f"),
+                    resp=shown("avg_respiration_brpm", ".1f"),
+                )
+            )
         return "\n".join(lines)
 
 

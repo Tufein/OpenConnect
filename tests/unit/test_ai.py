@@ -113,6 +113,19 @@ def test_template_provider_weekly_report_compares_with_previous_week(repo):
     assert "1 activity" in text and "10.0 km" in text and "+100%" in text
 
 
+def test_template_weekly_report_includes_nightly_vitals(repo):
+    repo.upsert_daily(
+        make_daily(MONDAY, hrv_last_night_ms=60, spo2_avg_pct=96.2, respiration_avg_brpm=14.5)
+    )
+    facts = weekly_facts(DashboardService(repo), MONDAY)
+    text = TemplateReportProvider().generate(ReportRequest("weekly", "2026-04-27", facts)).text
+    assert "HRV 60 ms" in text and "SpO2 96.2%" in text and "respiration 14.5" in text
+    dutch = (
+        TemplateReportProvider().generate(ReportRequest("weekly", "2026-04-27", facts, "nl")).text
+    )
+    assert "ademhaling 14.5" in dutch
+
+
 # ------------------------------------------------------------------ anthropic provider
 
 

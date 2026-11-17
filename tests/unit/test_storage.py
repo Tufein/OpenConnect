@@ -118,6 +118,17 @@ def test_body_compositions_upsert_by_measurement_instant_and_range(repo):
     assert len(repo.list_body_compositions(date(2026, 5, 5), date(2026, 5, 5))) == 1
 
 
+def test_day_series_roundtrip_and_latest(repo):
+    day = date(2026, 5, 2)
+    assert repo.latest_series_date() is None
+    repo.upsert_series(day, "stress", {"0": 25.0, "180": 40.0})
+    repo.upsert_series(day, "body_battery", {"0": 90.0})
+    repo.upsert_series(day, "stress", {"0": 26.0})  # replace, not append
+    assert repo.get_series(day) == {"body_battery": {"0": 90.0}, "stress": {"0": 26.0}}
+    assert repo.latest_series_date() == day
+    assert repo.get_series(date(2026, 5, 1)) == {}
+
+
 def test_reports_return_latest_for_subject(repo):
     t0 = datetime(2026, 5, 1, tzinfo=UTC)
     first = repo.save_report(
