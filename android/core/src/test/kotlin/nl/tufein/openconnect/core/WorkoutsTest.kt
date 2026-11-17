@@ -2,7 +2,7 @@ package nl.tufein.openconnect.core
 
 import nl.tufein.openconnect.core.formats.FitReader
 import nl.tufein.openconnect.core.watch.InMemoryWatchSource
-import nl.tufein.openconnect.core.watch.WatchFaceException
+import nl.tufein.openconnect.core.watch.WatchWriteException
 import nl.tufein.openconnect.core.watch.WatchFileInfo
 import nl.tufein.openconnect.core.watch.WatchSource
 import java.time.Instant
@@ -185,7 +185,7 @@ class WorkoutsTest {
             override fun read(file: WatchFileInfo): ByteArray = ByteArray(0)
         }
         val files = Workouts.files(listOf(session(SessionType.EASY, 5.0)), paces, created)
-        val e = assertFailsWith<WatchFaceException> { Workouts.send(readOnly, files) }
-        assertEquals(WatchFaceException.Kind.CANNOT_WRITE, e.kind)
+        val e = assertFailsWith<WatchWriteException> { Workouts.send(readOnly, files) }
+        assertEquals(WatchWriteException.Kind.CANNOT_WRITE, e.kind)
     }
 }

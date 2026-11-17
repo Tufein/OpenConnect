@@ -157,6 +157,12 @@ fun ActivityDetailScreen(
             }
         }
         item { SummaryTiles(activity) }
+        // A workout only the Oura Ring recorded: say what that means before anything else.
+        if (state.fromRing) {
+            item { Text(stringResource(R.string.ring_row_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        }
+        // What the watch and the ring measured around it (v0.43.0).
+        state.around?.let { around -> item { ActivityAroundCard(around) } }
 
         val positions = activity.track.filter { it.hasPosition }.map { it.lat!! to it.lon!! }
         if (positions.size >= 2) {
@@ -215,6 +221,8 @@ fun ActivityDetailScreen(
                 }
             }
         }
+        // A ring-only workout is not a stored activity: there is nothing to write a report from, to export or to delete.
+        if (state.fromRing) return@LazyColumn
         item { ReportCard(state.report, busy, onGenerate, active) }
         item {
             SectionTitle(stringResource(R.string.export))

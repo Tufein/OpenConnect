@@ -115,7 +115,7 @@ private class AndroidMtpTransport(private val mtp: MtpDevice) : MtpTransport {
             .setCompressedSize(bytes.size.toLong())
             .build()
         val sent = mtp.sendObjectInfo(info) ?: return false
-        val temp = java.io.File.createTempFile("watchface", ".prg")
+        val temp = java.io.File.createTempFile("openconnect-upload", ".tmp")
         return try {
             temp.writeBytes(bytes)
             android.os.ParcelFileDescriptor.open(temp, android.os.ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->

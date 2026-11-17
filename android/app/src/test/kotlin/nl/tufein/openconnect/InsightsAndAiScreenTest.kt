@@ -223,7 +223,7 @@ class InsightsAndAiScreenTest : AppTestBase() {
         launchWithAi()
         waitForText("Load demo data")
         tab("Settings").performClick()
-        waitForText("Appearance")
+        openAppearance()
         clickText("Light")
         rule.waitUntil(5_000) { container().settings.themeMode == "light" }
         shot("27-settings-light")

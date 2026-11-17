@@ -29,7 +29,6 @@ interface MtpTransport {
 class MtpWatchSource(private val transport: MtpTransport, override val deviceName: String) : WatchSource {
     private companion object {
         const val GARMIN_DIR = "GARMIN"
-        const val APPS_DIR = "Apps"
         const val NEW_FILES_DIR = "NewFiles"
     }
 
@@ -48,10 +47,10 @@ class MtpWatchSource(private val transport: MtpTransport, override val deviceNam
 
     override fun read(file: WatchFileInfo): ByteArray = transport.read(file.handle, file.size)
 
-    /** Into `GARMIN/Apps` (made when missing). A file with the same name is not overwritten: MTP cannot replace in place. */
-    override fun installApp(name: String, bytes: ByteArray): Boolean = install(APPS_DIR, name, bytes)
-
-    /** Into `GARMIN/NewFiles` (made when missing), where the watch looks for new workouts. Same rules as [installApp]. */
+    /**
+     * Into `GARMIN/NewFiles` (made when missing), where the watch looks for new workouts. A file with the same name is
+     * not overwritten: MTP cannot replace in place.
+     */
     override fun installWorkout(name: String, bytes: ByteArray): Boolean = install(NEW_FILES_DIR, name, bytes)
 
     private fun install(folder: String, name: String, bytes: ByteArray): Boolean {
@@ -60,7 +59,7 @@ class MtpWatchSource(private val transport: MtpTransport, override val deviceNam
             ?: transport.createFolder(storage, garmin, folder)
             ?: return false
         if (transport.children(storage, target).any { !it.isFolder && it.name.equals(name, ignoreCase = true) }) {
-            throw WatchFaceException(WatchFaceException.Kind.ALREADY_THERE)
+            throw WatchWriteException(WatchWriteException.Kind.ALREADY_THERE)
         }
         return transport.upload(storage, target, name, bytes)
     }

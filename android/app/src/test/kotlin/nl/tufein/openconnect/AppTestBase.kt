@@ -101,6 +101,16 @@ abstract class AppTestBase {
         }
     }
 
+    /**
+     * Since v0.43.0 the look settings (dark or light, style, letters, colours, app icon) sit in a section of Settings that
+     * is folded away. This opens it when it is closed and leaves it alone when it is open; call it on the Settings tab.
+     */
+    protected fun openAppearance() {
+        waitForText("Appearance")
+        if (!hasText("Colours", substring = false)) clickText("Appearance")
+        waitForText("Colours")
+    }
+
     /** Scroll the first scrollable list until [text] has been composed. */
     protected fun scrollToText(text: String, substring: Boolean = false) {
         if (!hasText(text, substring)) {

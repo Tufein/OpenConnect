@@ -77,9 +77,6 @@ class MainActivity : ComponentActivity() {
                 val restorePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
                     if (uri != null) viewModel.restore(uri)
                 }
-                val watchFacePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-                    if (uri != null) viewModel.installWatchFace(uri)
-                }
                 val lockUi by viewModel.lock.collectAsState()
                 val lockAvailable = remember(lockUi) { unlocker.available() }
                 // With the lock on, the recent-apps list and screenshots must not show the data either.
@@ -102,7 +99,6 @@ class MainActivity : ComponentActivity() {
                     },
                     onBackup = { backupPicker.launch(viewModel.backupFileName()) },
                     onRestore = { restorePicker.launch(arrayOf("*/*")) },
-                    onWatchFace = { watchFacePicker.launch(arrayOf("*/*")) },
                     vm = viewModel,
                     onImport = { importPicker.launch(arrayOf("*/*")) },
                     onExport = { id, format ->

@@ -59,7 +59,7 @@ class LookTest : AppTestBase() {
         rule.waitForIdle()
         shot("56-insights-handheld-dark")
         tab("Settings").performClick()
-        waitForText("Colours")
+        openAppearance()
         // The old three designs are gone from Settings; the colours are left, and since v0.33.0 a style (Retro, Sleek, Classic).
         assertEquals(true, hasText("Style", substring = false))
         assertEquals(false, hasText("Dashboard Dark", substring = false))
@@ -77,7 +77,7 @@ class LookTest : AppTestBase() {
         waitForText("Scores")
         shot("59-health-handheld-light")
         tab("Settings").performClick()
-        waitForText("Colours")
+        openAppearance()
         shot("60-settings-handheld-light")
     }
 

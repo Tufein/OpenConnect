@@ -1,8 +1,7 @@
 package nl.tufein.openconnect.core
 
 import nl.tufein.openconnect.core.watch.ConnectIqStore
-import nl.tufein.openconnect.core.watch.StoreApp
-import nl.tufein.openconnect.core.watch.StoreLink
+import nl.tufein.openconnect.core.watch.StoreStep
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -42,21 +41,58 @@ class ConnectIqStoreTest {
     }
 
     @Test
-    fun onlyAppsWithAValidIdGetALink() {
-        assertEquals(emptyList(), ConnectIqStore.links("", ""))
-        assertEquals(listOf(StoreLink(StoreApp.WATCHFACE, address)), ConnectIqStore.links(id, ""))
-        val other = "1679c143-4f3d-44cb-b933-bb8f38636025"
+    fun withTheConnectIqAppOnThePhoneTheButtonStartsThatAppAndNotABrowser() {
+        // v0.43.0: no listing of our own, so the app itself opens; the web store is only the way out when that fails.
         assertEquals(
-            listOf(StoreLink(StoreApp.WATCHFACE, address), StoreLink(StoreApp.WIDGET, "https://apps.garmin.com/apps/$other")),
-            ConnectIqStore.links(id, other),
+            listOf(StoreStep.LaunchApp(ConnectIqStore.PACKAGE), StoreStep.OpenAddress(ConnectIqStore.HOME)),
+            ConnectIqStore.steps(listing = "", installed = true),
         )
     }
 
     @Test
-    fun theBuiltInConstantsAreEitherEmptyOrAValidStoreId() {
-        // Fails the build if someone pastes something that is not a store id into the constants.
-        for (value in listOf(ConnectIqStore.WATCHFACE_ID, ConnectIqStore.WIDGET_ID)) {
-            assertTrue(value.isEmpty() || ConnectIqStore.url(value) != null, "not a store id: $value")
+    fun withoutTheConnectIqAppThePlayStorePageOfThatAppOpens() {
+        val steps = ConnectIqStore.steps(listing = "", installed = false)
+        assertEquals(
+            listOf(StoreStep.OpenAddress("market://details?id=com.garmin.connectiq"), StoreStep.OpenAddress("https://play.google.com/store/apps/details?id=com.garmin.connectiq")),
+            steps,
+        )
+    }
+
+    @Test
+    fun aListingOfOurOwnOpensInTheConnectIqAppFirstAndOtherwiseInTheBrowser() {
+        assertEquals(
+            listOf(StoreStep.OpenAddress(address, ConnectIqStore.PACKAGE), StoreStep.OpenAddress(address)),
+            ConnectIqStore.steps(listing = id, installed = true),
+        )
+        // A pasted address works like the bare id, and without Garmin's app the page opens in the browser.
+        assertEquals(listOf(StoreStep.OpenAddress(address)), ConnectIqStore.steps(listing = "https://apps.garmin.com/en-US/apps/$id", installed = false))
+    }
+
+    @Test
+    fun somethingThatIsNotAStoreIdNeverBecomesAnAddressToOpen() {
+        assertEquals(ConnectIqStore.steps(listing = "", installed = true), ConnectIqStore.steps(listing = "https://evil.example/apps/$id", installed = true))
+    }
+
+    @Test
+    fun everyAddressTheButtonCanOpenIsGarminsOrThePlayStore() {
+        for (installed in listOf(true, false)) for (listing in listOf("", id)) {
+            for (step in ConnectIqStore.steps(listing, installed)) {
+                if (step is StoreStep.OpenAddress) {
+                    assertTrue(
+                        step.url.startsWith("https://apps.garmin.com/") || step.url.startsWith("market://details?id=com.garmin.") ||
+                            step.url.startsWith("https://play.google.com/store/apps/details?id=com.garmin."),
+                        step.url,
+                    )
+                }
+            }
         }
+    }
+
+    @Test
+    fun theBuiltInListingIsEitherEmptyOrAValidStoreId() {
+        // Fails the build if someone pastes something that is not a store id into the constant.
+        val value = ConnectIqStore.LISTING_ID
+        assertTrue(value.isEmpty() || ConnectIqStore.url(value) != null, "not a store id: $value")
+        assertEquals(value.isNotEmpty(), ConnectIqStore.hasListing)
     }
 }

@@ -26,6 +26,9 @@ class PixelArt(val rows: List<String>) {
 
     /** The same picture flipped left to right. */
     fun mirrored(): PixelArt = PixelArt(rows.map { it.padEnd(columns, '.').reversed() })
+
+    /** The same picture upside down. */
+    fun flipped(): PixelArt = PixelArt(rows.reversed())
 }
 
 /** Draws [art] in one colour; the squares are snapped to whole pixels so no hairline gaps appear between them. */
@@ -217,6 +220,26 @@ object PixelIcons {
     )
 
     val ChevronLeft: PixelArt = ChevronRight.mirrored()
+
+    /** Points down, on a section that is folded away; [ChevronUp] is on one that is open. */
+    val ChevronDown = PixelArt(
+        listOf(
+            "............",
+            "............",
+            ".#........#.",
+            ".##......##.",
+            "..##....##..",
+            "...##..##...",
+            "....####....",
+            ".....##.....",
+            "............",
+            "............",
+            "............",
+            "............",
+        ),
+    )
+
+    val ChevronUp: PixelArt = ChevronDown.flipped()
 
     /**
      * The mark of the app: a pixel heart with a pulse through it. `#` is the outline, `o` the fill, `y` the shine and `w` the
