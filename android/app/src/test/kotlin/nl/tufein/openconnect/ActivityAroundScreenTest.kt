@@ -184,7 +184,8 @@ class ActivityAroundScreenTest : AppTestBase() {
     @Config(qualifiers = "nl-w411dp-h891dp-night-xxhdpi")
     fun theCardIsInDutchToo() {
         launch(ring = true) { repo -> seedWatch(repo); seedRing(repo) }
-        tab("Activiteiten").performClick()
+        // With the ring chosen there are six tabs, and the bar then uses its short word for Activities.
+        tab("Sport").performClick()
         waitForText("Evening run")
         clickText("Evening run")
         waitForText("Afstand")
