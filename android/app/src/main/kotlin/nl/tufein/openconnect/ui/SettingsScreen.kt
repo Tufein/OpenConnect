@@ -331,6 +331,9 @@ fun SettingsScreen(
             VendorCard(ui.ai.canStoreKeys, vendor, onSaveKey, onCheckKey, onForgetKey, onModel)
         }
         item {
+            UpdateCard()
+        }
+        item {
             SectionTitle(stringResource(R.string.settings_about))
             SurfaceCard {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {

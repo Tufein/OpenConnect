@@ -12,8 +12,8 @@ android {
         applicationId = "nl.tufein.openconnect"
         minSdk = 26
         targetSdk = 35
-        versionCode = 47
-        versionName = "0.47.0"
+        versionCode = 48
+        versionName = "0.48.0"
     }
 
     // Release signing. The key is never stored in this repository: a release build reads it from
@@ -101,4 +101,8 @@ dependencies {
     testImplementation(composeBom)
     testImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+}
+tasks.withType<Test> {
+    // Robolectric keeps its dependency cache under the user home; some environments have none set.
+    System.getenv("HOME")?.takeIf { it.isNotBlank() }?.let { systemProperty("user.home", it) }
 }

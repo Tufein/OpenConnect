@@ -982,4 +982,20 @@
     <string name="insight_explain_activity_score">Oura\'s activity score, 0 to 100, from how much you moved, how often you trained and how well you rested in between. 70 or more is good, under 50 means a quiet stretch.</string>
     <string name="insight_explain_lowest_hr">The lowest heart rate of the night as your ring measures it, usually a few beats under the resting heart rate of the day. Lower means better recovery; a rise over several nights can mean stress or illness.</string>
     <string name="insight_explain_temperature">How far your skin temperature was from your own normal during the night, in degrees Celsius. Within half a degree is usual; a rise of a degree or more over several nights can come with illness.</string>
+    <string name="settings_update">Updates</string>
+    <string name="update_current">Current version: %1$s</string>
+    <string name="update_check">Check for updates</string>
+    <string name="update_checking">Checking GitHub…</string>
+    <string name="update_available">Version %1$s is available</string>
+    <string name="update_latest">You are on the latest version.</string>
+    <string name="update_download">Download and verify</string>
+    <string name="update_downloading">Downloading %1$d%%</string>
+    <string name="update_install">Install update</string>
+    <string name="update_note">The APK comes from the GitHub release of this project. Its SHA-256 is checked before Android is asked to install it.</string>
+    <string name="update_permission">Allow OpenConnect to install apps in Android settings, then press Install again.</string>
+    <string name="update_error_network">Could not reach GitHub. Check the connection and try again.</string>
+    <string name="update_error_no_release">GitHub did not return a usable release.</string>
+    <string name="update_error_checksum">The download did not match its checksum. It was not installed.</string>
+    <string name="update_error_storage">The downloaded file could not be saved.</string>
+    <string name="update_error_unknown">The update could not be completed.</string>
 </resources>

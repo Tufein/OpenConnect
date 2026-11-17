@@ -114,6 +114,8 @@ Van [APP-VERGELIJKING.md](APP-VERGELIJKING.md) (8 apps naast OpenConnect) wordt 
 
 - **v0.47.0** ✅ de laatste roadmappunten: activiteiten (met originele FIT-bestanden) via de persoonlijke Garmin-sleutel, Ping/Pull-callbacks die alleen van een HTTPS-allowlist worden opgehaald, optionele aanmelding met één wachtwoord, en health snapshots/epoch summaries zoals ontvangen opgeslagen. ❓ Veldnamen van de laatste twee typen en de callback-layouts zijn nog niet met een echt account gecontroleerd.
 
+- **v0.48.0** ✅ in-app-updater in de Android-app: Instellingen controleert GitHub op een nieuwere release, downloadt de ondertekende APK, controleert de SHA-256 tegen de gepubliceerde checksum en vraagt Android om te installeren (op Android 8+ moet "apps installeren toestaan" eenmalig aan). ❓ Niet op een echte telefoon geprobeerd; de JVM-tests gebruiken een nep-GitHub-server.
+
 ## Later 💡
 
 - Het nieuwere Garmin-protobuf-synchronisatieprotocol voor horloges die de klassieke mapsynchronisatie niet meer gebruiken.

@@ -34,6 +34,10 @@ import nl.tufein.openconnect.data.SettingsStore
 import nl.tufein.openconnect.data.SqliteRepository
 import nl.tufein.openconnect.core.garmin.GarminHttp
 import nl.tufein.openconnect.core.garmin.UrlConnectionGarminHttp
+import nl.tufein.openconnect.core.updates.UpdateHttp
+import nl.tufein.openconnect.core.updates.UrlConnectionUpdateHttp
+import nl.tufein.openconnect.updates.UpdateController
+import java.io.File
 import nl.tufein.openconnect.garmin.GarminController
 import nl.tufein.openconnect.garmin.GarminSettings
 import nl.tufein.openconnect.watch.AndroidGarminBleLink
@@ -92,6 +96,10 @@ class AppContainer(
     ouraSync: BackgroundSync = BackgroundSync { },
     /** Keeps a live heart-rate recording alive with the screen off. Tests pass a fake; the app posts a notification. */
     keeper: LiveRecordingKeeper = NoLiveRecordingKeeper,
+    /** Where a verified update APK is kept until Android installs it. The app uses its own cache directory. */
+    updateDir: File = File(System.getProperty("java.io.tmpdir"), "openconnect-updates"),
+    /** The network to GitHub's releases. Tests pass a fake. */
+    updateHttp: UpdateHttp = UrlConnectionUpdateHttp(),
 ) {
     val stats = StatsService(repository)
 
@@ -146,6 +154,15 @@ class AppContainer(
             }
         }
     }
+
+    /** The in-app updater: GitHub releases, checksum-verified APK in the cache, then Android's installer. */
+    val updates = UpdateController(
+        dir = updateDir,
+        currentVersion = BuildConfig.VERSION_NAME,
+        http = updateHttp,
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+        io = Dispatchers.IO,
+    )
 
     val watch = WatchController(
         repo = repository,
@@ -238,6 +255,7 @@ class OpenConnectApp : Application() {
             widgetRefresh = { summary -> HomeWidget.refresh(this, summary) },
             ouraSync = nl.tufein.openconnect.sync.WorkManagerOuraSync(this),
             keeper = ForegroundLiveRecording(this),
+            updateDir = File(cacheDir, "updates"),
         ) }
     }
 }

@@ -982,4 +982,20 @@
     <string name="insight_explain_activity_score">De activiteitsscore van Oura, van 0 tot 100, uit hoeveel je bewoog, hoe vaak je trainde en hoe goed je ertussen rustte. 70 of meer is goed, onder 50 is een rustige periode.</string>
     <string name="insight_explain_lowest_hr">De laagste hartslag van de nacht zoals je ring die meet, meestal een paar slagen onder de rusthartslag van de dag. Lager betekent beter herstel; een stijging over meerdere nachten kan wijzen op stress of ziekte.</string>
     <string name="insight_explain_temperature">Hoe ver je huidtemperatuur tijdens de nacht van jouw eigen normaal lag, in graden Celsius. Binnen een halve graad is gebruikelijk; een stijging van een graad of meer over meerdere nachten kan bij ziekte horen.</string>
+    <string name="settings_update">Updates</string>
+    <string name="update_current">Huidige versie: %1$s</string>
+    <string name="update_check">Zoek naar updates</string>
+    <string name="update_checking">Zoeken op GitHub…</string>
+    <string name="update_available">Versie %1$s is beschikbaar</string>
+    <string name="update_latest">Je hebt de nieuwste versie.</string>
+    <string name="update_download">Download en controleer</string>
+    <string name="update_downloading">Downloaden %1$d%%</string>
+    <string name="update_install">Update installeren</string>
+    <string name="update_note">De APK komt van de GitHub-release van dit project. De SHA-256 wordt gecontroleerd voordat Android om installatie vraagt.</string>
+    <string name="update_permission">Geef OpenConnect toestemming om apps te installeren in de Android-instellingen en druk daarna opnieuw op Installeren.</string>
+    <string name="update_error_network">GitHub is niet bereikbaar. Controleer de verbinding en probeer het opnieuw.</string>
+    <string name="update_error_no_release">GitHub gaf geen bruikbare release terug.</string>
+    <string name="update_error_checksum">De download past niet bij de checksum. Er is niets geïnstalleerd.</string>
+    <string name="update_error_storage">Het gedownloade bestand kon niet worden opgeslagen.</string>
+    <string name="update_error_unknown">De update kon niet worden voltooid.</string>
 </resources>
