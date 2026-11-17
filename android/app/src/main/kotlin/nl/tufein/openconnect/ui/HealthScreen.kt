@@ -74,8 +74,6 @@ fun HealthScreen(
         val dates = trend.map { it.date }
         fun insightFor(metric: ChartMetric, values: List<Double?>) = ChartInsight.of(metric, dates.zip(values))
         val labels = dates.map { Fmt.shortDate(it) }
-        val first = dates.firstOrNull()
-        val lastDay = dates.lastOrNull()
         section("scores") {
             SectionTitle(stringResource(R.string.scores_title))
             val metrics = OpenConnectColors.metrics
@@ -100,7 +98,7 @@ fun HealthScreen(
             if (values.any { it != null }) {
                 MetricCard(title = stringResource(R.string.score_readiness_30), subtitle = null) {
                     LineChart(values, description = stringResource(R.string.score_readiness_30), color = OpenConnectColors.metrics.readiness, labels = state.readiness.map { Fmt.shortDate(it.first) }, format = { insightValue(ChartMetric.READINESS, it) })
-                    InsightCaption(ChartInsight.of(ChartMetric.READINESS, state.readiness.map { it.first to it.second?.toDouble() }), ChartMetric.READINESS, first, lastDay)
+                    InsightCaption(ChartInsight.of(ChartMetric.READINESS, state.readiness.map { it.first to it.second?.toDouble() }), ChartMetric.READINESS)
                 }
             }
         }
@@ -109,7 +107,7 @@ fun HealthScreen(
             if (values.any { it != null }) {
                 MetricCard(title = stringResource(R.string.score_sleep_30), subtitle = null) {
                     LineChart(values, description = stringResource(R.string.score_sleep_30), color = OpenConnectColors.metrics.sleep, labels = state.sleepScores.map { Fmt.shortDate(it.first) }, format = { insightValue(ChartMetric.SLEEP_SCORE, it) })
-                    InsightCaption(ChartInsight.of(ChartMetric.SLEEP_SCORE, state.sleepScores), ChartMetric.SLEEP_SCORE, first, lastDay)
+                    InsightCaption(ChartInsight.of(ChartMetric.SLEEP_SCORE, state.sleepScores), ChartMetric.SLEEP_SCORE)
                 }
             }
         }
@@ -121,7 +119,7 @@ fun HealthScreen(
                 subtitle = average?.let { stringResource(R.string.avg_per_day, Fmt.thousands(Math.rint(it).toInt())) },
             ) {
                 BarChart(steps, goal = 10_000.0, color = OpenConnectColors.metrics.steps, description = stringResource(R.string.steps), labels = labels, format = { insightValue(ChartMetric.STEPS, it) })
-                InsightCaption(insightFor(ChartMetric.STEPS, steps), ChartMetric.STEPS, first, lastDay)
+                InsightCaption(insightFor(ChartMetric.STEPS, steps), ChartMetric.STEPS)
             }
         }
         section("SLEEP") {
@@ -132,7 +130,7 @@ fun HealthScreen(
                 subtitle = average?.let { stringResource(R.string.avg_hours_per_night, Fmt.oneDecimal(it)) },
             ) {
                 BarChart(sleep, goal = 8.0, color = OpenConnectColors.metrics.sleep, description = stringResource(R.string.sleep), labels = labels, format = { insightValue(ChartMetric.SLEEP, it) })
-                InsightCaption(insightFor(ChartMetric.SLEEP, sleep), ChartMetric.SLEEP, first, lastDay)
+                InsightCaption(insightFor(ChartMetric.SLEEP, sleep), ChartMetric.SLEEP)
             }
         }
         section("RESTING_HR") {
@@ -143,14 +141,14 @@ fun HealthScreen(
                 subtitle = latest?.let { stringResource(R.string.latest_bpm, Math.rint(it).toInt()) },
             ) {
                 LineChart(resting, description = stringResource(R.string.resting_hr), color = OpenConnectColors.metrics.heart, labels = labels, format = { insightValue(ChartMetric.RESTING_HR, it) })
-                InsightCaption(insightFor(ChartMetric.RESTING_HR, resting), ChartMetric.RESTING_HR, first, lastDay)
+                InsightCaption(insightFor(ChartMetric.RESTING_HR, resting), ChartMetric.RESTING_HR)
             }
         }
         section("BODY_BATTERY") {
             val battery = trend.map { it.bodyBatteryHigh?.toDouble() }
             MetricCard(title = stringResource(R.string.body_battery), subtitle = null) {
                 LineChart(battery, description = stringResource(R.string.body_battery), color = OpenConnectColors.metrics.battery, labels = labels, format = { insightValue(ChartMetric.BODY_BATTERY, it) })
-                InsightCaption(insightFor(ChartMetric.BODY_BATTERY, battery), ChartMetric.BODY_BATTERY, first, lastDay)
+                InsightCaption(insightFor(ChartMetric.BODY_BATTERY, battery), ChartMetric.BODY_BATTERY)
             }
         }
         // Values only the watch provides: shown once there is at least one reading in the last 30 days.
@@ -166,7 +164,7 @@ fun HealthScreen(
                 val latest = values.filterNotNull().lastOrNull()
                 MetricCard(title = stringResource(title), subtitle = latest?.let { Fmt.oneDecimal(it) }) {
                     LineChart(values, description = stringResource(title), color = OpenConnectColors.metrics.distance, labels = labels, format = { insightValue(metric, it) })
-                    InsightCaption(insightFor(metric, values), metric, first, lastDay)
+                    InsightCaption(insightFor(metric, values), metric)
                 }
             }
         }
@@ -174,7 +172,7 @@ fun HealthScreen(
             val stress = trend.map { it.avgStress?.toDouble() }
             MetricCard(title = stringResource(R.string.stress), subtitle = null) {
                 LineChart(stress, description = stringResource(R.string.stress), color = OpenConnectColors.metrics.stress, labels = labels, format = { insightValue(ChartMetric.STRESS, it) })
-                InsightCaption(insightFor(ChartMetric.STRESS, stress), ChartMetric.STRESS, first, lastDay)
+                InsightCaption(insightFor(ChartMetric.STRESS, stress), ChartMetric.STRESS)
             }
         }
     }

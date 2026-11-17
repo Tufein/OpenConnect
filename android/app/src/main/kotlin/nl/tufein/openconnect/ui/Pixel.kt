@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,18 +20,23 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -238,6 +244,60 @@ fun PixelChip(
             ProvideTextStyle(MaterialTheme.typography.labelLarge) {
                 if (leadingIcon != null) leadingIcon()
                 label()
+            }
+        }
+    }
+}
+
+/**
+ * A choice among several that drops a list down (v0.44.0): a framed field with the chosen entry and a pixel arrow, and under it
+ * the other entries; the chosen one is filled with ink, like the highlighted entry of a menu. [label] sits above the field.
+ * [name] gives the text of an entry. Use [PixelChip] instead when there are two or three entries and no room is short.
+ */
+@Composable
+fun <T> PixelSelect(
+    label: String,
+    selected: T,
+    options: List<T>,
+    name: (T) -> String,
+    onSelect: (T) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var open by remember { mutableStateOf(false) }
+    val colors = MaterialTheme.colorScheme
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(label, style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant)
+        Box {
+            SecondaryButton(onClick = { open = true }, Modifier.fillMaxWidth()) {
+                Text(name(selected), Modifier.weight(1f), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                PixelIcon(PixelIcons.ChevronDown, size = 16.dp, tint = colors.onSurface)
+            }
+            DropdownMenu(
+                expanded = open,
+                onDismissRequest = { open = false },
+                shape = MaterialTheme.shapes.small,
+                containerColor = colors.surface,
+                tonalElevation = 0.dp,
+                shadowElevation = 0.dp,
+                border = BorderStroke(lineWidth(), inkColor()),
+            ) {
+                for (option in options) {
+                    val chosen = option == selected
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .background(if (chosen) colors.onBackground else Color.Transparent)
+                            .selectable(selected = chosen, role = Role.RadioButton) {
+                                open = false
+                                onSelect(option)
+                            }
+                            .heightIn(min = 44.dp)
+                            .padding(horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(name(option), style = MaterialTheme.typography.bodyMedium, color = if (chosen) colors.background else colors.onSurface)
+                    }
+                }
             }
         }
     }

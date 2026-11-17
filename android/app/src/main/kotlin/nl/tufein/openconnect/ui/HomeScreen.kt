@@ -457,6 +457,8 @@ private fun LoadCard(load: TrainingLoad) {
             color = color,
             goal = load.chronicWeekly,
             height = 90.dp,
+            labels = load.weeks.map { Fmt.shortDate(it.first) },
+            format = { Fmt.thousands(Math.rint(it).toInt()) },
         )
         Text(
             stringResource(R.string.load_summary, Fmt.thousands(Math.rint(load.acute).toInt()), Fmt.thousands(Math.rint(load.chronicWeekly).toInt())),

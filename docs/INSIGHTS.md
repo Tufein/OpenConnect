@@ -169,3 +169,36 @@ A rule of thumb from one number, not medical advice. Code: `core/.../RestingHrTr
 *Home.* Of the last 7 days that have steps, the number whose steps reach that day's step goal (the watch's goal, or 10,000 when none is
 given). At least 3 days with steps are needed. Also shows the rounded average, the busiest day and the goal of the latest day. Code:
 `core/.../StepGoalWeek.kt`.
+
+## Insights per day (v0.44.0)
+
+*Insights, Day.* One day read against your own days before it, from the watch **or** from the Oura Ring, never mixed. Three dropdowns
+(`PixelSelect`) choose the **source** (only offered when both devices are in use), the **day** (the last 60 days, newest first, with
+arrows for the day before and after) and the **measure** that is drawn as a chart under the readings; tapping a reading chooses its chart too.
+The tab opens on the newest day that has data for the chosen source.
+
+- **Readings per source.** Garmin: readiness (OpenConnect's own estimate), sleep score, sleep, steps, resting heart rate, Body Battery,
+  stress, HRV, SpO2, respiration. Oura: readiness and sleep score (Oura's own), activity score, sleep, steps, lowest heart rate of the night,
+  HRV, skin temperature difference, respiration, SpO2. A measure with no number that day is listed on one line ("No reading: ..."), not
+  shown as a zero. A zero resting heart rate, HRV, SpO2 or respiration means "not measured" and is left out.
+- **Usual.** The average of the same measure over the 28 days before the chosen day (the day itself is not part of it), needing at
+  least 3 readings. The percentage compares the day with it; 5% or more counts as *better* or *worse* where one direction is better
+  (steps, sleep, HRV and the scores up; resting and lowest heart rate and stress down; respiration and temperature neither). A skin
+  temperature difference sits around zero, so it has no percentage, only the usual number.
+- **Verdict per reading.** The same limits as the period insight under a chart (steps 10,000 and 7,000, sleep 7 to 9 hours, resting
+  heart rate 60 and 80, and so on), applied to the day's value. Heart rate variability is personal, so it is held against your own usual
+  (within 90% is good, 75% fair) and gets no verdict without one. The two new ring measures use rules of thumb: activity score 70 and 50,
+  lowest heart rate 55 and 70, temperature difference within 0.5 and 1.0 degrees. Not medical advice.
+- **Highest or lowest in 4 weeks** shows when the day is above, or below, every one of the 28 days before it (at least a week of readings).
+- **Chart.** The 30 days up to the chosen day with the day picked, the dates under it and the same words under it as on the Health screen.
+- **Activities of the day.** The watch's (and files') activities by the day they started on, in the phone's own time zone; or the ring's
+  workouts. Tapping one opens it.
+
+Code: `core/.../DayInsights.kt` (`DayRecords`, `DaySeries`, `DayInsights`), `ChartInsight.verdictOfDay`, `app/.../ui/DayScreen.kt`.
+
+## Dates under the charts (v0.44.0)
+
+Every chart that can be read by touch (Health, Oura, the 30-day steps on Home, weekly load, form, VO2max, the day chart) has a row of dates
+under it: the first and the last point and up to three between, each centred under its own point (`DateAxis` in `Charts.kt`; which points
+get one is `core/.../AxisTicks.kt`). Charts without dates (heart rate and elevation of one activity, which run over time, not days) are
+unchanged.

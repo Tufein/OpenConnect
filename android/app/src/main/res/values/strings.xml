@@ -350,7 +350,6 @@
     <string name="insight_better">better</string>
     <string name="insight_worse">worse</string>
     <string name="insight_goal_days">%1$d of %2$d days reached 10,000 steps</string>
-    <string name="insight_axis">%1$s to %2$s</string>
     <string name="insight_note">General guide, not medical advice.</string>
     <string name="insight_explain_steps">Steps counted by your watch each day. Around 7,000 to 10,000 a day is linked with good health; the dashed line is 10,000.</string>
     <string name="insight_explain_sleep">Hours slept per night. Most adults do well on 7 to 9 hours; the dashed line is 8.</string>
@@ -954,4 +953,33 @@
     <string name="around_gap_ring_no_day">The ring has no day here: not worn, or not synced with the Oura app yet.</string>
     <string name="around_gap_ring_hr">The ring\'s heart rate during the effort is not shown: OpenConnect does not ask Oura for it.</string>
     <string name="around_not_live">None of this is live: it is what the watch and the ring had at their last sync.</string>
+    <string name="insights_day">Day</string>
+    <string name="day_source">Source</string>
+    <string name="day_source_garmin">Garmin</string>
+    <string name="day_source_oura">Oura</string>
+    <string name="day_pick">Day</string>
+    <string name="day_measure">Measure</string>
+    <string name="day_previous">Day before</string>
+    <string name="day_next">Day after</string>
+    <string name="day_summary">%1$d of %2$d measures in a good range</string>
+    <string name="day_none">Nothing from %1$s on this day.</string>
+    <string name="day_none_hint">Pick another day, or sync first.</string>
+    <string name="day_usual">usual %1$s</string>
+    <string name="day_higher">%1$s%% higher</string>
+    <string name="day_lower">%1$s%% lower</string>
+    <string name="day_same">about the same</string>
+    <string name="day_highest">highest in 4 weeks</string>
+    <string name="day_lowest">lowest in 4 weeks</string>
+    <string name="day_missing">No reading: %1$s</string>
+    <string name="day_tap_hint">Tap a measure to see it as a chart.</string>
+    <string name="day_chart_title">%1$s, 30 days up to this day</string>
+    <string name="day_workouts">Activities on this day</string>
+    <string name="metric_activity_score">Activity score</string>
+    <string name="insight_explain_steps_ring">Steps counted by your ring each day. Around 7,000 to 10,000 a day is linked with good health; the dashed line is 10,000.</string>
+    <string name="insight_explain_spo2_ring" formatted="false">Blood oxygen. 95 to 100% is normal; lower readings at altitude or from a loose ring are common, persistent values under 90% are worth asking a doctor about.</string>
+    <string name="insight_explain_readiness_ring">Oura\'s own readiness score, 0 to 100, from your sleep, resting heart rate, HRV and temperature against your own normal. 70 or more means ready for a hard day, under 40 means take it easy.</string>
+    <string name="insight_explain_sleep_score_ring">The sleep score your ring gives each night, 0 to 100: 80 or more is good, 60 to 79 fair, below 60 poor. It weighs duration, deep and REM sleep and restlessness.</string>
+    <string name="insight_explain_activity_score">Oura\'s activity score, 0 to 100, from how much you moved, how often you trained and how well you rested in between. 70 or more is good, under 50 means a quiet stretch.</string>
+    <string name="insight_explain_lowest_hr">The lowest heart rate of the night as your ring measures it, usually a few beats under the resting heart rate of the day. Lower means better recovery; a rise over several nights can mean stress or illness.</string>
+    <string name="insight_explain_temperature">How far your skin temperature was from your own normal during the night, in degrees Celsius. Within half a degree is usual; a rise of a degree or more over several nights can come with illness.</string>
 </resources>

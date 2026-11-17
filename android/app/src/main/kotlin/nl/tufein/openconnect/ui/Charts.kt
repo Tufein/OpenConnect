@@ -15,6 +15,7 @@ import androidx.compose.ui.res.stringResource
 import nl.tufein.openconnect.R
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -29,11 +30,15 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.cos
+import kotlin.math.roundToInt
+import nl.tufein.openconnect.core.AxisTicks
 import kotlin.math.max
 import kotlin.math.min
 
@@ -65,8 +70,37 @@ private fun DrawScope.grid(color: Color, lines: Int = 3) {
 }
 
 /**
+ * Dates under a chart (v0.44.0): the first and the last point and a few between, each centred under its own point. [labels]
+ * is one text per point; [bars] says whether the points sit in the middle of equal slots (a bar chart) or on the edges (a line).
+ */
+@Composable
+fun DateAxis(labels: List<String>, bars: Boolean, modifier: Modifier = Modifier, inset: Dp = 0.dp) {
+    val ticks = remember(labels.size) { AxisTicks.indices(labels.size) }
+    if (ticks.isEmpty()) return
+    val color = MaterialTheme.colorScheme.onSurfaceVariant
+    val style = MaterialTheme.typography.labelSmall
+    val insetPx = with(androidx.compose.ui.platform.LocalDensity.current) { inset.toPx() }
+    Layout(
+        content = { for (i in ticks) Text(labels[i], style = style, color = color, maxLines = 1, softWrap = false) },
+        modifier = modifier.fillMaxWidth(),
+    ) { measurables, constraints ->
+        val placeables = measurables.map { it.measure(Constraints()) }
+        val width = constraints.maxWidth
+        val height = placeables.maxOfOrNull { it.height } ?: 0
+        layout(width, height) {
+            placeables.forEachIndexed { k, p ->
+                val centre = insetPx + (width - 2 * insetPx) * AxisTicks.fraction(ticks[k], labels.size, bars)
+                val left = (centre - p.width / 2f).roundToInt().coerceIn(0, (width - p.width).coerceAtLeast(0))
+                p.placeRelative(left, 0)
+            }
+        }
+    }
+}
+
+/**
  * With [labels] (one per value) a chart can be read by touch: tap or slide a finger along it and the line above shows
- * that day and its value, formatted by [format].
+ * that day and its value, formatted by [format]. The same labels give the dates under the chart. [highlight] starts with
+ * one point picked, for a chart that is about one chosen day.
  */
 @Composable
 private fun Inspectable(
@@ -74,6 +108,9 @@ private fun Inspectable(
     labels: List<String>?,
     format: (Double) -> String,
     modifier: Modifier,
+    bars: Boolean,
+    axisInset: Dp,
+    highlight: Int?,
     indexAt: (x: Float, width: Float) -> Int,
     chart: @Composable (Modifier, selected: Int?) -> Unit,
 ) {
@@ -81,7 +118,7 @@ private fun Inspectable(
         chart(modifier, null)
         return
     }
-    var selected by remember(values) { mutableStateOf<Int?>(null) }
+    var selected by remember(values, highlight) { mutableStateOf(highlight?.takeIf { it in values.indices }) }
     var width by remember { mutableStateOf(1f) }
     fun pick(x: Float) {
         selected = indexAt(x, width).coerceIn(0, values.lastIndex)
@@ -102,6 +139,7 @@ private fun Inspectable(
                 },
             i,
         )
+        DateAxis(labels, bars, Modifier.padding(top = 4.dp), axisInset)
     }
 }
 
@@ -115,6 +153,7 @@ fun LineChart(
     height: Dp = 120.dp,
     includeZero: Boolean = false,
     labels: List<String>? = null,
+    highlight: Int? = null,
     format: (Double) -> String = { String.format(java.util.Locale.getDefault(), "%.1f", it) },
 ) {
     val gridColor = MaterialTheme.colorScheme.outlineVariant
@@ -122,7 +161,7 @@ fun LineChart(
     val density = androidx.compose.ui.platform.LocalDensity.current
     val inset = with(density) { 4.dp.toPx() }
     val reveal = rememberReveal(values)
-    Inspectable(values, labels, format, modifier, indexAt = { x, w ->
+    Inspectable(values, labels, format, modifier, bars = false, axisInset = 4.dp, highlight = highlight, indexAt = { x, w ->
         if (values.size < 2) 0 else Math.round((x - inset) / (w - 2 * inset) * (values.size - 1))
     }) { extra, selected ->
     Canvas(Modifier.fillMaxWidth().height(height).then(extra).semantics { contentDescription = description }) {
@@ -186,13 +225,14 @@ fun BarChart(
     goal: Double? = null,
     height: Dp = 120.dp,
     labels: List<String>? = null,
+    highlight: Int? = null,
     format: (Double) -> String = { String.format(java.util.Locale.getDefault(), "%.1f", it) },
 ) {
     val gridColor = MaterialTheme.colorScheme.outlineVariant
     val goalColor = MaterialTheme.colorScheme.secondary
     val cursor = MaterialTheme.colorScheme.onSurface
     val reveal = rememberReveal(values)
-    Inspectable(values, labels, format, modifier, indexAt = { x, w -> (x / (w / values.size)).toInt() }) { extra, selected ->
+    Inspectable(values, labels, format, modifier, bars = true, axisInset = 0.dp, highlight = highlight, indexAt = { x, w -> (x / (w / values.size)).toInt() }) { extra, selected ->
     Canvas(Modifier.fillMaxWidth().height(height).then(extra).semantics { contentDescription = description }) {
         grid(gridColor)
         val present = values.filterNotNull()

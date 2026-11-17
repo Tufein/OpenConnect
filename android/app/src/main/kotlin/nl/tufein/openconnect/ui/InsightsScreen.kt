@@ -29,6 +29,7 @@ import nl.tufein.openconnect.core.Sport
 /** The things under the Insights tab. */
 enum class InsightsTab(val label: Int) {
     Week(R.string.insights_week),
+    Day(R.string.insights_day),
     Trophies(R.string.insights_trophies),
     Coach(R.string.insights_coach),
     Plan(R.string.insights_plan),
@@ -80,6 +81,7 @@ fun InsightsScreen(
     map: MapState = MapState(),
     score: ScoreState = ScoreState(),
     onScoreYear: (Int) -> Unit = {},
+    day: DayState = DayState(),
 ) {
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
         Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -93,6 +95,7 @@ fun InsightsScreen(
         }
         when (tab) {
             InsightsTab.Week -> WeekContent(reports, busy, active, onShiftWeek, onPeriod, onGenerate, onOpenActivity, contentPadding, onOpenHealth, onOpenActivities)
+            InsightsTab.Day -> DayContent(day, contentPadding, onOpenActivity)
             InsightsTab.Trophies -> TrophiesContent(trophies, contentPadding)
             InsightsTab.Coach -> CoachContent(coach, active, onAsk, onClearCoach, onOpenAiSettings, contentPadding)
             InsightsTab.Plan -> PlanContent(plan, onCreatePlan, onDeletePlan, onRace, onSendWorkouts, contentPadding)
