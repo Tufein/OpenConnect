@@ -50,7 +50,12 @@ is on from the system, so it also survives clearing the app's data. The picture 
 grids as the app by `android/tools/launcher_icons.py` (the colours in that script and in `AppIcon.kt` must match; the
 first icon is hand-made). The launcher may take a moment to show the new icon, and on some phones the app closes once.
 
-The watch faces (Clean, Dashboard, Retro, see [WATCH_FACES.md](WATCH_FACES.md)) are separate: they are Connect IQ code
+Since v0.43.0 the whole look is one section of Settings (*Appearance*) that is folded away until its header is tapped
+(`FoldSection` in `Components.kt`): dark or light, style, letters, colour themes and the launcher icon. The header shows what is
+chosen now (for example "Handheld · Retro · Pixel letters"). A new section that is long and not needed every day should fold
+the same way; the body is only composed while it is open.
+
+The watch faces (Clean, Dashboard, Retro, see [WATCH_FACES.md](WATCH_FACES.md)) are not part of the app since v0.43.0: they are Connect IQ code
 for the watch and keep their own three designs.
 
 ## Adding a screen

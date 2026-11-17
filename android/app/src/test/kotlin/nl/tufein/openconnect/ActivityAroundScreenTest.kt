@@ -85,7 +85,9 @@ class ActivityAroundScreenTest : AppTestBase() {
         tab("Activities").performClick()
         waitForText("Evening run")
         clickText("Evening run")
-        waitForText("Around this activity")
+        // The card sits below the activity's own cards, so wait for the top of the screen and scroll down to it.
+        waitForText("Distance")
+        scrollToText("Around this activity")
     }
 
     @Test
@@ -134,7 +136,7 @@ class ActivityAroundScreenTest : AppTestBase() {
         assertTrue(hasText("Oura Ring", substring = true))
         clickText("Lunch walk")
         waitForText("Recorded by the Oura Ring only", substring = true)
-        waitForText("Around this activity")
+        scrollToText("Around this activity")
         scrollToText("None of this is live", substring = true)
         rule.onAllNodes(hasScrollAction())[0].performTouchInput { swipeUp(); swipeUp() }
         rule.waitForIdle()
@@ -185,7 +187,8 @@ class ActivityAroundScreenTest : AppTestBase() {
         tab("Activiteiten").performClick()
         waitForText("Evening run")
         clickText("Evening run")
-        waitForText("Rond deze activiteit")
+        waitForText("Afstand")
+        scrollToText("Rond deze activiteit")
         scrollToText("Body Battery, begin tot eind")
         assertTrue(hasText("62 → 48", substring = false))
         scrollToText("Paraatheid die ochtend")

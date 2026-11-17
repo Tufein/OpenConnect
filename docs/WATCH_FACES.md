@@ -1,8 +1,12 @@
 # OpenConnect watch faces
 
-The `watch/` folder holds a Garmin Connect IQ watch face in Monkey C, in three designs that follow the app: **Clean**
-(a ring around the big time), **Dashboard** (four tiles on black) and **Retro** (a segment bar on indigo). The app's
-*Settings, Watch face preview* shows each one with your numbers and gives the command that builds it.
+> **Since v0.43.0 the watch face is no longer part of the Android app.** The preview, the build-command card and the
+> installer for `.prg` files in *Settings* are gone ("superfluous for now"). This folder and `watch/build.sh` are not part
+> of the APK and are left as they were, so the face can come back later; nothing below needs the app any more.
+> *Settings, Your devices, Open Garmin Connect IQ* opens Garmin's own Connect IQ app, where watch faces are managed.
+
+The `watch/` folder holds a Garmin Connect IQ watch face in Monkey C, in three designs: **Clean**
+(a ring around the big time), **Dashboard** (four tiles on black) and **Retro** (a segment bar on indigo).
 
 ## What is and is not possible
 
@@ -14,7 +18,8 @@ The `watch/` folder holds a Garmin Connect IQ watch face in Monkey C, in three d
   (hold the menu button, *Watch Face*). Colour and fields are fixed **when the face is built**, one `.prg` per variant,
   **unless the face comes from the Connect IQ store**: then design, colour and the four fields are settings in Garmin's
   Connect IQ app (since v0.24.0, see below).
-- The app copies a `.prg` to `GARMIN/Apps` over USB (*Settings, Watch face*, since v0.18.0).
+- Until v0.43.0 the app could copy a `.prg` to `GARMIN/Apps` over USB. That is removed; copy the file yourself, or use
+  Garmin's Connect IQ app.
 
 ## Build one
 
