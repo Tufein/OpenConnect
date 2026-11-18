@@ -7,7 +7,7 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v0.53.0, on the way to 1.0.** It runs end to end on demo data with no account. **Only the Garmin account
+> **Status: v0.54.0, on the way to 1.0.** It runs end to end on demo data with no account. **Only the Garmin account
 > route has been tried live; nothing else has been tried on a real phone, watch, ring or band yet**
 > (see [what is tested](#what-is-tested)). The plan to 1.0 is in [docs/ROADMAP.md](docs/ROADMAP.md).
 > Not affiliated with or endorsed by Garmin, Oura, WHOOP or Hume.
