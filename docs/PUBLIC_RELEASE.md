@@ -24,10 +24,10 @@ Stand op 2026-11-18, na v0.53.0: nog niets aangevinkt dat van een echt apparaat 
 - [ ] Het register in ROADMAP.md, paragraaf 7, is bijgewerkt: geen 🧪 meer zonder label in de app
 
 ### G2 Gegevens veilig
-- [ ] Migratietest vanaf elke uitgebrachte schemaversie
-- [ ] Terugzettest per bron
-- [ ] Volledige export (ZIP) en een test die hem weer inleest
-- [ ] De updater weigert een afwijkende SHA-256 of handtekening met een duidelijke melding (test)
+- [x] Migratietest vanaf elke uitgebrachte schemaversie (v0.56.0: `SchemaMigrationTest`, schema 1 tot en met 5, plus een bewaker voor de volgende)
+- [x] Terugzettest per bron (v0.56.0: `BackupOnRealDatabaseTest` en `UserDataBackupTest`)
+- [x] Volledige export (ZIP) en een test die hem weer inleest (v0.56.0: `ExportAllTest`)
+- [x] De updater weigert een afwijkende SHA-256, een release zonder checksum en een andere ondertekenaar met een duidelijke melding (v0.56.0, `UpdateControllerTest`; de controle van de handtekening van een echte APK is nog niet op een toestel geprobeerd)
 
 ### G3 Sleutel en beveiliging
 - [ ] De sleutel staat in GitHub-secrets (`OPENCONNECT_KEYSTORE_BASE64` en `OPENCONNECT_KEYSTORE_PASSWORD`), één release heeft ze gebruikt

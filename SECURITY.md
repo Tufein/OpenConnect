@@ -29,8 +29,9 @@ with Android 8 stays on v0.51.0, which will not get fixes.
   data-extraction rules that exclude everything); the app's own backup file never contains keys.
 - **What goes to an AI provider:** a short JSON summary of the numbers and the activity names, never the GPS track.
 - **The updater** (`REQUEST_INSTALL_PACKAGES`) downloads the APK from the repository's GitHub releases and checks its
-  SHA-256 against the published checksum before it asks Android to install it. Android itself refuses an APK that is
-  signed with a different key than the installed app.
+  SHA-256 against the published checksum before it asks Android to install it. Since v0.56.0 a release without a checksum
+  file is refused (before, it was accepted unchecked), and so is an APK that is not signed with the same key as the
+  installed app, each with a message that says why. Android itself also refuses a different key.
 - **Release signing:** every release is signed with the same key (certificate SHA-256
   `06b67b82ec65b533343130fea378165b15ef520bc01969f47ff440242dbdf3b7`, common name *OpenConnect release*). A release is
   only published after a step in `release.yml` has checked that the APK carries it. Check a download yourself with

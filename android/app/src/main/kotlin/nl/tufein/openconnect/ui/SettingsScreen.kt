@@ -120,6 +120,7 @@ fun SettingsScreen(
     onAppIcon: (AppIcon) -> Unit = {},
     onBackup: () -> Unit = {},
     onRestore: () -> Unit = {},
+    onExportAll: () -> Unit = {},
     onClearLog: () -> Unit = {},
     onNudges: (Boolean) -> Unit = {},
     onAppLock: (Boolean) -> Unit = {},
@@ -303,6 +304,7 @@ fun SettingsScreen(
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     PrimaryButton(onClick = onBackup) { Text(stringResource(R.string.action_backup)) }
                     SecondaryButton(onClick = onRestore) { Text(stringResource(R.string.action_restore)) }
+                    SecondaryButton(onClick = onExportAll) { Text(stringResource(R.string.action_export_all)) }
                 }
             }
         }

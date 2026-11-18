@@ -38,6 +38,7 @@ import nl.tufein.openconnect.core.TrainingPaces
 import nl.tufein.openconnect.core.TrainingPlans
 import nl.tufein.openconnect.core.Workouts
 import nl.tufein.openconnect.core.BackupException
+import nl.tufein.openconnect.core.ExportAll
 import nl.tufein.openconnect.core.Csv
 import nl.tufein.openconnect.core.DataOverview
 import nl.tufein.openconnect.core.SyncLogEntry
@@ -1135,17 +1136,30 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Writes one compressed file with everything the app holds (no keys) to the chosen place. */
     fun backup(target: Uri) = io {
-        val bytes = Backup.write(repo)
+        val bytes = Backup.write(repo, userData = container.settings.userData())
         val out = getApplication<Application>().contentResolver.openOutputStream(target) ?: throw IOException("unwritable")
         out.use { it.write(bytes) }
         tell(text(R.string.backup_saved, backupFileName()))
     }
 
+    /** One ZIP with CSV, FIT, GPX and the backup file (no keys), written to the chosen place. */
+    fun exportAll(target: Uri) = io {
+        val out = getApplication<Application>().contentResolver.openOutputStream(target) ?: throw IOException("unwritable")
+        out.use { ExportAll.write(repo, container.settings.userData(), java.time.Instant.now(), it) }
+        tell(text(R.string.export_all_saved, exportAllFileName()))
+    }
+
+    fun exportAllFileName(): String = "openconnect-export-" + LocalDate.now() + ".zip"
+
     /** Reads a backup file and merges it in. A file that is not a backup, or is damaged, changes nothing. */
     fun restore(source: Uri) = io {
         val bytes = getApplication<Application>().contentResolver.openInputStream(source)?.use { readLimited(it, BACKUP_MAX_BYTES) } ?: throw IOException("unreadable")
         try {
-            val report = Backup.restore(bytes, repo)
+            val report = Backup.restore(bytes, repo, container.settings.userData())
+            // Only after the whole file was read and checked: the journal, shoes, plan and goals of the backup are added
+            // to this phone's own, never over them.
+            container.settings.applyUserData(report.userData)
+            _goals.value = container.settings.weeklyGoals
             tell(text(R.string.backup_restored, report.activities, report.days + report.nights))
             refreshAll()
         } catch (e: BackupException) {

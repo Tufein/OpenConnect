@@ -110,6 +110,8 @@ class AppContainer(
     updateDir: File = File(System.getProperty("java.io.tmpdir"), "openconnect-updates"),
     /** The network to GitHub's releases. Tests pass a fake. */
     updateHttp: UpdateHttp = UrlConnectionUpdateHttp(),
+    /** Whether a downloaded APK carries the installed app's signature. Tests pass a fake; the app asks Android. */
+    updateSigner: (File) -> Boolean = { true },
 ) {
     val stats = StatsService(repository)
 
@@ -172,6 +174,7 @@ class AppContainer(
         http = updateHttp,
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
         io = Dispatchers.IO,
+        sameSigner = updateSigner,
     )
 
     val watch = WatchController(
@@ -302,6 +305,7 @@ class OpenConnectApp : Application() {
             humeSync = nl.tufein.openconnect.sync.WorkManagerHumeSync(this),
             keeper = ForegroundLiveRecording(this),
             updateDir = File(cacheDir, "updates"),
+            updateSigner = { apk -> nl.tufein.openconnect.updates.ApkSigners.sameAsInstalled(this, apk) },
         ) }
     }
 }

@@ -26,11 +26,20 @@ import java.util.zip.GZIPOutputStream
 class BackupException(message: String) : Exception(message)
 
 /** What a restore brought in. */
-data class RestoreReport(val activities: Int, val days: Int, val nights: Int, val samples: Int, val createdAt: Instant)
+data class RestoreReport(
+    val activities: Int,
+    val days: Int,
+    val nights: Int,
+    val samples: Int,
+    val createdAt: Instant,
+    /** This phone's own data with the backup's added (see [UserData.mergedWith]); the caller stores it. */
+    val userData: UserData = UserData(),
+)
 
 /**
- * One file with everything the app holds: activities with their tracks, daily summaries, sleep and the watch's readings.
- * It is JSON, compressed with gzip. Restoring merges into what is there (same activity, day or reading is replaced by the
+ * One file with everything the app holds: activities with their tracks, daily summaries, sleep, the watch's readings, the
+ * days of the Oura Ring, WHOOP and Hume Band, and (since v0.56.0) the journal, shoes, training plan, race and goals. No
+ * key, token or password is ever in it. It is JSON, compressed with gzip. Restoring merges into what is there (same activity, day or reading is replaced by the
  * backup's copy) and never deletes anything. AI reports and the record of which watch files were read are not part of it:
  * reports can be written again and the next sync simply reads the watch files again.
  */
@@ -41,7 +50,7 @@ object Backup {
     private val FAR_PAST = LocalDate.of(1970, 1, 1)
     private val FAR_FUTURE = LocalDate.of(2200, 1, 1)
 
-    fun write(repo: Repository, now: Instant = Instant.now()): ByteArray {
+    fun write(repo: Repository, now: Instant = Instant.now(), userData: UserData = UserData()): ByteArray {
         val activities = repo.listActivities(limit = Int.MAX_VALUE).mapNotNull { repo.getActivity(it.id) }
         val root = buildJsonObject {
             put("format", FORMAT)
@@ -57,6 +66,8 @@ object Backup {
             put("whoop", JsonArray(repo.listWhoopDays(FAR_PAST, FAR_FUTURE).map { kotlinx.serialization.json.Json.parseToJsonElement(it.toJson()) }))
             // v0.50.0: the Hume Band's days, the same way.
             put("hume", JsonArray(repo.listHumeDays(FAR_PAST, FAR_FUTURE).map { kotlinx.serialization.json.Json.parseToJsonElement(it.toJson()) }))
+            // v0.56.0: what the person wrote or chose, which lives outside the database.
+            put("userData", userDataJson(userData))
         }
         val out = ByteArrayOutputStream()
         GZIPOutputStream(out).use { it.write(root.toString().toByteArray(Charsets.UTF_8)) }
@@ -64,7 +75,7 @@ object Backup {
     }
 
     /** Reads and checks the whole file first; only then is anything written, so a damaged file changes nothing. */
-    fun restore(bytes: ByteArray, repo: Repository): RestoreReport {
+    fun restore(bytes: ByteArray, repo: Repository, current: UserData = UserData()): RestoreReport {
         val root = parse(bytes)
         val createdAt = try {
             Instant.parse(root.str("createdAt") ?: throw BackupException("This backup has no date."))
@@ -78,6 +89,7 @@ object Backup {
         val oura: List<nl.tufein.openconnect.core.oura.OuraDay>
         val whoop: List<nl.tufein.openconnect.core.whoop.WhoopDay>
         val hume: List<nl.tufein.openconnect.core.hume.HumeDay>
+        val theirs: UserData
         try {
             activities = root.list("activities").map { activityOf(it.jsonObject) }
             daily = root.list("daily").map { dailyOf(it.jsonObject) }
@@ -86,6 +98,7 @@ object Backup {
             oura = root.list("oura").map { nl.tufein.openconnect.core.oura.OuraDay.fromJson(it.toString()) }
             whoop = root.list("whoop").map { nl.tufein.openconnect.core.whoop.WhoopDay.fromJson(it.toString()) }
             hume = root.list("hume").map { nl.tufein.openconnect.core.hume.HumeDay.fromJson(it.toString()) }
+            theirs = (root["userData"] as? JsonObject)?.let(::userDataOf) ?: UserData()
         } catch (e: BackupException) {
             throw e
         } catch (e: Exception) {
@@ -98,7 +111,7 @@ object Backup {
         oura.forEach(repo::upsertOuraDay)
         whoop.forEach(repo::upsertWhoopDay)
         hume.forEach(repo::upsertHumeDay)
-        return RestoreReport(activities.size, daily.size, sleep.size, samples.size, createdAt)
+        return RestoreReport(activities.size, daily.size, sleep.size, samples.size, createdAt, current.mergedWith(theirs))
     }
 
     private fun parse(bytes: ByteArray): JsonObject {
@@ -135,6 +148,27 @@ object Backup {
             is Double -> b.put(key, value)
             else -> error("unsupported ${value::class}")
         }
+    }
+
+    private fun userDataJson(u: UserData) = buildJsonObject {
+        put("journal", u.journal)
+        put("gear", u.gear)
+        put("trainingPlan", u.trainingPlan)
+        put("raceGoal", u.raceGoal)
+        put("maxHr", u.maxHr)
+        put("goals", buildJsonArray { listOf(u.weeklyGoals.intensityMinutes, u.weeklyGoals.distanceKm, u.weeklyGoals.activities).forEach { add(JsonPrimitive(it)) } })
+    }
+
+    private fun userDataOf(o: JsonObject): UserData {
+        val goals = (o["goals"] as? JsonArray)?.mapNotNull { it.jsonPrimitive.intOrNull }.orEmpty()
+        return UserData(
+            journal = o.str("journal").orEmpty(),
+            gear = o.str("gear").orEmpty(),
+            trainingPlan = o.str("trainingPlan").orEmpty(),
+            raceGoal = o.str("raceGoal").orEmpty(),
+            maxHr = o["maxHr"]?.jsonPrimitive?.intOrNull ?: 0,
+            weeklyGoals = if (goals.size == 3) WeeklyGoals(goals[0], goals[1], goals[2]).coerced() else WeeklyGoals(),
+        )
     }
 
     private fun activityJson(a: Activity) = buildJsonObject {

@@ -17,7 +17,7 @@ import nl.tufein.openconnect.core.updates.parseRelease
 import java.io.File
 import java.io.IOException
 
-enum class UpdateError { NETWORK, NO_RELEASE, CHECKSUM, STORAGE, UNKNOWN }
+enum class UpdateError { NETWORK, NO_RELEASE, CHECKSUM, NO_CHECKSUM, SIGNATURE, STORAGE, UNKNOWN }
 
 data class UpdateState(
     val checking: Boolean = false,
@@ -31,7 +31,11 @@ data class UpdateState(
 
 private class UpdateFailure(val kind: UpdateError) : RuntimeException(kind.name)
 
-/** Checks GitHub for a newer APK, verifies its checksum and keeps it in the cache until installed. */
+/**
+ * Checks GitHub for a newer APK, verifies its checksum and its signer, and keeps it in the cache until installed.
+ * A release without a checksum file is refused (it cannot be verified), and so is an APK that is not signed by the same key
+ * as the installed app; [sameSigner] answers that for a downloaded file (Android would refuse it too, but with no reason).
+ */
 class UpdateController(
     private val dir: File,
     private val currentVersion: String,
@@ -39,6 +43,7 @@ class UpdateController(
     private val scope: CoroutineScope,
     private val io: CoroutineDispatcher = Dispatchers.IO,
     private val releasesUrl: String = "https://api.github.com/repos/Tufein/OpenConnect/releases/latest",
+    private val sameSigner: (File) -> Boolean = { true },
 ) {
     private val _state = MutableStateFlow(UpdateState())
     val state: StateFlow<UpdateState> = _state.asStateFlow()
@@ -88,12 +93,18 @@ class UpdateController(
                         _state.update { it.copy(progress = percent) }
                     }
                 }
-                val checksumUrl = release.checksumUrl
-                if (checksumUrl != null) {
-                    val checksum = http.get(checksumUrl).toString(Charsets.UTF_8)
-                    if (!matchesSha256(bytes, checksum)) throw UpdateFailure(UpdateError.CHECKSUM)
+                // No checksum file means nothing to check the download against: refuse rather than trust it.
+                val checksumUrl = release.checksumUrl ?: throw UpdateFailure(UpdateError.NO_CHECKSUM)
+                val checksum = http.get(checksumUrl).toString(Charsets.UTF_8)
+                if (!matchesSha256(bytes, checksum)) {
+                    file.delete()
+                    throw UpdateFailure(UpdateError.CHECKSUM)
                 }
                 file.writeBytes(bytes)
+                if (!sameSigner(file)) {
+                    file.delete()
+                    throw UpdateFailure(UpdateError.SIGNATURE)
+                }
                 _state.update { it.copy(progress = 100, ready = true) }
             } catch (e: IOException) {
                 _state.update { it.copy(error = UpdateError.NETWORK) }

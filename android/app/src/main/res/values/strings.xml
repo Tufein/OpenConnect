@@ -432,8 +432,10 @@
     <string name="load_overreaching_text">A big jump over what your body is used to. This is the usual time for niggles and illness: back off a little.</string>
     <string name="load_note">OpenConnect\'s own estimate: minutes times an effort weight from your heart rate, this week against your 4-week average. Not Garmin\'s Training Load, not medical advice.</string>
     <string name="settings_backup">Back up and restore</string>
-    <string name="settings_backup_body">Save everything the app holds in one file: activities with their tracks, daily health, sleep and the watch readings. Restoring adds it back without removing anything. Keys are never in the file.</string>
+    <string name="settings_backup_body">Save everything the app holds in one file: activities with their tracks, daily health, sleep, the readings of your watch, ring and bands, and your journal, shoes, training plan, race and goals. Restoring adds it back without removing or overwriting anything. Keys are never in the file. Export everything makes one ZIP with CSV, FIT and GPX files that other apps can read, with the backup inside.</string>
     <string name="action_backup">Back up</string>
+    <string name="action_export_all">Export everything (ZIP)</string>
+    <string name="export_all_saved">Export saved: %1$s</string>
     <string name="action_restore">Restore</string>
     <string name="backup_saved">Backup saved: %1$s</string>
     <string name="backup_restored">Restored %1$d activities and %2$d days of health data</string>
@@ -1036,6 +1038,8 @@
     <string name="update_error_network">Could not reach GitHub. Check the connection and try again.</string>
     <string name="update_error_no_release">GitHub did not return a usable release.</string>
     <string name="update_error_checksum">The download did not match its checksum. It was not installed.</string>
+    <string name="update_error_no_checksum">This release has no checksum file, so the download cannot be checked. It was not installed.</string>
+    <string name="update_error_signature">The download is not signed with the same key as the installed OpenConnect. It was not installed.</string>
     <string name="update_error_storage">The downloaded file could not be saved.</string>
     <string name="update_error_unknown">The update could not be completed.</string>
 
