@@ -7,7 +7,7 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v0.54.0, on the way to 1.0.** It runs end to end on demo data with no account. **Only the Garmin account
+> **Status: v0.55.0, on the way to 1.0.** It runs end to end on demo data with no account. **Only the Garmin account
 > route has been tried live; nothing else has been tried on a real phone, watch, ring or band yet**
 > (see [what is tested](#what-is-tested)). The plan to 1.0 is in [docs/ROADMAP.md](docs/ROADMAP.md).
 > Not affiliated with or endorsed by Garmin, Oura, WHOOP or Hume.
@@ -63,7 +63,9 @@ Release notes say what was not checked, every time.
 
 The Android app has no server of ours and sends nothing anywhere you did not switch on. If you add an AI key, a short
 JSON summary of your numbers and activity names (never the GPS track) goes to that provider for a report or the coach;
-keys are kept in the Android Keystore. A privacy statement for the app is part of the road to 1.0. The details that
+keys are kept in the Android Keystore. *Settings, About and licences* in the app lists every licence and says, per source,
+whether it was ever tried on a real device; *Share diagnostics* shows the exact report (no keys, tokens, names, health
+values or routes) before anything is shared. A full privacy statement is part of the road to 1.0. The details that
 exist today are in [docs/ANDROID.md](docs/ANDROID.md) and [SECURITY.md](SECURITY.md).
 
 ## The server (self-hosted)

@@ -1,0 +1,64 @@
+name: Hardware trial
+description: Report what happened when you tried a source (watch, ring, band, phone feature) on a real device.
+labels: ["hardware-trial"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for trying it. A source stays labelled *Experimental* in the app until a trial like this worked.
+        Use **Settings, Share diagnostics** in the app and paste the report below. It holds versions, what is switched on
+        and what the last syncs did; keys, tokens, names, health values and routes are left out. Read it before you
+        paste it. Never attach a database, a backup, an export or a screenshot with your own health data.
+  - type: dropdown
+    id: source
+    attributes:
+      label: What did you try?
+      options:
+        - Garmin account with my own key
+        - Garmin watch over USB
+        - Garmin watch over Bluetooth
+        - Live heart rate with the screen off
+        - Training plan sent to the watch
+        - Health Connect
+        - Oura Ring
+        - WHOOP
+        - Hume Band
+        - FIT, GPX or TCX import
+        - Claude or Gemini with my own key
+        - In-app updater
+        - Key vault or app lock
+        - Something else
+    validations:
+      required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: Phone and the watch, ring or band (make and model)
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: Result
+      options:
+        - It worked as described
+        - It worked, with something odd
+        - It did not work
+        - I could not start it
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What you did and what you saw
+      description: Steps, and what you expected against what happened. Numbers may be rounded; do not paste health values you want to keep private.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics report
+      description: Paste the text from Settings, Share diagnostics.
+      render: text
+    validations:
+      required: true

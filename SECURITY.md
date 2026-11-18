@@ -2,8 +2,9 @@
 
 OpenConnect holds your health history and, optionally, AI provider keys and Garmin, Oura or WHOOP logins. Treat the
 database (`openconnect.db` on the server, the app's private storage on the phone) and any backup file as sensitive.
-Never attach them to an issue. A *Share diagnostics* report that leaves keys, tokens, names and health values out is
-planned (milestone M2 in [docs/ROADMAP.md](docs/ROADMAP.md)); until then describe the problem in words.
+Never attach them to an issue. For a problem report use **Settings, Share diagnostics** in the app: it shows the exact
+text first and leaves keys, tokens, names, health values and routes out (a test proves that with fake secrets). Read it
+before you paste it into an issue, and describe the rest in words.
 
 ## Reporting a vulnerability
 
