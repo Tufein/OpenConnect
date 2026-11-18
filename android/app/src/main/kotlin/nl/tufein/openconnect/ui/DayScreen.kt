@@ -42,6 +42,7 @@ import kotlin.math.roundToInt
 private fun sourceName(source: InsightSource): Int = when (source) {
     InsightSource.GARMIN -> R.string.day_source_garmin
     InsightSource.OURA -> R.string.day_source_oura
+    InsightSource.WHOOP -> R.string.day_source_whoop
 }
 
 @Composable
@@ -66,7 +67,7 @@ private fun metricColor(metric: ChartMetric): Color {
         ChartMetric.SLEEP, ChartMetric.SLEEP_SCORE -> m.sleep
         ChartMetric.RESTING_HR, ChartMetric.LOWEST_HR -> m.heart
         ChartMetric.BODY_BATTERY -> m.battery
-        ChartMetric.STRESS, ChartMetric.TEMPERATURE -> m.stress
+        ChartMetric.STRESS, ChartMetric.TEMPERATURE, ChartMetric.STRAIN -> m.stress
         ChartMetric.READINESS -> m.readiness
         ChartMetric.HRV, ChartMetric.SPO2, ChartMetric.RESPIRATION -> m.distance
     }
@@ -90,9 +91,14 @@ fun DayContent(state: DayState, contentPadding: PaddingValues, onOpenActivity: (
         val available = listOfNotNull(
             state.garmin?.let { InsightSource.GARMIN },
             state.oura?.let { InsightSource.OURA },
+            state.whoop?.let { InsightSource.WHOOP },
         )
         val source = available.firstOrNull { it.name == savedSource } ?: available.firstOrNull() ?: return@LazyColumn
-        val set = (if (source == InsightSource.OURA) state.oura else state.garmin) ?: return@LazyColumn
+        val set = when (source) {
+            InsightSource.OURA -> state.oura
+            InsightSource.WHOOP -> state.whoop
+            InsightSource.GARMIN -> state.garmin
+        } ?: return@LazyColumn
         val today = state.today
         val day = DayInsights.pick(set, today, savedDay?.let(LocalDate::ofEpochDay))
         val insight = DayInsights.of(set, day)

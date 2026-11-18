@@ -183,6 +183,24 @@ object PixelIcons {
         ),
     )
 
+    /** A wristband seen from the front, strap above and below and the sensor in the middle: the WHOOP and Hume Band tabs. */
+    val Band = PixelArt(
+        listOf(
+            "############",
+            "############",
+            "............",
+            ".##########.",
+            "##........##",
+            "##..####..##",
+            "##..####..##",
+            "##........##",
+            ".##########.",
+            "............",
+            "############",
+            "############",
+        ),
+    )
+
     /** The back arrow. */
     val ArrowLeft = PixelArt(
         listOf(

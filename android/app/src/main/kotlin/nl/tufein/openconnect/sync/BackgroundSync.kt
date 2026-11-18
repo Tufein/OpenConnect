@@ -159,3 +159,35 @@ class OuraSyncWorker(context: Context, params: WorkerParameters) : CoroutineWork
         return Result.success() // the next run is a quarter of an hour away; no need to retry sooner
     }
 }
+
+/** The WHOOP band's job: about every 15 minutes while a login is saved, when there is a connection. */
+class WorkManagerWhoopSync(private val context: Context) : BackgroundSync {
+    override fun set(enabled: Boolean) {
+        val manager = try {
+            WorkManager.getInstance(context)
+        } catch (_: IllegalStateException) {
+            return
+        }
+        if (!enabled) {
+            manager.cancelUniqueWork(NAME)
+            return
+        }
+        val request = PeriodicWorkRequestBuilder<WhoopSyncWorker>(15, TimeUnit.MINUTES)
+            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).setRequiresBatteryNotLow(true).build())
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 10, TimeUnit.MINUTES)
+            .build()
+        manager.enqueueUniquePeriodicWork(NAME, ExistingPeriodicWorkPolicy.KEEP, request)
+    }
+
+    companion object {
+        const val NAME = "whoop-sync"
+    }
+}
+
+class WhoopSyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+    override suspend fun doWork(): Result {
+        val container = (applicationContext as OpenConnectApp).container
+        if (container.settings.useWhoop) container.whoop.syncInBackground(java.time.Duration.ofMinutes(10))
+        return Result.success() // the next run is a quarter of an hour away; no need to retry sooner
+    }
+}

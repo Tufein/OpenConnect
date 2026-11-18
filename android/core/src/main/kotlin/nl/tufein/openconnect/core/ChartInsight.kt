@@ -24,6 +24,9 @@ enum class ChartMetric {
 
     /** How far the skin was from its normal temperature during the night, in degrees Celsius. */
     TEMPERATURE,
+
+    /** The WHOOP band's day strain on its 0 to 21 scale (v0.49.0): how hard the day was, which is neither good nor bad. */
+    STRAIN,
     ;
 
     /** Whether a rising line is good news; null when neither direction is better (breathing rate). */
@@ -31,7 +34,7 @@ enum class ChartMetric {
         get() = when (this) {
             STEPS, SLEEP, BODY_BATTERY, HRV, SPO2, READINESS, SLEEP_SCORE, ACTIVITY_SCORE -> true
             RESTING_HR, STRESS, LOWEST_HR -> false
-            RESPIRATION, TEMPERATURE -> null
+            RESPIRATION, TEMPERATURE, STRAIN -> null
         }
 }
 
@@ -126,6 +129,8 @@ data class ChartInsight(
             ChartMetric.ACTIVITY_SCORE -> pick(avg >= 70, avg >= 50)
             ChartMetric.LOWEST_HR -> pick(avg <= 55, avg <= 70)
             ChartMetric.TEMPERATURE -> pick(abs(avg) <= 0.5, abs(avg) <= 1.0)
+            // WHOOP's own bands: up to 9 light, 10 to 13 moderate, 14 to 17 high, 18 and over all out. A week that sits in the first three is balanced.
+            ChartMetric.STRAIN -> pick(avg in 6.0..17.0, avg in 4.0..18.5)
         }
 
         /**
@@ -134,6 +139,8 @@ data class ChartInsight(
          */
         fun verdictOfDay(metric: ChartMetric, value: Double, usual: Double?): Verdict? = when (metric) {
             ChartMetric.HRV -> usual?.let { verdictOf(metric, it, value) }
+            // One hard day is not a bad day: strain is only judged over a period.
+            ChartMetric.STRAIN -> null
             else -> verdictOf(metric, value, value)
         }
 

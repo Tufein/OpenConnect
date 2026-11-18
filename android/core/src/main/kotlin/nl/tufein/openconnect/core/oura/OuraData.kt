@@ -2,24 +2,22 @@ package nl.tufein.openconnect.core.oura
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import java.time.Instant
+import nl.tufein.openconnect.core.BandWorkout
 import java.time.LocalDate
 
 /** A workout the ring saw (or that was entered in the Oura app). Kept apart from the watch's activities. */
 @Serializable
 data class OuraWorkout(
-    val id: String,
+    override val id: String,
     /** Oura's name for it, such as "running" or "cycling". */
-    val activity: String,
+    override val activity: String,
     val label: String? = null,
-    val startMs: Long,
-    val endMs: Long,
-    val calories: Int? = null,
-    val distanceM: Double? = null,
-) {
-    val start: Instant get() = Instant.ofEpochMilli(startMs)
-    val durationS: Long get() = ((endMs - startMs) / 1000).coerceAtLeast(0)
-    val name: String get() = label?.takeIf { it.isNotBlank() } ?: activity.replace('_', ' ').replaceFirstChar { it.uppercase() }
+    override val startMs: Long,
+    override val endMs: Long,
+    override val calories: Int? = null,
+    override val distanceM: Double? = null,
+) : BandWorkout {
+    override val name: String get() = label?.takeIf { it.isNotBlank() } ?: activity.replace('_', ' ').replaceFirstChar { it.uppercase() }
 }
 
 /**

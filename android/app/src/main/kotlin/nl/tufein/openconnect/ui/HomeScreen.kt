@@ -77,6 +77,8 @@ fun HomeScreen(
     useGarmin: Boolean = true,
     /** Opens the Oura tab; null for someone without a ring. */
     onOura: (() -> Unit)? = null,
+    /** Opens the WHOOP tab; null for someone without a band. */
+    onWhoop: (() -> Unit)? = null,
 ) {
     val badge = syncBadge(garmin).takeIf { useGarmin }
     val metrics = OpenConnectColors.metrics
@@ -214,6 +216,9 @@ fun HomeScreen(
                     }
                     if (onOura != null) {
                         SecondaryButton(onClick = onOura, Modifier.weight(1f)) { Text(stringResource(R.string.tab_oura), maxLines = 1) }
+                    }
+                    if (onWhoop != null) {
+                        SecondaryButton(onClick = onWhoop, Modifier.weight(1f)) { Text(stringResource(R.string.tab_whoop), maxLines = 1) }
                     }
                     SecondaryButton(onClick = onCoach, Modifier.weight(1f)) { Text(stringResource(R.string.action_coach_short), maxLines = 1) }
                 }
@@ -373,10 +378,10 @@ fun ActivityRow(activity: Activity, onOpen: (String) -> Unit, modifier: Modifier
             SportBadge(activity.sport)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(activity.name, style = MaterialTheme.typography.titleMedium, maxLines = 1)
-                // A workout that only the Oura Ring recorded says so in the list (v0.43.0).
-                val fromRing = activity.source == nl.tufein.openconnect.core.RingWorkouts.SOURCE
+                // A workout that only the Oura Ring or the WHOOP band recorded says so in the list (v0.43.0, v0.49.0).
+                val band = nl.tufein.openconnect.core.BandSource.entries.firstOrNull { it.source == activity.source }
                 Text(
-                    stringResource(sportLabel(activity.sport)) + " · " + Fmt.dateTime(activity.startTime) + if (fromRing) " · " + stringResource(R.string.source_oura) else "",
+                    stringResource(sportLabel(activity.sport)) + " · " + Fmt.dateTime(activity.startTime) + if (band != null) " · " + band.device else "",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,

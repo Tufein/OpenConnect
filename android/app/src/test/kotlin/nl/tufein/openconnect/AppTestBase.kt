@@ -37,15 +37,16 @@ abstract class AppTestBase {
 
     /** Start the activity on an empty database. [prepare] runs first, for example to install fake USB and Bluetooth. */
     /**
-     * Starts the app on an empty database. The first-start questions count as answered (Garmin on, Oura off) unless
-     * [onboarded] is false; [oura] switches the Oura Ring on as if it was chosen there.
+     * Starts the app on an empty database. The first-start questions count as answered (Garmin on, Oura and WHOOP off) unless
+     * [onboarded] is false; [oura] and [whoop] switch the Oura Ring and the WHOOP band on as if they were chosen there.
      */
-    protected fun launchFresh(onboarded: Boolean = true, oura: Boolean = false, prepare: (OpenConnectApp) -> Unit = {}) {
+    protected fun launchFresh(onboarded: Boolean = true, oura: Boolean = false, whoop: Boolean = false, prepare: (OpenConnectApp) -> Unit = {}) {
         val ctx = ApplicationProvider.getApplicationContext<Context>()
         ctx.deleteDatabase("openconnect.db")
         ctx.getSharedPreferences("settings", Context.MODE_PRIVATE).edit()
             .putBoolean("onboarded", onboarded)
             .putBoolean("use_oura", oura)
+            .putBoolean("use_whoop", whoop)
             .commit()
         resetStaticViewModelFactory()
         prepare(ctx as OpenConnectApp)

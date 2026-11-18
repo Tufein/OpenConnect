@@ -27,9 +27,10 @@ import nl.tufein.openconnect.R
  * Garmin or without an Oura Ring is never bothered by it. It can be changed later under Settings, "Your devices".
  */
 @Composable
-fun OnboardingScreen(initial: SourcesUi, onDone: (garmin: Boolean, oura: Boolean) -> Unit) {
+fun OnboardingScreen(initial: SourcesUi, onDone: (garmin: Boolean, oura: Boolean, whoop: Boolean) -> Unit) {
     var garmin by rememberSaveable { mutableStateOf(initial.garmin) }
     var oura by rememberSaveable { mutableStateOf(initial.oura) }
+    var whoop by rememberSaveable { mutableStateOf(initial.whoop) }
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
             Modifier.safeDrawingPadding().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 24.dp),
@@ -42,13 +43,14 @@ fun OnboardingScreen(initial: SourcesUi, onDone: (garmin: Boolean, oura: Boolean
             SurfaceCard {
                 DeviceSwitch(stringResource(R.string.device_garmin), stringResource(R.string.device_garmin_body), garmin) { garmin = it }
                 DeviceSwitch(stringResource(R.string.device_oura), stringResource(R.string.device_oura_body), oura) { oura = it }
+                DeviceSwitch(stringResource(R.string.device_whoop), stringResource(R.string.device_whoop_body), whoop) { whoop = it }
             }
             Text(
-                stringResource(if (!garmin && !oura) R.string.onboarding_none else R.string.onboarding_later),
+                stringResource(if (!garmin && !oura && !whoop) R.string.onboarding_none else R.string.onboarding_later),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            PrimaryButton(onClick = { onDone(garmin, oura) }, modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
+            PrimaryButton(onClick = { onDone(garmin, oura, whoop) }, modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
                 Text(stringResource(R.string.onboarding_start))
             }
         }

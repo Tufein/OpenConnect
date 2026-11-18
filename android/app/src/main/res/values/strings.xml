@@ -924,7 +924,7 @@
     <string name="connect_iq_open_listing">Open OpenConnect in Connect IQ</string>
     <string name="connect_iq_note">Opens Garmin\'s Connect IQ app on this phone, where you manage the watch faces and apps of your watch. Without that app the Play Store opens, so you can install it.</string>
     <string name="connect_iq_failed">Connect IQ could not be opened: this phone has no Garmin app, no Play Store and no browser for it.</string>
-    <string name="ring_row_note">Recorded by the Oura Ring only. It is listed here, but it does not count in totals, training load, records or trophies, and it has no heart rate or route.</string>
+    <string name="ring_row_note">Recorded by the %1$s only. It is listed here, but it does not count in totals, training load, records or trophies, and it has no heart rate or route.</string>
     <string name="around_title">Around this activity</string>
     <string name="around_watch">Watch</string>
     <string name="around_body_battery">Body Battery, start to end</string>
@@ -998,4 +998,57 @@
     <string name="update_error_checksum">The download did not match its checksum. It was not installed.</string>
     <string name="update_error_storage">The downloaded file could not be saved.</string>
     <string name="update_error_unknown">The update could not be completed.</string>
+
+    <!-- WHOOP band (v0.49.0). The client id, secret, redirect, paste, log out, forget and schedule texts are shared with the Oura screen (oura_*). -->
+    <string name="action_whoop">Open the WHOOP tab</string>
+    <string name="synclog_whoop">WHOOP</string>
+    <string name="source_whoop">WHOOP</string>
+    <string name="tab_whoop">WHOOP</string>
+    <string name="device_whoop">WHOOP band</string>
+    <string name="device_whoop_body">Its own tab with recovery, strain, nights and workouts</string>
+    <string name="day_source_whoop">WHOOP</string>
+    <string name="whoop_title">WHOOP</string>
+    <string name="whoop_intro">Your WHOOP band gets its own tab here: recovery, day strain, sleep performance, nights, resting heart rate, HRV and workouts. It is kept apart from your watch and your ring, so nothing is counted twice. OpenConnect reads WHOOP\'s developer API with an application of your own, so no key of OpenConnect\'s is involved.</string>
+    <string name="whoop_step1">1. Make an application at WHOOP</string>
+    <string name="whoop_step1_body">Sign in at the WHOOP Developer Dashboard (WHOOP asks for a team first), create an application, tick the scopes read:recovery, read:cycles, read:workout and read:sleep, and add %1$s as its redirect URI. WHOOP then shows a client ID and a client secret.</string>
+    <string name="whoop_open_apps">Open the WHOOP Developer Dashboard</string>
+    <string name="whoop_step2">2. Enter the application</string>
+    <string name="whoop_cannot_store">This phone cannot keep a secret safely, so OpenConnect does not store a WHOOP login.</string>
+    <string name="whoop_step3">3. Log in at WHOOP</string>
+    <string name="whoop_step3_body">Your browser opens WHOOP\'s login. After you allow it, the browser comes back to OpenConnect and the last 30 days are synced. If it does not come back, copy the address the browser ends up on and paste it below.</string>
+    <string name="whoop_log_in">Log in at WHOOP</string>
+    <string name="whoop_problem_login">The login did not work. Check that the redirect URI is exactly the same at WHOOP and here, and try again.</string>
+    <string name="whoop_problem_expired">The WHOOP login has ended. Log in again.</string>
+    <string name="whoop_problem_forbidden">WHOOP refused: the application needs the scopes read:recovery, read:cycles, read:workout and read:sleep. Tick them in the dashboard and log in again.</string>
+    <string name="whoop_problem_rate">WHOOP asks to wait a moment. The next sync will try again.</string>
+    <string name="whoop_problem_network">No connection to WHOOP. The next sync will try again.</string>
+    <string name="whoop_problem_server">WHOOP answered something unexpected. The next sync will try again.</string>
+    <string name="whoop_no_days">Connected. The band\'s days appear here after the first sync.</string>
+    <string name="whoop_today">Latest day: %1$s</string>
+    <string name="whoop_recovery">Recovery</string>
+    <string name="whoop_strain">Strain</string>
+    <string name="whoop_sleep">Sleep</string>
+    <string name="whoop_of_21">of 21</string>
+    <string name="whoop_percent">%1$d%%</string>
+    <string name="whoop_last_night">Last night</string>
+    <string name="whoop_no_night">No scored night from the band for this day.</string>
+    <string name="whoop_night_line">%1$s asleep, %2$s deep, %3$s REM</string>
+    <string name="whoop_night_need">WHOOP says you needed %1$s; sleep performance %2$d%%, efficiency %3$d%%</string>
+    <string name="whoop_resting_hr">resting heart rate %1$d bpm</string>
+    <string name="whoop_hrv_ms">HRV %1$s ms</string>
+    <string name="whoop_breaths">%1$s breaths a minute</string>
+    <string name="whoop_spo2_line">blood oxygen %1$s%%</string>
+    <string name="whoop_skin_temp">skin %1$s °C</string>
+    <string name="whoop_day_line">%1$d kcal, average %2$d bpm, highest %3$d bpm</string>
+    <string name="whoop_chart_recovery" formatted="false">Recovery (%)</string>
+    <string name="whoop_chart_strain">Strain (0 to 21)</string>
+    <string name="whoop_chart_sleep">Sleep (hours)</string>
+    <string name="whoop_chart_hrv">HRV (ms)</string>
+    <string name="whoop_chart_rhr">Resting heart rate</string>
+    <string name="whoop_workouts">Workouts from the band</string>
+    <string name="whoop_workout_extra">strain %1$s, %2$d bpm average</string>
+    <string name="metric_strain">Strain</string>
+    <string name="insight_explain_readiness_whoop">WHOOP\'s recovery score, 0 to 100, from your HRV, resting heart rate, sleep and breathing against your own normal. 67 or more is green (ready for strain), 34 to 66 yellow, under 34 red.</string>
+    <string name="insight_explain_sleep_score_whoop" formatted="false">WHOOP\'s sleep performance, 0 to 100%: how much of the sleep your body needed you got. 85 or more is good, 70 to 84 fair, under 70 poor.</string>
+    <string name="insight_explain_strain">WHOOP\'s day strain on a scale from 0 to 21 (the higher you get, the harder it is to climb): under 10 is light, 10 to 13 moderate, 14 to 17 high, 18 and over all out. More strain is not better or worse; it should fit your recovery.</string>
 </resources>
