@@ -22,7 +22,7 @@ interface Unlocker {
 
 /**
  * Android 11 and newer: the system's biometric prompt, which also accepts the PIN, pattern or password.
- * Older versions (down to Android 8): the screen lock's own confirm screen. Nothing is stored; Android keeps the secret.
+ * Older versions (Android 9 and 10): the screen lock's own confirm screen. Nothing is stored; Android keeps the secret.
  */
 class DeviceUnlocker(private val activity: ComponentActivity) : Unlocker {
     private val keyguard get() = activity.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager

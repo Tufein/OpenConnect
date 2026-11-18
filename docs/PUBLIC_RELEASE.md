@@ -1,0 +1,119 @@
+# De weg naar 1.0: afvinklijst, proefronde en terugdraaiplan
+
+Het plan staat in [ROADMAP.md](ROADMAP.md). Dit bestand is de lijst die je afvinkt. **1.0 gaat uit als elk vakje van de zeven poorten
+(paragraaf 1) is aangevinkt.** Een vakje gaat pas aan met bewijs: een link naar de pull request, een testnaam, of een regel in
+de proefronde (paragraaf 2) met datum en versie.
+
+Stand op 2026-11-18, na v0.51.0: nog niets aangevinkt dat van een echt apparaat afhangt; de rest is nog niet gebouwd.
+
+## 1. Go/no-go per poort
+
+### G1 Echt getest
+- [ ] Installeren van de APK en controle van de SHA-256 (T1)
+- [ ] Eerste start, demodata, wissen (T2)
+- [ ] Bestanden importeren, hetzelfde bestand twee keer geeft geen dubbele activiteit (T3)
+- [ ] Bijwerken over een oudere versie heen, gegevens blijven staan, en de updater onder Instellingen (T4)
+- [ ] Garmin-account met een eigen sleutel (T5)
+- [ ] fenix 8 over USB (T6)
+- [ ] fenix 8 over Bluetooth (T7)
+- [ ] Live hartslag met het scherm uit (T8)
+- [ ] Health Connect lezen en schrijven (T9)
+- [ ] Back-up, alles wissen, terugzetten (T13)
+- [ ] App-vergrendeling, thema's en iconen op een echte telefoon (T14)
+- [ ] Oura, Claude, Gemini, WHOOP en Hume: elke bron is **getest** (T10 tot en met T12) of draagt het label *Experimenteel* in de app en in de docs
+- [ ] Het register in ROADMAP.md, paragraaf 7, is bijgewerkt: geen 🧪 meer zonder label in de app
+
+### G2 Gegevens veilig
+- [ ] Migratietest vanaf elke uitgebrachte schemaversie
+- [ ] Terugzettest per bron
+- [ ] Volledige export (ZIP) en een test die hem weer inleest
+- [ ] De updater weigert een afwijkende SHA-256 of handtekening met een duidelijke melding (test)
+
+### G3 Sleutel en beveiliging
+- [ ] De sleutel staat in GitHub-secrets (`OPENCONNECT_KEYSTORE_BASE64` en `OPENCONNECT_KEYSTORE_PASSWORD`), één release heeft ze gebruikt
+- [ ] Een offline kopie van het sleutelbestand en het wachtwoord ligt bij Stefan (niet in de repository, niet in een issue)
+- [ ] Het privé-conceptrelease "Signing key" is verwijderd, ná de vorige twee
+- [ ] Privé melden van kwetsbaarheden staat aan; `SECURITY.md` klopt met de code
+- [ ] Geen openstaande beveiligingsmeldingen van afhankelijkheden
+- [x] Minimum Android op 9 gezet (Stefan, 2026-11-18, v0.52.0): sleutelwissel met een bewijsketen werkt daardoor op elke ondersteunde telefoon (zie paragraaf 4)
+
+### G4 Kwaliteit
+- [ ] De 13 Dependabot-voorstellen zijn samengevoegd of met reden gesloten
+- [ ] Drie CI-runs op rij groen zonder opnieuw starten, op `main`
+- [ ] Prestatiebudget gehaald (vijf jaar aan gegevens, openingstijd per tabblad)
+- [ ] Toegankelijkheidstests en taalpariteit staan in CI
+- [ ] Geen bekende crash of dataverlies in de issues
+
+### G5 Begrijpelijk
+- [ ] README opnieuw (kort, actueel, wat is getest)
+- [ ] Installatiegids (APK, "apps installeren toestaan", controle van de SHA-256, bijwerken, ook met Obtainium)
+- [ ] Privacyverklaring in het Nederlands en Engels, ook in de app
+- [ ] Schermafbeeldingen van een echte telefoon
+- [ ] Uitleg bij de eerste start
+
+### G6 Juridisch en naam
+- [ ] Alle licenties van gebruikte onderdelen zijn zichtbaar in de app
+- [ ] De Garmin-disclaimer staat in de app en in de README
+- [ ] **Besluit over de naam: nog open** (houden of veranderen; er bestaat al een bekende VPN-client die OpenConnect heet). Voorlopig blijft het OpenConnect
+
+### G7 Verspreiding
+- [x] Besluit welke kanalen: **alleen GitHub** (Stefan, 2026-11-18). Winkels komen na 1.0
+- [ ] De release met APK, SHA-256 en uitleg werkt (APK en SHA-256 zijn er al; de uitleg komt in M6)
+- [ ] Iemand die het project niet kent kan de installatiegids volgen tot een draaiende app (T1)
+
+## 2. Proefronde op echte apparaten
+
+Voor Stefan. Doe de stappen op je eigen telefoon en horloge, in deze volgorde (de belangrijkste eerst), en schrijf per stap het
+resultaat op. Vanaf mijlpaal M2 (zie [ROADMAP.md](ROADMAP.md)) geeft Instellingen een knop **Diagnose delen**: die maakt een tekst zonder sleutels, namen of
+gezondheidswaarden. Plak die in een nieuwe GitHub-melding met het sjabloon "Hardwaretest". Tot die er is: een schermafbeelding van
+het **Synclogboek** (Instellingen) en een korte beschrijving.
+
+Noteer bij elke stap de **versie van de app** (die staat in Instellingen) en de **datum**.
+
+| ID | Stap | Verwacht | Als het misgaat |
+|----|------|----------|-----------------|
+| T1 | Download `openconnect-vX.Y.Z.apk` en het `.sha256`-bestand van de releasepagina. Controleer: `sha256sum -c openconnect-vX.Y.Z.apk.sha256`. Installeer en open | "OK" bij de controle, de app start, de eerste start vraagt welke apparaten je gebruikt | Schermafbeelding van de melding van Android |
+| T2 | Kies je toestellen, tik **Demodata laden**, loop alle tabbladen door, wis daarna alle gegevens (Instellingen, Jouw gegevens) | Alles heeft inhoud na het laden en is leeg na het wissen, geen crash | Welk tabblad, wat je zag |
+| T3 | Deel een FIT-, GPX- of TCX-bestand met OpenConnect (of kies het onder Jouw gegevens). Doe het **twee keer** met hetzelfde bestand | De activiteit staat er één keer, met route en grafieken | Naam van het bestand en wat er misging |
+| T4 | Installeer een nieuwere release **over** de oudere heen. Daarna Instellingen, Updates: laat de updater zoeken | Gegevens en sleutels staan er nog, de updater zegt dat je bij bent of biedt de nieuwere aan | Schermafbeelding, versies voor en na |
+| T5 | Maak je eigen Garmin-sleutel (zie [GARMIN.md](GARMIN.md)), plak hem onder Je toestellen, synchroniseer. Vergelijk de stappen en de slaap van **één dag** met de Garmin Connect-app | Dezelfde stappen en slaaptijd (kleine verschillen in afronding mogen), activiteiten met hun FIT-bestand | Welk getal verschilt, voor welke dag |
+| T6 | Sluit de fenix 8 met de kabel aan, onder Horloge: **Horloge uitlezen met een USB-kabel** | Telling van gelezen bestanden en nieuwe activiteiten, de laatste activiteit klopt met het horloge | De melding (bijvoorbeeld "antwoordde niet als opslagapparaat") |
+| T7 | Koppel het horloge over Bluetooth en synchroniseer ([BLUETOOTH.md](BLUETOOTH.md)) | Activiteiten, stappen, slaap en hartslag komen binnen, het Synclogboek noemt "Horloge (Bluetooth)" | Het Synclogboek en of het horloge om een koppelcode vroeg |
+| T8 | Zet op het horloge hartslag uitzenden aan, start onder Horloge **Live hartslag**, zet het scherm uit en loop tien minuten. Open daarna de app en sla op als activiteit | De melding bleef staan en telde door, de opgeslagen activiteit heeft de tien minuten | Of de melding verdween en na hoeveel minuten |
+| T9 | Zet Health Connect aan (Instellingen, Health Connect), sta de rechten toe. Schrijf een activiteit weg en lees stappen en slaap terug | De activiteit staat in Health Connect, geen dubbel geteld, de dagen zijn aangevuld | Welke rechten Android toonde en weigerde |
+| T10 | **Alleen met een Oura Ring:** log in met je eigen Oura-toepassing, synchroniseer, open het Oura-tabblad en het Dag-tabblad van Inzichten. Vergelijk paraatheid en slaapscore met de Oura-app voor dezelfde dag | Dezelfde scores | De foutmelding en op welke stap |
+| T11 | Voeg een eigen Claude- of Gemini-sleutel toe, vraag een weekverslag en één vraag aan de coach | Een antwoord in je taal, geen GPS-track in het verzoek | De foutmelding |
+| T12 | **Alleen met WHOOP of een Hume Band:** doe hetzelfde als T10 (zie [WHOOP.md](WHOOP.md), [HUME.md](HUME.md)) | Eigen tabblad met herstel en slaap (WHOOP) of slaap, stappen en hartslag (Hume) | De foutmelding en op welke stap |
+| T13 | Maak een back-up (Back-up en herstel), wis alle gegevens, zet de back-up terug | Alle activiteiten, dagen en nachten zijn terug, de sleutels niet (die moet je opnieuw invoeren) | Wat ontbreekt |
+| T14 | Zet App-vergrendeling aan, kies een ander app-icoon, wissel twee thema's, zet de lettergrootte van Android op de grootste stand | De vergrendeling vraagt om je vinger of schermcode, het icoon wisselt, geen afgesneden tekst | Schermafbeelding waar het knelt |
+| T15 | Kopieer een training van je plan naar het horloge (USB, `GARMIN/NewFiles`) en open hem op het horloge | De training staat in de lijst en start | Of het horloge hem weigert, met de naam van het bestand |
+
+Een stap die niet kan (geen ring, geen band) hoef je niet te doen: die bron blijft dan *Experimenteel* in 1.0, en dat staat in de app.
+
+## 3. De kandidaat (release candidate)
+
+1. **Bevriezen:** vanaf de eerste kandidaat alleen reparaties en teksten. Een nieuwe functie wacht op 1.1.
+2. **Voorlopige uitgave:** `release.yml` krijgt een voorlopig-optie, zodat `v1.0.0-rc.1` als **GitHub pre-release** uitkomt. De updater vraagt `releases/latest` van GitHub, dat voorlopige uitgaven overslaat, dus een kandidaat wordt niemand opgedrongen; een test bewijst dat. De versiecontrole in de workflow moet `1.0.0-rc.1` (tag), `1.0.0rc1` (Python) en `1.0.0-rc.1` (Android) aan elkaar koppelen.
+3. **Wachttijd:** minstens 7 dagen dagelijks gebruik van de kandidaat op Stefans eigen telefoon met het horloge erbij. Elke afwijking wordt een melding met het diagnose-rapport.
+4. **Nieuwe kandidaat** bij elke reparatie (`rc.2`, `rc.3`); de wachttijd begint opnieuw voor wat de reparatie raakt.
+5. **Go/no-go:** paragraaf 1 helemaal aangevinkt. Eén ontbrekend vakje is een "nee", tenzij Stefan het schriftelijk uitstelt met een reden.
+6. **v1.0.0** via dezelfde workflow, daarna de gewone controle: SHA-256 gelijk aan het `.sha256`-bestand, dezelfde handtekening, en installeren over de laatste kandidaat heen met behoud van gegevens.
+
+## 4. Terugdraaiplan
+
+Android laat een app niet terug naar een lager versienummer gaan, dus **terugdraaien betekent vooruit repareren**.
+
+- **Fout in 1.0.0, geen gegevensverlies:** zet de release in GitHub op *pre-release* (dan biedt de updater hem niet meer aan), publiceer `1.0.1` met de reparatie en zet er in de release-notities bij wat er mis was.
+- **Fout die gegevens beschadigt of wist:** eerst een release die het schrijven stopt of er een export voor aanbiedt, met in de notities hoe iemand uit een back-up terugkeert; daarna de echte reparatie. Het vorige schema blijft leesbaar (dat is het belang van de migratietests).
+- **Sleutel verloren:** zonder de sleutel kan geen update meer over bestaande installaties heen; iedereen zou eerst een export moeten maken en opnieuw installeren. Daarom ligt er een offline kopie (G3).
+- **Sleutel gelekt of gecompromitteerd:** Android kent sleutelwissel met een bewijsketen (APK Signature Scheme v3). Die werkt vanaf Android 9, en sinds v0.52.0 is dat het minimum, dus de nieuwe sleutel kan over bestaande installaties heen zonder dat iemand opnieuw hoeft te installeren. Het vraagt wel een ondertekeningsstap met `apksigner rotate` en een test dat de keten klopt; die staat nog niet klaar.
+- **Na 1.0, als er winkels zijn:** de GitHub-release blijft het referentiepunt; een winkelvariant volgt die.
+
+## 5. Aankondigen
+
+Alleen met Stefans uitdrukkelijke akkoord, niets gaat vanzelf de wereld in:
+
+- [ ] Releasenotes van 1.0.0 in het Nederlands en Engels, met wat is getest en wat *Experimenteel* is
+- [ ] README en `CHANGELOG.md` kloppen met 1.0.0
+- [ ] De uitleg bij het installeren en het controleren van de SHA-256 staat bovenaan de release
+- [ ] Waar het bericht heen gaat (eigen kanalen, forums, een lijst met open-source Garmin-alternatieven) kiest Stefan

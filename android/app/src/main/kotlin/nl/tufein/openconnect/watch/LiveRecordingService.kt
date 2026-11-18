@@ -48,12 +48,7 @@ class LiveRecordingService : Service() {
     }
 
     private fun stopForegroundCompat() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-        } else {
-            @Suppress("DEPRECATION")
-            stopForeground(true)
-        }
+        stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
     companion object {
@@ -104,12 +99,11 @@ class LiveRecordingService : Service() {
         }
 
         /**
-         * Makes sure the notification channel exists. Android 8 and newer refuse a foreground-service notification whose
-         * channel does not exist yet and end the app with it, so this runs for every notification that is built,
+         * Makes sure the notification channel exists. Android refuses a foreground-service notification whose
+         * channel does not exist yet and ends the app with it, so this runs for every notification that is built,
          * including the very first one handed to `startForeground`. A channel that exists already is left alone.
          */
         fun ensureChannel(context: Context) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
             val manager = context.getSystemService(NotificationManager::class.java) ?: return
             // The notification is refreshed every second; only ask the system when the channel is not there yet.
             if (manager.getNotificationChannel(CHANNEL) == null) {
