@@ -94,9 +94,13 @@ abstract class AppTestBase {
     protected fun hasText(text: String, substring: Boolean): Boolean =
         rule.onAllNodesWithText(text, substring = substring).fetchSemanticsNodes().isNotEmpty()
 
+    /**
+     * A cold start (bundled fonts, first composition) is slow on a shared CI runner: four runs timed out at 15 s and passed on
+     * the next try, so the wait is 45 s. A screen that is really missing still fails, just later.
+     */
     protected fun waitForText(text: String, substring: Boolean = false) {
         try {
-            rule.waitUntil(15_000) { hasText(text, substring) }
+            rule.waitUntil(45_000) { hasText(text, substring) }
         } catch (e: Throwable) {
             println("--- screen when waiting for \"$text\" ---\n" + rule.onRoot().printToString(maxDepth = 8))
             throw e

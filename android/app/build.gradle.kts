@@ -12,8 +12,8 @@ android {
         applicationId = "nl.tufein.openconnect"
         minSdk = 28
         targetSdk = 35
-        versionCode = 52
-        versionName = "0.52.0"
+        versionCode = 53
+        versionName = "0.53.0"
     }
 
     // Release signing. The key is never stored in this repository: a release build reads it from
@@ -105,4 +105,9 @@ dependencies {
 tasks.withType<Test> {
     // Robolectric keeps its dependency cache under the user home; some environments have none set.
     System.getenv("HOME")?.takeIf { it.isNotBlank() }?.let { systemProperty("user.home", it) }
+    // A failed test prints its whole exception (not just the top frame), so a flaky CI run can be explained afterwards.
+    testLogging {
+        events("failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
 }

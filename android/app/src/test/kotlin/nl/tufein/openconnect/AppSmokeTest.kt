@@ -31,7 +31,7 @@ class AppSmokeTest : AppTestBase() {
         shot("01-home-empty")
 
         rule.onNodeWithText("Load demo data").performClick()
-        rule.waitUntil(15_000) { !hasText("Load demo data", substring = false) }
+        rule.waitUntil(45_000) { !hasText("Load demo data", substring = false) }
         shot("02-home")
 
         tab("Activities").performClick()
@@ -79,7 +79,7 @@ class AppSmokeTest : AppTestBase() {
     fun healthChartsSayWhatTheyMean() {
         waitForText("Load demo data")
         rule.onNodeWithText("Load demo data").performClick()
-        rule.waitUntil(15_000) { !hasText("Load demo data", substring = false) }
+        rule.waitUntil(45_000) { !hasText("Load demo data", substring = false) }
         tab("Health").performClick()
         rule.waitForIdle()
 
@@ -112,7 +112,7 @@ class AppSmokeTest : AppTestBase() {
     fun settingsShowBackupDataSourcesAndTheSyncLog() {
         waitForText("Load demo data")
         rule.onNodeWithText("Load demo data").performClick()
-        rule.waitUntil(15_000) { !hasText("Load demo data", substring = false) }
+        rule.waitUntil(45_000) { !hasText("Load demo data", substring = false) }
 
         tab("Settings").performClick()
         rule.waitForIdle()
@@ -135,7 +135,7 @@ class AppSmokeTest : AppTestBase() {
     fun homeShowsGoalsAndTrainingLoadAndGoalsCanBeChangedInSettings() {
         waitForText("Load demo data")
         rule.onNodeWithText("Load demo data").performClick()
-        rule.waitUntil(15_000) { !hasText("Load demo data", substring = false) }
+        rule.waitUntil(45_000) { !hasText("Load demo data", substring = false) }
 
         scrollToText("Goals this week")
         assertTrue(hasText("goals reached", substring = true))
@@ -173,7 +173,7 @@ class AppSmokeTest : AppTestBase() {
     fun dutchLightThemeFitsTheNavigationBar() {
         waitForText("Demodata laden")
         rule.onNodeWithText("Demodata laden").performClick()
-        rule.waitUntil(15_000) { !hasText("Demodata laden", substring = false) }
+        rule.waitUntil(45_000) { !hasText("Demodata laden", substring = false) }
         shot("nl-light-home")
         tab("Activiteiten").performClick()
         rule.waitForIdle()

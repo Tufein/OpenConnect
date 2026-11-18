@@ -61,9 +61,9 @@ class InsightsAndAiScreenTest : AppTestBase() {
     private fun loadDemo() {
         waitForText("Load demo data")
         rule.onNodeWithText("Load demo data").performClick()
-        rule.waitUntil(15_000) { !hasText("Load demo data", substring = false) }
+        rule.waitUntil(45_000) { !hasText("Load demo data", substring = false) }
         // Let the "Demo data loaded" message go, so the screenshots show the screen and not the message over it.
-        rule.waitUntil(15_000) { !hasText("Demo data loaded", substring = true) }
+        rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
     }
 
     private fun typeInto(label: String, text: String) {

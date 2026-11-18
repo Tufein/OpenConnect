@@ -31,8 +31,8 @@ class CalendarScreenTest : AppTestBase() {
         launchFresh()
         waitForText("Load demo data")
         rule.onNodeWithText("Load demo data").performClick()
-        rule.waitUntil(15_000) { !hasText("Load demo data", substring = false) }
-        rule.waitUntil(15_000) { !hasText("Demo data loaded", substring = true) }
+        rule.waitUntil(45_000) { !hasText("Load demo data", substring = false) }
+        rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
         tab("Insights").performClick()
         waitForText("Week of", substring = true)
         rule.onNodeWithText("Calendar").performClick()

@@ -46,8 +46,8 @@ class SettingsFoldAndConnectIqTest : AppTestBase() {
     private fun loadDemo() {
         waitForText("Load demo data")
         clickText("Load demo data")
-        rule.waitUntil(15_000) { !hasText("Load demo data", substring = false) }
-        rule.waitUntil(15_000) { !hasText("Demo data loaded", substring = true) }
+        rule.waitUntil(45_000) { !hasText("Load demo data", substring = false) }
+        rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
     }
 
     // ------------------------------------------------------------------ the look settings fold away

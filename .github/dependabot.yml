@@ -10,6 +10,14 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # One pull request per family instead of one per library, so CI judges a set of related updates together.
+    groups:
+      androidx:
+        patterns: ["androidx.*"]
+      kotlin:
+        patterns: ["org.jetbrains.*"]
+      test-tools:
+        patterns: ["org.robolectric*", "junit*"]
   - package-ecosystem: docker
     directory: /
     schedule:
@@ -19,3 +27,6 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns: ["*"]
