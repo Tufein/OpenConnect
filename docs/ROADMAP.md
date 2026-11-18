@@ -22,7 +22,7 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   2. De README is een muur van "New in vX" en zegt nog "an early foundation"; er is geen privacyverklaring.
   3. De ondertekeningssleutel staat in een privé-conceptrelease in plaats van in GitHub-secrets.
   4. Dertien Dependabot-voorstellen (#43 tot en met #55) liggen open, sommige met grote sprongen (Compose-BOM 2024.10 naar 2026.09).
-  5. De in-app-updater (`REQUEST_INSTALL_PACKAGES`) past niet in Google Play of F-Droid; een winkelversie vraagt een tweede variant.
+  5. De in-app-updater (`REQUEST_INSTALL_PACKAGES`) past niet in Google Play of F-Droid. **Besloten op 2026-11-18: 1.0 komt alleen op GitHub**, dus de updater blijft en winkels komen na 1.0 (paragraaf 6).
   6. Een proefrond op echte apparaten levert niets op zonder diagnose: er is geen "deel een rapport"-knop.
   7. De naam: er bestaat al een bekende VPN-client die OpenConnect heet. Zoeken en winkelnamen kunnen daardoor botsen.
 
@@ -52,7 +52,7 @@ wie zelf host, met zijn beschreven beperkingen ([SECURITY.md](../SECURITY.md)); 
 | **G4 Kwaliteit** | Drie CI-runs op rij groen zonder opnieuw starten, afhankelijkheden bij, prestatiebudgetten gehaald, geen bekende crash | Claude |
 | **G5 Begrijpelijk** | README opnieuw, installatiegids, privacyverklaring (NL en EN), schermafbeeldingen van een echte telefoon, uitleg bij de eerste start | Claude, Stefan levert schermafbeeldingen |
 | **G6 Juridisch en naam** | Overzicht van alle licenties in de app, Garmin-disclaimer in de app, keuze over de naam gemaakt | Stefan beslist |
-| **G7 Verspreiding** | Gekozen kanalen werken (minstens GitHub-releases met uitleg over installeren en bijwerken); winkelvarianten alleen als gekozen | Stefan beslist |
+| **G7 Verspreiding** | **Besloten op 2026-11-18: alleen GitHub.** De release met APK, SHA-256 en uitleg over installeren, controleren en bijwerken (ook met Obtainium) is voor een vreemde te volgen | Claude |
 
 ## 4. De mijlpalen
 
@@ -105,20 +105,21 @@ Klaar als: de toegankelijkheidstests en taalpariteit in CI staan en groen zijn.
 
 - **Prestatiebudget:** een gegenereerde historie van vijf jaar (ongeveer 1800 activiteiten met tracks en dagrijen) en een test op de openingstijd van elk tabblad en op het geheugen van de heatmap; opstarttijd gemeten.
 - **Verkleinen:** R8 en het verkleinen van resources beoordeeld (de APK is 11 MB), met een test dat de serialisatie en reflectie nog werken.
-- **targetSdk omhoog** (nu 35; Google verlangt voor nieuwe versies meestal een recenter niveau, controleer de actuele eis), met de lijst van gedragswijzigingen afgewerkt.
+- **targetSdk bijhouden:** nu 35. Zonder Google Play is er geen verplichte datum; omhoog alleen als een nieuwe Android-versie het vraagt, met de lijst van gedragswijzigingen afgewerkt.
 - **Batterij:** de voorgrondservice voor live hartslag en de synchronisatie elke 10 minuten bij open app doorgemeten.
 
 Klaar als: het budget in CI staat en de APK niet groter is geworden dan 12 MB.
 
-### M6: v0.57.0 "Verspreiding" 🔜 (M, deels ❓ Stefan)
+### M6: v0.57.0 "Installeren en vertrouwen" 🔜 (S tot M)
 
-- **Twee varianten van de app:** `direct` (de GitHub-APK, met de updater) en `store` (zonder `REQUEST_INSTALL_PACKAGES` en zonder updater). Per variant een manifesttest.
+Besloten op 2026-11-18: 1.0 verschijnt **alleen op GitHub**. De app houdt daarom haar updater en er komt geen aparte winkelvariant voor 1.0.
+
 - **Privacyverklaring** (`docs/PRIVACY.md`, Nederlands en Engels, ook in de app): niets gaat naar een server van ons, wat een AI-aanbieder krijgt als je een sleutel toevoegt, hoe Health Connect gebruikt wordt, hoe je alles wist.
-- **Installatiegids:** "zo installeer en update je OpenConnect" voor de GitHub-APK (ook met Obtainium), met de controle van de SHA-256.
-- **Winkelvoorbereiding, alleen voor de gekozen kanalen:** de teksten en antwoorden voor de Health Connect-verklaring en Google Play's gegevensveiligheid, en een `fastlane/metadata`-boom voor F-Droid. Let op: F-Droid ondertekent met een eigen sleutel, dus die APK installeert niet over de GitHub-APK heen; dat staat dan in de gids.
+- **Installatiegids:** "zo installeer en update je OpenConnect" voor de GitHub-APK (ook met Obtainium), met de controle van de SHA-256 en een uitleg over "apps installeren toestaan".
+- **Releasepagina als voordeur:** een vaste kop in elke release met installeren, controleren en wat is getest, zodat een vreemde zonder de README toekan.
 - **Echte schermafbeeldingen** van Stefans telefoon in plaats van de Robolectric-plaatjes.
 
-Klaar als: de gekozen kanalen hebben een gids die een vreemde kan volgen.
+Klaar als: iemand die het project niet kent de gids kan volgen tot een draaiende app.
 
 ### M7: v0.58.0 en v0.59.0 "Proefrondes" 🔜 (L, loopt vanaf M2, Stefan bepaalt het tempo)
 
@@ -141,7 +142,7 @@ Klaar als: G1 groen is.
 | Voor M1 klaar is | De sleutel in GitHub-secrets zetten en een offline kopie bewaren | Alleen de eigenaar bewaart een kopie; secrets maak je in de instellingen van de repository |
 | Voor M1 klaar is | Privé melden van kwetsbaarheden aanzetten (Settings, Security) | Een instelling van de eigenaar |
 | Zodra M2 uit is | De proefronde op echte apparaten: telefoon, fenix 8, en de ring of banden die je hebt | Alleen jij hebt de apparaten en de accounts |
-| Voor M6 begint | Kiezen waar 1.0 uitkomt: alleen GitHub, ook F-Droid, ook Google Play (eenmalig ongeveer 25 dollar voor een ontwikkelaarsaccount) | Kosten, account en verantwoordelijkheid zijn van de eigenaar |
+| ✅ 2026-11-18 | Gekozen waar 1.0 uitkomt: alleen GitHub | Gedaan: winkels (F-Droid, Google Play) komen na 1.0 |
 | Voor M8 begint | Beslissen over de naam: houden of veranderen (de pakketnaam `nl.tufein.openconnect` verandert in elk geval niet) | Het is jouw project en jouw merk |
 | Bij M6 | Schermafbeeldingen van je eigen telefoon aanleveren | Mijn plaatjes komen uit een test, niet van een toestel |
 
@@ -149,6 +150,7 @@ Klaar als: G1 groen is.
 
 Geen belofte, wel de volgorde als er iets bijkomt:
 
+- **Winkels (1.1 of later):** F-Droid en Google Play, met een variant `store` zonder updater en zonder `REQUEST_INSTALL_PACKAGES`, de Health Connect-verklaring, de antwoorden op Google Play's gegevensveiligheid en een `fastlane/metadata`-boom. F-Droid ondertekent met een eigen sleutel, dus die APK installeert niet over de GitHub-APK heen. Google Play vraagt eenmalig ongeveer 25 dollar voor een ontwikkelaarsaccount en een recent genoeg targetSdk.
 - **Dagboekvakjes uitbreiden** en een **trend van actieve tijd** (uit de app-vergelijking, sectie 7): klein en past bij wat er is.
 - **Garmin's nieuwere protobuf-synchronisatie** voor horloges die de klassieke map niet meer gebruiken.
 - **Het watchface** terug, als er een Garmin-ontwikkelaarsaccount en een eerste upload zijn (de Monkey C-map staat nog in `watch/` maar is nooit gecompileerd).

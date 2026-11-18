@@ -46,7 +46,7 @@ Stand op 2026-11-18, na v0.51.0: nog niets aangevinkt dat van een echt apparaat 
 
 ### G5 Begrijpelijk
 - [ ] README opnieuw (kort, actueel, wat is getest)
-- [ ] Installatiegids (APK, controle van de SHA-256, bijwerken, ook met Obtainium)
+- [ ] Installatiegids (APK, "apps installeren toestaan", controle van de SHA-256, bijwerken, ook met Obtainium)
 - [ ] Privacyverklaring in het Nederlands en Engels, ook in de app
 - [ ] Schermafbeeldingen van een echte telefoon
 - [ ] Uitleg bij de eerste start
@@ -57,9 +57,9 @@ Stand op 2026-11-18, na v0.51.0: nog niets aangevinkt dat van een echt apparaat 
 - [ ] **Besluit over de naam** (houden of veranderen; er bestaat al een bekende VPN-client die OpenConnect heet)
 
 ### G7 Verspreiding
-- [ ] **Besluit welke kanalen** (alleen GitHub, ook F-Droid, ook Google Play)
-- [ ] GitHub-releases met APK, SHA-256 en uitleg werken (zijn er al)
-- [ ] Voor elk gekozen winkelkanaal: de variant zonder updater, de teksten en de verklaringen die die winkel vraagt
+- [x] Besluit welke kanalen: **alleen GitHub** (Stefan, 2026-11-18). Winkels komen na 1.0
+- [ ] De release met APK, SHA-256 en uitleg werkt (APK en SHA-256 zijn er al; de uitleg komt in M6)
+- [ ] Iemand die het project niet kent kan de installatiegids volgen tot een draaiende app (T1)
 
 ## 2. Proefronde op echte apparaten
 
@@ -107,7 +107,7 @@ Android laat een app niet terug naar een lager versienummer gaan, dus **terugdra
 - **Fout die gegevens beschadigt of wist:** eerst een release die het schrijven stopt of er een export voor aanbiedt, met in de notities hoe iemand uit een back-up terugkeert; daarna de echte reparatie. Het vorige schema blijft leesbaar (dat is het belang van de migratietests).
 - **Sleutel verloren:** zonder de sleutel kan geen update meer over bestaande installaties heen; iedereen zou eerst een export moeten maken en opnieuw installeren. Daarom ligt er een offline kopie (G3).
 - **Sleutel gelekt of gecompromitteerd:** Android kent sleutelwissel met een bewijsketen (APK Signature Scheme v3), maar alleen vanaf Android 9. Omdat het minimum nu Android 8.0 is, moeten gebruikers van Android 8 dan opnieuw installeren. Dit is het enige grote risico dat vooraf nadenken vraagt: besluit in G3 of het minimum voor 1.0 omhoog gaat of niet.
-- **Een winkel weigert of haalt een versie weg:** de GitHub-release blijft het referentiepunt; de winkelvariant volgt.
+- **Na 1.0, als er winkels zijn:** de GitHub-release blijft het referentiepunt; een winkelvariant volgt die.
 
 ## 5. Aankondigen
 
