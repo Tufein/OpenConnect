@@ -8,5 +8,6 @@
       or table change needs an explicit, tested step for databases that already exist
 - [ ] Android-only change: built and tested from `android/` with its own workflow commands
 - [ ] `docs/releases/v<next>.md` written, and `pyproject.toml` + `android/app/build.gradle.kts`
-      version bumped together (one release tag drives both)
+      version bumped together (one release tag drives both), then `python tools/changelog.py`
+      regenerates `CHANGELOG.md` (a test fails when it is stale)
 - [ ] Health data stays out of the diff: no real database, FIT/GPX/TCX file, token or AI key
