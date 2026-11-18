@@ -93,7 +93,7 @@ Klaar als: Stefan een proefstap kan doen en een rapport kan terugsturen waar gee
 
 Klaar als: een database van elke eerdere release opent in de nieuwe versie met alle gegevens.
 
-### M4: "Toegankelijk en tweetalig" 🔜 (M)
+### M4: "Toegankelijk en tweetalig" ✅ v0.57.0 (M)
 
 - **TalkBack en toegankelijkheid:** elk scherm doorgelopen, grafieken met een tekstsamenvatting, aanraakdoelen van minstens 48 dp (getest, ook in de pixelstijl), lettergrootte 200 procent zonder afgesneden tekst.
 - **Taalpariteit:** een test dat elke tekst in Nederlands en Engels bestaat, geen overgebleven Engelse tekst in het Nederlands, meervouden kloppen.
@@ -217,6 +217,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v0.54.0 | Eerste echte signaal van Stefans telefoon: Home zegt welke dag het toont (gisteren of ouder) en Body Battery is "hoogste" |
 | v0.55.0 | M2: Over-scherm met licenties en Garmin-disclaimer, label per bron (getest of experimenteel), *Diagnose delen* zonder geheimen, privacy-uitleg bij de eerste start, sjabloon "Hardwaretest" |
 | v0.56.0 | M3: back-up met dagboek, schoenen, plan en doelen, alles exporteren als ZIP, migratietest vanaf elke schemaversie, updater weigert een release zonder checksum en een APK met een andere ondertekenaar |
+| v0.57.0 | M4: toegankelijkheidscontrole in de tests (labels, 48 dp, afgekapte tekst; gewone telefoon, 200 procent letters en tablet), grafieken in woorden, schakelaars als één bedieningselement, inhoud op leesbreedte op brede schermen, taalcontrole |
 
 ## 9. Hoe releases werken
 

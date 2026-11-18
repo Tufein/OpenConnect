@@ -174,7 +174,7 @@ class OuraAndTouchScreenTest : AppTestBase() {
         waitForText("Latest:", substring = true) // the resting heart rate chart on the Health screen
         val hints = rule.onAllNodesWithText("Tap or slide along the chart to read a day.").fetchSemanticsNodes().size
         assertTrue(hints >= 1)
-        rule.onNode(hasContentDescription("Resting heart rate")).performTouchInput { click(center) }
+        rule.onNode(hasContentDescription("Resting heart rate", substring = true)).performTouchInput { click(center) }
         rule.waitUntil(5_000) { rule.onAllNodesWithText(" bpm", substring = true).fetchSemanticsNodes().size >= 2 }
         assertEquals(hints - 1, rule.onAllNodesWithText("Tap or slide along the chart to read a day.").fetchSemanticsNodes().size)
         shot("40-chart-touch")

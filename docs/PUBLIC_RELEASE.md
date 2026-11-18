@@ -42,7 +42,7 @@ Stand op 2026-11-18, na v0.53.0: nog niets aangevinkt dat van een echt apparaat 
 - [ ] De 13 Dependabot-voorstellen zijn samengevoegd of met reden gesloten
 - [ ] Drie CI-runs op rij groen zonder opnieuw starten, op `main`
 - [ ] Prestatiebudget gehaald (vijf jaar aan gegevens, openingstijd per tabblad)
-- [ ] Toegankelijkheidstests en taalpariteit staan in CI
+- [x] Toegankelijkheidstests en taalpariteit staan in CI (v0.57.0: `AccessibilityAuditTest`, `LanguageParityTest`; een echte TalkBack-ronde op een telefoon blijft nodig, T14)
 - [ ] Geen bekende crash of dataverlies in de issues
 
 ### G5 Begrijpelijk

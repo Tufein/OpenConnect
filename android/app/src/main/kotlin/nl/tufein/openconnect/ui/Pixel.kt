@@ -25,6 +25,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.DropdownMenu
@@ -165,7 +167,8 @@ private fun ButtonBase(
                 .then(if (framed) Modifier.border(lineWidth(), if (enabled) ink else ink.copy(alpha = 0.3f), shape) else Modifier)
                 .clip(shape)
                 .clickable(interactionSource = interaction, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
-                .heightIn(min = 44.dp)
+                // 48 dp is the smallest target a thumb reliably hits (the Android accessibility guideline).
+                .heightIn(min = 48.dp)
                 .padding(horizontal = if (framed) 18.dp else 10.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -321,6 +324,40 @@ fun PixelSwitch(checked: Boolean, onCheckedChange: ((Boolean) -> Unit)?, modifie
         contentAlignment = if (checked) Alignment.CenterEnd else Alignment.CenterStart,
     ) {
         Box(Modifier.size(18.dp).background(if (enabled) colors.onBackground else colors.outline, if (retro) androidx.compose.ui.graphics.RectangleShape else androidx.compose.foundation.shape.CircleShape))
+    }
+}
+
+/**
+ * A switch with its words as one control: the whole row is the switch (role Switch, the texts inside are its label for a
+ * screen reader), at least 48 dp high, so a thumb finds it and TalkBack says what it switches. The switch itself only draws.
+ * [switchFirst] puts the switch before the words, as the small settings rows do; the device rows put it after.
+ */
+@Composable
+fun SwitchRow(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    switchFirst: Boolean = true,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Row(
+        modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onCheckedChange)
+            .padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (switchFirst) {
+            PixelSwitch(checked = checked, onCheckedChange = null, enabled = enabled)
+            Spacer(Modifier.width(12.dp))
+        }
+        Column(Modifier.weight(1f), content = content)
+        if (!switchFirst) {
+            Spacer(Modifier.width(12.dp))
+            PixelSwitch(checked = checked, onCheckedChange = null, enabled = enabled)
+        }
     }
 }
 

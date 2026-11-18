@@ -81,6 +81,20 @@ English and Dutch. The look is one of its own, "Handheld" (see [DESIGN.md](DESIG
 - **The updater** refuses a release without a checksum file, a download that does not match it, and an APK signed with
   another key than the installed app (`updates/ApkSigners.kt`).
 
+### Accessible and bilingual (v0.57.0)
+
+- **`AccessibilityAuditTest`** walks Home, Activities, Health, Insights, Settings, About and an activity, with demo data, in
+  three set-ups (a normal phone, letters at 200 percent, a tablet width), scrolling each list, and fails on: a tappable
+  thing with no label for a screen reader, a tappable thing under 48 by 48 dp, and text cut off at the bottom. It found and
+  fixed: switches that had no label of their own (`SwitchRow` now makes the whole row one switch, with the words as its
+  label), buttons and tiles under 48 dp, and an unlabelled text field.
+- **Charts are read as words:** each chart's description is its name plus how many values it has and the lowest, highest
+  and latest (`core/ChartSummary.kt`).
+- **Wide screens:** the screens stop at a reading width of 640 dp in the middle, instead of stretching across a tablet.
+- **`LanguageParityTest`:** every text exists in Dutch and English with the same placeholders, plurals and list lengths, and
+  no long Dutch text is identical to the English one.
+- Not done by a test: a real TalkBack run on a phone, reading order, and focus order (step T14 in PUBLIC_RELEASE.md).
+
 ## How it is built
 
 ```

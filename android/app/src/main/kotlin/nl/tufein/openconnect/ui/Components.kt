@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -253,7 +254,7 @@ fun MetricTile(
     series: List<Double?> = emptyList(),
     onClick: (() -> Unit)? = null,
 ) {
-    Panel(modifier.tappable(onClick), tint = color, padding = 14.dp, spacing = 2.dp) {
+    Panel(modifier.heightIn(min = 48.dp).tappable(onClick), tint = color, padding = 14.dp, spacing = 2.dp) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             ColorDot(color)
             Spacer(Modifier.width(6.dp))
