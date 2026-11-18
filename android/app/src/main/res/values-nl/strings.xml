@@ -54,7 +54,7 @@
     <string name="about_licences_title">Licenties</string>
     <string name="about_garmin_disclaimer">Garmin, Garmin Connect en fenix zijn handelsmerken van Garmin Ltd. of zijn dochterondernemingen. OpenConnect is niet verbonden aan of goedgekeurd door Garmin.</string>
     <string name="about_privacy_title">Privacy</string>
-    <string name="about_privacy_body">OpenConnect heeft geen server van ons. Je gegevens blijven op deze telefoon. Alleen wat je aanzet gaat naar buiten: je Garmin-, Oura- of WHOOP-account, een AI-aanbieder als je een sleutel toevoegt (een korte samenvatting van cijfers en namen van activiteiten, nooit de route) en GitHub als je naar een update zoekt. Sleutels blijven in de Android Keystore. Een volledige privacyverklaring komt met versie 1.0.</string>
+    <string name="about_privacy_body">OpenConnect heeft geen server van ons. Je gegevens blijven op deze telefoon. Alleen wat je aanzet gaat naar buiten: je Garmin-, Oura- of WHOOP-account, een AI-aanbieder als je een sleutel toevoegt (een korte samenvatting van cijfers en namen van activiteiten, nooit de route) en GitHub als je naar een update zoekt. Sleutels blijven in de Android Keystore. De lijst hieronder zegt waarheen, en de volledige verklaring is één tik weg.</string>
     <string name="diagnostics_button">Diagnose delen</string>
     <string name="diagnostics_title">Diagnoserapport</string>
     <string name="diagnostics_body">Dit is precies wat gedeeld wordt. Er staan versies in, wat aanstaat en wat de laatste syncs deden. Er staan geen sleutels, tokens, namen, gezondheidswaarden of routes in. Plak het in een GitHub-melding.</string>
@@ -1150,4 +1150,13 @@
     <string name="compare_gap_steps">%1$s stappen</string>
     <string name="compare_gap_points">%1$d punten</string>
     <string name="compare_gap_bpm">%1$d bpm</string>
+    <string name="about_calls_title">Waar gegevens heen kunnen</string>
+    <string name="about_calls_intro">Alleen als je de bron aanzet of de functie gebruikt. Er wordt niets anders verstuurd en er is geen server van ons.</string>
+    <string name="privacy_host_garmin">Garmin (personal.connectapi.garmin.com): je dagcijfers en activiteiten, als je je eigen Garmin-sleutel gebruikt. De sleutel gaat naar dit adres en nergens anders heen.</string>
+    <string name="privacy_host_oura">Oura (cloud.ouraring.com, api.ouraring.com): inloggen en je dagen, als je een Oura Ring koppelt.</string>
+    <string name="privacy_host_whoop">WHOOP (api.prod.whoop.com): inloggen en je dagen, als je een WHOOP-band koppelt.</string>
+    <string name="privacy_host_claude">Claude (api.anthropic.com): een korte samenvatting van je cijfers en activiteitsnamen, nooit je route, en wat je aan de coach typt, als je een Claude-sleutel toevoegt.</string>
+    <string name="privacy_host_gemini">Gemini (generativelanguage.googleapis.com): hetzelfde, als je een Gemini-sleutel toevoegt.</string>
+    <string name="privacy_host_github">GitHub (api.github.com, github.com): de updater vraagt de nieuwste release op en haalt hem binnen. Er gaat niets over jou mee, maar GitHub ziet je netwerkadres, zoals elke website.</string>
+    <string name="about_privacy_statement">Lees de volledige privacyverklaring</string>
 </resources>

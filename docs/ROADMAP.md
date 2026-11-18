@@ -60,7 +60,7 @@ Elke mijlpaal is een gewone release (pull request, groene CI, ondertekende APK, 
 het **kritieke pad**: een proefronde op echte apparaten duurt het langst en hangt van Stefan af, dus alles wat die proefronde mogelijk
 maakt komt eerst (M1 en M2), en de rest loopt ernaast.
 
-### M1: "Schoon huis" 🔜 (S tot M; huis-deel klaar in v0.53.0, afhankelijkheden volgen)
+### M1: "Schoon huis" ✅ v0.53.0 en v0.58.0 (S tot M)
 
 Doel: een opgeruimde basis waarop de rest veilig gebouwd kan worden.
 
@@ -72,6 +72,8 @@ Doel: een opgeruimde basis waarop de rest veilig gebouwd kan worden.
 - **Versiebeleid** vastgelegd (`docs/VERSIONING.md`).
 
 Klaar als: alle voorstellen zijn samengevoegd of met reden gesloten, CI is groen zonder opnieuw starten, de README past op één scherm.
+
+**Besluit over de afhankelijkheden (2026-11-18, v0.58.0):** samengevoegd zijn de GitHub Actions (setup-java 6, download-artifact 8) en Robolectric 4.18. Uit de Android-bibliotheken is het deel genomen dat op de huidige gereedschapsketen past (AGP 8.7.3, Kotlin 2.0.21, compileSdk 35): `security-crypto` 1.1.0 (stabiel, de sleutelkluis), `work-runtime` 2.12.0, `core-ktx` 1.16.0. **Met reden gesloten** (Dependabot stelt die versies niet opnieuw voor): de Compose-BOM 2026 en navigation 2.10 (vijf schermtests faalden op de eerste proef met de nieuwe BOM, en de nieuwste versies vragen compileSdk 37), Health Connect 1.1.0-beta01 (de API verandert: `Metadata` krijgt fabrieksmethoden), Kotlin 2.4 met serialization 1.13 en coroutines 1.11 (een hele gereedschapssprong, en dan is lokaal testen zonder Maven-toegang niet meer mogelijk), Gradle 9.9 en AGP 9.5 (migratie), en het Python 3.15-image (de server wordt alleen op 3.11 tot 3.13 getest). **Die sprong is één aparte klus voor na 1.0** (AGP 9, Gradle 9, Kotlin 2.4, compileSdk 37, Compose-BOM 2026, Health Connect 1.1), met een eigen release en een volledige proefronde.
 
 ### M2: "Eerlijk en te diagnosticeren" ✅ v0.55.0 (M)
 
@@ -101,23 +103,23 @@ Klaar als: een database van elke eerdere release opent in de nieuwe versie met a
 
 Klaar als: de toegankelijkheidstests en taalpariteit in CI staan en groen zijn.
 
-### M5: "Snel, klein en actueel" 🔜 (M)
+### M5: "Snel, klein en actueel" ✅ v0.58.0 (M)
 
 - **Prestatiebudget:** een gegenereerde historie van vijf jaar (ongeveer 1800 activiteiten met tracks en dagrijen) en een test op de openingstijd van elk tabblad en op het geheugen van de heatmap; opstarttijd gemeten.
-- **Verkleinen:** R8 en het verkleinen van resources beoordeeld (de APK is 11 MB), met een test dat de serialisatie en reflectie nog werken.
+- **Verkleinen:** R8 en het verkleinen van resources beoordeeld. De APK was 30 MB (niet 11: dat was nooit gemeten), nu 9,8 MB. De test dat serialisatie, WorkManager en de sleutelkluis nog werken is een **rooktest op een echte Android** (emulator) die ook vóór elke release draait.
 - **targetSdk bijhouden:** nu 35. Zonder Google Play is er geen verplichte datum; omhoog alleen als een nieuwe Android-versie het vraagt, met de lijst van gedragswijzigingen afgewerkt.
-- **Batterij:** de voorgrondservice voor live hartslag en de synchronisatie elke 10 minuten bij open app doorgemeten.
+- **Batterij:** niet te meten zonder telefoon. Wat er op de achtergrond draait staat met zijn frequentie in `docs/PERFORMANCE.md`; het cijfer van Android na een dag is proefstap T16 voor Stefan.
 
-Klaar als: het budget in CI staat en de APK niet groter is geworden dan 12 MB.
+Klaar als: het budget in CI staat en de APK niet groter is geworden dan 12 MiB (`release.yml` faalt erop).
 
-### M6: "Installeren en vertrouwen" 🔜 (S tot M)
+### M6: "Installeren en vertrouwen" ✅ v0.58.0, behalve de echte schermafbeeldingen (S tot M)
 
 Besloten op 2026-11-18: 1.0 verschijnt **alleen op GitHub**. De app houdt daarom haar updater en er komt geen aparte winkelvariant voor 1.0.
 
 - **Privacyverklaring** (`docs/PRIVACY.md`, Nederlands en Engels, ook in de app): niets gaat naar een server van ons, wat een AI-aanbieder krijgt als je een sleutel toevoegt, hoe Health Connect gebruikt wordt, hoe je alles wist.
 - **Installatiegids:** "zo installeer en update je OpenConnect" voor de GitHub-APK (ook met Obtainium), met de controle van de SHA-256 en een uitleg over "apps installeren toestaan".
 - **Releasepagina als voordeur:** een vaste kop in elke release met installeren, controleren en wat is getest, zodat een vreemde zonder de README toekan.
-- **Echte schermafbeeldingen** van Stefans telefoon in plaats van de Robolectric-plaatjes.
+- **Echte schermafbeeldingen** van Stefans telefoon in plaats van de Robolectric-plaatjes. ❓ Stefan. (De emulator-rooktest bewaart bij elke run schermafbeeldingen van een echte Android als bouwresultaat; die zijn een begin, maar niet van zijn telefoon.)
 
 Klaar als: iemand die het project niet kent de gids kan volgen tot een draaiende app.
 
@@ -218,6 +220,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v0.55.0 | M2: Over-scherm met licenties en Garmin-disclaimer, label per bron (getest of experimenteel), *Diagnose delen* zonder geheimen, privacy-uitleg bij de eerste start, sjabloon "Hardwaretest" |
 | v0.56.0 | M3: back-up met dagboek, schoenen, plan en doelen, alles exporteren als ZIP, migratietest vanaf elke schemaversie, updater weigert een release zonder checksum en een APK met een andere ondertekenaar |
 | v0.57.0 | M4: toegankelijkheidscontrole in de tests (labels, 48 dp, afgekapte tekst; gewone telefoon, 200 procent letters en tablet), grafieken in woorden, schakelaars als één bedieningselement, inhoud op leesbreedte op brede schermen, taalcontrole |
+| v0.58.0 | M5, M6 en de afhankelijkheden: de APK 30 naar 10 MB door R8, prestatiebudget met vijf jaar historie, rooktest op een emulator in CI en als poort in `release.yml`, privacyverklaring (ook in de app, met een test op elk adres), installatiegids, vaste kop op de releasepagina, voorbereiding op een release candidate (voorlopige release, `1.0.0-rc.1` en `1.0.0rc1` als dezelfde versie, de updater kent voorlopige versies) |
 
 ## 9. Hoe releases werken
 

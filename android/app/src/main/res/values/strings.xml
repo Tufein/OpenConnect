@@ -54,7 +54,7 @@
     <string name="about_licences_title">Licences</string>
     <string name="about_garmin_disclaimer">Garmin, Garmin Connect and fenix are trademarks of Garmin Ltd. or its subsidiaries. OpenConnect is not affiliated with or endorsed by Garmin.</string>
     <string name="about_privacy_title">Privacy</string>
-    <string name="about_privacy_body">OpenConnect has no server of ours. Your data stays on this phone. Only what you switch on leaves it: your Garmin, Oura or WHOOP account, an AI provider if you add a key (a short summary of numbers and activity names, never the route) and GitHub when you look for an update. Keys stay in the Android Keystore. A full privacy statement comes with version 1.0.</string>
+    <string name="about_privacy_body">OpenConnect has no server of ours. Your data stays on this phone. Only what you switch on leaves it: your Garmin, Oura or WHOOP account, an AI provider if you add a key (a short summary of numbers and activity names, never the route) and GitHub when you look for an update. Keys stay in the Android Keystore. The list below says where, and the full statement is one tap away.</string>
     <string name="diagnostics_button">Share diagnostics</string>
     <string name="diagnostics_title">Diagnostics report</string>
     <string name="diagnostics_body">This is exactly what will be shared. It holds versions, what is switched on and what the last syncs did. It holds no keys, tokens, names, health values or routes. Paste it into a GitHub issue.</string>
@@ -1150,4 +1150,13 @@
     <string name="compare_gap_steps">%1$s steps</string>
     <string name="compare_gap_points">%1$d points</string>
     <string name="compare_gap_bpm">%1$d bpm</string>
+    <string name="about_calls_title">Where data can go</string>
+    <string name="about_calls_intro">Only when you switch the source on or use the feature. Nothing else is ever sent, and there is no server of ours.</string>
+    <string name="privacy_host_garmin">Garmin (personal.connectapi.garmin.com): your daily data and activities, when you use your own Garmin key. The key goes to this address and nowhere else.</string>
+    <string name="privacy_host_oura">Oura (cloud.ouraring.com, api.ouraring.com): signing in and your days, when you connect an Oura Ring.</string>
+    <string name="privacy_host_whoop">WHOOP (api.prod.whoop.com): signing in and your days, when you connect a WHOOP band.</string>
+    <string name="privacy_host_claude">Claude (api.anthropic.com): a short summary of your numbers and activity names, never your route, and what you type to the coach, when you add a Claude key.</string>
+    <string name="privacy_host_gemini">Gemini (generativelanguage.googleapis.com): the same, when you add a Gemini key.</string>
+    <string name="privacy_host_github">GitHub (api.github.com, github.com): the updater asks for the newest release and downloads it. It sends nothing about you, but GitHub sees your network address, like any website does.</string>
+    <string name="about_privacy_statement">Read the full privacy statement</string>
 </resources>

@@ -7,7 +7,7 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v0.57.0, on the way to 1.0.** It runs end to end on demo data with no account. **Only the Garmin account
+> **Status: v0.58.0, on the way to 1.0.** It runs end to end on demo data with no account. **Only the Garmin account
 > route has been tried live; nothing else has been tried on a real phone, watch, ring or band yet**
 > (see [what is tested](#what-is-tested)). The plan to 1.0 is in [docs/ROADMAP.md](docs/ROADMAP.md).
 > Not affiliated with or endorsed by Garmin, Oura, WHOOP or Hume.
@@ -16,7 +16,8 @@ Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files.
 
 ## Install the Android app
 
-Needs **Android 9 or newer**. No server, no account, no store: your data stays on the phone.
+Needs **Android 9 or newer**. No server, no account, no store: your data stays on the phone. The full guide, with checking the
+download, the "install unknown apps" switch, updating and Obtainium, is [docs/INSTALL.md](docs/INSTALL.md).
 
 1. Open the [latest release](https://github.com/Tufein/OpenConnect/releases/latest) on your phone and download
    `openconnect-vX.Y.Z.apk` (and `openconnect-vX.Y.Z.apk.sha256` if you want to check it).
@@ -64,9 +65,10 @@ Release notes say what was not checked, every time.
 The Android app has no server of ours and sends nothing anywhere you did not switch on. If you add an AI key, a short
 JSON summary of your numbers and activity names (never the GPS track) goes to that provider for a report or the coach;
 keys are kept in the Android Keystore. *Settings, About and licences* in the app lists every licence and says, per source,
-whether it was ever tried on a real device; *Share diagnostics* shows the exact report (no keys, tokens, names, health
-values or routes) before anything is shared. A full privacy statement is part of the road to 1.0. The details that
-exist today are in [docs/ANDROID.md](docs/ANDROID.md) and [SECURITY.md](SECURITY.md).
+whether it was ever tried on a real device and lists every address the app can send data to; *Share diagnostics* shows the
+exact report (no keys, tokens, names, health values or routes) before anything is shared. The full statement, in English and
+Dutch, is [docs/PRIVACY.md](docs/PRIVACY.md); a test fails when the code mentions an address that is not in it. More in
+[docs/ANDROID.md](docs/ANDROID.md) and [SECURITY.md](SECURITY.md).
 
 ## The server (self-hosted)
 
@@ -146,7 +148,8 @@ docs/              guides, design, roadmap, release notes
 ```
 
 CI (GitHub Actions) tests the server on Python 3.11 to 3.13, builds the wheel and the Docker image, and tests, lints and
-builds the Android app. A release is the *Release* workflow run on `main`: it tests everything again, signs the APK and
+builds the Android app, and starts the shrunk APK on an Android emulator and walks through it. A release is the *Release*
+workflow run on `main`: it tests everything again, signs the APK, starts the signed APK on an emulator and only then
 publishes it with the wheel. Versions mean what [docs/VERSIONING.md](docs/VERSIONING.md) says. See
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -159,5 +162,6 @@ Garmin and Garmin Connect are trademarks of Garmin Ltd.
 ## Documentation
 
 [Changelog](CHANGELOG.md) · [Roadmap to 1.0](docs/ROADMAP.md) · [Release checklist](docs/PUBLIC_RELEASE.md) ·
+[Install](docs/INSTALL.md) · [Privacy](docs/PRIVACY.md) · [Performance](docs/PERFORMANCE.md) ·
 [Versioning](docs/VERSIONING.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md) ·
 [Release notes](docs/releases)
