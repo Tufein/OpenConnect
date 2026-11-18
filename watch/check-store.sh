@@ -18,7 +18,8 @@ bad() { echo "FAIL: $*"; fail=1; }
 version="$(sed -n 's/^version = "\(.*\)"$/\1/p' "$root/pyproject.toml" | head -n 1)"
 [ -n "$version" ] && ok "project version $version" || bad "no version in pyproject.toml"
 gradle_version="$(sed -n 's/.*versionName = "\(.*\)".*/\1/p' "$root/android/app/build.gradle.kts" | head -n 1)"
-[ "$gradle_version" = "$version" ] && ok "the Android app has the same version" || bad "android versionName ($gradle_version) differs from $version"
+# A release candidate is 1.0.0-rc.1 in the app and 1.0.0rc1 in Python (docs/VERSIONING.md): the same version.
+[ "$(printf '%s' "$gradle_version" | sed -E 's/-rc\.?/rc/')" = "$version" ] && ok "the Android app has the same version" || bad "android versionName ($gradle_version) differs from $version"
 
 sdk="${CIQ_SDK:-}"
 if [ -z "$sdk" ]; then sdk="$(ls -d "$HOME"/.Garmin/ConnectIQ/Sdks/*/ 2>/dev/null | sort | tail -n 1 || true)"; sdk="${sdk%/}"; fi

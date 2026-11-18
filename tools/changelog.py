@@ -20,7 +20,13 @@ LIMIT = 400
 
 
 def _version_key(path: Path):
-    return tuple(int(part) for part in re.findall(r"\d+", path.stem))
+    """Sort key: a final release is above its candidates, so 1.0.0 > 1.0.0-rc.2 > rc.1 > 0.58.0."""
+    match = re.match(r"v(\d+)\.(\d+)\.(\d+)(?:-rc\.?(\d+))?$", path.stem)
+    if not match:
+        return tuple(int(part) for part in re.findall(r"\d+", path.stem)) + (1, 0)
+    major, minor, patch, candidate = match.groups()
+    final = candidate is None
+    return (int(major), int(minor), int(patch), 1 if final else 0, 0 if final else int(candidate))
 
 
 def _entry(path: Path) -> str:

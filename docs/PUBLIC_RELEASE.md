@@ -94,6 +94,8 @@ Een stap die niet kan (geen ring, geen band) hoef je niet te doen: die bron blij
 
 ## 3. De kandidaat (release candidate)
 
+**Stand:** `v1.0.0-rc.1` is uitgebracht (2026-11-18) als GitHub pre-release; de code is bevroren. De wachttijd van 7 dagen en de proefstappen T1 tot en met T16 zijn aan Stefan.
+
 1. **Bevriezen:** vanaf de eerste kandidaat alleen reparaties en teksten. Een nieuwe functie wacht op 1.1.
 2. **Voorlopige uitgave:** `release.yml` krijgt een voorlopig-optie, zodat `v1.0.0-rc.1` als **GitHub pre-release** uitkomt. De updater vraagt `releases/latest` van GitHub, dat voorlopige uitgaven overslaat, dus een kandidaat wordt niemand opgedrongen; een test bewijst dat. De versiecontrole in de workflow moet `1.0.0-rc.1` (tag), `1.0.0rc1` (Python) en `1.0.0-rc.1` (Android) aan elkaar koppelen.
 3. **Wachttijd:** minstens 7 dagen dagelijks gebruik van de kandidaat op Stefans eigen telefoon met het horloge erbij. Elke afwijking wordt een melding met het diagnose-rapport.

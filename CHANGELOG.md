@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.0.0-rc.1: de kandidaat voor 1.0
+
+De **eerste release candidate** van 1.0, uitgebracht als **GitHub-pre-release**: ze staat niet als "nieuwste" en de updater in de app biedt haar niemand aan. De code is gelijk aan v0.58.0; wat verandert is het versienummer, een paar kleine reparaties aan het gereedschap eromheen en de documentatie. Vanaf nu is de code **bevroren**: alleen reparaties en teksten tot 1.0.
+
+[Release notes](docs/releases/v1.0.0-rc.1.md)
+
 ## v0.58.0: klein, snel getest en eerlijk over privacy
 
 Mijlpalen M5 en M6 en de afhankelijkheden (M1) op de weg naar 1.0, zie `docs/ROADMAP.md`. De app zelf ziet er hetzelfde uit; wat verandert is dat ze **een derde zo groot** is, dat de **getekende APK vóór elke release op een echte Android wordt gestart en doorlopen**, dat de **privacyverklaring** er is (ook in de app) en dat er een **installatiegids** is.
