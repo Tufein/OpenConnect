@@ -10,10 +10,10 @@ android {
 
     defaultConfig {
         applicationId = "nl.tufein.openconnect"
-        minSdk = 26
+        minSdk = 28
         targetSdk = 35
-        versionCode = 51
-        versionName = "0.51.0"
+        versionCode = 52
+        versionName = "0.52.0"
     }
 
     // Release signing. The key is never stored in this repository: a release build reads it from

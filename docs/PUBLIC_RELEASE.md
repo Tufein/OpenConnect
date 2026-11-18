@@ -35,7 +35,7 @@ Stand op 2026-11-18, na v0.51.0: nog niets aangevinkt dat van een echt apparaat 
 - [ ] Het privé-conceptrelease "Signing key" is verwijderd, ná de vorige twee
 - [ ] Privé melden van kwetsbaarheden staat aan; `SECURITY.md` klopt met de code
 - [ ] Geen openstaande beveiligingsmeldingen van afhankelijkheden
-- [ ] Besluit over sleutelwissel vastgelegd (zie paragraaf 4: wisselen kan alleen soepel vanaf Android 9)
+- [x] Minimum Android op 9 gezet (Stefan, 2026-11-18, v0.52.0): sleutelwissel met een bewijsketen werkt daardoor op elke ondersteunde telefoon (zie paragraaf 4)
 
 ### G4 Kwaliteit
 - [ ] De 13 Dependabot-voorstellen zijn samengevoegd of met reden gesloten
@@ -54,7 +54,7 @@ Stand op 2026-11-18, na v0.51.0: nog niets aangevinkt dat van een echt apparaat 
 ### G6 Juridisch en naam
 - [ ] Alle licenties van gebruikte onderdelen zijn zichtbaar in de app
 - [ ] De Garmin-disclaimer staat in de app en in de README
-- [ ] **Besluit over de naam** (houden of veranderen; er bestaat al een bekende VPN-client die OpenConnect heet)
+- [ ] **Besluit over de naam: nog open** (houden of veranderen; er bestaat al een bekende VPN-client die OpenConnect heet). Voorlopig blijft het OpenConnect
 
 ### G7 Verspreiding
 - [x] Besluit welke kanalen: **alleen GitHub** (Stefan, 2026-11-18). Winkels komen na 1.0
@@ -64,7 +64,7 @@ Stand op 2026-11-18, na v0.51.0: nog niets aangevinkt dat van een echt apparaat 
 ## 2. Proefronde op echte apparaten
 
 Voor Stefan. Doe de stappen op je eigen telefoon en horloge, in deze volgorde (de belangrijkste eerst), en schrijf per stap het
-resultaat op. Vanaf v0.53.0 geeft Instellingen een knop **Diagnose delen**: die maakt een tekst zonder sleutels, namen of
+resultaat op. Vanaf mijlpaal M2 (zie [ROADMAP.md](ROADMAP.md)) geeft Instellingen een knop **Diagnose delen**: die maakt een tekst zonder sleutels, namen of
 gezondheidswaarden. Plak die in een nieuwe GitHub-melding met het sjabloon "Hardwaretest". Tot die er is: een schermafbeelding van
 het **Synclogboek** (Instellingen) en een korte beschrijving.
 
@@ -106,7 +106,7 @@ Android laat een app niet terug naar een lager versienummer gaan, dus **terugdra
 - **Fout in 1.0.0, geen gegevensverlies:** zet de release in GitHub op *pre-release* (dan biedt de updater hem niet meer aan), publiceer `1.0.1` met de reparatie en zet er in de release-notities bij wat er mis was.
 - **Fout die gegevens beschadigt of wist:** eerst een release die het schrijven stopt of er een export voor aanbiedt, met in de notities hoe iemand uit een back-up terugkeert; daarna de echte reparatie. Het vorige schema blijft leesbaar (dat is het belang van de migratietests).
 - **Sleutel verloren:** zonder de sleutel kan geen update meer over bestaande installaties heen; iedereen zou eerst een export moeten maken en opnieuw installeren. Daarom ligt er een offline kopie (G3).
-- **Sleutel gelekt of gecompromitteerd:** Android kent sleutelwissel met een bewijsketen (APK Signature Scheme v3), maar alleen vanaf Android 9. Omdat het minimum nu Android 8.0 is, moeten gebruikers van Android 8 dan opnieuw installeren. Dit is het enige grote risico dat vooraf nadenken vraagt: besluit in G3 of het minimum voor 1.0 omhoog gaat of niet.
+- **Sleutel gelekt of gecompromitteerd:** Android kent sleutelwissel met een bewijsketen (APK Signature Scheme v3). Die werkt vanaf Android 9, en sinds v0.52.0 is dat het minimum, dus de nieuwe sleutel kan over bestaande installaties heen zonder dat iemand opnieuw hoeft te installeren. Het vraagt wel een ondertekeningsstap met `apksigner rotate` en een test dat de keten klopt; die staat nog niet klaar.
 - **Na 1.0, als er winkels zijn:** de GitHub-release blijft het referentiepunt; een winkelvariant volgt die.
 
 ## 5. Aankondigen

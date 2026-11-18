@@ -35,7 +35,7 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
 3. **Een vreemde kan het zelf installeren, begrijpen en vertrouwen.** Duidelijke README, privacyverklaring, een veilige sleutel, bekende bronnen van de code en een manier om een fout te melden zonder gezondheidsgegevens te delen.
 
 Na 1.0 geldt versiebeleid: `1.x` voegt toe en repareert, een databaseschema gaat nooit stuk (een migratie of een verwijderfunctie, nooit stilte), en
-Android 8.0 blijft het minimum tot een grote versie zegt van niet.
+**Android 9 is het minimum** (besloten op 2026-11-18, uitgebracht in v0.52.0) en blijft dat tot een grote versie zegt van niet.
 
 **Afbakening (aanname, zeg het als het anders moet):** 1.0 is de **Android-app**. De Python-server krijgt hetzelfde versienummer maar blijft voor
 wie zelf host, met zijn beschreven beperkingen ([SECURITY.md](../SECURITY.md)); er komt geen nieuw serverwerk voor 1.0 behalve beveiligingsfixes.
@@ -51,16 +51,16 @@ wie zelf host, met zijn beschreven beperkingen ([SECURITY.md](../SECURITY.md)); 
 | **G3 Sleutel en beveiliging** | Sleutel in GitHub-secrets met een offline kopie, de conceptrelease weg, privé melden van kwetsbaarheden aan, `SECURITY.md` klopt, geen openstaande beveiligingsmeldingen van afhankelijkheden | Stefan (secrets), Claude (rest) |
 | **G4 Kwaliteit** | Drie CI-runs op rij groen zonder opnieuw starten, afhankelijkheden bij, prestatiebudgetten gehaald, geen bekende crash | Claude |
 | **G5 Begrijpelijk** | README opnieuw, installatiegids, privacyverklaring (NL en EN), schermafbeeldingen van een echte telefoon, uitleg bij de eerste start | Claude, Stefan levert schermafbeeldingen |
-| **G6 Juridisch en naam** | Overzicht van alle licenties in de app, Garmin-disclaimer in de app, keuze over de naam gemaakt | Stefan beslist |
+| **G6 Juridisch en naam** | Overzicht van alle licenties in de app, Garmin-disclaimer in de app, **keuze over de naam gemaakt (nog open)** | Stefan beslist |
 | **G7 Verspreiding** | **Besloten op 2026-11-18: alleen GitHub.** De release met APK, SHA-256 en uitleg over installeren, controleren en bijwerken (ook met Obtainium) is voor een vreemde te volgen | Claude |
 
 ## 4. De mijlpalen
 
-Elke mijlpaal is een gewone release (pull request, groene CI, ondertekende APK, uitleg in het Nederlands). De volgorde is gekozen op
+Elke mijlpaal is een gewone release (pull request, groene CI, ondertekende APK, uitleg in het Nederlands). **Versienummers worden pas bij het uitbrengen gegeven:** er komen ook andere releases tussendoor (v0.44.0 tot en met v0.51.0 kwamen zo binnen terwijl dit plan werd geschreven), dus een mijlpaal krijgt het eerstvolgende vrije nummer. De eerste stap is al gezet: **v0.52.0 zette het minimum op Android 9.** De volgorde is gekozen op
 het **kritieke pad**: een proefronde op echte apparaten duurt het langst en hangt van Stefan af, dus alles wat die proefronde mogelijk
 maakt komt eerst (M1 en M2), en de rest loopt ernaast.
 
-### M1: v0.52.0 "Schoon huis" 🔜 (S tot M)
+### M1: "Schoon huis" 🔜 (S tot M)
 
 Doel: een opgeruimde basis waarop de rest veilig gebouwd kan worden.
 
@@ -73,7 +73,7 @@ Doel: een opgeruimde basis waarop de rest veilig gebouwd kan worden.
 
 Klaar als: alle voorstellen zijn samengevoegd of met reden gesloten, CI is groen zonder opnieuw starten, de README past op één scherm.
 
-### M2: v0.53.0 "Eerlijk en te diagnosticeren" 🔜 (M)
+### M2: "Eerlijk en te diagnosticeren" 🔜 (M)
 
 Doel: een proefronde die iets oplevert, en een app die zelf zegt wat getest is.
 
@@ -84,16 +84,16 @@ Doel: een proefronde die iets oplevert, en een app die zelf zegt wat getest is.
 
 Klaar als: Stefan een proefstap kan doen en een rapport kan terugsturen waar geen persoonlijke gegevens in staan.
 
-### M3: v0.54.0 "Gegevens veilig" 🔜 (M)
+### M3: "Gegevens veilig" 🔜 (M)
 
 - **Migratietest vanaf elke uitgebrachte schemaversie:** per release een database-bestand als testgegeven, geopend door de huidige code, met controle dat er niets verdwijnt.
 - **Back-up en terugzetten bestaan al** (sleutels staan nooit in het bestand, terugzetten voegt toe zonder iets te verwijderen). Nieuw: een test per bron dat alles terugkomt, en een besluit of sleutels ooit versleuteld mee mogen.
 - **Alles exporteren:** nu is er een CSV. Dat wordt één ZIP met de CSV, de originele FIT/GPX/TCX en JSON, met een test die dat weer inleest.
 - **Bijwerken zonder verlies:** de updater weigert een afwijkende SHA-256 of handtekening met een duidelijke melding, getest met een nep-GitHub.
 
-Klaar als: een database van v0.2.0 tot en met v0.53.0 opent in de nieuwe versie met alle gegevens.
+Klaar als: een database van elke eerdere release opent in de nieuwe versie met alle gegevens.
 
-### M4: v0.55.0 "Toegankelijk en tweetalig" 🔜 (M)
+### M4: "Toegankelijk en tweetalig" 🔜 (M)
 
 - **TalkBack en toegankelijkheid:** elk scherm doorgelopen, grafieken met een tekstsamenvatting, aanraakdoelen van minstens 48 dp (getest, ook in de pixelstijl), lettergrootte 200 procent zonder afgesneden tekst.
 - **Taalpariteit:** een test dat elke tekst in Nederlands en Engels bestaat, geen overgebleven Engelse tekst in het Nederlands, meervouden kloppen.
@@ -101,7 +101,7 @@ Klaar als: een database van v0.2.0 tot en met v0.53.0 opent in de nieuwe versie 
 
 Klaar als: de toegankelijkheidstests en taalpariteit in CI staan en groen zijn.
 
-### M5: v0.56.0 "Snel, klein en actueel" 🔜 (M)
+### M5: "Snel, klein en actueel" 🔜 (M)
 
 - **Prestatiebudget:** een gegenereerde historie van vijf jaar (ongeveer 1800 activiteiten met tracks en dagrijen) en een test op de openingstijd van elk tabblad en op het geheugen van de heatmap; opstarttijd gemeten.
 - **Verkleinen:** R8 en het verkleinen van resources beoordeeld (de APK is 11 MB), met een test dat de serialisatie en reflectie nog werken.
@@ -110,7 +110,7 @@ Klaar als: de toegankelijkheidstests en taalpariteit in CI staan en groen zijn.
 
 Klaar als: het budget in CI staat en de APK niet groter is geworden dan 12 MB.
 
-### M6: v0.57.0 "Installeren en vertrouwen" 🔜 (S tot M)
+### M6: "Installeren en vertrouwen" 🔜 (S tot M)
 
 Besloten op 2026-11-18: 1.0 verschijnt **alleen op GitHub**. De app houdt daarom haar updater en er komt geen aparte winkelvariant voor 1.0.
 
@@ -121,7 +121,7 @@ Besloten op 2026-11-18: 1.0 verschijnt **alleen op GitHub**. De app houdt daarom
 
 Klaar als: iemand die het project niet kent de gids kan volgen tot een draaiende app.
 
-### M7: v0.58.0 en v0.59.0 "Proefrondes" 🔜 (L, loopt vanaf M2, Stefan bepaalt het tempo)
+### M7: "Proefrondes" 🔜 (L, loopt vanaf M2, Stefan bepaalt het tempo)
 
 Stefan loopt de lijst in [PUBLIC_RELEASE.md](PUBLIC_RELEASE.md) af met het diagnose-rapport; Claude repareert wat misgaat en zet het label van een bron op *Getest op echt apparaat* zodra het klopt. Volgorde van belangrijkheid: (1) installeren, bijwerken, eerste start, demo, bestanden importeren; (2) Garmin-sleutel; (3) fenix 8 over USB; (4) fenix 8 over Bluetooth, live hartslag en de melding met scherm uit; (5) Health Connect; (6) Oura; (7) Claude en Gemini live; (8) WHOOP en Hume, alleen als die er zijn: anders blijven ze *Experimenteel* in 1.0, en dat is eerlijk.
 
@@ -143,7 +143,8 @@ Klaar als: G1 groen is.
 | Voor M1 klaar is | Privé melden van kwetsbaarheden aanzetten (Settings, Security) | Een instelling van de eigenaar |
 | Zodra M2 uit is | De proefronde op echte apparaten: telefoon, fenix 8, en de ring of banden die je hebt | Alleen jij hebt de apparaten en de accounts |
 | ✅ 2026-11-18 | Gekozen waar 1.0 uitkomt: alleen GitHub | Gedaan: winkels (F-Droid, Google Play) komen na 1.0 |
-| Voor M8 begint | Beslissen over de naam: houden of veranderen (de pakketnaam `nl.tufein.openconnect` verandert in elk geval niet) | Het is jouw project en jouw merk |
+| ✅ 2026-11-18 | Minimum Android van 8.0 naar 9 | Gedaan in v0.52.0; telefoons met Android 8 blijven op v0.51.0 |
+| **Open**, voor M8 begint | Beslissen over de naam: houden of veranderen (de pakketnaam `nl.tufein.openconnect` verandert in elk geval niet). Voorlopig blijft het OpenConnect | Het is jouw project en jouw merk |
 | Bij M6 | Schermafbeeldingen van je eigen telefoon aanleveren | Mijn plaatjes komen uit een test, niet van een toestel |
 
 ## 6. Na 1.0
@@ -211,6 +212,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v0.48.0 | In-app-updater met controle van de SHA-256 |
 | v0.49.0 – v0.50.0 | WHOOP-band en Hume Band, elk met een eigen tabblad, gescheiden van horloge en ring |
 | v0.51.0 | Apparaten naast elkaar: kaart *Apparaten vergeleken* op het Dag-tabblad |
+| v0.52.0 | Minimum Android van 8.0 naar 9, dode versiecontroles opgeruimd, en dit plan naar 1.0 |
 
 ## 9. Hoe releases werken
 

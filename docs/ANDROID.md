@@ -94,7 +94,7 @@ with the release key, to the GitHub release (`openconnect-vX.Y.Z.apk` with a `.s
 
 1. Download `openconnect-vX.Y.Z.apk` from the [releases page](https://github.com/Tufein/OpenConnect/releases).
 2. On the phone, allow installing from the browser or file manager when Android asks.
-3. Open the APK. Needs Android 8.0 or newer.
+3. Open the APK. Needs Android 9 or newer (v0.52.0 raised the minimum from Android 8.0; a phone with Android 8 stays on v0.51.0).
 
 ### About the signing key
 

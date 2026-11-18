@@ -93,9 +93,7 @@ class AndroidNudgeNotifier(private val context: Context) : NudgeNotifier {
             return
         }
         val manager = context.getSystemService(NotificationManager::class.java)
-        if (Build.VERSION.SDK_INT >= 26) {
-            manager.createNotificationChannel(NotificationChannel(CHANNEL, context.getString(R.string.nudge_channel), NotificationManager.IMPORTANCE_DEFAULT))
-        }
+        manager.createNotificationChannel(NotificationChannel(CHANNEL, context.getString(R.string.nudge_channel), NotificationManager.IMPORTANCE_DEFAULT))
         val open = PendingIntent.getActivity(
             context, 0, Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
