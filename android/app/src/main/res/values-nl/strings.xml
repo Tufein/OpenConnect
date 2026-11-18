@@ -23,6 +23,10 @@
     <string name="error_generic">Er ging iets mis</string>
     <string name="error_io">Het bestand kon niet worden gelezen of geschreven</string>
     <string name="error_too_large">Het bestand is groter dan 25 MB</string>
+    <string name="unit_highest_of_day">hoogste</string>
+    <string name="day_yesterday">Gisteren</string>
+    <string name="home_stale_yesterday">Nog geen gegevens van vandaag. Dit is gisteren, de laatste dag die je bronnen gaven. Laat het horloge syncen in Garmin Connect en trek dan naar beneden om te verversen.</string>
+    <string name="home_stale_earlier">Nog geen gegevens van vandaag. Dit is %1$s, de laatste dag die je bronnen gaven. Laat het horloge syncen in Garmin Connect en trek dan naar beneden om te verversen.</string>
     <string name="today">Vandaag</string>
     <string name="steps">Stappen</string>
     <string name="resting_hr">Rusthartslag</string>

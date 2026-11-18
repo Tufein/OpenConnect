@@ -1,6 +1,8 @@
 package nl.tufein.openconnect.ui
 
 import nl.tufein.openconnect.core.ChartMetric
+import nl.tufein.openconnect.core.DayAge
+import nl.tufein.openconnect.core.DayFreshness
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -113,6 +115,9 @@ fun HomeScreen(
                 return@LazyColumn
             }
             val today = overview.today
+            // "Today" is the latest day any source gave. When the watch has not reached the account yet that is an older day,
+            // and the card must say so, or its numbers look wrong next to the watch.
+            val freshness = DayFreshness.of(today?.date, now.atZone(zone).toLocalDate())
 
             fun readiness() = item { Box(Modifier.tappable { onOpenHealth(ChartMetric.READINESS) }) { ReadinessCard(state.readiness) } }
             fun goalsAndLoad() {
@@ -135,7 +140,7 @@ fun HomeScreen(
                             }
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text(stringResource(R.string.today), style = MaterialTheme.typography.titleMedium)
+                            Text(dayTitle(freshness), style = MaterialTheme.typography.titleMedium)
                             Fact(stringResource(R.string.distance), Fmt.km((today?.distanceM ?: 0.0)) + " km", metrics.distance)
                             Fact(stringResource(R.string.floors), (today?.floorsClimbed ?: 0).toString(), metrics.battery)
                             Fact(stringResource(R.string.active_kcal), (today?.activeKcal ?: 0).toString(), metrics.calories)
@@ -149,7 +154,7 @@ fun HomeScreen(
             // The four signals as tiles: today's value and a line of the last seven days.
             val signals = listOf<@Composable (Modifier) -> Unit>(
                 { MetricTile(stringResource(R.string.resting_hr), today?.restingHr?.takeIf { it > 0 }?.toString() ?: "–", metrics.heart, it, "bpm", last7.map { r -> r.restingHr?.toDouble() }, onClick = { onOpenHealth(ChartMetric.RESTING_HR) }) },
-                { MetricTile(stringResource(R.string.body_battery), today?.bodyBatteryHigh?.toString() ?: "–", metrics.battery, it, series = last7.map { r -> r.bodyBatteryHigh?.toDouble() }, onClick = { onOpenHealth(ChartMetric.BODY_BATTERY) }) },
+                { MetricTile(stringResource(R.string.body_battery), today?.bodyBatteryHigh?.toString() ?: "–", metrics.battery, it, unit = today?.bodyBatteryHigh?.let { stringResource(R.string.unit_highest_of_day) }, series = last7.map { r -> r.bodyBatteryHigh?.toDouble() }, onClick = { onOpenHealth(ChartMetric.BODY_BATTERY) }) },
                 { MetricTile(stringResource(R.string.stress), today?.avgStress?.toString() ?: "–", metrics.stress, it, series = last7.map { r -> r.avgStress?.toDouble() }, onClick = { onOpenHealth(ChartMetric.STRESS) }) },
                 { MetricTile(stringResource(R.string.sleep), state.sleep?.takeIf { it.durationS > 0 }?.let { s -> Fmt.hours(s.durationS) } ?: "–", metrics.sleep, it, "h", last7.map { r -> r.sleepHours }, onClick = { onOpenHealth(ChartMetric.SLEEP) }) },
             )
@@ -159,6 +164,7 @@ fun HomeScreen(
             }
 
             // One order: how ready you are, today's four signals, the day so far, then the week.
+            if (freshness.isStale) item { StaleDayNotice(freshness) }
             readiness()
             state.advice?.let { advice -> item { Box(Modifier.tappable(onOpenForm)) { AdviceCard(advice) } } }
             state.warning?.let { warning -> item { WarningCard(warning) } }
@@ -476,5 +482,24 @@ private fun LoadCard(load: TrainingLoad) {
         )
         Text(stringResource(text), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
         Text(stringResource(R.string.load_note), style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
+    }
+}
+
+/** "Today", "Yesterday" or the date, for the card that shows the latest day with data. */
+@Composable
+private fun dayTitle(f: DayFreshness): String = when (f.age) {
+    DayAge.YESTERDAY -> stringResource(R.string.day_yesterday)
+    DayAge.EARLIER -> Fmt.date(f.date!!)
+    else -> stringResource(R.string.today)
+}
+
+/** Says why the numbers may differ from the watch: they belong to an earlier day, because today's has not arrived. */
+@Composable
+private fun StaleDayNotice(f: DayFreshness) {
+    SurfaceCard(accent = OpenConnectColors.metrics.stress) {
+        Text(
+            if (f.age == DayAge.YESTERDAY) stringResource(R.string.home_stale_yesterday) else stringResource(R.string.home_stale_earlier, Fmt.date(f.date!!)),
+            style = MaterialTheme.typography.bodyMedium,
+        )
     }
 }

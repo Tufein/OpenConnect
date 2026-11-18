@@ -23,6 +23,10 @@
     <string name="error_generic">Something went wrong</string>
     <string name="error_io">The file could not be read or written</string>
     <string name="error_too_large">The file is larger than 25 MB</string>
+    <string name="unit_highest_of_day">highest</string>
+    <string name="day_yesterday">Yesterday</string>
+    <string name="home_stale_yesterday">No data for today yet. Showing yesterday, the latest day your sources gave. Let the watch sync in Garmin Connect, then pull down to refresh.</string>
+    <string name="home_stale_earlier">No data for today yet. Showing %1$s, the latest day your sources gave. Let the watch sync in Garmin Connect, then pull down to refresh.</string>
     <string name="today">Today</string>
     <string name="steps">Steps</string>
     <string name="resting_hr">Resting heart rate</string>
