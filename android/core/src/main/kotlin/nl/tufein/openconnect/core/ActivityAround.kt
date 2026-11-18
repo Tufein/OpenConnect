@@ -251,7 +251,7 @@ object RingWorkouts {
      * True when the ring and the watch recorded the same effort: their times share at least half of the shorter one.
      * A record without a length counts when it starts inside the other.
      */
-    fun sameEffort(activity: Activity, workout: OuraWorkout): Boolean {
+    fun sameEffort(activity: Activity, workout: BandWorkout): Boolean {
         val aStart = activity.startTime.toEpochMilli()
         val aEnd = aStart + (activity.durationS * 1000).toLong().coerceAtLeast(0)
         val wStart = workout.startMs

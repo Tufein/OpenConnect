@@ -116,6 +116,8 @@ Van [APP-VERGELIJKING.md](APP-VERGELIJKING.md) (8 apps naast OpenConnect) wordt 
 
 - **v0.48.0** ✅ in-app-updater in de Android-app: Instellingen controleert GitHub op een nieuwere release, downloadt de ondertekende APK, controleert de SHA-256 tegen de gepubliceerde checksum en vraagt Android om te installeren (op Android 8+ moet "apps installeren toestaan" eenmalig aan). ❓ Niet op een echte telefoon geprobeerd; de JVM-tests gebruiken een nep-GitHub-server.
 
+- **v0.49.0** ✅ WHOOP-band in de Android-app, op dezelfde manier als de Oura Ring: eigen tabblad met herstel, belasting, slaap en workouts, gescheiden van horloge en ring, inloggen met een eigen WHOOP-applicatie (OAuth), WHOOP als bron op het Dag-tabblad van Inzichten en bandworkouts in de activiteitenlijst. ❓ Niet met een echte band of een echt WHOOP-account geprobeerd; de afbakening van een dag en de scopenamen zijn nog aannames.
+
 ## Later 💡
 
 - Het nieuwere Garmin-protobuf-synchronisatieprotocol voor horloges die de klassieke mapsynchronisatie niet meer gebruiken.

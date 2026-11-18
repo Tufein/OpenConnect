@@ -62,6 +62,11 @@ interface Repository {
 
     fun listOuraDays(start: LocalDate, end: LocalDate): List<nl.tufein.openconnect.core.oura.OuraDay>
 
+    /** A day as the WHOOP band saw it, kept apart from the watch's and the ring's data (v0.49.0). */
+    fun upsertWhoopDay(day: nl.tufein.openconnect.core.whoop.WhoopDay)
+
+    fun listWhoopDays(start: LocalDate, end: LocalDate): List<nl.tufein.openconnect.core.whoop.WhoopDay>
+
     fun clearAll()
 }
 
@@ -73,6 +78,7 @@ class InMemoryRepository : Repository {
     private val samples = HashMap<Pair<Metric, Instant>, MetricSample>()
     private val watchFiles = HashMap<String, Long>()
     private val ouraDays = HashMap<LocalDate, nl.tufein.openconnect.core.oura.OuraDay>()
+    private val whoopDays = HashMap<LocalDate, nl.tufein.openconnect.core.whoop.WhoopDay>()
 
     override fun upsertActivity(activity: Activity) {
         activities[activity.id] = activity
@@ -134,8 +140,16 @@ class InMemoryRepository : Repository {
     override fun listOuraDays(start: LocalDate, end: LocalDate): List<nl.tufein.openconnect.core.oura.OuraDay> =
         ouraDays.values.filter { it.date in start..end }.sortedBy { it.date }
 
+    override fun upsertWhoopDay(day: nl.tufein.openconnect.core.whoop.WhoopDay) {
+        whoopDays[day.date] = day
+    }
+
+    override fun listWhoopDays(start: LocalDate, end: LocalDate): List<nl.tufein.openconnect.core.whoop.WhoopDay> =
+        whoopDays.values.filter { it.date in start..end }.sortedBy { it.date }
+
     override fun clearAll() {
         ouraDays.clear()
+        whoopDays.clear()
         activities.clear()
         dailies.clear()
         sleeps.clear()

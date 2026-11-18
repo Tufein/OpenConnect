@@ -94,6 +94,11 @@ class AppContainer(
     ouraSettings: nl.tufein.openconnect.oura.OuraSettings = settings.oura,
     /** Starts and stops the Oura job. Tests pass a fake; the app passes WorkManager. */
     ouraSync: BackgroundSync = BackgroundSync { },
+    /** The network to WHOOP. Tests pass a fake. */
+    whoopHttp: nl.tufein.openconnect.core.whoop.WhoopHttp = nl.tufein.openconnect.core.whoop.UrlConnectionWhoopHttp(),
+    whoopSettings: nl.tufein.openconnect.whoop.WhoopSettings = settings.whoop,
+    /** Starts and stops the WHOOP job. Tests pass a fake; the app passes WorkManager. */
+    whoopSync: BackgroundSync = BackgroundSync { },
     /** Keeps a live heart-rate recording alive with the screen off. Tests pass a fake; the app posts a notification. */
     keeper: LiveRecordingKeeper = NoLiveRecordingKeeper,
     /** Where a verified update APK is kept until Android installs it. The app uses its own cache directory. */
@@ -209,9 +214,26 @@ class AppContainer(
 
     private val ouraJob = ouraSync
 
-    /** Starts or stops the Oura background job after the choice of devices changed. */
+    /** The WHOOP band link. */
+    val whoop = nl.tufein.openconnect.whoop.WhoopController(
+        settings = whoopSettings,
+        repo = repository,
+        http = whoopHttp,
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+        io = Dispatchers.IO,
+        onDataChanged = { dataChanged.tryEmit(Unit) },
+        onSynced = syncLog::record,
+        // The background job runs only for someone who chose WHOOP and logged in.
+        onBackgroundWanted = { wanted -> whoopSync.set(wanted && settings.useWhoop) },
+        retry = nl.tufein.openconnect.core.RetryPolicy.standard(),
+    )
+
+    private val whoopJob = whoopSync
+
+    /** Starts or stops the Oura and WHOOP background jobs after the choice of devices changed. */
     fun applySources() {
         ouraJob.set(settings.useOura && oura.state.value.connected)
+        whoopJob.set(settings.useWhoop && whoop.state.value.connected)
     }
 
     /** The keys, models and choice of AI provider (Claude, Gemini, or the offline reports). */
@@ -254,6 +276,7 @@ class OpenConnectApp : Application() {
             healthConnect = AndroidHealthConnectGateway(this),
             widgetRefresh = { summary -> HomeWidget.refresh(this, summary) },
             ouraSync = nl.tufein.openconnect.sync.WorkManagerOuraSync(this),
+            whoopSync = nl.tufein.openconnect.sync.WorkManagerWhoopSync(this),
             keeper = ForegroundLiveRecording(this),
             updateDir = File(cacheDir, "updates"),
         ) }

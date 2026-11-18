@@ -1,6 +1,7 @@
 package nl.tufein.openconnect.core
 
 import nl.tufein.openconnect.core.oura.OuraDay
+import nl.tufein.openconnect.core.whoop.WhoopDay
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -21,6 +22,12 @@ enum class InsightSource(
         listOf(
             ChartMetric.READINESS, ChartMetric.SLEEP_SCORE, ChartMetric.ACTIVITY_SCORE, ChartMetric.SLEEP, ChartMetric.STEPS,
             ChartMetric.LOWEST_HR, ChartMetric.HRV, ChartMetric.TEMPERATURE, ChartMetric.RESPIRATION, ChartMetric.SPO2,
+        ),
+    ),
+    WHOOP(
+        listOf(
+            ChartMetric.READINESS, ChartMetric.STRAIN, ChartMetric.SLEEP_SCORE, ChartMetric.SLEEP, ChartMetric.RESTING_HR,
+            ChartMetric.HRV, ChartMetric.RESPIRATION, ChartMetric.SPO2,
         ),
     ),
 }
@@ -133,6 +140,36 @@ object DayRecords {
                     values,
                     d.workouts.sortedBy { it.startMs }.map {
                         DayWorkout(RingWorkouts.ID_PREFIX + it.id, it.name, RingWorkouts.sport(it.activity), it.startMs, it.durationS.toDouble(), it.distanceM?.takeIf { m -> m > 0 }, it.calories)
+                    },
+                )
+            },
+        )
+    }
+
+    /**
+     * One record per day in [start]..[end] from the WHOOP band's days. Recovery stands in for the readiness of the other
+     * sources and sleep performance for their sleep score, because those are the numbers a band's morning is about.
+     */
+    fun whoop(start: LocalDate, end: LocalDate, days: List<WhoopDay>): DaySeries {
+        val byDay = days.associateBy { it.date }
+        return DaySeries(
+            InsightSource.WHOOP,
+            days(start, end).map { day ->
+                val d = byDay[day] ?: return@map DayRecord(day)
+                val values = LinkedHashMap<ChartMetric, Double>()
+                d.recovery?.let { values[ChartMetric.READINESS] = it.toDouble() }
+                d.strain?.let { values[ChartMetric.STRAIN] = it }
+                d.sleepPerformance?.let { values[ChartMetric.SLEEP_SCORE] = it.toDouble() }
+                d.sleepHours?.takeIf { d.sleepS != 0 }?.let { values[ChartMetric.SLEEP] = Math.rint(it * 100) / 100 }
+                d.restingHr?.takeIf { it > 0 }?.let { values[ChartMetric.RESTING_HR] = it.toDouble() }
+                d.hrv?.takeIf { it > 0 }?.let { values[ChartMetric.HRV] = it }
+                d.respiration?.takeIf { it > 0 }?.let { values[ChartMetric.RESPIRATION] = it }
+                d.spo2?.takeIf { it > 0 }?.let { values[ChartMetric.SPO2] = it }
+                DayRecord(
+                    day,
+                    values,
+                    d.workouts.sortedBy { it.startMs }.map {
+                        DayWorkout(BandSource.WHOOP.idPrefix + it.id, it.name, RingWorkouts.sport(it.activity), it.startMs, it.durationS.toDouble(), it.distanceM?.takeIf { m -> m > 0 }, it.calories)
                     },
                 )
             },

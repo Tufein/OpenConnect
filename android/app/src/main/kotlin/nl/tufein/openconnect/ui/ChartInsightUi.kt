@@ -30,11 +30,20 @@ private fun explainRes(metric: ChartMetric, source: InsightSource): Int = when (
     ChartMetric.SPO2 -> if (source == InsightSource.OURA) R.string.insight_explain_spo2_ring else R.string.insight_explain_spo2
     ChartMetric.RESPIRATION -> R.string.insight_explain_respiration
     ChartMetric.STRESS -> R.string.insight_explain_stress
-    ChartMetric.READINESS -> if (source == InsightSource.OURA) R.string.insight_explain_readiness_ring else R.string.insight_explain_readiness
-    ChartMetric.SLEEP_SCORE -> if (source == InsightSource.OURA) R.string.insight_explain_sleep_score_ring else R.string.insight_explain_sleep_score
+    ChartMetric.READINESS -> when (source) {
+        InsightSource.OURA -> R.string.insight_explain_readiness_ring
+        InsightSource.WHOOP -> R.string.insight_explain_readiness_whoop
+        InsightSource.GARMIN -> R.string.insight_explain_readiness
+    }
+    ChartMetric.SLEEP_SCORE -> when (source) {
+        InsightSource.OURA -> R.string.insight_explain_sleep_score_ring
+        InsightSource.WHOOP -> R.string.insight_explain_sleep_score_whoop
+        InsightSource.GARMIN -> R.string.insight_explain_sleep_score
+    }
     ChartMetric.ACTIVITY_SCORE -> R.string.insight_explain_activity_score
     ChartMetric.LOWEST_HR -> R.string.insight_explain_lowest_hr
     ChartMetric.TEMPERATURE -> R.string.insight_explain_temperature
+    ChartMetric.STRAIN -> R.string.insight_explain_strain
 }
 
 /** The name of a measure as the day screen and the chart title show it. */
@@ -54,6 +63,7 @@ fun metricName(metric: ChartMetric): String = stringResource(
         ChartMetric.ACTIVITY_SCORE -> R.string.metric_activity_score
         ChartMetric.LOWEST_HR -> R.string.oura_lowest_hr_title
         ChartMetric.TEMPERATURE -> R.string.oura_temp_title
+        ChartMetric.STRAIN -> R.string.metric_strain
     },
 )
 
@@ -66,6 +76,7 @@ fun insightValue(metric: ChartMetric, v: Double): String = when (metric) {
     ChartMetric.SPO2 -> "${v.roundToInt()}%"
     ChartMetric.RESPIRATION -> Fmt.oneDecimal(v) + "/min"
     ChartMetric.BODY_BATTERY, ChartMetric.STRESS, ChartMetric.READINESS, ChartMetric.SLEEP_SCORE, ChartMetric.ACTIVITY_SCORE -> v.roundToInt().toString()
+    ChartMetric.STRAIN -> Fmt.oneDecimal(v)
     ChartMetric.LOWEST_HR -> "${v.roundToInt()} bpm"
     // A difference of under 0.05 would print as "-0.0"; it is zero.
     ChartMetric.TEMPERATURE -> String.format(java.util.Locale.getDefault(), "%+.1f °C", if (abs(v) < 0.05) 0.0 else v)

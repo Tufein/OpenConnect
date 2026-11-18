@@ -46,7 +46,7 @@ import androidx.navigation.navArgument
 import nl.tufein.openconnect.BuildConfig
 import nl.tufein.openconnect.R
 
-/** [compact] is the label when six tabs share the bar (with the Oura tab), so long Dutch words still fit. */
+/** [compact] is the label when more than five tabs share the bar (with the Oura or WHOOP tab), so long Dutch words still fit. */
 private enum class Tab(val route: String, val label: Int, val icon: PixelArt, val compact: Int = label) {
     Home("home", R.string.tab_home, PixelIcons.Home),
     Activities("activities", R.string.tab_activities, PixelIcons.Stopwatch, R.string.tab_activities_compact),
@@ -54,6 +54,9 @@ private enum class Tab(val route: String, val label: Int, val icon: PixelArt, va
     Insights("insights", R.string.tab_insights, PixelIcons.Star),
     /** Only for someone who chose the Oura Ring. */
     Oura(OURA_ROUTE, R.string.tab_oura, PixelIcons.Ring),
+
+    /** Only for someone who chose the WHOOP band. */
+    Whoop("whoop", R.string.tab_whoop, PixelIcons.Band),
     Settings("settings", R.string.tab_settings, PixelIcons.Sliders, R.string.tab_settings_compact),
 }
 
@@ -140,7 +143,7 @@ fun OpenConnectRoot(
 
     val entry by nav.currentBackStackEntryAsState()
     val route = entry?.destination?.route
-    val tabs = Tab.entries.filter { it != Tab.Oura || sources.oura }
+    val tabs = Tab.entries.filter { (it != Tab.Oura || sources.oura) && (it != Tab.Whoop || sources.whoop) }
     val showBar = tabs.any { it.route == route }
 
     val home by vm.home.collectAsState()
@@ -165,6 +168,7 @@ fun OpenConnectRoot(
     val ai by vm.ai.collectAsState()
     val garmin by vm.garmin.collectAsState()
     val oura by vm.oura.collectAsState()
+    val whoop by vm.whoop.collectAsState()
     val days by vm.days.collectAsState()
     val theme by vm.theme.collectAsState()
     val look by vm.look.collectAsState()
@@ -207,6 +211,8 @@ fun OpenConnectRoot(
 
     fun openOura() = openTab(Tab.Oura)
 
+    fun openWhoop() = openTab(Tab.Whoop)
+
     fun openActivity(id: String) {
         vm.openActivity(id)
         nav.navigate("activity/" + Uri.encode(id))
@@ -239,6 +245,7 @@ fun OpenConnectRoot(
                     onToggleJournal = vm::toggleJournal,
                     useGarmin = sources.garmin,
                     onOura = if (sources.oura) ::openOura else null,
+                    onWhoop = if (sources.whoop) ::openWhoop else null,
                 )
             }
             composable(Tab.Activities.route) {
@@ -320,6 +327,7 @@ fun OpenConnectRoot(
                     onWatch = ::openWatch,
                     onGarmin = ::openGarmin,
                     onOura = ::openOura,
+                    onWhoop = ::openWhoop,
                     contentPadding = padding,
                 )
             }
@@ -332,6 +340,18 @@ fun OpenConnectRoot(
                     onSync = vm::syncOura,
                     onDisconnect = vm::disconnectOura,
                     onForget = vm::forgetOura,
+                    contentPadding = padding,
+                )
+            }
+            composable(Tab.Whoop.route) {
+                WhoopScreen(
+                    ui = whoop,
+                    onSaveClient = vm::saveWhoopClient,
+                    loginUrl = vm::whoopLoginUrl,
+                    onPasteRedirect = vm::finishWhoopLogin,
+                    onSync = vm::syncWhoop,
+                    onDisconnect = vm::disconnectWhoop,
+                    onForget = vm::forgetWhoop,
                     contentPadding = padding,
                 )
             }

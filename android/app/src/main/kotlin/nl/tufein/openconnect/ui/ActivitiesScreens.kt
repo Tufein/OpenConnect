@@ -157,9 +157,9 @@ fun ActivityDetailScreen(
             }
         }
         item { SummaryTiles(activity) }
-        // A workout only the Oura Ring recorded: say what that means before anything else.
+        // A workout only the Oura Ring or the WHOOP band recorded: say what that means before anything else.
         if (state.fromRing) {
-            item { Text(stringResource(R.string.ring_row_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            item { Text(stringResource(R.string.ring_row_note, activity.deviceName ?: ""), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         }
 
         val positions = activity.track.filter { it.hasPosition }.map { it.lat!! to it.lon!! }

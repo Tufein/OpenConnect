@@ -224,6 +224,20 @@
                 <data android:scheme="openconnect" android:host="oura" />
             </intent-filter>
         </activity>
+        <!-- Where the browser comes back to after the WHOOP login (openconnect://whoop?code=...). -->
+        <activity
+            android:name=".whoop.WhoopRedirectActivity"
+            android:exported="true"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="openconnect" android:host="whoop" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".MainActivity"
             android:exported="true"

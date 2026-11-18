@@ -126,6 +126,11 @@ class SettingsStore(
         get() = prefs.getBoolean(KEY_USE_OURA, false)
         set(value) = prefs.edit().putBoolean(KEY_USE_OURA, value).apply()
 
+    /** Whether the WHOOP tab is shown and the band is synced. Off unless the person chose it. */
+    var useWhoop: Boolean
+        get() = prefs.getBoolean(KEY_USE_WHOOP, false)
+        set(value) = prefs.edit().putBoolean(KEY_USE_WHOOP, value).apply()
+
     /** Whether the app asks for the fingerprint, face or screen lock when it opens. */
     var appLock: Boolean
         get() = prefs.getBoolean(KEY_APP_LOCK, false)
@@ -226,6 +231,57 @@ class SettingsStore(
 
     }
 
+    /**
+     * The WHOOP link: the owner's own WHOOP application and the login. The secret and the tokens are encrypted like the
+     * other keys and never written in plain text; the client id and the redirect address are not secret.
+     */
+    val whoop: nl.tufein.openconnect.whoop.WhoopSettings = object : nl.tufein.openconnect.whoop.WhoopSettings {
+        private fun secret(name: String): String? = try {
+            securePrefs?.getString(name, null)
+        } catch (_: Exception) {
+            null
+        }
+
+        private fun putSecret(name: String, value: String?) {
+            val store = securePrefs ?: return
+            store.edit().apply { if (value.isNullOrBlank()) remove(name) else putString(name, value) }.apply()
+        }
+
+        override val canStoreSecrets: Boolean get() = securePrefs != null
+
+        override var clientId: String?
+            get() = prefs.getString(KEY_WHOOP_CLIENT, null)
+            set(value) = prefs.edit().apply { if (value.isNullOrBlank()) remove(KEY_WHOOP_CLIENT) else putString(KEY_WHOOP_CLIENT, value) }.apply()
+
+        override var clientSecret: String?
+            get() = secret(KEY_WHOOP_SECRET)
+            set(value) = putSecret(KEY_WHOOP_SECRET, value)
+
+        override var redirectUri: String
+            get() = prefs.getString(KEY_WHOOP_REDIRECT, null)?.takeIf { it.isNotBlank() } ?: nl.tufein.openconnect.core.whoop.WhoopAuth.DEFAULT_REDIRECT
+            set(value) = prefs.edit().putString(KEY_WHOOP_REDIRECT, value).apply()
+
+        override var tokens: nl.tufein.openconnect.core.whoop.WhoopTokens?
+            get() {
+                val access = secret(KEY_WHOOP_ACCESS) ?: return null
+                return nl.tufein.openconnect.core.whoop.WhoopTokens(access, secret(KEY_WHOOP_REFRESH), java.time.Instant.ofEpochMilli(prefs.getLong(KEY_WHOOP_EXPIRES, 0L)))
+            }
+            set(value) {
+                putSecret(KEY_WHOOP_ACCESS, value?.access)
+                putSecret(KEY_WHOOP_REFRESH, value?.refresh)
+                prefs.edit().putLong(KEY_WHOOP_EXPIRES, value?.expiresAt?.toEpochMilli() ?: 0L).apply()
+            }
+
+        override var pendingLogin: String?
+            get() = secret(KEY_WHOOP_PENDING)
+            set(value) = putSecret(KEY_WHOOP_PENDING, value)
+
+        override var lastSyncMs: Long
+            get() = prefs.getLong(KEY_WHOOP_LAST, 0L)
+            set(value) = prefs.edit().putLong(KEY_WHOOP_LAST, value).apply()
+
+    }
+
     /** The watch that last synced over Bluetooth: its address and name, nothing secret. */
     val garminWatch: GarminWatchMemory = object : GarminWatchMemory {
         override fun load(): GarminBleWatch? {
@@ -313,9 +369,18 @@ class SettingsStore(
         private const val KEY_OURA_EXPIRES = "oura_expires"
         private const val KEY_OURA_PENDING = "oura_pending"
         private const val KEY_OURA_LAST = "oura_last_sync"
+        private const val KEY_WHOOP_CLIENT = "whoop_client_id"
+        private const val KEY_WHOOP_SECRET = "whoop_client_secret"
+        private const val KEY_WHOOP_REDIRECT = "whoop_redirect"
+        private const val KEY_WHOOP_ACCESS = "whoop_access"
+        private const val KEY_WHOOP_REFRESH = "whoop_refresh"
+        private const val KEY_WHOOP_EXPIRES = "whoop_expires"
+        private const val KEY_WHOOP_PENDING = "whoop_pending"
+        private const val KEY_WHOOP_LAST = "whoop_last_sync"
         private const val KEY_ONBOARDED = "onboarded"
         private const val KEY_USE_GARMIN = "use_garmin"
         private const val KEY_USE_OURA = "use_oura"
+        private const val KEY_USE_WHOOP = "use_whoop"
         private const val KEY_PLAN = "training_plan"
         private const val KEY_RACE = "race_goal"
         private const val KEY_MAX_HR = "max_hr"
