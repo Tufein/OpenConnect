@@ -63,6 +63,7 @@
     <string name="onboarding_privacy_title">Wat op je telefoon blijft</string>
     <string name="onboarding_privacy_body">Je gezondheidsgegevens blijven op deze telefoon: er is geen server van ons. Alleen wat je aanzet gaat naar buiten. Voeg je een AI-sleutel toe, dan gaat een korte samenvatting van je cijfers en namen van activiteiten naar die aanbieder, nooit je route.</string>
     <string name="onboarding_experimental_note">Een bron met het label experimenteel is nog nooit op een echt apparaat geprobeerd. Het kan zijn dat het niet werkt. Instellingen, Diagnose delen laat zien wat er gebeurde.</string>
+    <string name="chart_summary">%1$s. %2$d waarden, laagste %3$s, hoogste %4$s, laatste %5$s.</string>
     <string name="today">Vandaag</string>
     <string name="steps">Stappen</string>
     <string name="resting_hr">Rusthartslag</string>

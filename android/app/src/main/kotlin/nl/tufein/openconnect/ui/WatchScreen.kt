@@ -229,21 +229,13 @@ private fun GarminBleControls(
     } else if (ui.syncSource == SyncSource.GARMIN_BLE) {
         SyncResult(ui.sync, SyncSource.GARMIN_BLE)
     }
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        PixelSwitch(checked = g.archiveAfterRead, onCheckedChange = onArchive)
-        Spacer(Modifier.width(12.dp))
-        Column {
-            Text(stringResource(R.string.watch_ble_archive), style = MaterialTheme.typography.bodyMedium)
-            Text(stringResource(R.string.watch_ble_archive_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
+    SwitchRow(checked = g.archiveAfterRead, onCheckedChange = onArchive) {
+        Text(stringResource(R.string.watch_ble_archive), style = MaterialTheme.typography.bodyMedium)
+        Text(stringResource(R.string.watch_ble_archive_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        PixelSwitch(checked = g.background, onCheckedChange = onBackground, enabled = g.remembered != null)
-        Spacer(Modifier.width(12.dp))
-        Column {
-            Text(stringResource(R.string.watch_ble_background), style = MaterialTheme.typography.bodyMedium)
-            Text(stringResource(R.string.watch_ble_background_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
+    SwitchRow(checked = g.background, onCheckedChange = onBackground, enabled = g.remembered != null) {
+        Text(stringResource(R.string.watch_ble_background), style = MaterialTheme.typography.bodyMedium)
+        Text(stringResource(R.string.watch_ble_background_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
     if (g.remembered != null && !running) {
         QuietButton(onClick = onForget) { Text(stringResource(R.string.watch_ble_forget)) }

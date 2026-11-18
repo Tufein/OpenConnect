@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Scaffold
@@ -230,7 +233,12 @@ fun OpenConnectRoot(
         snackbarHost = { SnackbarHost(snackbar) },
         bottomBar = { if (showBar) HandheldBar(tabs, route, ::openTab) },
     ) { padding ->
-        NavHost(nav, startDestination = Tab.Home.route) {
+        // On a tablet or an unfolded phone the screens stop at a reading width in the middle, instead of stretching across.
+        NavHost(
+            nav,
+            startDestination = Tab.Home.route,
+            modifier = Modifier.fillMaxSize().wrapContentWidth(Alignment.CenterHorizontally).widthIn(max = 640.dp),
+        ) {
             composable(Tab.Home.route) {
                 HomeScreen(
                     state = home,

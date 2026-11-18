@@ -143,6 +143,16 @@ private fun Inspectable(
     }
 }
 
+/**
+ * What a screen reader says about a chart: its name, then how many values it has and the lowest, highest and latest of
+ * them, in the units of the chart. Without values only the name is read.
+ */
+@Composable
+private fun spoken(description: String, values: List<Double?>, format: (Double) -> String): String {
+    val summary = remember(values) { nl.tufein.openconnect.core.ChartSummary.of(values) } ?: return description
+    return stringResource(R.string.chart_summary, description, summary.count, format(summary.lowest), format(summary.highest), format(summary.latest))
+}
+
 /** A line chart; missing values (null) break the line. */
 @Composable
 fun LineChart(
@@ -161,10 +171,11 @@ fun LineChart(
     val density = androidx.compose.ui.platform.LocalDensity.current
     val inset = with(density) { 4.dp.toPx() }
     val reveal = rememberReveal(values)
+    val spokenDescription = spoken(description, values, format)
     Inspectable(values, labels, format, modifier, bars = false, axisInset = 4.dp, highlight = highlight, indexAt = { x, w ->
         if (values.size < 2) 0 else Math.round((x - inset) / (w - 2 * inset) * (values.size - 1))
     }) { extra, selected ->
-    Canvas(Modifier.fillMaxWidth().height(height).then(extra).semantics { contentDescription = description }) {
+    Canvas(Modifier.fillMaxWidth().height(height).then(extra).semantics { contentDescription = spokenDescription }) {
         grid(gridColor)
         val present = values.filterNotNull()
         if (values.size < 2 || present.isEmpty()) return@Canvas
@@ -232,8 +243,9 @@ fun BarChart(
     val goalColor = MaterialTheme.colorScheme.secondary
     val cursor = MaterialTheme.colorScheme.onSurface
     val reveal = rememberReveal(values)
+    val spokenDescription = spoken(description, values, format)
     Inspectable(values, labels, format, modifier, bars = true, axisInset = 0.dp, highlight = highlight, indexAt = { x, w -> (x / (w / values.size)).toInt() }) { extra, selected ->
-    Canvas(Modifier.fillMaxWidth().height(height).then(extra).semantics { contentDescription = description }) {
+    Canvas(Modifier.fillMaxWidth().height(height).then(extra).semantics { contentDescription = spokenDescription }) {
         grid(gridColor)
         val present = values.filterNotNull()
         if (values.isEmpty() || present.isEmpty()) return@Canvas

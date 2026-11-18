@@ -63,6 +63,7 @@
     <string name="onboarding_privacy_title">What stays on your phone</string>
     <string name="onboarding_privacy_body">Your health data stays on this phone: there is no server of ours. Only what you switch on leaves it. If you add an AI key, a short summary of your numbers and activity names goes to that provider, never your route.</string>
     <string name="onboarding_experimental_note">A source marked experimental has never been tried on a real device yet. It may not work. Settings, Share diagnostics shows what happened.</string>
+    <string name="chart_summary">%1$s. %2$d values, lowest %3$s, highest %4$s, latest %5$s.</string>
     <string name="today">Today</string>
     <string name="steps">Steps</string>
     <string name="resting_hr">Resting heart rate</string>

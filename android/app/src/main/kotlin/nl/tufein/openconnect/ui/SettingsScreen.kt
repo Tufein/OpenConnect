@@ -265,16 +265,14 @@ fun SettingsScreen(
                 Text(stringResource(R.string.settings_nudges_body), style = MaterialTheme.typography.bodyMedium)
                 val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> if (granted) onNudges(true) }
                 val context = LocalContext.current
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    PixelSwitch(
-                        checked = ui.nudges,
-                        onCheckedChange = { on ->
-                            val needsAsk = on && Build.VERSION.SDK_INT >= 33 &&
-                                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-                            if (needsAsk) permission.launch(Manifest.permission.POST_NOTIFICATIONS) else onNudges(on)
-                        },
-                    )
-                    Spacer(Modifier.width(12.dp))
+                SwitchRow(
+                    checked = ui.nudges,
+                    onCheckedChange = { on ->
+                        val needsAsk = on && Build.VERSION.SDK_INT >= 33 &&
+                            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                        if (needsAsk) permission.launch(Manifest.permission.POST_NOTIFICATIONS) else onNudges(on)
+                    },
+                ) {
                     Text(stringResource(R.string.settings_nudges_switch), style = MaterialTheme.typography.bodyMedium)
                 }
             }
@@ -286,9 +284,7 @@ fun SettingsScreen(
                 if (!ui.lockAvailable && !ui.appLock) {
                     Text(stringResource(R.string.settings_lock_unavailable), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    PixelSwitch(checked = ui.appLock, enabled = ui.lockAvailable || ui.appLock, onCheckedChange = onAppLock, modifier = Modifier.testTag("app-lock-switch"))
-                    Spacer(Modifier.width(12.dp))
+                SwitchRow(checked = ui.appLock, enabled = ui.lockAvailable || ui.appLock, onCheckedChange = onAppLock, modifier = Modifier.testTag("app-lock-switch")) {
                     Text(stringResource(R.string.settings_lock_switch), style = MaterialTheme.typography.bodyMedium)
                 }
             }
@@ -422,12 +418,12 @@ private fun VendorCard(
             }
             KeyStatus(ui, name)
         }
-        Text(stringResource(R.string.model), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         OutlinedTextField(
             value = modelField,
             onValueChange = { modelField = it },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
+            label = { Text(stringResource(R.string.model)) },
             placeholder = { Text(vendor.defaultModel) },
         )
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -599,9 +595,7 @@ private fun HealthConnectBody(
                 PrimaryButton(onClick = onExport, enabled = !health.busy) { Text(stringResource(R.string.health_send)) }
                 SecondaryButton(onClick = onImport, enabled = !health.busy) { Text(stringResource(R.string.health_read)) }
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                PixelSwitch(checked = health.auto, onCheckedChange = onAuto)
-                Spacer(Modifier.width(12.dp))
+            SwitchRow(checked = health.auto, onCheckedChange = onAuto) {
                 Text(stringResource(R.string.health_auto), style = MaterialTheme.typography.bodyMedium)
             }
         }
@@ -618,16 +612,10 @@ private fun HealthConnectBody(
 /** A device that can be switched on or off, with a line on what it brings. */
 @Composable
 fun DeviceSwitch(title: String, body: String, checked: Boolean, status: String? = null, onChange: (Boolean) -> Unit) {
-    androidx.compose.foundation.layout.Row(
-        Modifier.fillMaxWidth().tappable { onChange(!checked) }.padding(vertical = 6.dp),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-    ) {
-        androidx.compose.foundation.layout.Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.titleMedium)
-            Text(body, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            if (status != null) Text(status, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
-        }
-        PixelSwitch(checked = checked, onCheckedChange = onChange, modifier = Modifier.padding(start = 12.dp))
+    SwitchRow(checked = checked, onCheckedChange = onChange, switchFirst = false) {
+        Text(title, style = MaterialTheme.typography.titleMedium)
+        Text(body, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (status != null) Text(status, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
     }
 }
 

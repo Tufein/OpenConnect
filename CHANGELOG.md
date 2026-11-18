@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v0.57.0: toegankelijk en tweetalig
+
+Vierde mijlpaal (M4) op de weg naar 1.0, zie `docs/ROADMAP.md`. De app is er ook voor mensen met een schermlezer, grote letters of een tablet. Nieuw is vooral een controle in de testen die dit bewaakt, en die meteen echte gaten vond.
+
+[Release notes](docs/releases/v0.57.0.md)
+
 ## v0.56.0: gegevens veilig
 
 Derde mijlpaal (M3) op de weg naar 1.0, zie `docs/ROADMAP.md`. Het gaat om één vraag: raak je iets kwijt? Een back-up bevatte tot nu toe alleen de database, dus een nieuwe telefoon verloor je dagboek, je schoenen, je trainingsplan en je doelen. Dat gat is dicht, en het is nu bewezen dat de database van elke eerdere versie opent zonder verlies.

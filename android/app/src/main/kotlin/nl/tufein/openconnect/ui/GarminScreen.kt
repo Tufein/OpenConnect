@@ -145,9 +145,8 @@ fun GarminScreen(
             }
         }
         item {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                PixelSwitch(checked = ui.autoSync, onCheckedChange = onAutoSync, enabled = ui.hasKey)
-                Text(stringResource(R.string.garmin_auto), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            SwitchRow(checked = ui.autoSync, onCheckedChange = onAutoSync, enabled = ui.hasKey) {
+                Text(stringResource(R.string.garmin_auto), style = MaterialTheme.typography.bodyMedium)
             }
         }
         item {
