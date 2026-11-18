@@ -27,6 +27,15 @@ def test_entries_are_newest_first_with_title_and_first_paragraph(tmp_path):
     assert "(docs/releases/v0.10.0.md)" in text
 
 
+def test_a_final_release_sorts_above_its_candidates(tmp_path):
+    for version in ("0.58.0", "1.0.0-rc.1", "1.0.0-rc.2", "1.0.0", "1.0.1"):
+        (tmp_path / f"v{version}.md").write_text(f"## OpenConnect v{version}: x\n\nText.\n")
+    text = _tool().build(tmp_path)
+    order = ["v1.0.1", "v1.0.0:", "v1.0.0-rc.2", "v1.0.0-rc.1", "v0.58.0"]
+    positions = [text.index(f"## {name}") for name in order]
+    assert positions == sorted(positions), "newest first: 1.0.1, 1.0.0, rc.2, rc.1, 0.58.0"
+
+
 def test_a_long_first_paragraph_is_cut_at_a_word(tmp_path):
     (tmp_path / "v1.0.0.md").write_text("## OpenConnect v1.0.0: long\n\n" + "word " * 200 + "\n")
     text = _tool().build(tmp_path)
