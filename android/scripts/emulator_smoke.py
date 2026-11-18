@@ -176,11 +176,13 @@ def main(apk, out):
         adb("shell", "pm", "grant", PKG, "android.permission.POST_NOTIFICATIONS", check=False)
 
         run.start()
-        first = run.wait("Start", "Load demo data", timeout=150)
+        first = run.wait("Welcome to OpenConnect", "Load demo data", timeout=150)
         run.shot("first-screen")
-        if first.text == "Start":
-            run.tap(first)
-        run.tap(run.wait("Load demo data"))
+        if first.text == "Welcome to OpenConnect":
+            # The Start button is under the device list, below the fold on a small screen, and a node that is
+            # not on screen is not in the uiautomator dump: scroll to it first.
+            run.tap(run.scroll_to("Start"))
+        run.tap(run.scroll_to("Load demo data"))
         run.gone("Load demo data")
         run.wait("Readiness", contains=True)
         run.shot("home")
