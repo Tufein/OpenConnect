@@ -1,12 +1,188 @@
-# OpenConnect: roadmap
+# OpenConnect: roadmap naar 1.0 en verder
 
-Waar OpenConnect staat en waar het heen gaat. Opnieuw geschreven op 2026-11-14, na v0.23.0. Alles is bedacht voor één
-persoon die zijn eigen Garmin-gegevens volgt, en alles is **test-first** gebouwd: eerst de test, dan de code, en niets
-gaat uit zonder dat CI groen is. Wat zonder horloge of telefoon niet te controleren is, staat er eerlijk bij.
+Waar OpenConnect staat en hoe het een grote, openbare release wordt. Opnieuw geschreven op 2026-11-18, na v0.51.0, op
+verzoek van Stefan ("een grootse release voorbereiden met een heuse roadmap"). Alles is **test-first** gebouwd: eerst
+de test, dan de code, en niets gaat uit zonder dat CI groen is. Wat zonder horloge, ring of telefoon niet te
+controleren is, staat er eerlijk bij.
 
-**Legenda:** ✅ klaar · 🚧 in deze release · 🔜 volgende · ❓ heeft iets nodig dat alleen de eigenaar kan geven
+De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparaten en het terugdraaiplan staan in
+**[PUBLIC_RELEASE.md](PUBLIC_RELEASE.md)**. Dit bestand is het plan; dat bestand is de lijst die je afvinkt.
 
-## Klaar
+**Legenda:** ✅ klaar · 🔜 volgende · 🧪 gebouwd en getest met nepgegevens, nog nooit op echte hardware of tegen de echte dienst · ❓ heeft iets nodig dat alleen de eigenaar kan geven · **S/M/L** = klein (een sessie), middel, groot (meerdere releases)
+
+## 1. Waar we staan (v0.51.0, 2026-11-18)
+
+- **51 releases**, ruim 970 tests (Python, `core` en de app), AGPL-3.0, openbare repository, een Android-app die zonder server werkt en een
+  Python-server voor wie die liever zelf draait. Nederlands en Engels.
+- **Bronnen:** Garmin-horloge (USB, Bluetooth, map met bestanden), Garmin-account met een eigen sleutel, Oura Ring, WHOOP, Hume Band
+  (via Health Connect), bestanden (FIT, GPX, TCX), Claude en Gemini voor de coach.
+- **Sterk:** alles is test-first, gegevens blijven op de telefoon, horloge, ring en banden worden nooit door elkaar gemengd, en elke release zegt eerlijk wat niet is gecontroleerd.
+- **Zwak voor een openbare release:**
+  1. Op één bron na (de Garmin-account, die live is geprobeerd) is **niets op een echte telefoon, horloge, ring of band geprobeerd**. Zie het register in paragraaf 7.
+  2. De README is een muur van "New in vX" en zegt nog "an early foundation"; er is geen privacyverklaring.
+  3. De ondertekeningssleutel staat in een privé-conceptrelease in plaats van in GitHub-secrets.
+  4. Dertien Dependabot-voorstellen (#43 tot en met #55) liggen open, sommige met grote sprongen (Compose-BOM 2024.10 naar 2026.09).
+  5. De in-app-updater (`REQUEST_INSTALL_PACKAGES`) past niet in Google Play of F-Droid; een winkelversie vraagt een tweede variant.
+  6. Een proefrond op echte apparaten levert niets op zonder diagnose: er is geen "deel een rapport"-knop.
+  7. De naam: er bestaat al een bekende VPN-client die OpenConnect heet. Zoeken en winkelnamen kunnen daardoor botsen.
+
+## 2. Wat "1.0" betekent
+
+1.0 is de eerste versie die we aan een vreemde durven geven. Drie beloftes:
+
+1. **Het werkt op een echte telefoon, en wat niet getest is staat er in de app zelf bij.** Een bron die nooit op echte hardware draaide krijgt een zichtbaar label *Experimenteel*; een bron die wel is geprobeerd krijgt *Getest op echt apparaat* met datum en versie.
+2. **Je gegevens blijven van jou en gaan niet verloren bij een update.** Elke database van elke eerdere release migreert naar de nieuwe, de back-up komt terug, en alles is te exporteren.
+3. **Een vreemde kan het zelf installeren, begrijpen en vertrouwen.** Duidelijke README, privacyverklaring, een veilige sleutel, bekende bronnen van de code en een manier om een fout te melden zonder gezondheidsgegevens te delen.
+
+Na 1.0 geldt versiebeleid: `1.x` voegt toe en repareert, een databaseschema gaat nooit stuk (een migratie of een verwijderfunctie, nooit stilte), en
+Android 8.0 blijft het minimum tot een grote versie zegt van niet.
+
+**Afbakening (aanname, zeg het als het anders moet):** 1.0 is de **Android-app**. De Python-server krijgt hetzelfde versienummer maar blijft voor
+wie zelf host, met zijn beschreven beperkingen ([SECURITY.md](../SECURITY.md)); er komt geen nieuw serverwerk voor 1.0 behalve beveiligingsfixes.
+
+## 3. De zeven poorten
+
+1.0 gaat uit als **alle zeven** poorten groen zijn. Elke poort is controleerbaar; de afvinklijst staat in [PUBLIC_RELEASE.md](PUBLIC_RELEASE.md).
+
+| Poort | Moet waar zijn | Wie |
+|-------|----------------|-----|
+| **G1 Echt getest** | Installeren, bijwerken, demo, bestanden importeren, Garmin-sleutel, fenix 8 over USB en Bluetooth en Health Connect zijn op een echt apparaat geprobeerd en vastgelegd. Wat niet kon (ring, WHOOP, Hume, als die er niet zijn) draagt het label *Experimenteel* in app en docs | Stefan probeert, Claude repareert |
+| **G2 Gegevens veilig** | Migratietest vanaf elke uitgebrachte schemaversie, terugzetten van een back-up, volledige export, geen verlies bij bijwerken | Claude |
+| **G3 Sleutel en beveiliging** | Sleutel in GitHub-secrets met een offline kopie, de conceptrelease weg, privé melden van kwetsbaarheden aan, `SECURITY.md` klopt, geen openstaande beveiligingsmeldingen van afhankelijkheden | Stefan (secrets), Claude (rest) |
+| **G4 Kwaliteit** | Drie CI-runs op rij groen zonder opnieuw starten, afhankelijkheden bij, prestatiebudgetten gehaald, geen bekende crash | Claude |
+| **G5 Begrijpelijk** | README opnieuw, installatiegids, privacyverklaring (NL en EN), schermafbeeldingen van een echte telefoon, uitleg bij de eerste start | Claude, Stefan levert schermafbeeldingen |
+| **G6 Juridisch en naam** | Overzicht van alle licenties in de app, Garmin-disclaimer in de app, keuze over de naam gemaakt | Stefan beslist |
+| **G7 Verspreiding** | Gekozen kanalen werken (minstens GitHub-releases met uitleg over installeren en bijwerken); winkelvarianten alleen als gekozen | Stefan beslist |
+
+## 4. De mijlpalen
+
+Elke mijlpaal is een gewone release (pull request, groene CI, ondertekende APK, uitleg in het Nederlands). De volgorde is gekozen op
+het **kritieke pad**: een proefronde op echte apparaten duurt het langst en hangt van Stefan af, dus alles wat die proefronde mogelijk
+maakt komt eerst (M1 en M2), en de rest loopt ernaast.
+
+### M1: v0.52.0 "Schoon huis" 🔜 (S tot M)
+
+Doel: een opgeruimde basis waarop de rest veilig gebouwd kan worden.
+
+- **Afhankelijkheden bij:** de 13 open Dependabot-voorstellen in vier groepen (GitHub Actions, Android-bibliotheken, Robolectric en testhulp, Docker-basisimage), elke groep een eigen pull request met CI als scheidsrechter. De grote sprongen (Compose-BOM, navigation) apart en met extra aandacht voor schermen die verschuiven. Het Python 3.15-image alleen als alle pakketten bouwen.
+- **CI harder:** volledige uitzonderingen in testlogs (`testLogging`), de koude-start-time-out in `AppTestBase` omhoog zodat de vier bekende flakes verdwijnen, en `release.yml` krijgt een standaardwaarde die niet op `v0.9.0` blijft staan.
+- **README opnieuw:** kort en actueel (wat het is, installeren, vijf minuten starten, wat is getest, links). De lijst "New in v…" gaat naar een `CHANGELOG.md` die uit `docs/releases/` komt.
+- **`SECURITY.md` bijgewerkt** met wat sinds v0.47.0 klopt (optionele aanmelding, Ping/Pull-allowlist).
+- **Sleutel naar secrets (❓ Stefan):** het script ondersteunt het al; zodra de secrets er staan gebruikt één release ze, en daarna kan het concept weg.
+- **Versiebeleid** vastgelegd (`docs/VERSIONING.md`).
+
+Klaar als: alle voorstellen zijn samengevoegd of met reden gesloten, CI is groen zonder opnieuw starten, de README past op één scherm.
+
+### M2: v0.53.0 "Eerlijk en te diagnosticeren" 🔜 (M)
+
+Doel: een proefronde die iets oplevert, en een app die zelf zegt wat getest is.
+
+- **"Over" wordt een eigen scherm:** nu is het één alinea in Instellingen. Het krijgt de versie, de licentie (AGPL-3.0), een link naar de broncode, een lijst van alle gebruikte licenties (Gadgetbridge, lettertypen, bibliotheken), de Garmin-disclaimer en de privacyverklaring.
+- **Label per bron:** *Getest op echt apparaat (datum, versie)* of *Experimenteel*, uit één lijst in `core` met een test die elke bron dwingt er een te hebben. Zichtbaar onder Instellingen, Je toestellen en bij de apparaatkeuze bij de eerste start.
+- **Diagnose-rapport:** een knop "Diagnose delen" met versie, Android-versie en toestel, de status van elke bron en de laatste regels van het synclogboek. **Sleutels, tokens, namen en gezondheidswaarden zijn eruit** en een test bewijst dat met nep-geheimen. Een GitHub-meldingssjabloon "Hardwaretest" verwacht dit rapport.
+- **Uitleg bij de eerste start:** wat op de telefoon blijft, wat naar een AI gaat als je een sleutel toevoegt, en wat het label *Experimenteel* betekent.
+
+Klaar als: Stefan een proefstap kan doen en een rapport kan terugsturen waar geen persoonlijke gegevens in staan.
+
+### M3: v0.54.0 "Gegevens veilig" 🔜 (M)
+
+- **Migratietest vanaf elke uitgebrachte schemaversie:** per release een database-bestand als testgegeven, geopend door de huidige code, met controle dat er niets verdwijnt.
+- **Back-up en terugzetten bestaan al** (sleutels staan nooit in het bestand, terugzetten voegt toe zonder iets te verwijderen). Nieuw: een test per bron dat alles terugkomt, en een besluit of sleutels ooit versleuteld mee mogen.
+- **Alles exporteren:** nu is er een CSV. Dat wordt één ZIP met de CSV, de originele FIT/GPX/TCX en JSON, met een test die dat weer inleest.
+- **Bijwerken zonder verlies:** de updater weigert een afwijkende SHA-256 of handtekening met een duidelijke melding, getest met een nep-GitHub.
+
+Klaar als: een database van v0.2.0 tot en met v0.53.0 opent in de nieuwe versie met alle gegevens.
+
+### M4: v0.55.0 "Toegankelijk en tweetalig" 🔜 (M)
+
+- **TalkBack en toegankelijkheid:** elk scherm doorgelopen, grafieken met een tekstsamenvatting, aanraakdoelen van minstens 48 dp (getest, ook in de pixelstijl), lettergrootte 200 procent zonder afgesneden tekst.
+- **Taalpariteit:** een test dat elke tekst in Nederlands en Engels bestaat, geen overgebleven Engelse tekst in het Nederlands, meervouden kloppen.
+- **Grotere schermen:** tablet en opgevouwen toestellen (vanaf 600 dp) zonder afgesneden of uitgerekte onderdelen.
+
+Klaar als: de toegankelijkheidstests en taalpariteit in CI staan en groen zijn.
+
+### M5: v0.56.0 "Snel, klein en actueel" 🔜 (M)
+
+- **Prestatiebudget:** een gegenereerde historie van vijf jaar (ongeveer 1800 activiteiten met tracks en dagrijen) en een test op de openingstijd van elk tabblad en op het geheugen van de heatmap; opstarttijd gemeten.
+- **Verkleinen:** R8 en het verkleinen van resources beoordeeld (de APK is 11 MB), met een test dat de serialisatie en reflectie nog werken.
+- **targetSdk omhoog** (nu 35; Google verlangt voor nieuwe versies meestal een recenter niveau, controleer de actuele eis), met de lijst van gedragswijzigingen afgewerkt.
+- **Batterij:** de voorgrondservice voor live hartslag en de synchronisatie elke 10 minuten bij open app doorgemeten.
+
+Klaar als: het budget in CI staat en de APK niet groter is geworden dan 12 MB.
+
+### M6: v0.57.0 "Verspreiding" 🔜 (M, deels ❓ Stefan)
+
+- **Twee varianten van de app:** `direct` (de GitHub-APK, met de updater) en `store` (zonder `REQUEST_INSTALL_PACKAGES` en zonder updater). Per variant een manifesttest.
+- **Privacyverklaring** (`docs/PRIVACY.md`, Nederlands en Engels, ook in de app): niets gaat naar een server van ons, wat een AI-aanbieder krijgt als je een sleutel toevoegt, hoe Health Connect gebruikt wordt, hoe je alles wist.
+- **Installatiegids:** "zo installeer en update je OpenConnect" voor de GitHub-APK (ook met Obtainium), met de controle van de SHA-256.
+- **Winkelvoorbereiding, alleen voor de gekozen kanalen:** de teksten en antwoorden voor de Health Connect-verklaring en Google Play's gegevensveiligheid, en een `fastlane/metadata`-boom voor F-Droid. Let op: F-Droid ondertekent met een eigen sleutel, dus die APK installeert niet over de GitHub-APK heen; dat staat dan in de gids.
+- **Echte schermafbeeldingen** van Stefans telefoon in plaats van de Robolectric-plaatjes.
+
+Klaar als: de gekozen kanalen hebben een gids die een vreemde kan volgen.
+
+### M7: v0.58.0 en v0.59.0 "Proefrondes" 🔜 (L, loopt vanaf M2, Stefan bepaalt het tempo)
+
+Stefan loopt de lijst in [PUBLIC_RELEASE.md](PUBLIC_RELEASE.md) af met het diagnose-rapport; Claude repareert wat misgaat en zet het label van een bron op *Getest op echt apparaat* zodra het klopt. Volgorde van belangrijkheid: (1) installeren, bijwerken, eerste start, demo, bestanden importeren; (2) Garmin-sleutel; (3) fenix 8 over USB; (4) fenix 8 over Bluetooth, live hartslag en de melding met scherm uit; (5) Health Connect; (6) Oura; (7) Claude en Gemini live; (8) WHOOP en Hume, alleen als die er zijn: anders blijven ze *Experimenteel* in 1.0, en dat is eerlijk.
+
+Klaar als: G1 groen is.
+
+### M8: v1.0.0-rc.1, daarna v1.0.0 🔜 (M)
+
+- **Code-bevriezing:** vanaf hier alleen reparaties en teksten.
+- **`release.yml` krijgt een voorlopig-optie**, zodat een kandidaat als **GitHub pre-release** uitkomt en de updater die niet als nieuwste ziet (getest). De labelcontrole moet `1.0.0-rc.1` en `1.0.0rc1` aan elkaar kunnen koppelen.
+- **Wachttijd van minstens 7 dagen** met de kandidaat in dagelijks gebruik op Stefans eigen telefoon.
+- **Go/no-go:** alle poorten in PUBLIC_RELEASE.md groen, releasenotes in het Nederlands en Engels, de README definitief.
+- **v1.0.0** via dezelfde workflow, daarna de controle zoals altijd (SHA-256, handtekening, installeren over de kandidaat heen).
+
+## 5. Wat alleen Stefan kan
+
+| Wanneer | Wat | Waarom het niet zonder jou kan |
+|---------|-----|--------------------------------|
+| Voor M1 klaar is | De sleutel in GitHub-secrets zetten en een offline kopie bewaren | Alleen de eigenaar bewaart een kopie; secrets maak je in de instellingen van de repository |
+| Voor M1 klaar is | Privé melden van kwetsbaarheden aanzetten (Settings, Security) | Een instelling van de eigenaar |
+| Zodra M2 uit is | De proefronde op echte apparaten: telefoon, fenix 8, en de ring of banden die je hebt | Alleen jij hebt de apparaten en de accounts |
+| Voor M6 begint | Kiezen waar 1.0 uitkomt: alleen GitHub, ook F-Droid, ook Google Play (eenmalig ongeveer 25 dollar voor een ontwikkelaarsaccount) | Kosten, account en verantwoordelijkheid zijn van de eigenaar |
+| Voor M8 begint | Beslissen over de naam: houden of veranderen (de pakketnaam `nl.tufein.openconnect` verandert in elk geval niet) | Het is jouw project en jouw merk |
+| Bij M6 | Schermafbeeldingen van je eigen telefoon aanleveren | Mijn plaatjes komen uit een test, niet van een toestel |
+
+## 6. Na 1.0
+
+Geen belofte, wel de volgorde als er iets bijkomt:
+
+- **Dagboekvakjes uitbreiden** en een **trend van actieve tijd** (uit de app-vergelijking, sectie 7): klein en past bij wat er is.
+- **Garmin's nieuwere protobuf-synchronisatie** voor horloges die de klassieke map niet meer gebruiken.
+- **Het watchface** terug, als er een Garmin-ontwikkelaarsaccount en een eerste upload zijn (de Monkey C-map staat nog in `watch/` maar is nooit gecompileerd).
+- **Meer talen** (Duits, Frans) zodra de tekstpariteitstest er is.
+- **Een eerlijke "wat gebeurt er met mijn gegevens"-pagina** in de app met een overzicht van elk verzoek dat naar buiten gaat.
+
+**Bewust niet:** vermogensanalyse, een horlogecompanion, upload naar Intervals.icu of Strava (hun voorwaarden), segmenten en sociaal, labuitslagen, biologische leeftijd, Wear OS.
+
+## 7. Wat nog niet is gecontroleerd (register)
+
+De bron van waarheid voor poort G1. Een regel gaat pas naar ✅ als er een echte proef op staat met datum en versie.
+
+| Bron of onderdeel | Stand | Waar staat het |
+|-------------------|-------|----------------|
+| Garmin-account met eigen sleutel (daggegevens, slaap, HRV, SpO2, Body Battery) | ✅ een keer live geprobeerd tegen een echt account | [GARMIN.md](GARMIN.md) |
+| Activiteiten via de sleutel, Ping/Pull-callbacks, snapshots, epoch summaries | 🧪 veldnamen en callbacklayouts niet tegen een echt account | [GARMIN.md](GARMIN.md) |
+| Server met zakelijke OAuth (Garmin Developer Program) | 🧪 ❓ nooit, vraagt goedkeuring van Garmin | [GARMIN.md](GARMIN.md) |
+| Horloge over USB (fenix 8) en een map met horlogebestanden | 🧪 niet op een echt horloge | [WATCH.md](WATCH.md) |
+| Bluetooth-sync en live hartslag (uit Gadgetbridge) | 🧪 niet op een echt horloge | [BLUETOOTH.md](BLUETOOTH.md) |
+| Voorgrondservice met melding bij live hartslag | 🧪 niet op een echte telefoon | [WATCH.md](WATCH.md) |
+| Trainingen naar `GARMIN/NewFiles` | 🧪 ❓ of een fenix 8 de bestanden accepteert | [WATCH.md](WATCH.md) |
+| Health Connect (lezen en schrijven) | 🧪 niet op een echte telefoon | [ANDROID.md](ANDROID.md) |
+| Oura Ring | 🧪 nooit tegen de echte dienst | [OURA.md](OURA.md) |
+| WHOOP | 🧪 nooit met een echte band of account, scopenamen zijn aannames | [WHOOP.md](WHOOP.md) |
+| Hume Band | 🧪 nooit met een echte band, pakketnaam van de Hume-app is een aanname | [HUME.md](HUME.md) |
+| Claude en Gemini voor rapporten en coach | 🧪 geen live aanroepen met eigen sleutels | [AI.md](AI.md) |
+| In-app-updater | 🧪 niet op een echte telefoon | [ANDROID.md](ANDROID.md) |
+| Sleutelkluis, appvergrendeling, iconen en thema's | 🧪 niet op een echte telefoon | [ANDROID.md](ANDROID.md) |
+
+De drempels en afbakeningen van de inzichten (vorm, vroege waarschuwing, slaapbehoefte, seizoensfases, scores van de ring) zijn vuistregels die door tests vastliggen, niet door een studie.
+
+## 8. Klaar (per versie)
+
+Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies komen onderaan de lijst, met een regel in dezelfde vorm.
 
 | Versie | Wat |
 |--------|-----|
@@ -15,128 +191,27 @@ gaat uit zonder dat CI groen is. Wat zonder horloge of telefoon niet te controle
 | v0.3.0 – v0.4.0 | Horloge via USB, live hartslag over Bluetooth, Garmin-account via de Personal API |
 | v0.5.0 – v0.9.0 | Nieuwe look, coach, Gemini en Claude, Bluetooth-sync (uit Gadgetbridge), uitleg bij grafieken, weekdoelen, trainingsbelasting |
 | v0.10.0 – v0.15.0 | Back-up, synclogboek, widget en meldingen, Health Connect, beste prestaties, trainingsplan, app-vergrendeling |
-| v0.16.0 – v0.19.0 | Oura Ring, één AI tegelijk, apparaatkeuze, thema's, drie ontwerpen (Clean, Dashboard, Retro) |
-| v0.20.0 – v0.23.0 | Watchface-voorvertoning, watchfaces en widget als Connect IQ-broncode met bouwscript |
-| v0.24.0 | Op weg naar de Connect IQ-store: instellingen in Garmins app, `.iq`-build, controlescript, store-teksten, store-link in de app |
+| v0.16.0 – v0.19.0 | Oura Ring, één AI tegelijk, apparaatkeuze, thema's, drie ontwerpen |
+| v0.20.0 – v0.24.0 | Watchface-voorvertoning, watchfaces en widget als Connect IQ-broncode, weg naar de Connect IQ-store |
+| v0.25.0 | Racevoorspelling (Riegel) en racedoel |
+| v0.26.0 | Trainingsplan als FIT-trainingen, naar het horloge via USB |
+| v0.27.0 | Hartslagzones per activiteit en per week |
+| v0.28.0 | Schoenen en kilometers met een melding bij vervanging |
+| v0.29.0 | Maandkalender en reeksen |
+| v0.30.0 | Rustiger synchroniseren: opnieuw proberen, Retry-After, geen herhaald schrijven |
+| v0.31.0 – v0.33.0 | Een eigen ontwerp ("Handheld"), 24 kleurthema's, letterkeuze, acht app-iconen, drie stijlen |
+| v0.34.0 – v0.39.0 | Uit de app-vergelijking: vorm, conditie per afstand en VO2max, dagboek en vroege waarschuwing, eentonigheid, heatmap en dezelfde route, hi-score en seizoensplan |
+| v0.40.0 | Live hartslag blijft opnemen met het scherm uit (voorgrondservice) |
+| v0.41.0 – v0.42.0 | Trainingsopbouw, slaapritme, trend van de rusthartslag, stappendoel van de week |
+| v0.43.0 | Uiterlijk inklapbaar, Connect IQ opent Garmins app, watchface uit de app, activiteiten aangevuld met horloge en Oura Ring |
+| v0.44.0 | Inzichten per dag met keuze uit Garmin of Oura, datums onder elke grafiek |
+| v0.45.0 – v0.47.0 | Server: HRV, Pulse Ox, ademhaling en lichaamssamenstelling, eigen Garmin-sleutel, activiteiten, Ping/Pull, optionele aanmelding, snapshots |
+| v0.48.0 | In-app-updater met controle van de SHA-256 |
+| v0.49.0 – v0.50.0 | WHOOP-band en Hume Band, elk met een eigen tabblad, gescheiden van horloge en ring |
+| v0.51.0 | Apparaten naast elkaar: kaart *Apparaten vergeleken* op het Dag-tabblad |
 
-## v0.24.0: op weg naar de Connect IQ-store ✅
-
-1. **Instellen in Garmins app.** Ontwerp, kleur en vier velden van face, widget en glance zijn instellingen in de
-   Connect IQ-app van Garmin (Nederlands en Engels). Ongeldige of ontbrekende instellingen vallen terug op de
-   ingebouwde waarden, dus het scherm blijft nooit leeg.
-2. **`.iq`-bestand voor de store:** `watch/build.sh --package` maakt één bestand met alle fenix 8-modellen en een vast,
-   nooit veranderend app-id per app.
-3. **`watch/check-store.sh`:** controleert alles wat zonder Garmin-login kan (manifest, versie, producten, instellingen,
-   teksten, pictogram) en valideert tegen Garmins eigen `resources.xsd` als de SDK aanwezig is.
-4. **Store-teksten** in het Nederlands en Engels en een lijst van screenshots (`docs/store/`).
-5. **De link in de app** (Instellingen, Watchface-voorvertoning): één constante per app in `ConnectIqStore.kt`, leeg tot
-   de eerste upload. Zie [CONNECT_IQ_STORE.md](CONNECT_IQ_STORE.md).
-
-## v0.25.0: racevoorspelling en racedoel ✅
-
-6. **Voorspelde racetijden** (5 km, 10 km, halve en hele marathon) uit je beste prestaties, met de formule van Riegel
-   en een eerlijke betrouwbaarheid (een marathon voorspellen uit een 5 km is een schatting, geen belofte). Garmins eigen
-   Race Predictor wordt niet aan ontwikkelaars gegeven, dit is OpenConnects eigen schatting.
-7. **Racedoel** met datum, afstand en streeftijd, bovenaan de Plan-tab: aftelling, het tempo dat je nodig hebt en een
-   oordeel (voor op schema, op koers, meer werk). Datum en streeftijd stel je bij met knoppen (+/- 1 week, +/- 1 minuut).
-
-## v0.26.0: trainingen naar je horloge ✅
-
-8. **Trainingsplan als FIT-trainingen:** elke sessie van je plan wordt een gestructureerde training (warming-up,
-   intervallen of tempo, cooldown) in het FIT-formaat, dat Garmin-horloges kennen. Getest door ze met een
-   onafhankelijke decoder terug te lezen.
-9. **Naar het horloge kopiëren** via de USB-verbinding (map `GARMIN/NewFiles`), de komende 7 dagen per keer. Delen als bestand
-   is niet gebouwd.
-   ❓ Of een echte fenix 8 de bestanden accepteert is alleen met het horloge te zien.
-
-## v0.27.0: hartslagzones ✅
-
-10. **Zones** als percentage van je maximale hartslag (instelbaar, standaard de hoogste gemeten), tijd per zone bij
-    elke activiteit en per week, met een duidelijk oordeel over de verdeling (veel rustig, weinig zwaar).
-
-## v0.28.0: schoenen ✅
-
-11. **Schoenen en kilometers:** schoenen toevoegen, een standaardpaar per sport, afstand per paar uit je activiteiten
-    en een melding als een paar aan vervanging toe is (standaard bij 800 km, instelbaar).
-
-## v0.29.0: kalender en reeksen ✅
-
-12. **Maandkalender** van je activiteiten (afstand en aantal per dag, bladeren per maand) en **reeksen**: langste en
-    huidige reeks dagen en weken met beweging.
-
-## v0.31.0: een eigen ontwerp ✅
-
-13. **Eén eigen uiterlijk ("Handheld")** in plaats van drie ontwerpen en drie stijlen: pixellettertype, pixelhoeken,
-    vlakke panelen met een harde schaduw, pixeliconen en -logo, blokgrafieken. Zie [DESIGN.md](DESIGN.md).
-
-## v0.32.0: meer thema's, leesbaarder, kiesbaar icoon ✅
-
-14. **24 kleurthema's** in vier groepen, gemeten op leesbaarheid, een keuze tussen **pixelletters en duidelijke letters**
-    en een **keuze uit acht app-iconen**. Zie [DESIGN.md](DESIGN.md).
-
-## v0.33.0: strakke en deftige stijl naast retro ✅
-
-15. Een **stijlkeuze**: Retro (de pixelstijl), **Strak** (afgeronde hoeken, dunne lijnen, duidelijke letters) en **Deftig**
-    (kleine hoeken, titels met schreef). Alle 24 kleurthema's werken in alle drie. Zie [DESIGN.md](DESIGN.md).
-
-## Uit de app-vergelijking ✅ / 🚧
-
-Van [APP-VERGELIJKING.md](APP-VERGELIJKING.md) (8 apps naast OpenConnect) wordt alles in losse versies gebouwd:
-
-- **v0.34.0** ✅ fitheid, vermoeidheid en vorm (`Form.kt`, tabblad Vorm) en een trainingsadvies voor vandaag op Home.
-- **v0.35.0** ✅ conditie per afstand (`RaceShape.kt`) en VO2max uit je loopjes met racetijden (`Vo2Max.kt`), in het tabblad Plan.
-- **v0.36.0** ✅ dagboek (`Journal.kt`, kaart op Home, tabblad Dagboek met het effect op je nachten) en een vroege waarschuwing bij rusthartslag of HRV (`EarlyWarning.kt`).
-- **v0.37.0** ✅ eentonigheid en belasting van je week (`Recovery.kt`, tabblad Vorm) en een slaapdoel voor vannacht op Home.
-- **v0.38.0** ✅ persoonlijke heatmap van je routes (`Heatmap.kt`, tabblad Kaart) en dezelfde route vergeleken (`RouteMatcher.kt`, kaart bij een activiteit).
-- **v0.39.0** ✅ hi-scorekaart per jaar (`YearScore.kt`, tabblad Hi-score) en een seizoensplan in fases onder het racedoel (`SeasonPlan.kt`). Hiermee is de lijst uit de vergelijking klaar, op wat niet past (vermogensanalyse, horlogecompanion, upload naar Intervals.icu, segmenten en sociaal, labuitslagen, biologische leeftijd).
-
-## v0.40.0: live hartslag blijft opnemen met het scherm uit ✅
-
-16. **Voorgrondservice voor live hartslag:** zodra een hartslagmeting loopt, toont OpenConnect een vaste melding met de
-    hartslag en de verstreken tijd (en een Stop-knop). Die melding houdt het proces en de Bluetooth-verbinding in leven,
-    zodat een training doorloopt als het scherm uitgaat of de app op de achtergrond komt. Stoppen kan in de app of vanaf
-    de melding; wat al is opgenomen blijft bewaard en kan daarna als activiteit worden opgeslagen. Niet geprobeerd op een
-    echte telefoon.
-
-- **v0.41.0** ✅ trainingsopbouw: deze week tegenover je gebruikelijke week (`RampRate.kt`, kaart onder Inzichten, Vorm).
-
-- **v0.42.0** ✅ drie kleine kaarten op Home: slaapritme (`SleepConsistency.kt`), trend rusthartslag (`RestingHrTrend.kt`) en stappendoel deze week (`StepGoalWeek.kt`).
-
-
-
-- **v0.43.0** ✅ uiterlijk-instellingen in één inklapbare sectie, Connect IQ opent Garmins eigen app, watchface uit de app, activiteiten aangevuld met horloge en Oura Ring (`ActivityAround.kt`).
-
-- **v0.44.0** ✅ Inzichten per dag (`DayInsights.kt`, tabblad Dag) met een keuze uit Garmin of Oura Ring in uitklaplijsten, en datums onder alle grafieken (`AxisTicks.kt`).
-
-- **v0.45.0** ✅ de server leest nu ook nachtelijke HRV, Pulse Ox, ademhaling en lichaamssamenstelling (`domain.py`, `garmin/mapper.py`, `web/templates/health.html`), per dag samengevoegd met de bestaande daggegevens en met twee nieuwe JSON-endpoints (`/api/health/vitals` en `/api/health/body-composition`). ❓ Nog niet met een echt Garmin-account opgehaald; de demo-bron maakt ze alle vier.
-
-- **v0.46.0** ✅ de server kan met een **persoonlijke Garmin-sleutel** (`GARMIN_PERSONAL_KEY`) daggegevens, slaap, HRV, SpO2, ademhaling en Body Battery ophalen zonder ontwikkelaarsaccount; stress- en Body Battery-metingen en slaapseries worden per dag bewaard en getoond; kilometer-splittingen en beste prestaties (1K/5K/10K) komen uit tracks; wekelijkse rapporten noemen de nachtelijke vitale waarden; bloeddruk, huidtemperatuur, VO2max en fitte leeftijd worden gelezen (veldnamen **verify**) en in live-modus staat er een backfill-knop in Instellingen. ❓ Activiteiten via de persoonlijke sleutel en het volgen van Ping/Pull-URL's zijn er nog niet; optionele aanmelding vraagt een ontwerpkeuze.
-
-- **v0.47.0** ✅ de laatste roadmappunten: activiteiten (met originele FIT-bestanden) via de persoonlijke Garmin-sleutel, Ping/Pull-callbacks die alleen van een HTTPS-allowlist worden opgehaald, optionele aanmelding met één wachtwoord, en health snapshots/epoch summaries zoals ontvangen opgeslagen. ❓ Veldnamen van de laatste twee typen en de callback-layouts zijn nog niet met een echt account gecontroleerd.
-
-- **v0.48.0** ✅ in-app-updater in de Android-app: Instellingen controleert GitHub op een nieuwere release, downloadt de ondertekende APK, controleert de SHA-256 tegen de gepubliceerde checksum en vraagt Android om te installeren (op Android 8+ moet "apps installeren toestaan" eenmalig aan). ❓ Niet op een echte telefoon geprobeerd; de JVM-tests gebruiken een nep-GitHub-server.
-
-- **v0.49.0** ✅ WHOOP-band in de Android-app, op dezelfde manier als de Oura Ring: eigen tabblad met herstel, belasting, slaap en workouts, gescheiden van horloge en ring, inloggen met een eigen WHOOP-applicatie (OAuth), WHOOP als bron op het Dag-tabblad van Inzichten en bandworkouts in de activiteitenlijst. ❓ Niet met een echte band of een echt WHOOP-account geprobeerd; de afbakening van een dag en de scopenamen zijn nog aannames.
-
-- **v0.50.0** ✅ Hume Band in de Android-app, gelezen uit Health Connect (Hume heeft geen publieke API): eigen tabblad met slaap, stappen, hartslag, HRV, bloedzuurstof en workouts, alleen de gegevens van de Hume-app, geen verzonnen scores, Hume als bron op het Dag-tabblad van Inzichten en bandworkouts in de activiteitenlijst. ❓ Niet met een echte band of telefoon geprobeerd; de pakketnaam van de Hume-app en welke records hij schrijft zijn nog aannames.
-- **v0.51.0** ✅ apparaten naast elkaar: kaart *Apparaten vergeleken* op het Dag-tabblad van Inzichten (`DeviceComparison.kt`), plus een bijgewerkte ideeënlijst uit de fitness-apps (`docs/APP-VERGELIJKING.md`, sectie 7).
-
-## Later 💡
-
-- Het nieuwere Garmin-protobuf-synchronisatieprotocol voor horloges die de klassieke mapsynchronisatie niet meer gebruiken.
-- Wear OS of een eigen horloge-app buiten Garmin valt buiten dit project.
-
-## Heeft de eigenaar nodig ❓
-
-- **Connect IQ-store:** een Garmin-ontwikkelaarsaccount, de eerste upload en Garmins keuring. Daarna het store-id in
-  `ConnectIqStore.kt` zetten. Stap voor stap in [CONNECT_IQ_STORE.md](CONNECT_IQ_STORE.md).
-- **De Monkey C-code is nooit gecompileerd** (de apparaatbestanden vragen een Garmin-login). Eén keer bouwen met
-  `watch/build.sh` laat zien of er nog fouten in zitten.
-- Een echte **fenix 8** voor de Bluetooth-sync en voor het kopiëren van watchfaces en trainingen.
-- Live controles van **Claude, Gemini en Oura** met eigen sleutels.
-
-## Hoe releases werken
+## 9. Hoe releases werken
 
 Elke versie is een pull request, daarna een GitHub-release met de ondertekende APK (zelfde sleutel, dus de nieuwe versie
 installeert over de oude en houdt je gegevens). Er gaat niets uit zonder groene CI. Elke release legt uit wat er in de
-code is veranderd en wat niet is gecontroleerd.
+code is veranderd en wat niet is gecontroleerd. Voor 1.0 komt daar een voorlopige kandidaat bij (M8).
