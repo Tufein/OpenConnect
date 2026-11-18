@@ -27,7 +27,10 @@ import androidx.compose.ui.unit.dp
 import java.time.Instant
 import java.time.LocalDate
 import nl.tufein.openconnect.R
+import nl.tufein.openconnect.core.Agreement
 import nl.tufein.openconnect.core.ChartInsight
+import nl.tufein.openconnect.core.ComparedMeasure
+import nl.tufein.openconnect.core.DeviceComparison
 import nl.tufein.openconnect.core.ChartMetric
 import nl.tufein.openconnect.core.DayInsight
 import nl.tufein.openconnect.core.DayInsights
@@ -169,6 +172,9 @@ fun DayContent(state: DayState, contentPadding: PaddingValues, onOpenActivity: (
                 }
             }
         }
+        // With two or more devices, the same day as each of them measured it, side by side (v0.51.0).
+        val compared = if (available.size > 1) DeviceComparison.of(day, listOfNotNull(state.garmin, state.oura, state.whoop, state.hume)) else emptyList()
+        if (compared.isNotEmpty()) item(key = "compare-" + day.toEpochDay()) { DeviceComparisonCard(compared) }
         if (!insight.isEmpty || set.hasAnyData) {
             item(key = "chart-" + source.name + metric.name + day.toEpochDay()) {
                 val series = set.series(metric, day, DayInsights.CHART_DAYS)
@@ -195,6 +201,32 @@ fun DayContent(state: DayState, contentPadding: PaddingValues, onOpenActivity: (
                     for (w in insight.workouts) WorkoutRow(w, onOpenActivity)
                 }
             }
+        }
+    }
+}
+
+/** One day, every device's number for the measures they count the same way, and whether they lie close together. */
+@Composable
+private fun DeviceComparisonCard(measures: List<ComparedMeasure>) {
+    val names = measures.flatMap { m -> m.values.map { it.source } }.distinct().associateWith { stringResource(sourceName(it)) }
+    SurfaceCard {
+        Text(stringResource(R.string.compare_title), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.compare_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        for (m in measures) {
+            Text(metricName(m.metric), style = MaterialTheme.typography.bodyLarge)
+            Text(m.values.joinToString("  ·  ") { names.getValue(it.source) + " " + insightValue(m.metric, it.value) }, style = MaterialTheme.typography.bodyMedium)
+            val gap = when (m.metric) {
+                ChartMetric.SLEEP -> stringResource(R.string.compare_gap_minutes, (m.spread * 60).roundToInt())
+                ChartMetric.STEPS -> stringResource(R.string.compare_gap_steps, Fmt.thousands(m.spread.roundToInt()))
+                ChartMetric.SPO2 -> stringResource(R.string.compare_gap_points, m.spread.roundToInt())
+                else -> stringResource(R.string.compare_gap_bpm, m.spread.roundToInt())
+            }
+            val close = m.agreement == Agreement.CLOSE
+            Text(
+                stringResource(if (close) R.string.compare_close else R.string.compare_apart, gap),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (close) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

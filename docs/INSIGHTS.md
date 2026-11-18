@@ -202,3 +202,24 @@ Every chart that can be read by touch (Health, Oura, the 30-day steps on Home, w
 under it: the first and the last point and up to three between, each centred under its own point (`DateAxis` in `Charts.kt`; which points
 get one is `core/.../AxisTicks.kt`). Charts without dates (heart rate and elevation of one activity, which run over time, not days) are
 unchanged.
+
+## Devices compared (v0.51.0)
+
+*Insights, Day.* With two or more devices in use (the watch, the Oura Ring, a WHOOP band, a Hume Band), a card **Devices compared** sits
+above the chart and puts the chosen day's numbers of every device side by side: `Garmin 7.8 h  ·  Oura 8.1 h`, and under it either
+*Close: 18 min apart* or *Far apart: 52 min*. It answers the question that a watch plus a ring raise at once: do they agree?
+
+- **Only what devices count the same way.** Time asleep, steps, resting heart rate and blood oxygen. HRV, breathing, readiness and the
+  sleep scores are each maker's own recipe, so a gap there says nothing about who is right and they are left out. Resting heart rate is
+  compared between the devices that report one (the watch, WHOOP, and the Hume Band when its app writes one); the Oura Ring's *lowest heart
+  rate of the night* is a different measure and is not set against it.
+- **When it is "close".** Sleep within 0.5 hour, resting heart rate within 3 beats a minute, blood oxygen within 2 points, steps within
+  10% of the larger count. Rules of thumb, pinned by tests (`DeviceComparisonTest`), not a medical judgement and not a claim that one
+  device is right: a wrist band, a ring and a watch all estimate.
+- **Needs two.** A measure is only shown when at least two devices have a number for that day; a zero (not measured) is left out. With one
+  device, or two that share no measure that day, there is no card.
+- **Never mixed.** The numbers are read from each device's own table; nothing is averaged or written back, so the watch's days, nights and
+  activities stay the watch's.
+
+Code: `core/.../DeviceComparison.kt` (`DeviceComparison.of`, `ComparedMeasure`, `Agreement`), `app/.../ui/DayScreen.kt`
+(`DeviceComparisonCard`).

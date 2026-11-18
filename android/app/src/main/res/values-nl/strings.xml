@@ -1095,4 +1095,14 @@
     <string name="hume_chart_rhr">Rusthartslag</string>
     <string name="hume_chart_lowest">Laagste hartslag van de nacht</string>
     <string name="hume_workouts">Workouts van de band</string>
+
+    <!-- Apparaten vergeleken (v0.51.0) -->
+    <string name="compare_title">Apparaten vergeleken</string>
+    <string name="compare_body">Deze dag zoals elk van je apparaten hem mat. Elk apparaat telt een beetje anders, dus kleine verschillen zijn normaal. Alleen wat apparaten op dezelfde manier uitrekenen wordt vergeleken (slaap, stappen, rusthartslag, bloedzuurstof); HRV en scores zijn het eigen recept van de maker en blijven buiten beschouwing.</string>
+    <string name="compare_close">Dicht bij elkaar: %1$s verschil</string>
+    <string name="compare_apart">Ver uit elkaar: %1$s</string>
+    <string name="compare_gap_minutes">%1$d min</string>
+    <string name="compare_gap_steps">%1$s stappen</string>
+    <string name="compare_gap_points">%1$d punten</string>
+    <string name="compare_gap_bpm">%1$d bpm</string>
 </resources>

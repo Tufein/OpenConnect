@@ -177,6 +177,36 @@ Bewust niet overnemen:
 3. **Dagboek met correlatie** (2) en **waarschuwing bij afwijkende waarden** (4): hierdoor wordt OpenConnect persoonlijk, niet alleen een Garmin-spiegel.
 4. De **heatmap** (8) als leuk tussendoortje, voor het retro-gevoel.
 
+## 7. Verversing van 2026-11-18 (na v0.50.0)
+
+*Bijgewerkt voor OpenConnect v0.51.0. De tabel in sectie 3 is niet herschreven; hieronder staat wat er sindsdien veranderde.*
+
+**Wat is gebouwd sinds dit onderzoek.** Alle ideeën van de ranglijst in sectie 5 zijn gebouwd, een per release (v0.34.0 tot
+en met v0.39.0: fitness, vermoeidheid en vorm; dagboek; marathon shape en VO2max per loop; waarschuwing bij afwijkende waarden;
+monotonie en strain; vandaag-advies; kaart en dezelfde route; hi-score en jaarplan). Daarna kwamen de rest van de Garmin-ruimte
+(v0.40.0 tot v0.48.0) en de banden: **WHOOP (v0.49.0)** en **Hume Band (v0.50.0)**, op dezelfde manier als de Oura Ring: een eigen
+tabblad, eigen opslag, nooit gemengd met het horloge. De rijen WHOOP en Hume in "Meerdere bronnen" kloppen dus nu.
+
+**Nieuw idee uit het verse onderzoek, gebouwd in v0.51.0: apparaten naast elkaar.** Wie een horloge, een ring en een band draagt,
+krijgt drie apps met drie verschillende getallen voor dezelfde nacht. Voor zover dit onderzoek reikte zet geen van de apps ze naast elkaar (elke
+leverancier laat alleen zijn eigen cijfer zien); voor een app die al meerdere bronnen leest kost het weinig en het past bij de
+belofte dat alles bij jou blijft. De kaart *Apparaten vergeleken* op het Dag-tabblad vergelijkt alleen wat alle apparaten op
+dezelfde manier tellen (slaap, stappen, rusthartslag, bloedzuurstof) en noemt de afstand tussen de getallen, geen winnaar. Zie
+[INSIGHTS.md](INSIGHTS.md).
+
+**Gezien en nog niet gebouwd** (uit zoekresultaten en leveranciersberichten van 2026; niet bevestigd op de eigen pagina's):
+
+| Idee | Komt van | Waarom het (nog) niet is gebouwd | Maat |
+|------|----------|----------------------------------|------|
+| Trend van *actieve tijd* per week (minuten bewegen, niet alleen stappen) | Oura | Stap- en minutentrend bestaan al; weinig nieuws zolang er maar een bron voor minuten is. Eerst zien of Health Connect en Oura het gelijk tellen. | S |
+| Voeding en leefstijl loggen als bron voor het dagboek | Garmin Connect+ | Het dagboek (v0.36.0) kent al vrije vakjes met correlatie; voeding is gevoelig en vraagt een eigen voedselbron. Alleen de vakjes uitbreiden is S. | S tot L |
+| Een training van de band doorsturen naar Strava | WHOOP | De API-voorwaarden van Strava voor 2026 verbieden volgens de berichten gebruik voor AI-doeleinden, en OpenConnect heeft een AI-coach; eerst de voorwaarden lezen. | M |
+| Een nieuw schermloos Garmin-bandje (Cirqa) als apparaat | Garmin | Alleen een aankondiging; er is nog niets bekend over een koppeling of Health Connect-gegevens. Pas bekijken als er documentatie is. | ? |
+
+**Volgorde van hier.** (1) Eerst de drie banden echt proberen (nu draait niets daarvan tegen een echt account, band of telefoon;
+zie de "Niet gecontroleerd"-lijsten in [WHOOP.md](WHOOP.md) en [HUME.md](HUME.md)). (2) Het dagboek met extra vakjes. (3) De
+trend van actieve tijd.
+
 ## Bronnen
 
 * Strava abonnementsfuncties: <https://support.strava.com/hc/articles/216917657-Strava-Subscription-Features>
