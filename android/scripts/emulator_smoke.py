@@ -131,23 +131,29 @@ class Run:
         adb("shell", "input", "tap", str(x), str(y))
         time.sleep(1.2)
 
-    def scroll_to(self, text, contains=False, tries=18):
-        """Swipes up (so the list goes down) until [text] is on screen and not behind the bottom bar."""
+    def scroll_to(self, text, contains=False, tries=24):
+        """Swipes until [text] is on screen and not behind the bottom bar: down the list first, and back up when the
+        end of the list is reached without finding it (a screen that was left scrolled down keeps its place)."""
         size = re.search(r"(\d+)x(\d+)", adb("shell", "wm", "size"))
         width, height = int(size.group(1)), int(size.group(2))
-        previous = None
+        down, previous, turns = True, None, 0
         for _ in range(tries):
             nodes = screen()
             node = find(nodes, text, contains)
             if node and node.bottom < height * 0.86 and node.top > height * 0.08:
                 return node
-            # At the end of the list the screen no longer changes: the button sits at the very bottom (the first-start
-            # screen has no bottom bar), so take it where it is.
             seen = labels(nodes)
-            if node and seen == previous and node.bottom <= height:
-                return node
+            if seen == previous:
+                # The screen no longer changes: this is the end of the list.
+                if node and node.bottom <= height:
+                    # The button sits at the very bottom (the first-start screen has no bottom bar): take it there.
+                    return node
+                if turns >= 2:
+                    break
+                down, turns = not down, turns + 1
             previous = seen
-            adb("shell", "input", "swipe", str(width // 2), str(int(height * 0.7)), str(width // 2), str(int(height * 0.3)), "350")
+            start_y, end_y = (0.7, 0.3) if down else (0.3, 0.7)
+            adb("shell", "input", "swipe", str(width // 2), str(int(height * start_y)), str(width // 2), str(int(height * end_y)), "350")
             time.sleep(0.8)
         raise Smoke(f"could not scroll to {text!r}; the screen showed: {labels(screen())[:60]}")
 
@@ -210,7 +216,7 @@ def main(apk, out):
         run.wait("About OpenConnect")
         run.shot("about")
         run.back()
-        run.wait("Appearance")
+        run.wait("About and licences")
         print("About: ok")
 
         run.scroll_to("Claude key")
