@@ -60,7 +60,7 @@ Elke mijlpaal is een gewone release (pull request, groene CI, ondertekende APK, 
 het **kritieke pad**: een proefronde op echte apparaten duurt het langst en hangt van Stefan af, dus alles wat die proefronde mogelijk
 maakt komt eerst (M1 en M2), en de rest loopt ernaast.
 
-### M1: "Schoon huis" 🔜 (S tot M)
+### M1: "Schoon huis" 🔜 (S tot M; huis-deel klaar in v0.53.0, afhankelijkheden volgen)
 
 Doel: een opgeruimde basis waarop de rest veilig gebouwd kan worden.
 
@@ -213,6 +213,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v0.49.0 – v0.50.0 | WHOOP-band en Hume Band, elk met een eigen tabblad, gescheiden van horloge en ring |
 | v0.51.0 | Apparaten naast elkaar: kaart *Apparaten vergeleken* op het Dag-tabblad |
 | v0.52.0 | Minimum Android van 8.0 naar 9, dode versiecontroles opgeruimd, en dit plan naar 1.0 |
+| v0.53.0 | Schoon huis: README opnieuw, `CHANGELOG.md` uit de releasenotes, `SECURITY.md` en `docs/VERSIONING.md`, GitHub Actions bij, CI-flakes aangepakt, Dependabot per familie |
 
 ## 9. Hoe releases werken
 

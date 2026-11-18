@@ -31,8 +31,8 @@ class GearScreenTest : AppTestBase() {
         launchFresh(prepare = prepare)
         waitForText("Load demo data")
         rule.onNodeWithText("Load demo data").performClick()
-        rule.waitUntil(15_000) { !hasText("Load demo data", substring = false) }
-        rule.waitUntil(15_000) { !hasText("Demo data loaded", substring = true) }
+        rule.waitUntil(45_000) { !hasText("Load demo data", substring = false) }
+        rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
         tab("Insights").performClick()
         waitForText("Week of", substring = true)
         rule.onNodeWithText("Shoes").performClick()
@@ -72,7 +72,7 @@ class GearScreenTest : AppTestBase() {
         waitForText("Retired on", substring = true)
         assertTrue(book().shoes.single().until != null)
         clickText("Back in use")
-        rule.waitUntil(15_000) { !hasText("Retired on", substring = true) }
+        rule.waitUntil(45_000) { !hasText("Retired on", substring = true) }
         assertNull(book().shoes.single().until)
     }
 

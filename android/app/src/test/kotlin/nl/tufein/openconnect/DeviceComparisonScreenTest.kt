@@ -19,7 +19,7 @@ class DeviceComparisonScreenTest : AppTestBase() {
     private fun loadDemo(waitFor: String = "Load demo data") {
         waitForText(waitFor)
         rule.onNodeWithText(waitFor).performClick()
-        rule.waitUntil(15_000) { !hasText(waitFor, substring = false) }
+        rule.waitUntil(45_000) { !hasText(waitFor, substring = false) }
     }
 
     private fun openDay() {

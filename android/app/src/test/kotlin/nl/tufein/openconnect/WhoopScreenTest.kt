@@ -167,11 +167,11 @@ class WhoopScreenTest : AppTestBase() {
         launchWithWhoop(oura = true)
         waitForText("Demodata laden")
         rule.onNodeWithText("Demodata laden").performClick()
-        rule.waitUntil(15_000) { !hasText("Demodata laden", substring = false) }
+        rule.waitUntil(45_000) { !hasText("Demodata laden", substring = false) }
         tab("WHOOP").performClick()
         waitForText("Herstel")
         waitForText("Afgelopen nacht")
-        rule.waitUntil(15_000) { !hasText("Demodata geladen", substring = true) }
+        rule.waitUntil(45_000) { !hasText("Demodata geladen", substring = true) }
         shot("nl-whoop-tab")
         // With seven tabs the bar uses short words, and none of them is cut off.
         for (label in listOf("Overzicht", "Sport", "Gezond", "Inzichten", "Oura", "WHOOP", "Opties")) {

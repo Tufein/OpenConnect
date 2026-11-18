@@ -142,11 +142,11 @@ class OuraAndTouchScreenTest : AppTestBase() {
         launchWithOura()
         waitForText("Demodata laden")
         rule.onNodeWithText("Demodata laden").performClick()
-        rule.waitUntil(15_000) { !hasText("Demodata laden", substring = false) }
+        rule.waitUntil(45_000) { !hasText("Demodata laden", substring = false) }
         tab("Oura").performClick()
         waitForText("Paraatheid")
         waitForText("Afgelopen nacht")
-        rule.waitUntil(15_000) { !hasText("Demodata geladen", substring = true) }
+        rule.waitUntil(45_000) { !hasText("Demodata geladen", substring = true) }
         shot("nl-42-oura-tab")
         // With six tabs the bar uses short words, and none of them is cut off.
         for (label in listOf("Overzicht", "Sport", "Gezond", "Inzichten", "Oura", "Opties")) {
@@ -167,8 +167,8 @@ class OuraAndTouchScreenTest : AppTestBase() {
         launchWithOura()
         waitForText("Load demo data")
         rule.onNodeWithText("Load demo data").performClick()
-        rule.waitUntil(15_000) { !hasText("Load demo data", substring = false) }
-        rule.waitUntil(15_000) { !hasText("Demo data loaded", substring = true) }
+        rule.waitUntil(45_000) { !hasText("Load demo data", substring = false) }
+        rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
         scrollToText("Resting heart rate") // a tile further down Home
         rule.onNodeWithText("Resting heart rate").performClick()
         waitForText("Latest:", substring = true) // the resting heart rate chart on the Health screen

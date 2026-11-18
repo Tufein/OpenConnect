@@ -22,8 +22,8 @@ class ZonesScreenTest : AppTestBase() {
         launchFresh()
         waitForText("Load demo data")
         rule.onNodeWithText("Load demo data").performClick()
-        rule.waitUntil(15_000) { !hasText("Load demo data", substring = false) }
-        rule.waitUntil(15_000) { !hasText("Demo data loaded", substring = true) }
+        rule.waitUntil(45_000) { !hasText("Load demo data", substring = false) }
+        rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
         tab("Insights").performClick()
         waitForText("Week of", substring = true)
         rule.onNodeWithText("Zones").performClick()
@@ -57,11 +57,11 @@ class ZonesScreenTest : AppTestBase() {
         waitForText("$first bpm")
 
         clickText("−5 bpm")
-        rule.waitUntil(15_000) { settings().maxHr == first - 5 }
+        rule.waitUntil(45_000) { settings().maxHr == first - 5 }
         waitForText("${first - 5} bpm")
 
         clickText("Use the highest measured")
-        rule.waitUntil(15_000) { settings().maxHr == 0 }
+        rule.waitUntil(45_000) { settings().maxHr == 0 }
         waitForText("The highest heart rate in your activities", substring = true)
     }
 

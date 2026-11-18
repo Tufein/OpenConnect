@@ -4,7 +4,7 @@ Het plan staat in [ROADMAP.md](ROADMAP.md). Dit bestand is de lijst die je afvin
 (paragraaf 1) is aangevinkt.** Een vakje gaat pas aan met bewijs: een link naar de pull request, een testnaam, of een regel in
 de proefronde (paragraaf 2) met datum en versie.
 
-Stand op 2026-11-18, na v0.51.0: nog niets aangevinkt dat van een echt apparaat afhangt; de rest is nog niet gebouwd.
+Stand op 2026-11-18, na v0.53.0: nog niets aangevinkt dat van een echt apparaat afhangt. Aangevinkt is wat het werk van Claude alleen was: minimum Android 9 (v0.52.0), de README, `SECURITY.md`, `docs/VERSIONING.md` en het changelog (v0.53.0).
 
 ## 1. Go/no-go per poort
 
@@ -33,7 +33,8 @@ Stand op 2026-11-18, na v0.51.0: nog niets aangevinkt dat van een echt apparaat 
 - [ ] De sleutel staat in GitHub-secrets (`OPENCONNECT_KEYSTORE_BASE64` en `OPENCONNECT_KEYSTORE_PASSWORD`), één release heeft ze gebruikt
 - [ ] Een offline kopie van het sleutelbestand en het wachtwoord ligt bij Stefan (niet in de repository, niet in een issue)
 - [ ] Het privé-conceptrelease "Signing key" is verwijderd, ná de vorige twee
-- [ ] Privé melden van kwetsbaarheden staat aan; `SECURITY.md` klopt met de code
+- [x] `SECURITY.md` klopt met de code (herschreven in v0.53.0: optionele aanmelding, Ping/Pull-allowlist, Android-app, ondertekening)
+- [ ] Privé melden van kwetsbaarheden staat aan (Stefan: Settings, Security, *Private vulnerability reporting*)
 - [ ] Geen openstaande beveiligingsmeldingen van afhankelijkheden
 - [x] Minimum Android op 9 gezet (Stefan, 2026-11-18, v0.52.0): sleutelwissel met een bewijsketen werkt daardoor op elke ondersteunde telefoon (zie paragraaf 4)
 
@@ -45,7 +46,7 @@ Stand op 2026-11-18, na v0.51.0: nog niets aangevinkt dat van een echt apparaat 
 - [ ] Geen bekende crash of dataverlies in de issues
 
 ### G5 Begrijpelijk
-- [ ] README opnieuw (kort, actueel, wat is getest)
+- [x] README opnieuw (kort, actueel, wat is getest), met `CHANGELOG.md` en `docs/VERSIONING.md` (v0.53.0)
 - [ ] Installatiegids (APK, "apps installeren toestaan", controle van de SHA-256, bijwerken, ook met Obtainium)
 - [ ] Privacyverklaring in het Nederlands en Engels, ook in de app
 - [ ] Schermafbeeldingen van een echte telefoon
