@@ -56,6 +56,7 @@ import nl.tufein.openconnect.ai.AiKeyProblem
 import nl.tufein.openconnect.ai.AiUi
 import nl.tufein.openconnect.ai.AiVendorUi
 import androidx.health.connect.client.PermissionController
+import nl.tufein.openconnect.core.DataSourceKind
 import nl.tufein.openconnect.core.DataOverview
 import nl.tufein.openconnect.core.health.HealthAccess
 import nl.tufein.openconnect.health.AndroidHealthConnectGateway
@@ -106,6 +107,7 @@ fun SettingsScreen(
     onOura: () -> Unit = {},
     onWhoop: () -> Unit = {},
     onHume: () -> Unit = {},
+    onAbout: () -> Unit = {},
     /** The choice of devices changed: Garmin, Oura Ring, WHOOP and Hume Band, each on or off. */
     onSources: (garmin: Boolean, oura: Boolean, whoop: Boolean, hume: Boolean) -> Unit = { _, _, _, _ -> },
     /** A colour theme was picked. */
@@ -129,6 +131,7 @@ fun SettingsScreen(
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     var confirmClear by remember { mutableStateOf(false) }
+    var diagnostics by remember { mutableStateOf(false) }
     // Folded away at first; kept while the app is open, also when another tab is looked at in between.
     var lookOpen by rememberSaveable { mutableStateOf(false) }
     LazyColumn(
@@ -214,21 +217,21 @@ fun SettingsScreen(
             SectionTitle(stringResource(R.string.settings_devices))
             SurfaceCard {
                 Text(stringResource(R.string.settings_devices_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                DeviceSwitch(stringResource(R.string.device_garmin), stringResource(R.string.device_garmin_body), ui.sources.garmin) { onSources(it, ui.sources.oura, ui.sources.whoop, ui.sources.hume) }
+                DeviceSwitch(stringResource(R.string.device_garmin), stringResource(R.string.device_garmin_body), ui.sources.garmin, deviceStatus(DataSourceKind.GARMIN_ACCOUNT)) { onSources(it, ui.sources.oura, ui.sources.whoop, ui.sources.hume) }
                 if (ui.sources.garmin) {
                     PrimaryButton(onClick = onGarmin, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_garmin)) }
                     PrimaryButton(onClick = onWatch, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_watch)) }
                     ConnectIqButton()
                 }
-                DeviceSwitch(stringResource(R.string.device_oura), stringResource(R.string.device_oura_body), ui.sources.oura) { onSources(ui.sources.garmin, it, ui.sources.whoop, ui.sources.hume) }
+                DeviceSwitch(stringResource(R.string.device_oura), stringResource(R.string.device_oura_body), ui.sources.oura, deviceStatus(DataSourceKind.OURA)) { onSources(ui.sources.garmin, it, ui.sources.whoop, ui.sources.hume) }
                 if (ui.sources.oura) {
                     PrimaryButton(onClick = onOura, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_oura)) }
                 }
-                DeviceSwitch(stringResource(R.string.device_whoop), stringResource(R.string.device_whoop_body), ui.sources.whoop) { onSources(ui.sources.garmin, ui.sources.oura, it, ui.sources.hume) }
+                DeviceSwitch(stringResource(R.string.device_whoop), stringResource(R.string.device_whoop_body), ui.sources.whoop, deviceStatus(DataSourceKind.WHOOP)) { onSources(ui.sources.garmin, ui.sources.oura, it, ui.sources.hume) }
                 if (ui.sources.whoop) {
                     PrimaryButton(onClick = onWhoop, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_whoop)) }
                 }
-                DeviceSwitch(stringResource(R.string.device_hume), stringResource(R.string.device_hume_body), ui.sources.hume) { onSources(ui.sources.garmin, ui.sources.oura, ui.sources.whoop, it) }
+                DeviceSwitch(stringResource(R.string.device_hume), stringResource(R.string.device_hume_body), ui.sources.hume, deviceStatus(DataSourceKind.HUME)) { onSources(ui.sources.garmin, ui.sources.oura, ui.sources.whoop, it) }
                 if (ui.sources.hume) {
                     PrimaryButton(onClick = onHume, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_hume)) }
                 }
@@ -352,9 +355,12 @@ fun SettingsScreen(
                 }
                 Text(stringResource(R.string.about_body), style = MaterialTheme.typography.bodyMedium)
                 Text("github.com/Tufein/OpenConnect", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                SecondaryButton(onClick = onAbout, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.about_open_button)) }
+                SecondaryButton(onClick = { diagnostics = true }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.diagnostics_button)) }
             }
         }
     }
+    if (diagnostics) DiagnosticsDialog(ui, onDismiss = { diagnostics = false })
     if (confirmClear) {
         AlertDialog(
             onDismissRequest = { confirmClear = false },
@@ -609,7 +615,7 @@ private fun HealthConnectBody(
 
 /** A device that can be switched on or off, with a line on what it brings. */
 @Composable
-fun DeviceSwitch(title: String, body: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+fun DeviceSwitch(title: String, body: String, checked: Boolean, status: String? = null, onChange: (Boolean) -> Unit) {
     androidx.compose.foundation.layout.Row(
         Modifier.fillMaxWidth().tappable { onChange(!checked) }.padding(vertical = 6.dp),
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
@@ -617,6 +623,7 @@ fun DeviceSwitch(title: String, body: String, checked: Boolean, onChange: (Boole
         androidx.compose.foundation.layout.Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
             Text(body, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (status != null) Text(status, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
         }
         PixelSwitch(checked = checked, onCheckedChange = onChange, modifier = Modifier.padding(start = 12.dp))
     }

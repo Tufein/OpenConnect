@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v0.55.0: eerlijk en te diagnosticeren
+
+Tweede mijlpaal (M2) op de weg naar 1.0, zie `docs/ROADMAP.md`. De app zegt nu zelf wat er echt getest is, heeft een Over-scherm met alle licenties, en kan een diagnose-rapport maken waar geen sleutels, namen of gezondheidswaarden in staan. Daarmee kan Stefan (of een tester) een proefstap op een echt apparaat doen en iets terugsturen.
+
+[Release notes](docs/releases/v0.55.0.md)
+
 ## v0.54.0: Home zegt welke dag het laat zien
 
 Stefan zette de app naast zijn horloge en de cijfers kwamen niet overeen: 2.762 stappen in de app tegen 1.660 op het horloge, en een Body Battery die ook anders was. Dat is het eerste echte signaal van een telefoon in dit project, en het was geen fout van het horloge. Twee dingen in de app zeiden iets anders dan ze deden.

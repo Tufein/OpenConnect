@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import nl.tufein.openconnect.R
+import nl.tufein.openconnect.core.DataSourceKind
 
 /**
  * The first start (v0.17.0): which devices do you use? Only what is chosen shows up in the app, so someone without a
@@ -42,10 +43,15 @@ fun OnboardingScreen(initial: SourcesUi, onDone: (garmin: Boolean, oura: Boolean
             Text(stringResource(R.string.onboarding_body), style = MaterialTheme.typography.bodyMedium)
             SectionTitle(stringResource(R.string.onboarding_devices))
             SurfaceCard {
-                DeviceSwitch(stringResource(R.string.device_garmin), stringResource(R.string.device_garmin_body), garmin) { garmin = it }
-                DeviceSwitch(stringResource(R.string.device_oura), stringResource(R.string.device_oura_body), oura) { oura = it }
-                DeviceSwitch(stringResource(R.string.device_whoop), stringResource(R.string.device_whoop_body), whoop) { whoop = it }
-                DeviceSwitch(stringResource(R.string.device_hume), stringResource(R.string.device_hume_body), hume) { hume = it }
+                DeviceSwitch(stringResource(R.string.device_garmin), stringResource(R.string.device_garmin_body), garmin, deviceStatus(DataSourceKind.GARMIN_ACCOUNT)) { garmin = it }
+                DeviceSwitch(stringResource(R.string.device_oura), stringResource(R.string.device_oura_body), oura, deviceStatus(DataSourceKind.OURA)) { oura = it }
+                DeviceSwitch(stringResource(R.string.device_whoop), stringResource(R.string.device_whoop_body), whoop, deviceStatus(DataSourceKind.WHOOP)) { whoop = it }
+                DeviceSwitch(stringResource(R.string.device_hume), stringResource(R.string.device_hume_body), hume, deviceStatus(DataSourceKind.HUME)) { hume = it }
+            }
+            Text(stringResource(R.string.onboarding_experimental_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            SurfaceCard {
+                Text(stringResource(R.string.onboarding_privacy_title), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.onboarding_privacy_body), style = MaterialTheme.typography.bodyMedium)
             }
             Text(
                 stringResource(if (!garmin && !oura && !whoop && !hume) R.string.onboarding_none else R.string.onboarding_later),

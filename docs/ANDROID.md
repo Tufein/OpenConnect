@@ -47,6 +47,22 @@ English and Dutch. The look is one of its own, "Handheld" (see [DESIGN.md](DESIG
   transfer are off (`allowBackup=false` plus data-extraction rules that exclude everything).
 - Text from imported files (activity names) only travels inside the data block of the prompt.
 
+### About, source labels and diagnostics (v0.55.0)
+
+- **Label per source.** `core/SourceLabels.kt` is the one list: every data source (16 of them) is either *Tested on a real
+  device (date, version)* or *Experimental*. A test forces every source to have a label. A source only moves to tested with
+  a real trial to point at, and a line in the register in [ROADMAP.md](ROADMAP.md) (section 7). The labels show under
+  *Settings, Your devices*, on the first-start screen and on the About screen. Today only the Garmin account (2026-11-12,
+  v0.4.0) is tested.
+- **About and licences** (`ui/AboutScreen.kt`, a sub-screen of Settings): version, AGPL-3.0, link to the source, what has
+  been tried on a real device, a short privacy note, every licence (`core/Licences.kt`; a test compares it with the
+  libraries in the build files) and the Garmin disclaimer.
+- **Share diagnostics** (`core/Diagnostics.kt`): a text with the app, Android and device versions, what is switched on, the
+  stored counts, the label of every source and the last 20 sync lines. The dialog shows the exact text and only then
+  offers Share. Keys, tokens, long hex or base64 strings, e-mail addresses and the query part of web addresses are
+  removed; names, health values and routes are never put in. Tests feed it fake secrets in several shapes.
+- The GitHub issue template *Hardware trial* asks for this report.
+
 ## How it is built
 
 ```

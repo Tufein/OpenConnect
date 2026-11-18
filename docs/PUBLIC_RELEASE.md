@@ -50,11 +50,11 @@ Stand op 2026-11-18, na v0.53.0: nog niets aangevinkt dat van een echt apparaat 
 - [ ] Installatiegids (APK, "apps installeren toestaan", controle van de SHA-256, bijwerken, ook met Obtainium)
 - [ ] Privacyverklaring in het Nederlands en Engels, ook in de app
 - [ ] Schermafbeeldingen van een echte telefoon
-- [ ] Uitleg bij de eerste start
+- [x] Uitleg bij de eerste start (v0.55.0)
 
 ### G6 Juridisch en naam
-- [ ] Alle licenties van gebruikte onderdelen zijn zichtbaar in de app
-- [ ] De Garmin-disclaimer staat in de app en in de README
+- [x] Alle licenties van gebruikte onderdelen zijn zichtbaar in de app (Instellingen, Over en licenties, v0.55.0)
+- [x] De Garmin-disclaimer staat in de app en in de README (v0.55.0)
 - [ ] **Besluit over de naam: nog open** (houden of veranderen; er bestaat al een bekende VPN-client die OpenConnect heet). Voorlopig blijft het OpenConnect
 
 ### G7 Verspreiding
@@ -65,9 +65,9 @@ Stand op 2026-11-18, na v0.53.0: nog niets aangevinkt dat van een echt apparaat 
 ## 2. Proefronde op echte apparaten
 
 Voor Stefan. Doe de stappen op je eigen telefoon en horloge, in deze volgorde (de belangrijkste eerst), en schrijf per stap het
-resultaat op. Vanaf mijlpaal M2 (zie [ROADMAP.md](ROADMAP.md)) geeft Instellingen een knop **Diagnose delen**: die maakt een tekst zonder sleutels, namen of
-gezondheidswaarden. Plak die in een nieuwe GitHub-melding met het sjabloon "Hardwaretest". Tot die er is: een schermafbeelding van
-het **Synclogboek** (Instellingen) en een korte beschrijving.
+resultaat op. Sinds v0.55.0 (mijlpaal M2, zie [ROADMAP.md](ROADMAP.md)) geeft Instellingen een knop **Diagnose delen**: die toont eerst de tekst
+en laat sleutels, tokens, namen, gezondheidswaarden en routes weg. Plak die in een nieuwe GitHub-melding met het sjabloon
+"Hardwaretest" (*Issues, New issue, Hardware trial*) en lees hem eerst zelf na.
 
 Noteer bij elke stap de **versie van de app** (die staat in Instellingen) en de **datum**.
 

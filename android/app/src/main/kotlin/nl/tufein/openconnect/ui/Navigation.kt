@@ -336,6 +336,14 @@ fun OpenConnectRoot(
                     onOura = ::openOura,
                     onWhoop = ::openWhoop,
                     onHume = ::openHume,
+                    onAbout = { nav.navigate(ABOUT_ROUTE) { launchSingleTop = true } },
+                    contentPadding = padding,
+                )
+            }
+            composable(ABOUT_ROUTE) {
+                AboutScreen(
+                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources, look = look, appIcon = appIcon),
+                    onBack = { nav.popBackStack() },
                     contentPadding = padding,
                 )
             }

@@ -73,7 +73,7 @@ Doel: een opgeruimde basis waarop de rest veilig gebouwd kan worden.
 
 Klaar als: alle voorstellen zijn samengevoegd of met reden gesloten, CI is groen zonder opnieuw starten, de README past op één scherm.
 
-### M2: "Eerlijk en te diagnosticeren" 🔜 (M)
+### M2: "Eerlijk en te diagnosticeren" ✅ v0.55.0 (M)
 
 Doel: een proefronde die iets oplevert, en een app die zelf zegt wat getest is.
 
@@ -215,6 +215,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v0.52.0 | Minimum Android van 8.0 naar 9, dode versiecontroles opgeruimd, en dit plan naar 1.0 |
 | v0.53.0 | Schoon huis: README opnieuw, `CHANGELOG.md` uit de releasenotes, `SECURITY.md` en `docs/VERSIONING.md`, GitHub Actions bij, CI-flakes aangepakt, Dependabot per familie |
 | v0.54.0 | Eerste echte signaal van Stefans telefoon: Home zegt welke dag het toont (gisteren of ouder) en Body Battery is "hoogste" |
+| v0.55.0 | M2: Over-scherm met licenties en Garmin-disclaimer, label per bron (getest of experimenteel), *Diagnose delen* zonder geheimen, privacy-uitleg bij de eerste start, sjabloon "Hardwaretest" |
 
 ## 9. Hoe releases werken
 
