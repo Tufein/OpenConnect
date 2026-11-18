@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v0.56.0: gegevens veilig
+
+Derde mijlpaal (M3) op de weg naar 1.0, zie `docs/ROADMAP.md`. Het gaat om één vraag: raak je iets kwijt? Een back-up bevatte tot nu toe alleen de database, dus een nieuwe telefoon verloor je dagboek, je schoenen, je trainingsplan en je doelen. Dat gat is dicht, en het is nu bewezen dat de database van elke eerdere versie opent zonder verlies.
+
+[Release notes](docs/releases/v0.56.0.md)
+
 ## v0.55.0: eerlijk en te diagnosticeren
 
 Tweede mijlpaal (M2) op de weg naar 1.0, zie `docs/ROADMAP.md`. De app zegt nu zelf wat er echt getest is, heeft een Over-scherm met alle licenties, en kan een diagnose-rapport maken waar geen sleutels, namen of gezondheidswaarden in staan. Daarmee kan Stefan (of een tester) een proefstap op een echt apparaat doen en iets terugsturen.

@@ -125,6 +125,7 @@ fun OpenConnectRoot(
     onExportCsv: (kind: String) -> Unit,
     onBackup: () -> Unit = {},
     onRestore: () -> Unit = {},
+    onExportAll: () -> Unit = {},
     /** Whether the phone has a screen lock or fingerprint the app lock can use. */
     lockAvailable: Boolean = false,
     /** Switches the lock on (after the person passed the check) or off. */
@@ -317,6 +318,7 @@ fun OpenConnectRoot(
                     onHealthAuto = vm::setHealthAuto,
                     onBackup = onBackup,
                     onRestore = onRestore,
+                    onExportAll = onExportAll,
                     onClearLog = vm::clearSyncLog,
                     onTheme = vm::setTheme,
                     onGoals = vm::setGoals,

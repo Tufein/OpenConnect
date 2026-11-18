@@ -74,6 +74,9 @@ class MainActivity : ComponentActivity() {
                 val backupPicker = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
                     if (uri != null) viewModel.backup(uri)
                 }
+                val exportAllPicker = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
+                    if (uri != null) viewModel.exportAll(uri)
+                }
                 val restorePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
                     if (uri != null) viewModel.restore(uri)
                 }
@@ -99,6 +102,7 @@ class MainActivity : ComponentActivity() {
                     },
                     onBackup = { backupPicker.launch(viewModel.backupFileName()) },
                     onRestore = { restorePicker.launch(arrayOf("*/*")) },
+                    onExportAll = { exportAllPicker.launch(viewModel.exportAllFileName()) },
                     vm = viewModel,
                     onImport = { importPicker.launch(arrayOf("*/*")) },
                     onExport = { id, format ->

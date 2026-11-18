@@ -66,6 +66,8 @@ fun UpdateCard() {
             UpdateError.NETWORK -> R.string.update_error_network
             UpdateError.NO_RELEASE -> R.string.update_error_no_release
             UpdateError.CHECKSUM -> R.string.update_error_checksum
+            UpdateError.NO_CHECKSUM -> R.string.update_error_no_checksum
+            UpdateError.SIGNATURE -> R.string.update_error_signature
             UpdateError.STORAGE -> R.string.update_error_storage
             UpdateError.UNKNOWN -> R.string.update_error_unknown
             null -> null

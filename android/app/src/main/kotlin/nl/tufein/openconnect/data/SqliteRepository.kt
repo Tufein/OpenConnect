@@ -438,7 +438,8 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
         }
     }
 
-    private companion object {
+    companion object {
+        /** The schema version. Raise it with a migration in [onUpgrade] and a fixture in SchemaMigrationTest. */
         const val VERSION = 5
     }
 }

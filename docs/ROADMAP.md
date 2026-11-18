@@ -84,10 +84,10 @@ Doel: een proefronde die iets oplevert, en een app die zelf zegt wat getest is.
 
 Klaar als: Stefan een proefstap kan doen en een rapport kan terugsturen waar geen persoonlijke gegevens in staan.
 
-### M3: "Gegevens veilig" 🔜 (M)
+### M3: "Gegevens veilig" ✅ v0.56.0 (M)
 
 - **Migratietest vanaf elke uitgebrachte schemaversie:** per release een database-bestand als testgegeven, geopend door de huidige code, met controle dat er niets verdwijnt.
-- **Back-up en terugzetten bestaan al** (sleutels staan nooit in het bestand, terugzetten voegt toe zonder iets te verwijderen). Nieuw: een test per bron dat alles terugkomt, en een besluit of sleutels ooit versleuteld mee mogen.
+- **Back-up en terugzetten bestaan al** (sleutels staan nooit in het bestand, terugzetten voegt toe zonder iets te verwijderen). Nieuw (v0.56.0): het dagboek, de schoenen, het trainingsplan, de wedstrijd, de maximale hartslag en de doelen zitten nu ook in het bestand (ze stonden er nooit in, een nieuwe telefoon verloor ze), een test per bron op de echte database, en een bewaker die faalt als een nieuwe tabel niet in de back-up zit of met reden is weggelaten. **Besluit: sleutels gaan in 1.x nooit mee**, ook niet versleuteld; opnieuw invoeren kost een minuut, een bestand met sleutels is een groter risico dan het waard is.
 - **Alles exporteren:** nu is er een CSV. Dat wordt één ZIP met de CSV, de originele FIT/GPX/TCX en JSON, met een test die dat weer inleest.
 - **Bijwerken zonder verlies:** de updater weigert een afwijkende SHA-256 of handtekening met een duidelijke melding, getest met een nep-GitHub.
 
@@ -216,6 +216,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v0.53.0 | Schoon huis: README opnieuw, `CHANGELOG.md` uit de releasenotes, `SECURITY.md` en `docs/VERSIONING.md`, GitHub Actions bij, CI-flakes aangepakt, Dependabot per familie |
 | v0.54.0 | Eerste echte signaal van Stefans telefoon: Home zegt welke dag het toont (gisteren of ouder) en Body Battery is "hoogste" |
 | v0.55.0 | M2: Over-scherm met licenties en Garmin-disclaimer, label per bron (getest of experimenteel), *Diagnose delen* zonder geheimen, privacy-uitleg bij de eerste start, sjabloon "Hardwaretest" |
+| v0.56.0 | M3: back-up met dagboek, schoenen, plan en doelen, alles exporteren als ZIP, migratietest vanaf elke schemaversie, updater weigert een release zonder checksum en een APK met een andere ondertekenaar |
 
 ## 9. Hoe releases werken
 

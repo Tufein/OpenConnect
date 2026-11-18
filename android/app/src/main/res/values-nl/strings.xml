@@ -432,8 +432,10 @@
     <string name="load_overreaching_text">Een grote sprong ten opzichte van wat je lichaam gewend is. Dit is het moment voor kwaaltjes en ziekte: neem even gas terug.</string>
     <string name="load_note">Eigen schatting van OpenConnect: minuten maal een inspanningsgewicht uit je hartslag, deze week tegenover je gemiddelde van 4 weken. Niet de Training Load van Garmin en geen medisch advies.</string>
     <string name="settings_backup">Back-up en herstel</string>
-    <string name="settings_backup_body">Bewaar alles wat de app heeft in één bestand: activiteiten met hun route, dagelijkse gezondheid, slaap en de metingen van het horloge. Herstellen voegt het weer toe zonder iets te verwijderen. Keys staan nooit in het bestand.</string>
+    <string name="settings_backup_body">Bewaar alles wat de app heeft in één bestand: activiteiten met hun route, dagelijkse gezondheid, slaap, de metingen van je horloge, ring en banden, en je dagboek, schoenen, trainingsplan, wedstrijd en doelen. Herstellen voegt het weer toe zonder iets te verwijderen of te overschrijven. Keys staan nooit in het bestand. Alles exporteren maakt één ZIP met CSV-, FIT- en GPX-bestanden die andere apps kunnen lezen, met de back-up erin.</string>
     <string name="action_backup">Back-up maken</string>
+    <string name="action_export_all">Alles exporteren (ZIP)</string>
+    <string name="export_all_saved">Export opgeslagen: %1$s</string>
     <string name="action_restore">Herstellen</string>
     <string name="backup_saved">Back-up opgeslagen: %1$s</string>
     <string name="backup_restored">%1$d activiteiten en %2$d dagen gezondheidsgegevens hersteld</string>
@@ -1036,6 +1038,8 @@
     <string name="update_error_network">GitHub is niet bereikbaar. Controleer de verbinding en probeer het opnieuw.</string>
     <string name="update_error_no_release">GitHub gaf geen bruikbare release terug.</string>
     <string name="update_error_checksum">De download past niet bij de checksum. Er is niets geïnstalleerd.</string>
+    <string name="update_error_no_checksum">Deze release heeft geen checksum-bestand, dus de download kan niet gecontroleerd worden. Er is niets geïnstalleerd.</string>
+    <string name="update_error_signature">De download is niet ondertekend met dezelfde sleutel als de geïnstalleerde OpenConnect. Er is niets geïnstalleerd.</string>
     <string name="update_error_storage">Het gedownloade bestand kon niet worden opgeslagen.</string>
     <string name="update_error_unknown">De update kon niet worden voltooid.</string>
 

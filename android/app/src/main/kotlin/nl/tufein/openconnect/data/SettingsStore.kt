@@ -111,6 +111,19 @@ class SettingsStore(
         get() = prefs.getString(KEY_GEAR, "") ?: ""
         set(value) = prefs.edit().putString(KEY_GEAR, value).apply()
 
+    /** What the person wrote or chose (journal, shoes, plan, race, max heart rate, goals) for the backup. No keys. */
+    fun userData() = nl.tufein.openconnect.core.UserData(journal, gear, trainingPlan, raceGoal, maxHr, weeklyGoals)
+
+    /** Stores what a restore merged ([nl.tufein.openconnect.core.UserData.mergedWith]); each field only changes if it differs. */
+    fun applyUserData(data: nl.tufein.openconnect.core.UserData) {
+        if (data.journal != journal) journal = data.journal
+        if (data.gear != gear) gear = data.gear
+        if (data.trainingPlan != trainingPlan) trainingPlan = data.trainingPlan
+        if (data.raceGoal != raceGoal) raceGoal = data.raceGoal
+        if (data.maxHr != maxHr) maxHr = data.maxHr
+        if (data.weeklyGoals != weeklyGoals) weeklyGoals = data.weeklyGoals
+    }
+
     /** Whether the first-start questions (which devices do you use) were answered. */
     var onboarded: Boolean
         get() = prefs.getBoolean(KEY_ONBOARDED, false)

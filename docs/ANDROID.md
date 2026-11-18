@@ -63,6 +63,24 @@ English and Dutch. The look is one of its own, "Handheld" (see [DESIGN.md](DESIG
   removed; names, health values and routes are never put in. Tests feed it fake secrets in several shapes.
 - The GitHub issue template *Hardware trial* asks for this report.
 
+### Your data is safe (v0.56.0)
+
+- **Schema migrations** are proved by `SchemaMigrationTest`: the database of every released schema (1 to 5) is rebuilt as
+  that release made it, filled, and opened by the current code; nothing is lost, and the result has the same tables,
+  columns and indexes as a fresh install. A last test fails when `SqliteRepository.VERSION` goes up without a new fixture.
+  The only thing a migration ever deleted is the Oura Ring's workouts among the activities (schema 3).
+- **Backup** (`core/Backup.kt`): the database (activities with tracks, daily, sleep, samples, the days of the Oura Ring,
+  WHOOP and Hume Band) plus, since v0.56.0, `UserData`: the journal, shoes, training plan, race, maximum heart rate and
+  weekly goals, which live outside the database. Restoring never deletes or overwrites: journal days are joined, shoes are
+  added by id, and the plan, race, maximum heart rate and goals are only taken when this phone has none of its own. Keys,
+  tokens and passwords are never in the file (a test lists the allowed top-level parts). A guard test fails when a table
+  is added that is neither in the backup nor listed as left out with a reason.
+- **Export everything** (`core/ExportAll.kt`): one ZIP with `daily.csv`, `activities.csv`, every activity as FIT (and GPX
+  when it has a position), the backup file and a `README.txt`. The FIT and GPX files are written from what the app stored,
+  because the watch's original files are not kept.
+- **The updater** refuses a release without a checksum file, a download that does not match it, and an APK signed with
+  another key than the installed app (`updates/ApkSigners.kt`).
+
 ## How it is built
 
 ```

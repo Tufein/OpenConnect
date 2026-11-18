@@ -42,11 +42,12 @@ class UpdateControllerTest {
         }
     }
 
-    private fun controller(dir: File, net: UpdateHttp = http()) = UpdateController(
+    private fun controller(dir: File, net: UpdateHttp = http(), signer: (File) -> Boolean = { true }) = UpdateController(
         dir = dir,
         currentVersion = "0.47.0",
         http = net,
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+        sameSigner = signer,
     )
 
     private suspend fun waitFor(block: () -> Boolean) {
@@ -85,6 +86,55 @@ class UpdateControllerTest {
         updates.download()
         waitFor { updates.state.value.error == UpdateError.CHECKSUM }
         assertTrue(updates.apkFile() == null)
+        dir.deleteRecursively()
+    }
+
+    @Test
+    fun a_release_without_a_checksum_file_is_refused_not_trusted(): Unit = runBlocking<Unit> {
+        val dir = tempDir()
+        val noChecksum = release.replace(Regex(""",\s*\{"name":"openconnect-v0.48.0.apk.sha256".*?\}(?=\s*\])""", RegexOption.DOT_MATCHES_ALL), "")
+        assertTrue(!noChecksum.contains("sha256"), "the fake release has no checksum asset")
+        val net = UpdateHttp { url, _ ->
+            when {
+                url.contains("releases/latest") -> noChecksum.toByteArray()
+                url.endsWith(".apk") -> apk
+                else -> throw IOException("unexpected URL $url")
+            }
+        }
+        val updates = controller(dir, net)
+        updates.check()
+        waitFor { updates.state.value.available != null }
+        updates.download()
+        waitFor { updates.state.value.error == UpdateError.NO_CHECKSUM }
+        assertTrue(updates.apkFile() == null)
+        assertTrue(File(dir, "openconnect-v0.48.0.apk").exists().not(), "an unverified file is not kept")
+        dir.deleteRecursively()
+    }
+
+    @Test
+    fun an_apk_signed_by_someone_else_is_refused_and_removed(): Unit = runBlocking<Unit> {
+        val dir = tempDir()
+        val updates = controller(dir, signer = { false })
+        updates.check()
+        waitFor { updates.state.value.available != null }
+        updates.download()
+        waitFor { updates.state.value.error == UpdateError.SIGNATURE }
+        assertTrue(updates.apkFile() == null)
+        assertTrue(File(dir, "openconnect-v0.48.0.apk").exists().not(), "a file with the wrong signer is deleted")
+        dir.deleteRecursively()
+    }
+
+    @Test
+    fun an_apk_with_the_right_checksum_and_signer_is_ready(): Unit = runBlocking<Unit> {
+        val dir = tempDir()
+        val checked = ArrayList<String>()
+        val updates = controller(dir, signer = { checked += it.name; true })
+        updates.check()
+        waitFor { updates.state.value.available != null }
+        updates.download()
+        waitFor { updates.state.value.ready }
+        assertEquals(listOf("openconnect-v0.48.0.apk"), checked, "the signer is checked on the file that will be installed")
+        assertNotNull(updates.apkFile())
         dir.deleteRecursively()
     }
 
