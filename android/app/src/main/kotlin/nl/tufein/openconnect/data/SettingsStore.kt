@@ -131,6 +131,11 @@ class SettingsStore(
         get() = prefs.getBoolean(KEY_USE_WHOOP, false)
         set(value) = prefs.edit().putBoolean(KEY_USE_WHOOP, value).apply()
 
+    /** Whether the Hume tab is shown and the band is read from Health Connect. Off unless the person chose it. */
+    var useHume: Boolean
+        get() = prefs.getBoolean(KEY_USE_HUME, false)
+        set(value) = prefs.edit().putBoolean(KEY_USE_HUME, value).apply()
+
     /** Whether the app asks for the fingerprint, face or screen lock when it opens. */
     var appLock: Boolean
         get() = prefs.getBoolean(KEY_APP_LOCK, false)
@@ -282,6 +287,17 @@ class SettingsStore(
 
     }
 
+    /** The Hume link: which app the person picked as the band's and when the last sync ran. Nothing secret: Health Connect has no login. */
+    val hume: nl.tufein.openconnect.hume.HumeSettings = object : nl.tufein.openconnect.hume.HumeSettings {
+        override var origin: String?
+            get() = prefs.getString(KEY_HUME_ORIGIN, null)?.takeIf { it.isNotBlank() }
+            set(value) = prefs.edit().apply { if (value.isNullOrBlank()) remove(KEY_HUME_ORIGIN) else putString(KEY_HUME_ORIGIN, value) }.apply()
+
+        override var lastSyncMs: Long
+            get() = prefs.getLong(KEY_HUME_LAST, 0L)
+            set(value) = prefs.edit().putLong(KEY_HUME_LAST, value).apply()
+    }
+
     /** The watch that last synced over Bluetooth: its address and name, nothing secret. */
     val garminWatch: GarminWatchMemory = object : GarminWatchMemory {
         override fun load(): GarminBleWatch? {
@@ -377,10 +393,13 @@ class SettingsStore(
         private const val KEY_WHOOP_EXPIRES = "whoop_expires"
         private const val KEY_WHOOP_PENDING = "whoop_pending"
         private const val KEY_WHOOP_LAST = "whoop_last_sync"
+        private const val KEY_HUME_ORIGIN = "hume_origin"
+        private const val KEY_HUME_LAST = "hume_last_sync"
         private const val KEY_ONBOARDED = "onboarded"
         private const val KEY_USE_GARMIN = "use_garmin"
         private const val KEY_USE_OURA = "use_oura"
         private const val KEY_USE_WHOOP = "use_whoop"
+        private const val KEY_USE_HUME = "use_hume"
         private const val KEY_PLAN = "training_plan"
         private const val KEY_RACE = "race_goal"
         private const val KEY_MAX_HR = "max_hr"

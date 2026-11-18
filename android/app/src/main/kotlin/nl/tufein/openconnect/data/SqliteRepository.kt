@@ -53,6 +53,12 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
         createWatchTables(db)
         createOuraTable(db)
         createWhoopTable(db)
+        createHumeTable(db)
+    }
+
+    /** v0.50.0: the Hume Band's days (read from Health Connect), one JSON row per day, kept apart from the other devices' tables. */
+    private fun createHumeTable(db: SQLiteDatabase) {
+        db.execSQL("CREATE TABLE hume_days (date TEXT PRIMARY KEY, json TEXT NOT NULL)")
     }
 
     /** v0.49.0: the WHOOP band's days, one JSON row per day, kept apart from the watch's and the ring's tables. */
@@ -91,6 +97,7 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
             db.delete("activities", "source = ?", arrayOf("oura"))
         }
         if (oldVersion < 4) createWhoopTable(db)
+        if (oldVersion < 5) createHumeTable(db)
     }
 
     override fun onConfigure(db: SQLiteDatabase) {
@@ -391,10 +398,27 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
             }
         }
 
+    override fun upsertHumeDay(day: nl.tufein.openconnect.core.hume.HumeDay) {
+        val values = ContentValues().apply {
+            put("date", day.day)
+            put("json", day.toJson())
+        }
+        writableDatabase.insertWithOnConflict("hume_days", null, values, SQLiteDatabase.CONFLICT_REPLACE)
+    }
+
+    override fun listHumeDays(start: LocalDate, end: LocalDate): List<nl.tufein.openconnect.core.hume.HumeDay> =
+        readableDatabase.query("hume_days", arrayOf("json"), "date >= ? AND date <= ?", arrayOf(start.toString(), end.toString()), null, null, "date").use { c ->
+            buildList {
+                while (c.moveToNext()) {
+                    runCatching { nl.tufein.openconnect.core.hume.HumeDay.fromJson(c.getString(0)) }.getOrNull()?.let(::add)
+                }
+            }
+        }
+
     override fun clearAll() {
         writableDatabase.beginTransaction()
         try {
-            for (table in listOf("activities", "daily", "sleep", "reports", "samples", "watch_files", "oura_days", "whoop_days")) writableDatabase.delete(table, null, null)
+            for (table in listOf("activities", "daily", "sleep", "reports", "samples", "watch_files", "oura_days", "whoop_days", "hume_days")) writableDatabase.delete(table, null, null)
             writableDatabase.setTransactionSuccessful()
         } finally {
             writableDatabase.endTransaction()
@@ -415,7 +439,7 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
     }
 
     private companion object {
-        const val VERSION = 4
+        const val VERSION = 5
     }
 }
 

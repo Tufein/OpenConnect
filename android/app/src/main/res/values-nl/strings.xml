@@ -1051,4 +1051,48 @@
     <string name="insight_explain_readiness_whoop">Het herstel van WHOOP, van 0 tot 100, uit je HRV, rusthartslag, slaap en ademhaling ten opzichte van jouw eigen normaal. 67 of meer is groen (klaar voor belasting), 34 tot 66 geel, onder 34 rood.</string>
     <string name="insight_explain_sleep_score_whoop" formatted="false">De slaapprestatie van WHOOP, van 0 tot 100%: hoeveel van de slaap die je lichaam nodig had je kreeg. 85 of meer is goed, 70 tot 84 redelijk, onder 70 slecht.</string>
     <string name="insight_explain_strain">De dagbelasting (strain) van WHOOP op een schaal van 0 tot 21 (hoe hoger je komt, hoe moeilijker de klim): onder 10 is licht, 10 tot 13 matig, 14 tot 17 hoog, 18 en meer helemaal leeg. Meer belasting is niet beter of slechter; het moet passen bij je herstel.</string>
+
+    <!-- Hume Band (v0.50.0), gelezen uit Health Connect. De teksten voor laatste sync, rapport, gemiddelde en "nu synchroniseren" delen we met het Oura-scherm (oura_*). -->
+    <string name="action_hume">Open de Hume-tab</string>
+    <string name="synclog_hume">Hume Band</string>
+    <string name="source_hume">Hume Band</string>
+    <string name="tab_hume">Hume</string>
+    <string name="device_hume">Hume Band</string>
+    <string name="device_hume_body">Een eigen tab met nachten, stappen en hartslag, gelezen uit Health Connect</string>
+    <string name="day_source_hume">Hume Band</string>
+    <string name="hume_title">Hume Band</string>
+    <string name="hume_intro">Hume heeft geen eigen koppeling voor andere apps. De Hume-app (Hume Health) schrijft wat de band meet naar Health Connect, de gedeelde gezondheidsopslag van je telefoon, en OpenConnect leest het daar. Het blijft gescheiden van je horloge en je andere banden, en alleen gegevens die de Hume-app schreef worden gelezen. Zet in de Hume-app eerst Health Connect aan in de instellingen.</string>
+    <string name="hume_unavailable">Health Connect staat niet op deze telefoon, of moet worden bijgewerkt. Op Android 13 en ouder is het een gratis app uit Google Play; op Android 14 en nieuwer zit het in de systeeminstellingen.</string>
+    <string name="hume_allow_title">Lezen toestaan</string>
+    <string name="hume_allow_body">OpenConnect vraagt om stappen, slaap, hartslag, rusthartslag, HRV, bloedzuurstof, actieve energie en trainingen te lezen. Het leest alleen wat de Hume-app schreef (hieronder kun je een andere app kiezen), bewaart het op deze telefoon en stuurt het nergens heen.</string>
+    <string name="hume_allow">Toestaan in Health Connect</string>
+    <string name="hume_no_days">Toegestaan. De dagen van de band verschijnen hier na de eerste sync.</string>
+    <string name="hume_problem_permission">Health Connect laat OpenConnect niet meer lezen. Sta het opnieuw toe.</string>
+    <string name="hume_problem_nodata">Health Connect heeft de afgelopen 30 dagen niets van de Hume-app. Open de Hume-app, zet Health Connect aan in de instellingen, laat hem synchroniseren en probeer het opnieuw. Heet de app van je band anders, kies hem dan hieronder.</string>
+    <string name="hume_problem_failed">Health Connect antwoordde niet. De volgende sync probeert het opnieuw.</string>
+    <string name="hume_schedule">Synchroniseert als je de app opent, elke 10 minuten terwijl hij open is en ongeveer elk kwartier op de achtergrond (Android bepaalt het precieze moment). Health Connect geeft op de achtergrond alleen gegevens als je dat toestaat.</string>
+    <string name="hume_origin_title">Welke app schreef de gegevens van de band?</string>
+    <string name="hume_origin_body">Normaal Hume Health (com.elink.fittrackhealth.pro), dat vanzelf wordt herkend. Heet de app van je band anders, kies hem dan hier zodra hij gegevens in Health Connect heeft.</string>
+    <string name="hume_origin_auto">De Hume-app vanzelf herkennen</string>
+    <string name="hume_origin_using">Gegevens gelezen van: %1$s</string>
+    <string name="hume_forget">Deze keuze vergeten</string>
+    <string name="hume_today">Laatste dag: %1$s</string>
+    <string name="hume_sleep">Slaap</string>
+    <string name="hume_steps">Stappen</string>
+    <string name="hume_heart">Hart</string>
+    <string name="hume_last_night">Afgelopen nacht</string>
+    <string name="hume_no_night">Geen nacht van de band voor deze dag.</string>
+    <string name="hume_night_line">%1$s geslapen, %2$s diep, %3$s REM</string>
+    <string name="hume_night_total">%1$s geslapen</string>
+    <string name="hume_awake">%1$s wakker</string>
+    <string name="hume_lowest_hr">laagste %1$d bpm in de nacht</string>
+    <string name="hume_active_kcal">%1$d kcal actief</string>
+    <string name="hume_avg_hr">gemiddeld %1$d bpm</string>
+    <string name="hume_max_hr">hoogste %1$d bpm</string>
+    <string name="hume_chart_steps">Stappen</string>
+    <string name="hume_chart_sleep">Slaap (uren)</string>
+    <string name="hume_chart_hrv">HRV (ms)</string>
+    <string name="hume_chart_rhr">Rusthartslag</string>
+    <string name="hume_chart_lowest">Laagste hartslag van de nacht</string>
+    <string name="hume_workouts">Workouts van de band</string>
 </resources>

@@ -57,6 +57,9 @@ private enum class Tab(val route: String, val label: Int, val icon: PixelArt, va
 
     /** Only for someone who chose the WHOOP band. */
     Whoop("whoop", R.string.tab_whoop, PixelIcons.Band),
+
+    /** Only for someone who chose the Hume Band. */
+    Hume("hume", R.string.tab_hume, PixelIcons.Band),
     Settings("settings", R.string.tab_settings, PixelIcons.Sliders, R.string.tab_settings_compact),
 }
 
@@ -143,7 +146,7 @@ fun OpenConnectRoot(
 
     val entry by nav.currentBackStackEntryAsState()
     val route = entry?.destination?.route
-    val tabs = Tab.entries.filter { (it != Tab.Oura || sources.oura) && (it != Tab.Whoop || sources.whoop) }
+    val tabs = Tab.entries.filter { (it != Tab.Oura || sources.oura) && (it != Tab.Whoop || sources.whoop) && (it != Tab.Hume || sources.hume) }
     val showBar = tabs.any { it.route == route }
 
     val home by vm.home.collectAsState()
@@ -169,6 +172,7 @@ fun OpenConnectRoot(
     val garmin by vm.garmin.collectAsState()
     val oura by vm.oura.collectAsState()
     val whoop by vm.whoop.collectAsState()
+    val hume by vm.hume.collectAsState()
     val days by vm.days.collectAsState()
     val theme by vm.theme.collectAsState()
     val look by vm.look.collectAsState()
@@ -213,6 +217,8 @@ fun OpenConnectRoot(
 
     fun openWhoop() = openTab(Tab.Whoop)
 
+    fun openHume() = openTab(Tab.Hume)
+
     fun openActivity(id: String) {
         vm.openActivity(id)
         nav.navigate("activity/" + Uri.encode(id))
@@ -246,6 +252,7 @@ fun OpenConnectRoot(
                     useGarmin = sources.garmin,
                     onOura = if (sources.oura) ::openOura else null,
                     onWhoop = if (sources.whoop) ::openWhoop else null,
+                    onHume = if (sources.hume) ::openHume else null,
                 )
             }
             composable(Tab.Activities.route) {
@@ -328,6 +335,7 @@ fun OpenConnectRoot(
                     onGarmin = ::openGarmin,
                     onOura = ::openOura,
                     onWhoop = ::openWhoop,
+                    onHume = ::openHume,
                     contentPadding = padding,
                 )
             }
@@ -352,6 +360,16 @@ fun OpenConnectRoot(
                     onSync = vm::syncWhoop,
                     onDisconnect = vm::disconnectWhoop,
                     onForget = vm::forgetWhoop,
+                    contentPadding = padding,
+                )
+            }
+            composable(Tab.Hume.route) {
+                HumeScreen(
+                    ui = hume,
+                    onRefresh = vm::refreshHume,
+                    onSync = vm::syncHume,
+                    onChooseOrigin = vm::chooseHumeOrigin,
+                    onForget = vm::forgetHume,
                     contentPadding = padding,
                 )
             }

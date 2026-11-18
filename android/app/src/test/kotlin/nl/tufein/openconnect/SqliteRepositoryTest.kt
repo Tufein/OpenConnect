@@ -223,4 +223,48 @@ class SqliteRepositoryTest {
             context.deleteDatabase("upgrade-test.db")
         }
     }
+
+    @Test
+    fun theWhoopAndHumeBandsHaveTheirOwnTablesThatClearAllEmptiesAndTheDemoFills() {
+        val today = LocalDate.parse("2026-11-18")
+        nl.tufein.openconnect.core.hume.HumeDemo.days(today, 5).forEach(repo::upsertHumeDay)
+        nl.tufein.openconnect.core.whoop.WhoopDemo.days(today, 5).forEach(repo::upsertWhoopDay)
+        assertEquals(nl.tufein.openconnect.core.hume.HumeDemo.days(today, 5), repo.listHumeDays(today.minusDays(10), today))
+        assertEquals(5, repo.listWhoopDays(today.minusDays(10), today).size)
+        // The band's day is replaced by the same date, not added twice.
+        val changed = repo.listHumeDays(today, today).single().copy(steps = 1)
+        repo.upsertHumeDay(changed)
+        assertEquals(listOf(changed), repo.listHumeDays(today, today))
+        assertEquals(5, repo.listHumeDays(today.minusDays(10), today).size)
+        // Nothing of the bands lands in the watch's tables.
+        assertTrue(repo.listDaily(today.minusDays(10), today).isEmpty())
+        assertTrue(repo.listActivities(limit = 10).isEmpty())
+        repo.clearAll()
+        assertTrue(repo.listHumeDays(today.minusDays(10), today).isEmpty())
+        assertTrue(repo.listWhoopDays(today.minusDays(10), today).isEmpty())
+    }
+
+    @Test
+    fun aVersion4DatabaseGetsTheHumeTableAndKeepsItsWhoopDays() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        context.deleteDatabase("v4-test.db")
+        val today = LocalDate.parse("2026-11-18")
+        // What v0.49.0 left on the phone: everything except the Hume table, at schema version 4.
+        val old = SqliteRepository(context, name = "v4-test.db")
+        old.upsertWhoopDay(nl.tufein.openconnect.core.whoop.WhoopDemo.days(today, 1).single())
+        old.writableDatabase.execSQL("DROP TABLE hume_days")
+        old.writableDatabase.version = 4
+        old.close()
+
+        val upgraded = SqliteRepository(context, name = "v4-test.db")
+        try {
+            assertEquals(1, upgraded.listWhoopDays(today.minusDays(5), today).size)
+            val day = nl.tufein.openconnect.core.hume.HumeDemo.days(today, 1).single()
+            upgraded.upsertHumeDay(day)
+            assertEquals(listOf(day), upgraded.listHumeDays(today, today))
+        } finally {
+            upgraded.close()
+            context.deleteDatabase("v4-test.db")
+        }
+    }
 }

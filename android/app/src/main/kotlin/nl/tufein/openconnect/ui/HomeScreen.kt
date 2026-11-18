@@ -79,6 +79,8 @@ fun HomeScreen(
     onOura: (() -> Unit)? = null,
     /** Opens the WHOOP tab; null for someone without a band. */
     onWhoop: (() -> Unit)? = null,
+    /** Opens the Hume tab; null for someone without a Hume Band. */
+    onHume: (() -> Unit)? = null,
 ) {
     val badge = syncBadge(garmin).takeIf { useGarmin }
     val metrics = OpenConnectColors.metrics
@@ -219,6 +221,9 @@ fun HomeScreen(
                     }
                     if (onWhoop != null) {
                         SecondaryButton(onClick = onWhoop, Modifier.weight(1f)) { Text(stringResource(R.string.tab_whoop), maxLines = 1) }
+                    }
+                    if (onHume != null) {
+                        SecondaryButton(onClick = onHume, Modifier.weight(1f)) { Text(stringResource(R.string.tab_hume), maxLines = 1) }
                     }
                     SecondaryButton(onClick = onCoach, Modifier.weight(1f)) { Text(stringResource(R.string.action_coach_short), maxLines = 1) }
                 }

@@ -214,6 +214,7 @@ data class DayState(
     val garmin: DaySeries? = null,
     val oura: DaySeries? = null,
     val whoop: DaySeries? = null,
+    val hume: DaySeries? = null,
 )
 
 data class ReportsState(
@@ -242,7 +243,7 @@ const val OURA_ROUTE = "oura"
 data class Look(val palette: String = "handheld", val letters: String = "pixel", val style: String = "retro")
 
 /** Which devices the person uses. [onboarded] is false until the first-start questions are answered. */
-data class SourcesUi(val onboarded: Boolean = true, val garmin: Boolean = true, val oura: Boolean = false, val whoop: Boolean = false)
+data class SourcesUi(val onboarded: Boolean = true, val garmin: Boolean = true, val oura: Boolean = false, val whoop: Boolean = false, val hume: Boolean = false)
 const val CSV_DAILY = "daily"
 const val CSV_ACTIVITIES = "activities"
 
@@ -297,20 +298,25 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     /** Which devices the person uses, as chosen at the first start or later in Settings. */
     val sources: StateFlow<SourcesUi> = _sources.asStateFlow()
 
-    private fun sourcesNow() = container.settings.let { SourcesUi(it.onboarded, it.useGarmin, it.useOura, it.useWhoop) }
+    private fun sourcesNow() = container.settings.let { SourcesUi(it.onboarded, it.useGarmin, it.useOura, it.useWhoop, it.useHume) }
 
     /** Saves the choice of devices (from the first start or Settings); the first-start questions are then done. */
-    fun setSources(garmin: Boolean, oura: Boolean, whoop: Boolean = false) {
+    fun setSources(garmin: Boolean, oura: Boolean, whoop: Boolean = false, hume: Boolean = false) {
         val settings = container.settings
         settings.useGarmin = garmin
         settings.useOura = oura
         settings.useWhoop = whoop
+        settings.useHume = hume
         settings.onboarded = true
         _sources.value = sourcesNow()
         container.applySources()
         loadDays()
         if (oura) container.oura.syncIfDue(OPEN_GAP)
         if (whoop) container.whoop.syncIfDue(OPEN_GAP)
+        if (hume) {
+            container.hume.refreshAccess()
+            container.hume.syncIfDue(OPEN_GAP)
+        }
     }
 
     private fun lookNow() = Look(Palette.of(container.settings.palette).key, Letters.of(container.settings.letters).key, Style.of(container.settings.style).key)
@@ -478,6 +484,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         if (container.settings.useGarmin) container.garmin.autoSyncIfDue(gap)
         if (container.settings.useOura) container.oura.syncIfDue(gap)
         if (container.settings.useWhoop) container.whoop.syncIfDue(gap)
+        if (container.settings.useHume) container.hume.syncIfDue(gap)
     }
 
     private companion object {
@@ -620,6 +627,22 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun forgetWhoop() = container.whoop.forget()
 
+    // ------------------------------------------------------------------------------- Hume Band
+
+    val hume: StateFlow<nl.tufein.openconnect.hume.HumeUi> get() = container.hume.state
+
+    /** Asks Health Connect again what it allows; the Hume tab calls it when it opens and after the permission dialog. */
+    fun refreshHume() {
+        container.hume.refreshAccess()
+        container.applySources()
+    }
+
+    fun syncHume() = container.hume.sync()
+
+    fun chooseHumeOrigin(pkg: String?) = container.hume.chooseOrigin(pkg)
+
+    fun forgetHume() = container.hume.forget()
+
     fun cancelGarmin() = container.garmin.cancel()
 
     // ------------------------------------------------------------------------------- loading
@@ -642,6 +665,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadTrophies()
         container.oura.refreshDays()
         container.whoop.refreshDays()
+        container.hume.refreshDays()
         currentActivityId?.let { openActivity(it) }
     }
 
@@ -709,7 +733,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         // training load, records and trophies keep counting only what a watch or a file recorded.
         // The same for the WHOOP band (v0.49.0): its workouts that no watch or file covers are listed as rows of their own.
         val ring = (if (container.settings.useOura) RingWorkouts.extra(repo.listOuraDays(FIRST_DAY, LAST_DAY), recorded) else emptyList()) +
-            (if (container.settings.useWhoop) BandWorkouts.extra(repo.listWhoopDays(FIRST_DAY, LAST_DAY).flatMap { it.workouts }, BandSource.WHOOP, recorded) else emptyList())
+            (if (container.settings.useWhoop) BandWorkouts.extra(repo.listWhoopDays(FIRST_DAY, LAST_DAY).flatMap { it.workouts }, BandSource.WHOOP, recorded) else emptyList()) +
+            // And the Hume Band's (v0.50.0), read from Health Connect.
+            (if (container.settings.useHume) BandWorkouts.extra(repo.listHumeDays(FIRST_DAY, LAST_DAY).flatMap { it.workouts }, BandSource.HUME, recorded) else emptyList())
         val all = if (ring.isEmpty()) recorded else (recorded + ring).sortedByDescending { it.startTime }
         _activities.value = ActivitiesState(
             loaded = true,
@@ -729,6 +755,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             val bandWorkout: BandWorkout? = when {
                 band == BandSource.OURA && useRing -> BandWorkouts.find(id, band, repo.listOuraDays(FIRST_DAY, LAST_DAY).flatMap { it.workouts })
                 band == BandSource.WHOOP && container.settings.useWhoop -> BandWorkouts.find(id, band, repo.listWhoopDays(FIRST_DAY, LAST_DAY).flatMap { it.workouts })
+                band == BandSource.HUME && container.settings.useHume -> BandWorkouts.find(id, band, repo.listHumeDays(FIRST_DAY, LAST_DAY).flatMap { it.workouts })
                 else -> null
             }
             val fromRing = bandWorkout != null
@@ -773,8 +800,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val start = today.minusDays(DayInsights.HISTORY_DAYS.toLong())
         val useOura = container.settings.useOura
         val useWhoop = container.settings.useWhoop
+        val useHume = container.settings.useHume
         // Someone who chose no device still has days from files and imports: those are read as the watch's.
-        val useGarmin = container.settings.useGarmin || !(useOura || useWhoop)
+        val useGarmin = container.settings.useGarmin || !(useOura || useWhoop || useHume)
         _days.value = DayState(
             loaded = true,
             today = today,
@@ -792,6 +820,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             },
             oura = if (useOura) DayRecords.oura(start, today, repo.listOuraDays(start, today)) else null,
             whoop = if (useWhoop) DayRecords.whoop(start, today, repo.listWhoopDays(start, today)) else null,
+            hume = if (useHume) DayRecords.hume(start, today, repo.listHumeDays(start, today)) else null,
         )
     }
 
@@ -1048,6 +1077,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             // Ring days too, for someone who chose the Oura Ring; they stay apart from the watch's demo days.
             if (container.settings.useOura) nl.tufein.openconnect.core.oura.OuraDemo.days(LocalDate.now()).forEach(repo::upsertOuraDay)
             if (container.settings.useWhoop) nl.tufein.openconnect.core.whoop.WhoopDemo.days(LocalDate.now()).forEach(repo::upsertWhoopDay)
+            if (container.settings.useHume) nl.tufein.openconnect.core.hume.HumeDemo.days(LocalDate.now()).forEach(repo::upsertHumeDay)
         }
         tell(text(R.string.demo_loaded, data.activities.size))
         refreshAll()
