@@ -39,16 +39,16 @@ Stand op 2026-11-18, na v0.53.0: nog niets aangevinkt dat van een echt apparaat 
 - [x] Minimum Android op 9 gezet (Stefan, 2026-11-18, v0.52.0): sleutelwissel met een bewijsketen werkt daardoor op elke ondersteunde telefoon (zie paragraaf 4)
 
 ### G4 Kwaliteit
-- [ ] De 13 Dependabot-voorstellen zijn samengevoegd of met reden gesloten
+- [x] De 13 Dependabot-voorstellen zijn samengevoegd of met reden gesloten (v0.58.0; de gereedschapssprong naar AGP 9 en Kotlin 2.4 is een aparte klus na 1.0, zie ROADMAP M1)
 - [ ] Drie CI-runs op rij groen zonder opnieuw starten, op `main`
-- [ ] Prestatiebudget gehaald (vijf jaar aan gegevens, openingstijd per tabblad)
+- [x] Prestatiebudget gehaald (vijf jaar aan gegevens, openingstijd per tabblad; v0.58.0, `docs/PERFORMANCE.md`; op een telefoon nog niet gemeten)
 - [x] Toegankelijkheidstests en taalpariteit staan in CI (v0.57.0: `AccessibilityAuditTest`, `LanguageParityTest`; een echte TalkBack-ronde op een telefoon blijft nodig, T14)
 - [ ] Geen bekende crash of dataverlies in de issues
 
 ### G5 Begrijpelijk
 - [x] README opnieuw (kort, actueel, wat is getest), met `CHANGELOG.md` en `docs/VERSIONING.md` (v0.53.0)
-- [ ] Installatiegids (APK, "apps installeren toestaan", controle van de SHA-256, bijwerken, ook met Obtainium)
-- [ ] Privacyverklaring in het Nederlands en Engels, ook in de app
+- [x] Installatiegids (APK, "apps installeren toestaan", controle van de SHA-256, bijwerken, ook met Obtainium): `docs/INSTALL.md`, v0.58.0
+- [x] Privacyverklaring in het Nederlands en Engels, ook in de app (v0.58.0: `docs/PRIVACY.md` en Over, *Waar gegevens heen kunnen*; een test controleert elk adres in de code)
 - [ ] Schermafbeeldingen van een echte telefoon
 - [x] Uitleg bij de eerste start (v0.55.0)
 
@@ -59,7 +59,7 @@ Stand op 2026-11-18, na v0.53.0: nog niets aangevinkt dat van een echt apparaat 
 
 ### G7 Verspreiding
 - [x] Besluit welke kanalen: **alleen GitHub** (Stefan, 2026-11-18). Winkels komen na 1.0
-- [ ] De release met APK, SHA-256 en uitleg werkt (APK en SHA-256 zijn er al; de uitleg komt in M6)
+- [x] De release met APK, SHA-256 en uitleg werkt (v0.58.0: vaste kop op de releasepagina met installeren, controleren en wat is getest)
 - [ ] Iemand die het project niet kent kan de installatiegids volgen tot een draaiende app (T1)
 
 ## 2. Proefronde op echte apparaten
@@ -88,6 +88,7 @@ Noteer bij elke stap de **versie van de app** (die staat in Instellingen) en de 
 | T13 | Maak een back-up (Back-up en herstel), wis alle gegevens, zet de back-up terug | Alle activiteiten, dagen en nachten zijn terug, de sleutels niet (die moet je opnieuw invoeren) | Wat ontbreekt |
 | T14 | Zet App-vergrendeling aan, kies een ander app-icoon, wissel twee thema's, zet de lettergrootte van Android op de grootste stand | De vergrendeling vraagt om je vinger of schermcode, het icoon wisselt, geen afgesneden tekst | Schermafbeelding waar het knelt |
 | T15 | Kopieer een training van je plan naar het horloge (USB, `GARMIN/NewFiles`) en open hem op het horloge | De training staat in de lijst en start | Of het horloge hem weigert, met de naam van het bestand |
+| T16 | Laat de app een dag draaien met je bronnen aan (Garmin, eventueel Oura of WHOOP) en een uur *Live hartslag*. Open daarna Android, Instellingen, Batterij, OpenConnect | Een batterijverbruik dat je niet hoeft op te merken (Android toont het in procenten en per uur) | Het percentage en wat je aan had staan |
 
 Een stap die niet kan (geen ring, geen band) hoef je niet te doen: die bron blijft dan *Experimenteel* in 1.0, en dat staat in de app.
 

@@ -29,6 +29,7 @@ import nl.tufein.openconnect.R
 import nl.tufein.openconnect.core.DataSourceKind
 import nl.tufein.openconnect.core.DiagnosticInput
 import nl.tufein.openconnect.core.Licences
+import nl.tufein.openconnect.core.PrivacyStatement
 import nl.tufein.openconnect.core.SourceLabels
 import nl.tufein.openconnect.core.SourceStatus
 import java.util.Locale
@@ -73,6 +74,19 @@ fun sourceLine(status: SourceStatus): String =
 fun deviceStatus(kind: DataSourceKind): String =
     stringResource(R.string.device_status, sourceState(SourceLabels.status(kind)))
 
+/** The line about one place data can go, by the key in [PrivacyStatement.called]. */
+@Composable
+private fun privacyHostText(key: String): String = stringResource(
+    when (key) {
+        "garmin" -> R.string.privacy_host_garmin
+        "oura" -> R.string.privacy_host_oura
+        "whoop" -> R.string.privacy_host_whoop
+        "claude" -> R.string.privacy_host_claude
+        "gemini" -> R.string.privacy_host_gemini
+        else -> R.string.privacy_host_github
+    },
+)
+
 /** Version, licences, what has been tried on a real device, the Garmin disclaimer and a short privacy note. */
 @Composable
 fun AboutScreen(
@@ -116,6 +130,16 @@ fun AboutScreen(
         item {
             SectionTitle(stringResource(R.string.about_privacy_title))
             SurfaceCard { Text(stringResource(R.string.about_privacy_body), style = MaterialTheme.typography.bodyMedium) }
+        }
+        item {
+            SectionTitle(stringResource(R.string.about_calls_title))
+            SurfaceCard {
+                Text(stringResource(R.string.about_calls_intro), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                for (key in PrivacyStatement.called.keys) Text(privacyHostText(key), style = MaterialTheme.typography.bodyMedium)
+                SecondaryButton(onClick = { openLink(context, PrivacyStatement.STATEMENT_URL) }, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.about_privacy_statement))
+                }
+            }
         }
         item {
             SectionTitle(stringResource(R.string.about_licences_title))

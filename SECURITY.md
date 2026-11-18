@@ -27,11 +27,15 @@ with Android 8 stays on v0.51.0, which will not get fixes.
   Keystore), are only entered in the app, are sent only to their own service and never in a web address. If secure
   storage is unavailable, a key is not stored at all. Backups and device transfer are off (`allowBackup=false` plus
   data-extraction rules that exclude everything); the app's own backup file never contains keys.
-- **What goes to an AI provider:** a short JSON summary of the numbers and the activity names, never the GPS track.
+- **What goes to an AI provider:** a short JSON summary of the numbers and the activity names, never the GPS track. Every
+  address the app can send to is listed in [docs/PRIVACY.md](docs/PRIVACY.md) and enforced by a test.
 - **The updater** (`REQUEST_INSTALL_PACKAGES`) downloads the APK from the repository's GitHub releases and checks its
   SHA-256 against the published checksum before it asks Android to install it. Since v0.56.0 a release without a checksum
   file is refused (before, it was accepted unchecked), and so is an APK that is not signed with the same key as the
   installed app, each with a message that says why. Android itself also refuses a different key.
+- **Shrunk and checked on a real Android.** Since v0.58.0 the release APK is shrunk by R8 (no renaming, no optimising), and a
+  release is only published after the signed APK has been started on an emulator and walked through
+  (`android/scripts/emulator_smoke.py`).
 - **Release signing:** every release is signed with the same key (certificate SHA-256
   `06b67b82ec65b533343130fea378165b15ef520bc01969f47ff440242dbdf3b7`, common name *OpenConnect release*). A release is
   only published after a step in `release.yml` has checked that the APK carries it. Check a download yourself with

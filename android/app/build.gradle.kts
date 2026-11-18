@@ -12,8 +12,8 @@ android {
         applicationId = "nl.tufein.openconnect"
         minSdk = 28
         targetSdk = 35
-        versionCode = 57
-        versionName = "0.57.0"
+        versionCode = 58
+        versionName = "0.58.0"
     }
 
     // Release signing. The key is never stored in this repository: a release build reads it from
@@ -36,9 +36,15 @@ android {
     buildTypes {
         release {
             signingConfig = releaseSigning ?: signingConfigs.getByName("debug")
-            // Kept unminified for the first releases: it is a debuggable-by-reading APK and R8 rules
-            // for every library are one more thing that cannot be exercised without a device.
-            isMinifyEnabled = false
+            // Since v0.58.0 the release APK is shrunk by R8 (unused code and resources are removed: 30 MB became a
+            // fraction of that). Not obfuscated and not optimised (proguard-rules.pro), so a stack trace still reads and
+            // the only thing that can go wrong is a class or resource that was only reached by reflection. The emulator
+            // smoke test (android/scripts/emulator_smoke.py, in CI and as a gate in release.yml) starts this very APK on
+            // a real Android and walks the app. -Popenconnect.minify=false builds the plain APK for comparing.
+            val shrink = providers.gradleProperty("openconnect.minify").orNull != "false"
+            isMinifyEnabled = shrink
+            isShrinkResources = shrink
+            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
     }
 
@@ -85,9 +91,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.navigation:navigation-compose:2.8.4")
-    implementation("androidx.security:security-crypto:1.1.0-alpha06")
-    implementation("androidx.core:core-ktx:1.15.0")
-    implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("androidx.security:security-crypto:1.1.0")
+    implementation("androidx.core:core-ktx:1.16.0")
+    implementation("androidx.work:work-runtime-ktx:2.12.0")
     implementation("androidx.health.connect:connect-client:1.1.0-alpha10")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
@@ -95,7 +101,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.18")
     testImplementation("androidx.test:core-ktx:1.6.1")
-    testImplementation("androidx.work:work-testing:2.9.1")
+    testImplementation("androidx.work:work-testing:2.12.0")
     // The AI tests read the request bodies the app sends, to prove what leaves the phone.
     testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     testImplementation(composeBom)

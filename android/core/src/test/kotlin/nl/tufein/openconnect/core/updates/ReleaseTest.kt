@@ -51,6 +51,28 @@ class ReleaseTest {
     }
 
     @Test
+    fun a_release_candidate_is_older_than_its_final_release_and_never_offered_to_a_final_install() {
+        assertTrue(isNewer("1.0.0-rc.1", "1.0.0"), "a phone on rc.1 is offered 1.0.0")
+        assertFalse(isNewer("1.0.0", "1.0.0-rc.1"), "a phone on 1.0.0 is not offered rc.1")
+        assertFalse(isNewer("1.0.0", "1.0.0-rc.2"))
+        assertTrue(isNewer("1.0.0-rc.1", "1.0.0-rc.2"))
+        assertTrue(isNewer("1.0.0-rc.2", "1.0.0-rc.10"), "rc.10 is later than rc.2, as numbers")
+        assertTrue(isNewer("1.0.0-rc", "1.0.0-rc.1"))
+        assertTrue(isNewer("1.0.0-beta.1", "1.0.0-rc.1"))
+        assertTrue(isNewer("0.57.0", "1.0.0-rc.1"), "a candidate is newer than an older release")
+        assertTrue(isNewer("1.0.0-rc.3", "1.0.1"))
+        assertFalse(isNewer("1.0.0-rc.1", "v1.0.0-rc.1+build.7"), "build metadata does not count")
+    }
+
+    @Test
+    fun the_updater_refuses_a_pre_release_or_a_draft_even_when_one_is_handed_over() {
+        val apk = """"assets": [{"name": "openconnect-v1.0.0-rc.1.apk", "browser_download_url": "https://github.com/x/openconnect-v1.0.0-rc.1.apk"}]"""
+        assertNotNull(parseRelease("""{"tag_name": "v1.0.0-rc.1", "prerelease": false, "draft": false, $apk}"""))
+        assertNull(parseRelease("""{"tag_name": "v1.0.0-rc.1", "prerelease": true, $apk}"""))
+        assertNull(parseRelease("""{"tag_name": "v1.0.0-rc.1", "draft": true, $apk}"""))
+    }
+
+    @Test
     fun checksum_must_match_the_downloaded_bytes() {
         val bytes = "an apk".toByteArray()
         val hash = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }

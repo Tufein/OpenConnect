@@ -53,6 +53,12 @@ jobs:
         run: |
           bash android/scripts/verify-apk-signer.sh android/app/build/outputs/apk/release/app-release.apk \
             "$OPENCONNECT_KEYSTORE" "$OPENCONNECT_KEY_ALIAS" "$OPENCONNECT_KEYSTORE_PASSWORD"
+      - name: Keep the APK small
+        # It was 30 MB before R8 shrinking (v0.58.0) and is about 10 MB now: a jump past 12 MB means something large came in.
+        run: |
+          size=$(stat -c %s android/app/build/outputs/apk/release/app-release.apk)
+          echo "APK size: ${size} bytes"
+          test "$size" -le 12582912 || { echo "The APK is larger than 12 MiB"; exit 1; }
       - name: Name the APK and write its checksum
         run: |
           mkdir -p apk
@@ -63,9 +69,42 @@ jobs:
           name: apk
           path: apk/
 
-  release:
+  # The signed APK is started on a real Android (an emulator) and walked through before anything is published, because the
+  # APK is shrunk and the JVM tests cannot see what shrinking breaks (android/scripts/emulator_smoke.py).
+  smoke:
     runs-on: ubuntu-latest
     needs: android
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v4
+        with:
+          name: apk
+          path: apk
+      - name: Allow the emulator to use KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Walk the signed APK on an emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          script: python3 android/scripts/emulator_smoke.py apk/openconnect-${{ inputs.tag || github.ref_name }}.apk smoke-out
+      - name: Keep the screenshots and the log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: emulator-smoke
+          path: smoke-out/
+          if-no-files-found: ignore
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [android, smoke]
     steps:
       - name: Only release from main when started by hand
         if: github.event_name == 'workflow_dispatch' && github.ref_name != 'main'
@@ -78,8 +117,16 @@ jobs:
           python-version: "3.12"
       - name: Verify the tag matches the package version
         run: |
-          version="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
-          test "v${version}" = "${TAG}" || { echo "Tag ${TAG} does not match version v${version}"; exit 1; }
+          # 1.0.0-rc.1 (the tag and the app) and 1.0.0rc1 (Python) are the same version in two spellings, so compare them as versions.
+          pip install packaging
+          python - <<'PY'
+          import os, tomllib
+          from packaging.version import Version
+          tag = os.environ["TAG"]
+          version = tomllib.load(open("pyproject.toml", "rb"))["project"]["version"]
+          if not tag.startswith("v") or Version(tag[1:]) != Version(version):
+              raise SystemExit(f"Tag {tag} does not match the package version {version}")
+          PY
       - name: Run the test suite
         run: |
           pip install -e ".[dev]"
@@ -97,8 +144,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           notes="docs/releases/${TAG}.md"
+          # A release candidate (1.0.0-rc.1) is published as a GitHub pre-release: it is not "latest", so the in-app updater,
+          # which asks for the latest full release, never offers it.
+          flags=""
+          case "${TAG}" in *-*) flags="--prerelease" ;; esac
           if [ -f "$notes" ]; then
-            gh release create "$TAG" dist/* apk/* --target "$GITHUB_SHA" --title "OpenConnect ${TAG}" --notes-file "$notes"
+            # A fixed front matter (install, check, what is tested) above the notes, so a stranger needs no README.
+            sed "s/@TAG@/${TAG}/g" .github/release-header.md > "${RUNNER_TEMP}/notes.md"
+            cat "$notes" >> "${RUNNER_TEMP}/notes.md"
+            gh release create "$TAG" dist/* apk/* --target "$GITHUB_SHA" --title "OpenConnect ${TAG}" $flags --notes-file "${RUNNER_TEMP}/notes.md"
           else
-            gh release create "$TAG" dist/* apk/* --target "$GITHUB_SHA" --title "OpenConnect ${TAG}" --generate-notes
+            gh release create "$TAG" dist/* apk/* --target "$GITHUB_SHA" --title "OpenConnect ${TAG}" $flags --generate-notes
           fi

@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v0.58.0: klein, snel getest en eerlijk over privacy
+
+Mijlpalen M5 en M6 en de afhankelijkheden (M1) op de weg naar 1.0, zie `docs/ROADMAP.md`. De app zelf ziet er hetzelfde uit; wat verandert is dat ze **een derde zo groot** is, dat de **getekende APK vóór elke release op een echte Android wordt gestart en doorlopen**, dat de **privacyverklaring** er is (ook in de app) en dat er een **installatiegids** is.
+
+[Release notes](docs/releases/v0.58.0.md)
+
 ## v0.57.0: toegankelijk en tweetalig
 
 Vierde mijlpaal (M4) op de weg naar 1.0, zie `docs/ROADMAP.md`. De app is er ook voor mensen met een schermlezer, grote letters of een tablet. Nieuw is vooral een controle in de testen die dit bewaakt, en die meteen echte gaten vond.

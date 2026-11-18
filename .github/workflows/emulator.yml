@@ -1,0 +1,58 @@
+name: Emulator smoke
+
+# Starts the release APK on a real Android (an emulator) and walks the app: first start, demo data, every tab, a key saved
+# through the Keystore and read back after a restart (android/scripts/emulator_smoke.py). The JVM tests cannot see a crash
+# that only happens in the shrunk APK or on the real Android runtime. It runs the shrunk APK (the one that is released) and the
+# plain one, so a failure that only shows in the shrunk one points at R8.
+on:
+  pull_request:
+    paths:
+      - "android/**"
+      - ".github/workflows/emulator.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        minify: ["true", "false"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Build the release APK (minify=${{ matrix.minify }})
+        working-directory: android
+        run: ./gradlew :app:assembleRelease -Popenconnect.minify=${{ matrix.minify }} --console=plain
+      - name: Size of the APK
+        run: |
+          ls -l android/app/build/outputs/apk/release/app-release.apk
+          echo "minify=${{ matrix.minify }}: $(du -h android/app/build/outputs/apk/release/app-release.apk | cut -f1)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Allow the emulator to use KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Walk the app on an emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          script: python3 android/scripts/emulator_smoke.py android/app/build/outputs/apk/release/app-release.apk smoke-out
+      - name: Keep the screenshots and the log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: emulator-smoke-minify-${{ matrix.minify }}
+          path: smoke-out/
+          if-no-files-found: ignore
