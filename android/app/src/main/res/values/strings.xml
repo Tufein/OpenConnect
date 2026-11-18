@@ -1095,4 +1095,14 @@
     <string name="hume_chart_rhr">Resting heart rate</string>
     <string name="hume_chart_lowest">Lowest heart rate of the night</string>
     <string name="hume_workouts">Workouts from the band</string>
+
+    <!-- Devices compared (v0.51.0) -->
+    <string name="compare_title">Devices compared</string>
+    <string name="compare_body">This day as each of your devices measured it. Every device counts a little differently, so small gaps are normal. Only what devices work out the same way is compared (sleep, steps, resting heart rate, blood oxygen); HRV and scores are each maker\'s own recipe and are left out.</string>
+    <string name="compare_close">Close: %1$s apart</string>
+    <string name="compare_apart">Far apart: %1$s</string>
+    <string name="compare_gap_minutes">%1$d min</string>
+    <string name="compare_gap_steps">%1$s steps</string>
+    <string name="compare_gap_points">%1$d points</string>
+    <string name="compare_gap_bpm">%1$d bpm</string>
 </resources>

@@ -119,6 +119,7 @@ Van [APP-VERGELIJKING.md](APP-VERGELIJKING.md) (8 apps naast OpenConnect) wordt 
 - **v0.49.0** ✅ WHOOP-band in de Android-app, op dezelfde manier als de Oura Ring: eigen tabblad met herstel, belasting, slaap en workouts, gescheiden van horloge en ring, inloggen met een eigen WHOOP-applicatie (OAuth), WHOOP als bron op het Dag-tabblad van Inzichten en bandworkouts in de activiteitenlijst. ❓ Niet met een echte band of een echt WHOOP-account geprobeerd; de afbakening van een dag en de scopenamen zijn nog aannames.
 
 - **v0.50.0** ✅ Hume Band in de Android-app, gelezen uit Health Connect (Hume heeft geen publieke API): eigen tabblad met slaap, stappen, hartslag, HRV, bloedzuurstof en workouts, alleen de gegevens van de Hume-app, geen verzonnen scores, Hume als bron op het Dag-tabblad van Inzichten en bandworkouts in de activiteitenlijst. ❓ Niet met een echte band of telefoon geprobeerd; de pakketnaam van de Hume-app en welke records hij schrijft zijn nog aannames.
+- **v0.51.0** ✅ apparaten naast elkaar: kaart *Apparaten vergeleken* op het Dag-tabblad van Inzichten (`DeviceComparison.kt`), plus een bijgewerkte ideeënlijst uit de fitness-apps (`docs/APP-VERGELIJKING.md`, sectie 7).
 
 ## Later 💡
 
