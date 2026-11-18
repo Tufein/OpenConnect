@@ -135,11 +135,18 @@ class Run:
         """Swipes up (so the list goes down) until [text] is on screen and not behind the bottom bar."""
         size = re.search(r"(\d+)x(\d+)", adb("shell", "wm", "size"))
         width, height = int(size.group(1)), int(size.group(2))
+        previous = None
         for _ in range(tries):
             nodes = screen()
             node = find(nodes, text, contains)
             if node and node.bottom < height * 0.86 and node.top > height * 0.08:
                 return node
+            # At the end of the list the screen no longer changes: the button sits at the very bottom (the first-start
+            # screen has no bottom bar), so take it where it is.
+            seen = labels(nodes)
+            if node and seen == previous and node.bottom <= height:
+                return node
+            previous = seen
             adb("shell", "input", "swipe", str(width // 2), str(int(height * 0.7)), str(width // 2), str(int(height * 0.3)), "350")
             time.sleep(0.8)
         raise Smoke(f"could not scroll to {text!r}; the screen showed: {labels(screen())[:60]}")
