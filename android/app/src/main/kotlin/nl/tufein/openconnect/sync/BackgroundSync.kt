@@ -191,3 +191,35 @@ class WhoopSyncWorker(context: Context, params: WorkerParameters) : CoroutineWor
         return Result.success() // the next run is a quarter of an hour away; no need to retry sooner
     }
 }
+
+/** The Hume Band's job: about every 15 minutes while Health Connect lets the app read, when the battery is not low. */
+class WorkManagerHumeSync(private val context: Context) : BackgroundSync {
+    override fun set(enabled: Boolean) {
+        val manager = try {
+            WorkManager.getInstance(context)
+        } catch (_: IllegalStateException) {
+            return
+        }
+        if (!enabled) {
+            manager.cancelUniqueWork(NAME)
+            return
+        }
+        val request = PeriodicWorkRequestBuilder<HumeSyncWorker>(15, TimeUnit.MINUTES)
+            .setConstraints(Constraints.Builder().setRequiresBatteryNotLow(true).build())
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 10, TimeUnit.MINUTES)
+            .build()
+        manager.enqueueUniquePeriodicWork(NAME, ExistingPeriodicWorkPolicy.KEEP, request)
+    }
+
+    companion object {
+        const val NAME = "hume-sync"
+    }
+}
+
+class HumeSyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+    override suspend fun doWork(): Result {
+        val container = (applicationContext as OpenConnectApp).container
+        if (container.settings.useHume) container.hume.syncInBackground(java.time.Duration.ofMinutes(10))
+        return Result.success() // the next run is a quarter of an hour away; no need to retry sooner
+    }
+}

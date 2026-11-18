@@ -43,6 +43,7 @@ private fun sourceName(source: InsightSource): Int = when (source) {
     InsightSource.GARMIN -> R.string.day_source_garmin
     InsightSource.OURA -> R.string.day_source_oura
     InsightSource.WHOOP -> R.string.day_source_whoop
+    InsightSource.HUME -> R.string.day_source_hume
 }
 
 @Composable
@@ -92,11 +93,13 @@ fun DayContent(state: DayState, contentPadding: PaddingValues, onOpenActivity: (
             state.garmin?.let { InsightSource.GARMIN },
             state.oura?.let { InsightSource.OURA },
             state.whoop?.let { InsightSource.WHOOP },
+            state.hume?.let { InsightSource.HUME },
         )
         val source = available.firstOrNull { it.name == savedSource } ?: available.firstOrNull() ?: return@LazyColumn
         val set = when (source) {
             InsightSource.OURA -> state.oura
             InsightSource.WHOOP -> state.whoop
+            InsightSource.HUME -> state.hume
             InsightSource.GARMIN -> state.garmin
         } ?: return@LazyColumn
         val today = state.today

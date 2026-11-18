@@ -55,6 +55,8 @@ object Backup {
             put("oura", JsonArray(repo.listOuraDays(FAR_PAST, FAR_FUTURE).map { kotlinx.serialization.json.Json.parseToJsonElement(it.toJson()) }))
             // v0.49.0: the WHOOP band's days, the same way.
             put("whoop", JsonArray(repo.listWhoopDays(FAR_PAST, FAR_FUTURE).map { kotlinx.serialization.json.Json.parseToJsonElement(it.toJson()) }))
+            // v0.50.0: the Hume Band's days, the same way.
+            put("hume", JsonArray(repo.listHumeDays(FAR_PAST, FAR_FUTURE).map { kotlinx.serialization.json.Json.parseToJsonElement(it.toJson()) }))
         }
         val out = ByteArrayOutputStream()
         GZIPOutputStream(out).use { it.write(root.toString().toByteArray(Charsets.UTF_8)) }
@@ -75,6 +77,7 @@ object Backup {
         val samples: List<MetricSample>
         val oura: List<nl.tufein.openconnect.core.oura.OuraDay>
         val whoop: List<nl.tufein.openconnect.core.whoop.WhoopDay>
+        val hume: List<nl.tufein.openconnect.core.hume.HumeDay>
         try {
             activities = root.list("activities").map { activityOf(it.jsonObject) }
             daily = root.list("daily").map { dailyOf(it.jsonObject) }
@@ -82,6 +85,7 @@ object Backup {
             samples = root.list("samples").map { sampleOf(it.jsonArray) }
             oura = root.list("oura").map { nl.tufein.openconnect.core.oura.OuraDay.fromJson(it.toString()) }
             whoop = root.list("whoop").map { nl.tufein.openconnect.core.whoop.WhoopDay.fromJson(it.toString()) }
+            hume = root.list("hume").map { nl.tufein.openconnect.core.hume.HumeDay.fromJson(it.toString()) }
         } catch (e: BackupException) {
             throw e
         } catch (e: Exception) {
@@ -93,6 +97,7 @@ object Backup {
         repo.upsertSamples(samples)
         oura.forEach(repo::upsertOuraDay)
         whoop.forEach(repo::upsertWhoopDay)
+        hume.forEach(repo::upsertHumeDay)
         return RestoreReport(activities.size, daily.size, sleep.size, samples.size, createdAt)
     }
 

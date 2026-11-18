@@ -105,8 +105,9 @@ fun SettingsScreen(
     onGarmin: () -> Unit,
     onOura: () -> Unit = {},
     onWhoop: () -> Unit = {},
-    /** The choice of devices changed: Garmin on or off, Oura Ring on or off, WHOOP on or off. */
-    onSources: (garmin: Boolean, oura: Boolean, whoop: Boolean) -> Unit = { _, _, _ -> },
+    onHume: () -> Unit = {},
+    /** The choice of devices changed: Garmin, Oura Ring, WHOOP and Hume Band, each on or off. */
+    onSources: (garmin: Boolean, oura: Boolean, whoop: Boolean, hume: Boolean) -> Unit = { _, _, _, _ -> },
     /** A colour theme was picked. */
     onLook: (palette: String) -> Unit = {},
     /** The letters were switched between pixel and clear. */
@@ -213,19 +214,23 @@ fun SettingsScreen(
             SectionTitle(stringResource(R.string.settings_devices))
             SurfaceCard {
                 Text(stringResource(R.string.settings_devices_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                DeviceSwitch(stringResource(R.string.device_garmin), stringResource(R.string.device_garmin_body), ui.sources.garmin) { onSources(it, ui.sources.oura, ui.sources.whoop) }
+                DeviceSwitch(stringResource(R.string.device_garmin), stringResource(R.string.device_garmin_body), ui.sources.garmin) { onSources(it, ui.sources.oura, ui.sources.whoop, ui.sources.hume) }
                 if (ui.sources.garmin) {
                     PrimaryButton(onClick = onGarmin, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_garmin)) }
                     PrimaryButton(onClick = onWatch, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_watch)) }
                     ConnectIqButton()
                 }
-                DeviceSwitch(stringResource(R.string.device_oura), stringResource(R.string.device_oura_body), ui.sources.oura) { onSources(ui.sources.garmin, it, ui.sources.whoop) }
+                DeviceSwitch(stringResource(R.string.device_oura), stringResource(R.string.device_oura_body), ui.sources.oura) { onSources(ui.sources.garmin, it, ui.sources.whoop, ui.sources.hume) }
                 if (ui.sources.oura) {
                     PrimaryButton(onClick = onOura, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_oura)) }
                 }
-                DeviceSwitch(stringResource(R.string.device_whoop), stringResource(R.string.device_whoop_body), ui.sources.whoop) { onSources(ui.sources.garmin, ui.sources.oura, it) }
+                DeviceSwitch(stringResource(R.string.device_whoop), stringResource(R.string.device_whoop_body), ui.sources.whoop) { onSources(ui.sources.garmin, ui.sources.oura, it, ui.sources.hume) }
                 if (ui.sources.whoop) {
                     PrimaryButton(onClick = onWhoop, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_whoop)) }
+                }
+                DeviceSwitch(stringResource(R.string.device_hume), stringResource(R.string.device_hume_body), ui.sources.hume) { onSources(ui.sources.garmin, ui.sources.oura, ui.sources.whoop, it) }
+                if (ui.sources.hume) {
+                    PrimaryButton(onClick = onHume, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_hume)) }
                 }
             }
         }
@@ -498,6 +503,7 @@ private fun sourceLabel(source: String): String = stringResource(
         "demo" -> R.string.source_demo
         "oura" -> R.string.source_oura
         "whoop" -> R.string.source_whoop
+        "hume" -> R.string.source_hume
         else -> R.string.source_import
     },
 )
@@ -547,6 +553,7 @@ private fun SyncLogBody(log: List<SyncLogEntry>, onClear: () -> Unit) {
                 SyncLog.SOURCE_BLE -> R.string.synclog_ble
                 SyncLog.SOURCE_OURA -> R.string.synclog_oura
                 SyncLog.SOURCE_WHOOP -> R.string.synclog_whoop
+                SyncLog.SOURCE_HUME -> R.string.synclog_hume
                 else -> R.string.synclog_account
             },
         )

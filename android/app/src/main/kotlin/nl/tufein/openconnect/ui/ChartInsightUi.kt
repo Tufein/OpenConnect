@@ -33,12 +33,12 @@ private fun explainRes(metric: ChartMetric, source: InsightSource): Int = when (
     ChartMetric.READINESS -> when (source) {
         InsightSource.OURA -> R.string.insight_explain_readiness_ring
         InsightSource.WHOOP -> R.string.insight_explain_readiness_whoop
-        InsightSource.GARMIN -> R.string.insight_explain_readiness
+        InsightSource.GARMIN, InsightSource.HUME -> R.string.insight_explain_readiness
     }
     ChartMetric.SLEEP_SCORE -> when (source) {
         InsightSource.OURA -> R.string.insight_explain_sleep_score_ring
         InsightSource.WHOOP -> R.string.insight_explain_sleep_score_whoop
-        InsightSource.GARMIN -> R.string.insight_explain_sleep_score
+        InsightSource.GARMIN, InsightSource.HUME -> R.string.insight_explain_sleep_score
     }
     ChartMetric.ACTIVITY_SCORE -> R.string.insight_explain_activity_score
     ChartMetric.LOWEST_HR -> R.string.insight_explain_lowest_hr

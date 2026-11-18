@@ -1,5 +1,6 @@
 package nl.tufein.openconnect.core
 
+import nl.tufein.openconnect.core.hume.HumeDay
 import nl.tufein.openconnect.core.oura.OuraDay
 import nl.tufein.openconnect.core.whoop.WhoopDay
 import java.time.LocalDate
@@ -28,6 +29,13 @@ enum class InsightSource(
         listOf(
             ChartMetric.READINESS, ChartMetric.STRAIN, ChartMetric.SLEEP_SCORE, ChartMetric.SLEEP, ChartMetric.RESTING_HR,
             ChartMetric.HRV, ChartMetric.RESPIRATION, ChartMetric.SPO2,
+        ),
+    ),
+
+    /** The Hume Band through Health Connect: only what Health Connect has types for, so no scores. */
+    HUME(
+        listOf(
+            ChartMetric.SLEEP, ChartMetric.STEPS, ChartMetric.RESTING_HR, ChartMetric.LOWEST_HR, ChartMetric.HRV, ChartMetric.SPO2,
         ),
     ),
 }
@@ -170,6 +178,34 @@ object DayRecords {
                     values,
                     d.workouts.sortedBy { it.startMs }.map {
                         DayWorkout(BandSource.WHOOP.idPrefix + it.id, it.name, RingWorkouts.sport(it.activity), it.startMs, it.durationS.toDouble(), it.distanceM?.takeIf { m -> m > 0 }, it.calories)
+                    },
+                )
+            },
+        )
+    }
+
+    /**
+     * One record per day in [start]..[end] from the Hume Band's days. Health Connect carries no readiness or sleep score, so
+     * none is made up: the card shows the night, steps, heart rate, HRV and blood oxygen the band wrote.
+     */
+    fun hume(start: LocalDate, end: LocalDate, days: List<HumeDay>): DaySeries {
+        val byDay = days.associateBy { it.date }
+        return DaySeries(
+            InsightSource.HUME,
+            days(start, end).map { day ->
+                val d = byDay[day] ?: return@map DayRecord(day)
+                val values = LinkedHashMap<ChartMetric, Double>()
+                d.sleepHours?.takeIf { d.sleepS != 0 }?.let { values[ChartMetric.SLEEP] = Math.rint(it * 100) / 100 }
+                d.steps?.let { values[ChartMetric.STEPS] = it.toDouble() }
+                d.restingHr?.takeIf { it > 0 }?.let { values[ChartMetric.RESTING_HR] = it.toDouble() }
+                d.lowestHr?.takeIf { it > 0 }?.let { values[ChartMetric.LOWEST_HR] = it.toDouble() }
+                d.hrv?.takeIf { it > 0 }?.let { values[ChartMetric.HRV] = it }
+                d.spo2?.takeIf { it > 0 }?.let { values[ChartMetric.SPO2] = it }
+                DayRecord(
+                    day,
+                    values,
+                    d.workouts.sortedBy { it.startMs }.map {
+                        DayWorkout(BandSource.HUME.idPrefix + it.id, it.name, RingWorkouts.sport(it.activity), it.startMs, it.durationS.toDouble(), it.distanceM?.takeIf { m -> m > 0 }, it.calories)
                     },
                 )
             },

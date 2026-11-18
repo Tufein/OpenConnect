@@ -99,6 +99,11 @@ class AppContainer(
     whoopSettings: nl.tufein.openconnect.whoop.WhoopSettings = settings.whoop,
     /** Starts and stops the WHOOP job. Tests pass a fake; the app passes WorkManager. */
     whoopSync: BackgroundSync = BackgroundSync { },
+    /** The phone's Health Connect as the Hume link reads it. Tests pass a fake; the app passes the real one. */
+    humeGateway: nl.tufein.openconnect.core.hume.HumeGateway = nl.tufein.openconnect.core.hume.NoHume,
+    humeSettings: nl.tufein.openconnect.hume.HumeSettings = settings.hume,
+    /** Starts and stops the Hume job. Tests pass a fake; the app passes WorkManager. */
+    humeSync: BackgroundSync = BackgroundSync { },
     /** Keeps a live heart-rate recording alive with the screen off. Tests pass a fake; the app posts a notification. */
     keeper: LiveRecordingKeeper = NoLiveRecordingKeeper,
     /** Where a verified update APK is kept until Android installs it. The app uses its own cache directory. */
@@ -230,10 +235,26 @@ class AppContainer(
 
     private val whoopJob = whoopSync
 
-    /** Starts or stops the Oura and WHOOP background jobs after the choice of devices changed. */
+    /** The Hume Band link, read from Health Connect. */
+    val hume = nl.tufein.openconnect.hume.HumeController(
+        settings = humeSettings,
+        repo = repository,
+        gateway = humeGateway,
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+        io = Dispatchers.IO,
+        onDataChanged = { dataChanged.tryEmit(Unit) },
+        onSynced = syncLog::record,
+        // The background job runs only for someone who chose the Hume Band and let the app read Health Connect.
+        onBackgroundWanted = { wanted -> humeSync.set(wanted && settings.useHume) },
+    )
+
+    private val humeJob = humeSync
+
+    /** Starts or stops the Oura, WHOOP and Hume background jobs after the choice of devices changed. */
     fun applySources() {
         ouraJob.set(settings.useOura && oura.state.value.connected)
         whoopJob.set(settings.useWhoop && whoop.state.value.connected)
+        humeJob.set(settings.useHume && hume.state.value.ready)
     }
 
     /** The keys, models and choice of AI provider (Claude, Gemini, or the offline reports). */
@@ -277,6 +298,8 @@ class OpenConnectApp : Application() {
             widgetRefresh = { summary -> HomeWidget.refresh(this, summary) },
             ouraSync = nl.tufein.openconnect.sync.WorkManagerOuraSync(this),
             whoopSync = nl.tufein.openconnect.sync.WorkManagerWhoopSync(this),
+            humeGateway = nl.tufein.openconnect.health.AndroidHumeGateway(this),
+            humeSync = nl.tufein.openconnect.sync.WorkManagerHumeSync(this),
             keeper = ForegroundLiveRecording(this),
             updateDir = File(cacheDir, "updates"),
         ) }

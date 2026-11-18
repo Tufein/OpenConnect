@@ -1051,4 +1051,48 @@
     <string name="insight_explain_readiness_whoop">WHOOP\'s recovery score, 0 to 100, from your HRV, resting heart rate, sleep and breathing against your own normal. 67 or more is green (ready for strain), 34 to 66 yellow, under 34 red.</string>
     <string name="insight_explain_sleep_score_whoop" formatted="false">WHOOP\'s sleep performance, 0 to 100%: how much of the sleep your body needed you got. 85 or more is good, 70 to 84 fair, under 70 poor.</string>
     <string name="insight_explain_strain">WHOOP\'s day strain on a scale from 0 to 21 (the higher you get, the harder it is to climb): under 10 is light, 10 to 13 moderate, 14 to 17 high, 18 and over all out. More strain is not better or worse; it should fit your recovery.</string>
+
+    <!-- Hume Band (v0.50.0), read from Health Connect. The texts for the last sync, the report, the average and "sync now" are the Oura screen's (oura_*). -->
+    <string name="action_hume">Open the Hume tab</string>
+    <string name="synclog_hume">Hume Band</string>
+    <string name="source_hume">Hume Band</string>
+    <string name="tab_hume">Hume</string>
+    <string name="device_hume">Hume Band</string>
+    <string name="device_hume_body">Its own tab with nights, steps and heart rate, read from Health Connect</string>
+    <string name="day_source_hume">Hume Band</string>
+    <string name="hume_title">Hume Band</string>
+    <string name="hume_intro">Hume has no connection of its own for other apps. Its app (Hume Health) writes what the band measures to Health Connect, the shared health store of your phone, and OpenConnect reads it from there. It is kept apart from your watch and your other bands, and only data written by the Hume app is read. In the Hume app, switch on Health Connect in its settings first.</string>
+    <string name="hume_unavailable">Health Connect is not on this phone, or it needs an update. On Android 13 and older it is a free app from Google Play; on Android 14 and newer it is part of the system settings.</string>
+    <string name="hume_allow_title">Allow reading</string>
+    <string name="hume_allow_body">OpenConnect asks to read steps, sleep, heart rate, resting heart rate, HRV, blood oxygen, active energy and exercise. It reads only what the Hume app wrote (below you can pick another app), keeps it on this phone and sends it nowhere.</string>
+    <string name="hume_allow">Allow in Health Connect</string>
+    <string name="hume_no_days">Allowed. The band\'s days appear here after the first sync.</string>
+    <string name="hume_problem_permission">Health Connect no longer lets OpenConnect read. Allow it again.</string>
+    <string name="hume_problem_nodata">Health Connect holds nothing from the Hume app in the last 30 days. Open the Hume app, switch on Health Connect in its settings, let it sync, and try again. If the band\'s app has another name, pick it below.</string>
+    <string name="hume_problem_failed">Health Connect did not answer. The next sync will try again.</string>
+    <string name="hume_schedule">Syncs when you open the app, every 10 minutes while it is open, and about every 15 minutes in the background (Android decides the exact moment). Health Connect only hands over data in the background when you allow that.</string>
+    <string name="hume_origin_title">Which app wrote the band\'s data?</string>
+    <string name="hume_origin_body">Normally Hume Health (com.elink.fittrackhealth.pro), which is recognised by itself. If the band\'s app has another name, pick it here once it has data in Health Connect.</string>
+    <string name="hume_origin_auto">Recognise the Hume app by itself</string>
+    <string name="hume_origin_using">Reading data from: %1$s</string>
+    <string name="hume_forget">Forget this choice</string>
+    <string name="hume_today">Latest day: %1$s</string>
+    <string name="hume_sleep">Sleep</string>
+    <string name="hume_steps">Steps</string>
+    <string name="hume_heart">Heart</string>
+    <string name="hume_last_night">Last night</string>
+    <string name="hume_no_night">No night from the band for this day.</string>
+    <string name="hume_night_line">%1$s asleep, %2$s deep, %3$s REM</string>
+    <string name="hume_night_total">%1$s asleep</string>
+    <string name="hume_awake">%1$s awake</string>
+    <string name="hume_lowest_hr">lowest %1$d bpm in the night</string>
+    <string name="hume_active_kcal">%1$d kcal active</string>
+    <string name="hume_avg_hr">average %1$d bpm</string>
+    <string name="hume_max_hr">highest %1$d bpm</string>
+    <string name="hume_chart_steps">Steps</string>
+    <string name="hume_chart_sleep">Sleep (hours)</string>
+    <string name="hume_chart_hrv">HRV (ms)</string>
+    <string name="hume_chart_rhr">Resting heart rate</string>
+    <string name="hume_chart_lowest">Lowest heart rate of the night</string>
+    <string name="hume_workouts">Workouts from the band</string>
 </resources>

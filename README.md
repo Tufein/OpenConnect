@@ -9,7 +9,7 @@ machine, with a dashboard, FIT/GPX/TCX import and export, and optional AI-writte
 
 ![OpenConnect dashboard](docs/img/dashboard.png)
 
-> **Status: v0.49.0, an early foundation.** It runs end to end on demo data with no credentials.
+> **Status: v0.50.0, an early foundation.** It runs end to end on demo data with no credentials.
 > Live Garmin access needs Garmin Developer Program credentials (see [Garmin access](#garmin-access)).
 > Not affiliated with or endorsed by Garmin.
 
@@ -26,7 +26,7 @@ live against a real account; the USB and Bluetooth parts have not yet been tried
 **[docs/GARMIN.md](docs/GARMIN.md)** and **[docs/WATCH.md](docs/WATCH.md)** for what works and what is unverified.
 More about the app, its limits and what has been verified: **[docs/ANDROID.md](docs/ANDROID.md)**.
 
-**New in v0.49.0:** the Android app reads a **WHOOP band** the way it reads the Oura Ring: its own tab with recovery, strain, sleep and workouts, kept apart from the watch and the ring, login with your own WHOOP application (OAuth), WHOOP as a source on the Insights Day tab, band workouts listed among the activities. Not tried against the real WHOOP service, see [docs/WHOOP.md](docs/WHOOP.md) ([release notes](docs/releases/v0.49.0.md)). **New in v0.48.0:** the Android app has an **in-app updater** under Settings: it checks GitHub for a newer
+**New in v0.50.0:** the Android app shows a **Hume Band** with its own tab (sleep, steps, heart rate, HRV, blood oxygen, workouts), read from Health Connect because Hume has no public interface: no account or key, only the data the Hume app wrote, no invented scores, Hume as a source on the Insights Day tab and band workouts among the activities. Not tried with a real band, see [docs/HUME.md](docs/HUME.md) ([release notes](docs/releases/v0.50.0.md)). **New in v0.49.0:** the Android app reads a **WHOOP band** the way it reads the Oura Ring: its own tab with recovery, strain, sleep and workouts, kept apart from the watch and the ring, login with your own WHOOP application (OAuth), WHOOP as a source on the Insights Day tab, band workouts listed among the activities. Not tried against the real WHOOP service, see [docs/WHOOP.md](docs/WHOOP.md) ([release notes](docs/releases/v0.49.0.md)). **New in v0.48.0:** the Android app has an **in-app updater** under Settings: it checks GitHub for a newer
 release, downloads the signed APK, verifies its SHA-256 against the published checksum and asks Android to
 install it (on Android 8+ the first install needs "allow installing apps" once). **New in v0.47.0:** the remaining roadmap items: **activities via your own Garmin key** (original FIT files
 included), **Ping/Pull callbacks** fetched from an HTTPS allow-list, **optional single-password sign-in**, and
