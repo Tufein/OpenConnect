@@ -41,6 +41,8 @@ class Node:
         self.text = element.get("text", "")
         self.desc = element.get("content-desc", "")
         self.cls = element.get("class", "")
+        # A button that is switched off says so; a node that does not say anything counts as enabled.
+        self.enabled = element.get("enabled", "true") != "false"
         m = re.match(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]", element.get("bounds", "[0,0][0,0]"))
         self.left, self.top, self.right, self.bottom = (int(v) for v in m.groups()) if m else (0, 0, 0, 0)
 
@@ -82,6 +84,14 @@ def find(nodes, text, contains=False):
     found = [n for n in nodes if match(n, text, contains)]
     # The tab bar is at the bottom: when a word is both a tab and a heading, the lowest one is meant.
     return max(found, key=lambda n: n.top) if found else None
+
+
+def key_field(nodes):
+    """The text field of the AI key: the EditText that carries its label. If the dump does not tie the label to the
+    field, the node that is exactly the label (the lowest one: the heading above it has the same words), never a
+    button such as "Save Claude key", which a tap would hit instead of the field."""
+    fields = [n for n in nodes if "EditText" in n.cls and "Claude key" in (n.text + n.desc)]
+    return fields[0] if fields else find(nodes, "Claude key")
 
 
 class Run:
@@ -178,6 +188,30 @@ class Run:
             f.write("\n".join(mine[-1500:]))
 
 
+def save_fake_key(run, attempts=3):
+    """Types the fake key into the Claude key field and presses Save. The typing goes to whatever has focus, so a
+    tap that did not give the field focus leaves it empty and the Save button switched off: that is looked at
+    before pressing Save, and the whole step is tried again (a screenshot of each failed try is kept) instead of
+    failing a release on a lost keystroke. After [attempts] empty tries it fails and says so."""
+    for attempt in range(1, attempts + 1):
+        run.scroll_to("Claude key")
+        field = key_field(screen())
+        if field is None:
+            raise Smoke("the Claude key field is not on the screen")
+        print(f"Claude key field: {field.cls or 'no class'} {field!r}, try {attempt}")
+        run.tap(field)
+        adb("shell", "input", "text", FAKE_KEY)
+        time.sleep(1)
+        run.hide_keyboard()
+        save = run.scroll_to("Save Claude key")
+        if save.enabled:
+            run.tap(save)
+            return
+        print(f"Try {attempt}: the key did not land in the field (Save is still switched off)")
+        run.shot(f"key-not-typed-{attempt}")
+    raise Smoke(f"the fake key never landed in the Claude key field in {attempts} tries (the Save button stayed off)")
+
+
 def main(apk, out):
     run = Run(out)
     try:
@@ -219,15 +253,11 @@ def main(apk, out):
         run.wait("About and licences")
         print("About: ok")
 
-        run.scroll_to("Claude key")
-        field = [n for n in screen() if "EditText" in n.cls and "Claude key" in (n.text + n.desc)] or [find(screen(), "Claude key", True)]
-        run.tap(field[0])
-        # A fake key must not be sent to the AI provider to be checked: no network for this step.
+        # A fake key must not be sent to the AI provider to be checked: no network for this step. Airplane mode goes
+        # on before the field is touched, so the system's own reaction to it cannot take the focus away afterwards.
         adb("shell", "cmd", "connectivity", "airplane-mode", "enable", check=False)
-        adb("shell", "input", "text", FAKE_KEY)
-        time.sleep(1)
-        run.hide_keyboard()
-        run.tap(run.scroll_to("Save Claude key"))
+        time.sleep(2)
+        save_fake_key(run)
         run.wait("Claude key saved", contains=True)
         run.shot("key-saved")
         print("Saved a key through the Keystore: ok")
