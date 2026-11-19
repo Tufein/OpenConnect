@@ -1,5 +1,6 @@
 package nl.tufein.openconnect.watch
 
+import nl.tufein.openconnect.core.watch.BleSync
 import nl.tufein.openconnect.core.watch.HeartRateMeasurement
 import nl.tufein.openconnect.core.watch.WatchSource
 
@@ -53,8 +54,12 @@ interface HeartRateLink {
     fun connect(sensor: BleSensor, listener: HeartRateListener): AutoCloseable
 }
 
-/** A Garmin watch the phone can reach over Bluetooth. [paired] is Android's pairing ("bond"), not Garmin Connect's. */
-data class GarminBleWatch(val address: String, val name: String, val paired: Boolean)
+/**
+ * A Garmin watch (or bike computer, or golf watch) the phone can reach over Bluetooth. [paired] is Android's pairing
+ * ("bond"), not Garmin Connect's. [bleSync] is what is known about syncing this model, null when nobody asked; the list
+ * shows a note for the models that carry a doubt.
+ */
+data class GarminBleWatch(val address: String, val name: String, val paired: Boolean, val bleSync: BleSync? = null)
 
 /** Where a Bluetooth sync with a Garmin watch is, before the files start coming. */
 enum class GarminStep { PAIRING, CONNECTING, HANDSHAKE }

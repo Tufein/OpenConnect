@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.0.0-rc.2: alle Garmin-horloges herkend, niet alleen de fenix
+
+De **tweede release candidate** van 1.0, weer een **GitHub-pre-release** (niet "nieuwste", de updater biedt haar niemand aan). Op verzoek van de eigenaar herkent de app nu **elke Garmin-familie**: fenix, Forerunner, Venu, vívoactive, vívosmart, Instinct, Enduro, epix, Edge, tactix, Descent, Lily en de rest, in plaats van een app die om één horloge, de fenix 8, heen was geschreven. Dit is de enige …
+
+[Release notes](docs/releases/v1.0.0-rc.2.md)
+
 ## v1.0.0-rc.1: de kandidaat voor 1.0
 
 De **eerste release candidate** van 1.0, uitgebracht als **GitHub-pre-release**: ze staat niet als "nieuwste" en de updater in de app biedt haar niemand aan. De code is gelijk aan v0.58.0; wat verandert is het versienummer, een paar kleine reparaties aan het gereedschap eromheen en de documentatie. Vanaf nu is de code **bevroren**: alleen reparaties en teksten tot 1.0.

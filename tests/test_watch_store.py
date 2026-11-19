@@ -234,3 +234,28 @@ def test_the_resources_validate_against_garmins_schema(tree):
                 text=True,
             )
             assert done.returncode == 0, f"{kind} {rel}: {done.stderr}"
+
+
+def test_the_fenix_8_is_only_the_default_and_every_garmin_family_can_share_one_package(tree):
+    # The default list is what the faces were drawn for. Other families are chosen with --products,
+    # with the ids Garmin's SDK Manager shows; nothing here is tied to the fenix 8.
+    mixed = [
+        "fr965",
+        "venu3",
+        "vivoactive5",
+        "instinct3amoled45mm",
+        "epix2pro47mm",
+        "edge1040",
+        "fenix847mm",
+    ]
+    done = package(tree, "--products", ",".join(mixed))
+    assert done.returncode == 0, done.stderr
+    assert re.findall(r'<iq:product id="([^"]+)"', manifest_of(tree)) == mixed
+    # a one-off build for another family works the same way
+    single = subprocess.run(
+        ["bash", str(tree / "build.sh"), "--dry-run", "--device", "fr965", "--design", "clean"],
+        capture_output=True,
+        text=True,
+    )
+    assert single.returncode == 0, single.stderr
+    assert "fr965" in single.stdout

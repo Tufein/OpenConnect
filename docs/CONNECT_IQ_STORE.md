@@ -41,7 +41,7 @@ its own.
 | What | Where |
 |------|-------|
 | Watch face and widget that can be configured in Garmin's Connect IQ app (design, colour, four fields; English and Dutch) | `watch/source/Prefs.mc`, `watch/resources/strings/`, `watch/resources-nld/` |
-| A build that makes the `.iq` file the store wants (every fenix 8 model in one file, a fixed app id per app) | `watch/build.sh --package` |
+| A build that makes the `.iq` file the store wants (every fenix 8 model in one file by default, any other Garmin watch with `--products`; a fixed app id per app) | `watch/build.sh --package` |
 | A check of everything that can be checked without Garmin's login | `watch/check-store.sh`, run by the test suite |
 | The store listing texts in English and Dutch | `docs/store/listing-en.md`, `docs/store/listing-nl.md` |
 | What to photograph for the listing | `docs/store/SCREENSHOTS.md` |
@@ -67,8 +67,9 @@ I cannot do these: they need your Garmin login and a watch.
    watch/build.sh --package --type widget       # watch/out/openconnect-widget-<version>.iq
    ```
    Optional: `--color`, `--design` and `--fields` set the defaults of the package, and `--products a,b,c` changes the
-   watches in it (default: the five fenix 8 models; the faces are drawn in fractions of the screen so other round
-   screens fit, but only the fenix 8 is what this was made for).
+   watches in it (default: the five fenix 8 models, the only ids checked against Garmin's documentation; other watches
+   need their Connect IQ id from the SDK Manager, see [GARMIN_DEVICES.md](GARMIN_DEVICES.md). The faces are drawn in
+   fractions of the screen so other round screens fit, but only the fenix 8 is what this was made for).
 4. **Try it on your watch first** (the simulator or a USB install) and check that the settings show in Garmin's Connect
    IQ app only after the store has it.
 5. **Upload** each `.iq` file at <https://apps.garmin.com/en-US/developer/upload> with your Garmin account. Once the file

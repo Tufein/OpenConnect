@@ -8,6 +8,7 @@
 #
 # Needs, once: the Connect IQ SDK and the watch's device files (Garmin's SDK Manager downloads both and asks for your
 # Garmin login) and a developer key (--make-key creates one). See docs/WATCH_FACES.md.
+# The fenix 8 is only the default (--device, --products): any Garmin watch with Connect IQ works with its Connect IQ id.
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
