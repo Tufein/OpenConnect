@@ -201,7 +201,9 @@ object NotificationValues {
             val at = if (n.whenMillis == 0L) now else Instant.ofEpochMilli(n.whenMillis)
             at.atZone(zone).format(DATE).toByteArray()
         }
-        NotificationAttribute.ATTACHMENTS -> "0".toByteArray() // the number of pictures: we never send any
+        // Gadgetbridge answers "1" here whatever the notification holds, and has been seen to work on many models; we
+        // never send a picture, so the watch finds nothing when it asks for one.
+        NotificationAttribute.ATTACHMENTS -> "1".toByteArray()
         NotificationAttribute.NEGATIVE_ACTION_LABEL -> ByteArray(0)
     }
 
@@ -263,6 +265,25 @@ enum class PostResult {
     OFF,
 }
 
+/** What the watch said about notifications: it has not asked yet, wants them, said no, or we send them without it asking. */
+enum class WatchAsk { NOT_YET, ON, ASSUMED, OFF }
+
+/**
+ * How the conversation with the watch stands, for the card and the log. Counts since the connection opened.
+ * [announced] is what the watch was told about (message 5033), [asked] how many times it wanted the details, [answered]
+ * how many answers it confirmed, [failed] how many it did not.
+ */
+data class NotifyStats(
+    val watch: WatchAsk = WatchAsk.NOT_YET,
+    /** Held back until the watch asks (at most [GarminNotifications.MAX_WAITING], for up to a minute). */
+    val waiting: Int = 0,
+    val announced: Int = 0,
+    val asked: Int = 0,
+    val answered: Int = 0,
+    val failed: Int = 0,
+    val dismissedOnWatch: Int = 0,
+)
+
 /**
  * The phone's side of Garmin's notification conversation, for one connection:
  * 1. the watch subscribes (message 5036) and the phone says yes;
@@ -293,7 +314,7 @@ class GarminNotifications(
         const val CHUNK_TIMEOUT_MS = 15_000L
     }
 
-    private enum class Asked { NOT_YET, ON, OFF }
+    private enum class Asked { NOT_YET, ON, ASSUMED, OFF }
 
     private class Waiting(val notification: WatchNotification, val expiry: Scheduler.Cancellable)
 
@@ -306,35 +327,101 @@ class GarminNotifications(
     private var current: NotificationUpload? = null
     private var timeout: Scheduler.Cancellable? = null
 
+    private var announced = 0
+    private var detailsAsked = 0
+    private var answered = 0
+    private var failed = 0
+    private var dismissedOnWatch = 0
+
     /** Called when the person dismisses notification [id] on the watch. Runs on the Bluetooth thread. */
     @Volatile var onDismissedOnWatch: (Int) -> Unit = {}
 
+    /** Called after anything changed in [stats]: the watch asked, something was announced, an answer was confirmed. */
+    @Volatile var onChange: (NotifyStats) -> Unit = {}
+
+    /** True when the watch said it wants notifications. */
     val subscribed: Boolean get() = synchronized(lock) { asked == Asked.ON && allowed }
+
+    /** True when notifications go out: the watch asked, or we gave up waiting for it to ask. */
+    val sending: Boolean get() = synchronized(lock) { (asked == Asked.ON || asked == Asked.ASSUMED) && allowed && !closed }
+
+    val stats: NotifyStats
+        get() = synchronized(lock) {
+            NotifyStats(
+                watch = when (asked) {
+                    Asked.NOT_YET -> WatchAsk.NOT_YET
+                    Asked.ON -> WatchAsk.ON
+                    Asked.ASSUMED -> WatchAsk.ASSUMED
+                    Asked.OFF -> WatchAsk.OFF
+                },
+                waiting = waiting.size,
+                announced = announced,
+                asked = detailsAsked,
+                answered = answered,
+                failed = failed,
+                dismissedOnWatch = dismissedOnWatch,
+            )
+        }
+
+    private fun changed() {
+        val now = stats
+        runCatching { onChange(now) } // a listener that throws must not break the conversation
+    }
+
+    /**
+     * The watch has not said whether it wants notifications. Gadgetbridge waits for it to ask, but not every model asks
+     * at once (or at all), so after a grace period the phone sends them anyway: a watch that does not want them ignores
+     * them, and a later "no" from the watch still switches them off.
+     */
+    fun assumeSubscribed() {
+        synchronized(lock) {
+            if (closed || !allowed || asked != Asked.NOT_YET) return
+            asked = Asked.ASSUMED
+            log("the watch has not asked for notifications yet; sending them anyway")
+            flushWaiting()
+        }
+        changed()
+    }
+
+    private fun flushWaiting() {
+        val pending = waiting.toList()
+        waiting.clear()
+        for (w in pending) {
+            w.expiry.cancel()
+            announce(w.notification)
+        }
+    }
 
     // ------------------------------------------------------------------------------ phone side
 
-    fun post(notification: WatchNotification): PostResult = synchronized(lock) {
-        when {
-            closed || !allowed || asked == Asked.OFF -> PostResult.OFF
-            asked == Asked.NOT_YET -> {
-                wait(notification)
-                PostResult.WAITING
-            }
-            else -> {
-                announce(notification)
-                PostResult.SENT
+    fun post(notification: WatchNotification): PostResult {
+        val result = synchronized(lock) {
+            when {
+                closed || !allowed || asked == Asked.OFF -> PostResult.OFF
+                asked == Asked.NOT_YET -> {
+                    wait(notification)
+                    log("notification ${notification.id} is waiting: the watch has not asked for notifications")
+                    PostResult.WAITING
+                }
+                else -> {
+                    announce(notification)
+                    PostResult.SENT
+                }
             }
         }
+        changed()
+        return result
     }
 
     fun remove(id: Int) {
         synchronized(lock) {
             waiting.removeAll { w -> (w.notification.id == id).also { if (it) w.expiry.cancel() } }
             val gone = known.remove(id) ?: return
-            if (asked == Asked.ON) {
+            if (asked == Asked.ON || asked == Asked.ASSUMED) {
                 send(GfdiNotifications.update(NotificationUpdate.REMOVE, gone.category, countOf(gone.category), id, hasActions = false))
             }
         }
+        changed()
     }
 
     fun close() {
@@ -361,6 +448,8 @@ class GarminNotifications(
         val type = if (known.remove(n.id) != null) NotificationUpdate.MODIFY else NotificationUpdate.ADD
         known[n.id] = n
         send(GfdiNotifications.update(type, n.category, countOf(n.category), n.id, hasActions = n.canDismiss))
+        announced++
+        log("announced notification ${n.id} to the watch ($type, ${n.category})")
         while (known.size > MAX_KNOWN) {
             val oldest = known.entries.first().value
             known.remove(oldest.id)
@@ -373,17 +462,21 @@ class GarminNotifications(
     // ------------------------------------------------------------------------------ watch side
 
     /** Reads a message from the watch; true when it was about notifications (so the caller has nothing more to do). */
-    fun handle(message: GfdiMessage): Boolean = when (message.type) {
-        GfdiType.NOTIFICATION_SUBSCRIPTION -> {
-            onSubscription(message)
-            true
+    fun handle(message: GfdiMessage): Boolean {
+        val about = when (message.type) {
+            GfdiType.NOTIFICATION_SUBSCRIPTION -> {
+                onSubscription(message)
+                true
+            }
+            GfdiType.NOTIFICATION_CONTROL -> {
+                onControl(message)
+                true
+            }
+            GfdiType.RESPONSE -> onResponse(message)
+            else -> false
         }
-        GfdiType.NOTIFICATION_CONTROL -> {
-            onControl(message)
-            true
-        }
-        GfdiType.RESPONSE -> onResponse(message)
-        else -> false
+        if (about) changed()
+        return about
     }
 
     private fun onSubscription(message: GfdiMessage) {
@@ -399,12 +492,7 @@ class GarminNotifications(
             send(GfdiNotifications.subscriptionReply(enable, allowed))
             log("the watch switched notifications ${if (enable) "on" else "off"}${if (allowed) "" else ", but they are off on the phone"}")
             if (enable && allowed) {
-                val pending = waiting.toList()
-                waiting.clear()
-                for (w in pending) {
-                    w.expiry.cancel()
-                    announce(w.notification)
-                }
+                flushWaiting()
             } else {
                 known.clear()
                 queue.clear()
@@ -426,17 +514,26 @@ class GarminNotifications(
                 }
                 is NotificationControl.GetAttributes -> {
                     send(GfdiNotifications.controlAck())
+                    detailsAsked++
                     val notification = known[control.id]
-                    if (notification == null) log("the watch asked about notification ${control.id}, which is gone") else enqueue(answerFor(notification, control))
+                    if (notification == null) {
+                        log("the watch asked about notification ${control.id}, which is gone")
+                    } else {
+                        log("the watch asked for the details of notification ${control.id} (${control.attributes.joinToString { it.attribute.name }})")
+                        enqueue(answerFor(notification, control))
+                    }
                 }
                 is NotificationControl.GetAppAttributes -> {
                     send(GfdiNotifications.controlAck())
+                    log("the watch asked what ${control.appId} is called")
                     enqueue(appAnswer(control))
                 }
                 is NotificationControl.PerformAction -> {
                     send(GfdiNotifications.controlAck())
                     if (control.id in known && control.action == GfdiNotifications.ACTION_DISMISS) {
                         dismissed = control.id
+                        dismissedOnWatch++
+                        log("the person dismissed notification ${control.id} on the watch")
                     } else {
                         log("the watch did action ${control.action} on notification ${control.id}; not supported")
                     }
@@ -502,10 +599,12 @@ class GarminNotifications(
             synchronized(lock) {
                 if (current === upload) {
                     log("the watch did not confirm a notification chunk; giving up on it")
+                    failed++
                     current = null
                     startNext()
                 }
             }
+            changed()
         }
     }
 
@@ -531,10 +630,12 @@ class GarminNotifications(
             when {
                 status != GfdiStatus.ACK || transfer != 0 -> {
                     log("the watch answered $status/$transfer to a notification chunk; stopping that answer")
+                    failed++
                     current = null
                     startNext()
                 }
                 upload.finished -> {
+                    answered++
                     current = null
                     startNext()
                 }

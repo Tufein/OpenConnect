@@ -136,6 +136,10 @@ class AppContainer(
     val liveRegistry: LiveWatchRegistry = LiveWatchRegistry(),
     /** The name of this app's package, whose notifications are never sent on. */
     forwardOwnPackage: String = "nl.tufein.openconnect",
+    /** What forwarding did, line by line (the "What is happening?" part of the card). The app shares it with the Bluetooth link. */
+    val forwardTrail: nl.tufein.openconnect.notify.ForwardTrail = nl.tufein.openconnect.notify.ForwardTrail(),
+    /** Asks Android to start the notification listener again. Tests pass a fake. */
+    forwardRebind: () -> Unit = {},
     /** Where a verified update APK is kept until Android installs it. The app uses its own cache directory. */
     updateDir: File = File(System.getProperty("java.io.tmpdir"), "openconnect-updates"),
     /** The network to GitHub's releases. Tests pass a fake. */
@@ -238,6 +242,8 @@ class AppContainer(
         hiddenBody = forwardHiddenBody,
         dismissOnPhone = forwardDismiss,
         syncBusy = { liveRegistry.syncBusy },
+        trail = forwardTrail,
+        rebindListener = forwardRebind,
     )
 
     val garmin = GarminController(
@@ -336,6 +342,7 @@ class OpenConnectApp : Application() {
         containerOverride ?: SettingsStore(this).let { settingsStore ->
             val registry = LiveWatchRegistry()
             val apps = AndroidInstalledApps(this)
+            val trail = nl.tufein.openconnect.notify.ForwardTrail()
             AppContainer(
             SqliteRepository(this),
             settingsStore,
@@ -347,6 +354,7 @@ class OpenConnectApp : Application() {
                 this,
                 archiveAfterRead = { settingsStore.garminBle.archiveAfterRead },
                 registry = registry,
+                diagnostics = trail::add,
                 notificationOptions = {
                     nl.tufein.openconnect.core.watch.ble.NotificationOptions(
                         dismissLabel = getString(R.string.forward_dismiss),
@@ -364,7 +372,7 @@ class OpenConnectApp : Application() {
             humeGateway = nl.tufein.openconnect.health.AndroidHumeGateway(this),
             humeSync = nl.tufein.openconnect.sync.WorkManagerHumeSync(this),
             keeper = ForegroundLiveRecording(this),
-            forwardKeeper = ForegroundForwarding(this),
+            forwardKeeper = ForegroundForwarding(this, trail::add),
             forwardAccess = { ForwardAccess.hasNotificationAccess(this) },
             forwardBluetooth = { ForwardAccess.bluetoothAllowed(this) },
             forwardScreenOn = { ForwardAccess.screenOn(this) },
@@ -373,6 +381,8 @@ class OpenConnectApp : Application() {
             installedApps = apps,
             liveRegistry = registry,
             forwardOwnPackage = packageName,
+            forwardTrail = trail,
+            forwardRebind = { PhoneNotificationListener.rebind(this) },
             updateDir = File(cacheDir, "updates"),
             updateSigner = { apk -> nl.tufein.openconnect.updates.ApkSigners.sameAsInstalled(this, apk) },
         ) }

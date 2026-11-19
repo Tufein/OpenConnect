@@ -25,12 +25,17 @@ class GarminBleNotificationsTest {
         scheduler.shutdown()
     }
 
-    private fun connect(watch: FakeGarminWatch, useMlr: Boolean = true, notifications: NotificationOptions? = NotificationOptions("Dismiss", { if (it == "com.whatsapp") "WhatsApp" else null })): GarminBleSession {
+    private fun connect(
+        watch: FakeGarminWatch,
+        useMlr: Boolean = true,
+        notifications: NotificationOptions? = NotificationOptions("Dismiss", { if (it == "com.whatsapp") "WhatsApp" else null }),
+        askGraceMs: Long = GarminBleSession.ASK_GRACE_MS,
+    ): GarminBleSession {
         watches += watch
         val session = GarminBleSession(
             watch.pipe, phone, scheduler, maxWrite = 20, useMlr = useMlr,
             now = { Instant.parse("2026-11-19T13:30:05Z") }, zone = { ZoneId.of("Europe/Amsterdam") },
-            log = { log += it }, notifications = notifications,
+            log = { log += it }, notifications = notifications, askGraceMs = askGraceMs,
         )
         watch.phone = session
         session.start()
@@ -210,5 +215,42 @@ class GarminBleNotificationsTest {
         session.onDisconnected()
         assertEquals(PostResult.OFF, notifier.post(note(1)))
         assertTrue(watch.updates.isEmpty())
+    }
+
+    @Test
+    fun `a watch that never asks for notifications is shown them anyway after the grace period`() {
+        val watch = FakeGarminWatch(files = emptyMap(), notifications = false)
+        val session = connect(watch, askGraceMs = 150)
+        val notifier = session.notifier!!
+        assertEquals(PostResult.WAITING, notifier.post(note(11)))
+        assertEquals(WatchAsk.NOT_YET, notifier.stats.watch)
+        eventually("the phone gives up waiting and sends it") { watch.shown[11] != null }
+        assertEquals(WatchAsk.ASSUMED, notifier.stats.watch)
+        assertEquals("Zie je morgen?", text(watch.shown.getValue(11)[3]))
+        assertEquals(1, notifier.stats.answered)
+        assertTrue(log.any { "has not asked for notifications yet" in it }, "the log says why: $log")
+        session.close()
+    }
+
+    @Test
+    fun `a watch that asks in time is not second-guessed`() {
+        val watch = FakeGarminWatch(files = emptyMap(), notifications = true)
+        val session = connect(watch, askGraceMs = 150)
+        val notifier = session.notifier!!
+        eventually("the watch subscribes") { notifier.subscribed }
+        Thread.sleep(300)
+        assertEquals(WatchAsk.ON, notifier.stats.watch)
+        session.close()
+    }
+
+    @Test
+    fun `the log names every kind of message the watch sends`() {
+        val watch = FakeGarminWatch(files = emptyMap(), notifications = true)
+        val session = connect(watch)
+        eventually("the watch subscribes") { session.notifier!!.subscribed }
+        assertTrue(log.any { "watch sent DEVICE_INFORMATION (5024)" in it }, "log: $log")
+        assertTrue(log.any { "watch sent CONFIGURATION (5050)" in it }, "log: $log")
+        assertTrue(log.any { "watch sent NOTIFICATION_SUBSCRIPTION (5036)" in it }, "log: $log")
+        session.close()
     }
 }

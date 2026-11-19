@@ -1,6 +1,7 @@
 // OpenConnect, SPDX-License-Identifier: AGPL-3.0-or-later
 package nl.tufein.openconnect.notify
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -10,6 +11,8 @@ import nl.tufein.openconnect.core.watch.PhoneNotification
 import nl.tufein.openconnect.core.watch.SkipReason
 import nl.tufein.openconnect.core.watch.NotificationRules
 import nl.tufein.openconnect.core.watch.ble.PostResult
+import nl.tufein.openconnect.core.watch.ble.WatchAsk
+import nl.tufein.openconnect.watch.GarminStep
 import nl.tufein.openconnect.watch.FakeGarminBle
 import nl.tufein.openconnect.watch.GarminBleWatch
 import nl.tufein.openconnect.watch.InMemoryGarminWatchMemory
@@ -49,13 +52,16 @@ class NotificationForwarderTest {
 
     private val link = FakeGarminBle(openNotifications = { _, listener ->
         listeners += listener
-        FakeNotifyConnection().also { connections += it }
+        FakeNotifyConnection(listener = listener).also { connections += it }
     })
 
     @AfterTest
     fun stop() {
         scope.cancel()
     }
+
+    private val trail = ForwardTrail()
+    private val rebinds = CopyOnWriteArrayList<String>()
 
     private fun forwarder(link: FakeGarminBle = this.link) = NotificationForwarder(
         store = store, memory = memory, link = link, scope = scope, io = Dispatchers.Unconfined,
@@ -70,6 +76,8 @@ class NotificationForwarderTest {
             retriesAsked += attempt
             retryGate.receive()
         },
+        trail = trail,
+        rebindListener = { rebinds += "rebind" },
     )
 
     private fun message(text: String = "Zie je morgen?", pkg: String = "com.whatsapp", key: String = "0|com.whatsapp|1|null|10001") = PhoneNotification(
@@ -358,5 +366,151 @@ class NotificationForwarderTest {
         assertEquals(setOf("com.whatsapp"), f.state.value.apps)
         assertNotNull(f.state.value)
         assertNull(f.state.value.error)
+    }
+
+    // --------------------------------------------------------------------------- what is going on
+
+    @Test
+    fun `a notification the watch has not asked for yet is waiting, and is not counted as sent`() {
+        val f = forwarder()
+        f.refresh()
+        connections.single().result = PostResult.WAITING
+        f.onPosted(message())
+        assertEquals(0, f.state.value.sent)
+        assertNull(f.state.value.lastSentAt)
+        assertEquals(1, f.state.value.notify.waiting)
+        assertEquals(WatchAsk.NOT_YET, f.state.value.notify.watch)
+        assertTrue(trail.flow.value.any { "waiting, the watch has not asked" in it.text })
+    }
+
+    @Test
+    fun `what the watch is told is counted when the connection says so`() {
+        val f = forwarder()
+        f.refresh()
+        f.onPosted(message())
+        f.onPosted(message("Toch niet"))
+        assertEquals(2, f.state.value.sent)
+        assertEquals(2, f.state.value.notify.announced)
+        assertEquals(WatchAsk.ON, f.state.value.notify.watch)
+        // a new connection starts counting again without losing what went before
+        listeners.single().onLost("gone")
+        retryGate.trySend(Unit)
+        f.onPosted(message("Weer iets nieuws"))
+        assertEquals(3, f.state.value.sent)
+        assertEquals(1, f.state.value.notify.announced)
+    }
+
+    @Test
+    fun `every notification Android hands over is counted, chosen or not`() {
+        val f = forwarder()
+        f.refresh()
+        assertEquals(0, f.state.value.seen)
+        f.onPosted(message())
+        f.onPosted(message(pkg = "com.example.game", key = "0|com.example.game|1|null|1"))
+        assertEquals(2, f.state.value.seen)
+        assertEquals(now, f.state.value.lastSeenAt)
+        assertEquals(mapOf(SkipReason.APP_NOT_CHOSEN to 1), f.state.value.skippedBy)
+    }
+
+    @Test
+    fun `the reasons for holding notifications back are counted`() {
+        val f = forwarder()
+        f.refresh()
+        repeat(3) { f.onPosted(message(pkg = "com.example.game", key = "0|com.example.game|$it|null|1")) }
+        f.onPosted(message())
+        f.onPosted(message())
+        assertEquals(mapOf(SkipReason.APP_NOT_CHOSEN to 3, SkipReason.DUPLICATE to 1), f.state.value.skippedBy)
+    }
+
+    @Test
+    fun `the listener starting and stopping is shown`() {
+        val f = forwarder()
+        assertFalse(f.state.value.listenerBound)
+        f.listenerChanged(true)
+        assertTrue(f.state.value.listenerBound)
+        f.listenerChanged(false)
+        assertFalse(f.state.value.listenerBound)
+        assertTrue(trail.flow.value.any { "started the notification listener" in it.text })
+        assertTrue(trail.flow.value.any { "stopped the notification listener" in it.text })
+    }
+
+    @Test
+    fun `with access on but no listener, Android is asked to start it, once it has started it is left alone`() {
+        val f = forwarder()
+        f.refresh()
+        assertEquals(1, rebinds.size, "access is on and the listener never started")
+        f.listenerChanged(true)
+        f.refresh()
+        assertEquals(1, rebinds.size, "no need to ask again")
+        access = false
+        val other = forwarder()
+        other.refresh()
+        assertEquals(1, rebinds.size, "without access there is nothing to start")
+    }
+
+    @Test
+    fun `the log names the steps of the connection and the watch, and never what a notification says`() {
+        val f = forwarder()
+        f.refresh()
+        f.onPosted(message("geheime-inhoud-123"))
+        f.onPosted(message(pkg = "com.example.game", key = "0|com.example.game|1|null|1"))
+        val text = trail.asText("header")
+        assertTrue("connecting to fenix 8" in text, text)
+        assertTrue("connecting: CONNECTING" in text, text)
+        assertTrue("connecting: HANDSHAKE" in text, text)
+        assertTrue("connected to fenix 8" in text, text)
+        assertTrue("com.whatsapp: announced to the watch" in text, text)
+        assertTrue("com.example.game: held back, APP_NOT_CHOSEN" in text, text)
+        assertFalse("geheime-inhoud-123" in text, "the words of a notification never reach the log")
+    }
+
+    @Test
+    fun `while connecting the card knows which step it is on`() {
+        val gate = CompletableDeferred<Unit>()
+        val slow = FakeGarminBle(openNotifications = { _, listener ->
+            gate.await()
+            FakeNotifyConnection(listener = listener).also { connections += it }
+        })
+        val f = forwarder(slow)
+        f.refresh()
+        assertEquals(ForwardPhase.CONNECTING, f.state.value.phase)
+        assertEquals(GarminStep.HANDSHAKE, f.state.value.connectStep)
+        gate.complete(Unit)
+        assertEquals(ForwardPhase.CONNECTED, f.state.value.phase)
+        assertNull(f.state.value.connectStep)
+        assertTrue(f.state.value.everConnected)
+    }
+
+    @Test
+    fun `a connection that worked and was lost is remembered as having worked`() {
+        val f = forwarder()
+        f.refresh()
+        assertTrue(f.state.value.everConnected)
+        listeners.single().onLost("The watch disconnected")
+        assertEquals(ForwardPhase.WAITING, f.state.value.phase)
+        assertTrue(f.state.value.everConnected)
+        assertTrue(trail.flow.value.any { "connection lost: The watch disconnected" in it.text })
+        assertTrue(trail.flow.value.any { "trying again in 10 s" in it.text })
+    }
+
+    @Test
+    fun `a failed connection puts the reason in the log`() {
+        val broken = FakeGarminBle(openNotifications = { _, _ -> throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, "The watch refused the connection (status 1)") })
+        val f = forwarder(broken)
+        f.refresh()
+        assertTrue(trail.flow.value.any { "The watch refused the connection (status 1)" in it.text })
+        assertFalse(f.state.value.everConnected)
+    }
+
+    @Test
+    fun `the test button says when the watch has not asked for notifications yet`() {
+        val f = forwarder()
+        f.refresh()
+        connections.single().result = PostResult.WAITING
+        assertEquals(TestResult.WATCH_NOT_ASKING, f.sendTest("t", "b"))
+        connections.single().result = PostResult.OFF
+        assertEquals(TestResult.WATCH_OFF, f.sendTest("t", "b"))
+        connections.single().result = PostResult.SENT
+        assertEquals(TestResult.SENT, f.sendTest("t", "b"))
     }
 }

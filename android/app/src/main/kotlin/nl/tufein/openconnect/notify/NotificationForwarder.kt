@@ -20,10 +20,12 @@ import nl.tufein.openconnect.core.watch.NotificationRules
 import nl.tufein.openconnect.core.watch.PhoneNotification
 import nl.tufein.openconnect.core.watch.RepeatFilter
 import nl.tufein.openconnect.core.watch.SkipReason
+import nl.tufein.openconnect.core.watch.ble.NotifyStats
 import nl.tufein.openconnect.core.watch.ble.PostResult
 import nl.tufein.openconnect.core.watch.ble.WatchNotification
 import nl.tufein.openconnect.core.watch.ble.WatchNotificationCategory
 import nl.tufein.openconnect.watch.GarminBleLink
+import nl.tufein.openconnect.watch.GarminStep
 import nl.tufein.openconnect.watch.GarminWatchMemory
 import nl.tufein.openconnect.watch.WatchLinkException
 import java.time.Instant
@@ -44,14 +46,28 @@ data class ForwardUi(
     val apps: Set<String> = emptySet(),
     val hideContent: Boolean = false,
     val onlyWhenScreenOff: Boolean = false,
-    /** How many notifications went to the watch since the app started. */
+    /** How many notifications were announced to the watch since the app started. */
     val sent: Int = 0,
     val lastSentAt: Instant? = null,
     /** Why the most recent notification was not sent, so "it did not arrive" has an answer. */
     val lastSkipped: SkipReason? = null,
+    /** How many times each reason held a notification back since the app started. */
+    val skippedBy: Map<SkipReason, Int> = emptyMap(),
+    /** Android has started the listener that hands us the phone's notifications. */
+    val listenerBound: Boolean = false,
+    /** How many notifications Android handed us since the app started, chosen or not. */
+    val seen: Int = 0,
+    val lastSeenAt: Instant? = null,
+    /** Where the connection is while [phase] is [ForwardPhase.CONNECTING]. */
+    val connectStep: GarminStep? = null,
+    /** The connection worked at least once since the app started. */
+    val everConnected: Boolean = false,
+    /** What the watch asked for and what we told and gave it, on the current connection. */
+    val notify: NotifyStats = NotifyStats(),
 )
 
-enum class TestResult { SENT, NOT_CONNECTED, WATCH_OFF }
+/** What "send a test" came to: the watch was told, there is no connection, the watch said no, or it has not asked yet. */
+enum class TestResult { SENT, NOT_CONNECTED, WATCH_OFF, WATCH_NOT_ASKING }
 
 /**
  * Forwards phone notifications to the remembered Garmin watch. It decides (with the rules in core), keeps one
@@ -83,6 +99,10 @@ class NotificationForwarder(
     private val now: () -> Instant = { Instant.now() },
     /** Waits before connection attempt number [attempt] (1, 2, ...) after a failure or a lost connection. */
     private val retryDelay: suspend (attempt: Int) -> Unit = { attempt -> delay(minOf(10_000L shl (attempt - 1).coerceIn(0, 5), 300_000L)) },
+    /** What happened, for the "What is happening?" part of the card. Never holds the text of a notification. */
+    val trail: ForwardTrail = ForwardTrail(),
+    /** Asks Android to start the notification listener again, for when access is on but it never started. */
+    private val rebindListener: () -> Unit = {},
 ) {
     companion object {
         /** How many notifications are remembered by id, to find the one the person dismissed on the watch. */
@@ -111,6 +131,10 @@ class NotificationForwarder(
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, String>?) = size > MAX_KNOWN
     }
     private var testCounter = 0
+
+    /** How many notifications the current connection had announced when we last looked, to count only the new ones. */
+    private var announcedSeen = 0
+    private val statsLock = Any()
 
     private fun initial() = ForwardUi(
         enabled = store.enabled,
@@ -159,12 +183,24 @@ class NotificationForwarder(
                 else -> null
             }
             if (blocked != null) {
+                if (_state.value.phase != blocked) trail.add("waiting for the person: $blocked")
                 stopJob()
                 setPhase(blocked, error = null)
-            } else if (job?.isActive != true) {
-                startJob(memory.load()!!)
+            } else {
+                if (!_state.value.listenerBound) {
+                    // access is on but Android has not started the listener (after an update, say): ask it to
+                    trail.add("notification access is on but Android has not started the listener; asking it to")
+                    runCatching { rebindListener() }
+                }
+                if (job?.isActive != true) startJob(memory.load()!!)
             }
         }
+    }
+
+    /** Android started (true) or stopped (false) the listener that hands us the phone's notifications. */
+    fun listenerChanged(bound: Boolean) {
+        trail.add(if (bound) "Android started the notification listener" else "Android stopped the notification listener")
+        _state.update { it.copy(listenerBound = bound) }
     }
 
     /** "Try now": drops what is going on, including a long wait, and connects again. */
@@ -176,6 +212,7 @@ class NotificationForwarder(
     // ------------------------------------------------------------------------------------ the link
 
     private fun startJob(watch: nl.tufein.openconnect.watch.GarminBleWatch) {
+        trail.add("connecting to ${watch.name}")
         setPhase(ForwardPhase.CONNECTING, error = null, watchName = watch.name)
         job = scope.launch(io) { keepConnected(watch) }
     }
@@ -197,15 +234,26 @@ class NotificationForwarder(
                 override fun onDismissedOnWatch(id: Int) = dismissedOnWatch(id)
 
                 override fun onLost(reason: String?) {
+                    trail.add("connection lost: ${reason ?: "no reason given"}")
                     lost.complete(reason)
                 }
+
+                override fun onStatus(stats: NotifyStats) = statusChanged(stats)
+
+                override fun onLog(line: String) = trail.add(line)
             }
+            synchronized(statsLock) { announcedSeen = 0 }
+            _state.update { it.copy(notify = NotifyStats(), connectStep = null) }
             try {
-                val opened = link.openNotifications(watch, listener)
+                val opened = link.openNotifications(watch, listener) { step ->
+                    trail.add("connecting: $step")
+                    _state.update { it.copy(connectStep = step) }
+                }
                 try {
                     currentCoroutineContext().ensureActive() // stopped while connecting: close it, do not report it
                     connection = opened
                     repeats.clear()
+                    trail.add("connected to ${opened.watchName.ifBlank { watch.name }}")
                     setPhase(ForwardPhase.CONNECTED, error = null, watchName = opened.watchName.ifBlank { watch.name })
                     attempt = 0
                     val reason = lost.await()
@@ -221,6 +269,7 @@ class NotificationForwarder(
                 throw e
             } catch (e: WatchLinkException) {
                 currentCoroutineContext().ensureActive()
+                trail.add("could not connect (${e.reason}): ${e.message ?: "no detail"}")
                 if (e.reason == WatchLinkException.Reason.NOT_PAIRED || e.reason == WatchLinkException.Reason.NO_PERMISSION) {
                     // Trying again does not help until the person pairs the watch or allows Bluetooth.
                     setPhase(ForwardPhase.PROBLEM, error = e.message ?: e.reason.name, watchName = watch.name)
@@ -230,9 +279,11 @@ class NotificationForwarder(
                 setPhase(ForwardPhase.WAITING, error = e.message ?: e.reason.name, watchName = watch.name)
             } catch (e: Exception) {
                 currentCoroutineContext().ensureActive()
+                trail.add("could not connect: ${e::class.java.simpleName}: ${e.message ?: "no detail"}")
                 attempt++
                 setPhase(ForwardPhase.WAITING, error = e.message ?: e::class.java.simpleName, watchName = watch.name)
             }
+            trail.add("trying again in ${retryWaitText(attempt)}")
             retryDelay(attempt)
         }
     }
@@ -241,9 +292,43 @@ class NotificationForwarder(
         synchronized(lock) { if (connection === opened) connection = null }
     }
 
+    /** The conversation with the watch moved on: it asked, we announced, it confirmed. Counts what is new since last time. */
+    private fun statusChanged(stats: NotifyStats) {
+        val fresh = synchronized(statsLock) {
+            val delta = (stats.announced - announcedSeen).coerceAtLeast(0)
+            announcedSeen = stats.announced
+            delta
+        }
+        val at = now()
+        val before = _state.value.notify
+        _state.update {
+            it.copy(
+                notify = stats,
+                sent = it.sent + fresh,
+                lastSentAt = if (fresh > 0) at else it.lastSentAt,
+                lastSkipped = if (fresh > 0) null else it.lastSkipped,
+            )
+        }
+        if (before.watch != stats.watch) trail.add("the watch's answer about notifications: ${stats.watch}")
+        if (fresh > 0) keeper.update(_state.value)
+    }
+
+    private fun retryWaitText(attempt: Int): String {
+        val seconds = minOf(10L shl (attempt - 1).coerceIn(0, 5), 300L)
+        return if (seconds >= 60) "${seconds / 60} min" else "$seconds s"
+    }
+
     private fun setPhase(phase: ForwardPhase, error: String?, watchName: String? = null) {
         val before = _state.value
-        _state.update { it.copy(phase = phase, error = error, watchName = watchName ?: it.watchName) }
+        _state.update {
+            it.copy(
+                phase = phase,
+                error = error,
+                watchName = watchName ?: it.watchName,
+                everConnected = it.everConnected || phase == ForwardPhase.CONNECTED,
+                connectStep = if (phase == ForwardPhase.CONNECTING) it.connectStep else null,
+            )
+        }
         val after = _state.value
         // OFF and the "waiting for the person" phases hold nothing, so no persistent notification is needed.
         val holding = phase in HOLDING
@@ -266,6 +351,8 @@ class NotificationForwarder(
 
     /** A notification appeared (or changed) on the phone. */
     fun onPosted(notification: PhoneNotification) {
+        val seenAt = now()
+        _state.update { it.copy(seen = it.seen + 1, lastSeenAt = seenAt) }
         if (!store.enabled) return
         val settings = ForwardSettings(
             enabled = true,
@@ -276,21 +363,22 @@ class NotificationForwarder(
         )
         val decision = NotificationRules.decide(notification, settings, screenOn = screenOn(), ownPackage = ownPackage)
         val send = when (decision) {
-            is ForwardDecision.Skip -> return skipped(decision.reason)
+            is ForwardDecision.Skip -> return skipped(decision.reason, notification.packageName)
             is ForwardDecision.Send -> decision.notification
         }
-        val open = connection ?: return skipped(SkipReason.NOT_CONNECTED)
-        if (!repeats.isNew(send)) return skipped(SkipReason.DUPLICATE)
-        when (open.post(send)) {
+        val open = connection ?: return skipped(SkipReason.NOT_CONNECTED, notification.packageName)
+        if (!repeats.isNew(send)) return skipped(SkipReason.DUPLICATE, notification.packageName)
+        when (val result = open.post(send)) {
             PostResult.SENT, PostResult.WAITING -> {
                 synchronized(known) { known[send.id] = notification.key }
-                val at = now()
-                _state.update { it.copy(sent = it.sent + 1, lastSentAt = at, lastSkipped = null) }
-                keeper.update(_state.value)
+                // the count of what reached the watch comes from the connection (statusChanged): a notification the
+                // watch has not asked for yet is only waiting, and is not counted as sent
+                trail.add("${notification.packageName}: ${if (result == PostResult.SENT) "announced to the watch" else "waiting, the watch has not asked for notifications yet"}")
+                _state.update { it.copy(lastSkipped = null) }
             }
             PostResult.OFF -> {
                 repeats.forget(send.id)
-                skipped(SkipReason.WATCH_OFF)
+                skipped(SkipReason.WATCH_OFF, notification.packageName)
             }
         }
     }
@@ -303,8 +391,9 @@ class NotificationForwarder(
         if (wasSent) connection?.remove(id)
     }
 
-    private fun skipped(reason: SkipReason) {
-        _state.update { it.copy(lastSkipped = reason) }
+    private fun skipped(reason: SkipReason, packageName: String? = null) {
+        if (packageName != null) trail.add("$packageName: held back, $reason")
+        _state.update { it.copy(lastSkipped = reason, skippedBy = it.skippedBy + (reason to ((it.skippedBy[reason] ?: 0) + 1))) }
     }
 
     private fun dismissedOnWatch(id: Int) {
@@ -315,7 +404,7 @@ class NotificationForwarder(
 
     /** Sends a made-up notification to the watch, whatever apps were chosen: the "does it work" button. */
     fun sendTest(title: String, body: String): TestResult {
-        val open = connection ?: return TestResult.NOT_CONNECTED
+        val open = connection ?: return TestResult.NOT_CONNECTED.also { trail.add("test: not connected") }
         val id = NotificationRules.idOf("openconnect-test-${testCounter++}")
         val test = WatchNotification(
             id = id,
@@ -327,8 +416,9 @@ class NotificationForwarder(
             category = WatchNotificationCategory.OTHER,
         )
         return when (open.post(test)) {
-            PostResult.SENT, PostResult.WAITING -> TestResult.SENT
+            PostResult.SENT -> TestResult.SENT
+            PostResult.WAITING -> TestResult.WATCH_NOT_ASKING
             PostResult.OFF -> TestResult.WATCH_OFF
-        }
+        }.also { trail.add("test: $it") }
     }
 }

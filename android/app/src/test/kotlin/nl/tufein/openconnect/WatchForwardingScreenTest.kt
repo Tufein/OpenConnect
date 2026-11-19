@@ -43,7 +43,7 @@ class WatchForwardingScreenTest : AppTestBase() {
     private var bluetooth = true
     private val apps = InstalledApps { listOf(InstalledApp("com.spel", "Spel"), InstalledApp("com.whatsapp", "WhatsApp"), InstalledApp("com.gmail", "Gmail")) }
 
-    private val garmin = FakeGarminBle(openNotifications = { _, _ -> FakeNotifyConnection().also { connections += it } })
+    private val garmin = FakeGarminBle(openNotifications = { _, listener -> FakeNotifyConnection(listener = listener).also { connections += it } })
 
     private fun launch(remembered: GarminBleWatch? = fenix, enabled: Boolean = false, chosen: Set<String> = emptySet()) = launchFresh { app ->
         val settings = SettingsStore(app)
@@ -155,5 +155,40 @@ class WatchForwardingScreenTest : AppTestBase() {
         rule.waitUntil(5_000) { connections.single().closed }
         assertFalse(settings().forwarding.enabled)
         assertEquals("stop", keeper.events.last())
+    }
+
+    @Test
+    fun theDetailsListTheStepsAndTheLogCanBeCopied() {
+        launch(enabled = true, chosen = setOf("com.whatsapp"))
+        openCard()
+        waitForText("Connected to fenix 8.")
+        // in the real app Android starts the listener by itself; in this test there is none, and the card says so
+        assertTrue(hasText("has not started the OpenConnect listener", substring = true))
+
+        scrollToText("What is happening?")
+        clickText("What is happening?")
+        waitForText("Notification access given", substring = true)
+        assertTrue(hasText("[x] Notification access given", substring = true))
+        assertTrue(hasText("[!] Android started the listener", substring = true))
+        assertTrue(hasText("[x] Connection to the watch", substring = true))
+        shot("73-forward-details")
+
+        scrollToText("Copy the log")
+        clickText("Copy the log")
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val copied = context.getSystemService(android.content.ClipboardManager::class.java).primaryClip!!.getItemAt(0).text.toString()
+        assertTrue("connected to fenix 8" in copied, copied)
+        assertTrue(copied.startsWith("OpenConnect notifications to the watch: log"), copied)
+    }
+
+    @Test
+    fun aWatchThatHasNotAskedForNotificationsIsSaidSoAndTheTestIsKept() {
+        launch(enabled = true, chosen = setOf("com.whatsapp"))
+        openCard()
+        waitForText("Connected to fenix 8.")
+        connections.single().result = nl.tufein.openconnect.core.watch.ble.PostResult.WAITING
+        scrollToText("Send a test to the watch")
+        clickText("Send a test to the watch")
+        waitForText("The watch has not asked for notifications yet", substring = true)
     }
 }

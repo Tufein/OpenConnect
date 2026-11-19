@@ -186,6 +186,7 @@ fun OpenConnectRoot(
     val busy by vm.busy.collectAsState()
     val watch by vm.watch.collectAsState()
     val forward by vm.forward.collectAsState()
+    val forwardLog by vm.forwardLog.collectAsState()
     val forwardApps by vm.forwardApps.collectAsState()
     var insightsTab by rememberSaveable { mutableStateOf(InsightsTab.Week) }
     // The heatmap reads many tracks: it is only worked out while the Map tab is open (and again after the data changed).
@@ -428,6 +429,7 @@ fun OpenConnectRoot(
                     onGarminArchive = vm::setGarminArchive,
                     onGarminBackground = vm::setGarminBackground,
                     forward = forward,
+                    forwardLog = forwardLog,
                     onForwardEnabled = vm::setForward,
                     onForwardApps = { nav.navigate(WATCH_APPS_ROUTE) { launchSingleTop = true } },
                     onForwardTest = vm::testForward,

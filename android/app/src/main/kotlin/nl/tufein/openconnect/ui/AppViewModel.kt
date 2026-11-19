@@ -581,6 +581,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val forward: StateFlow<nl.tufein.openconnect.notify.ForwardUi> get() = container.forwarding.state
 
     /** Looks at what is still needed (access, a watch, Bluetooth) and connects when it is all there. */
+    /** What forwarding did, line by line, for the "What is happening?" part of the card. */
+    val forwardLog: StateFlow<List<nl.tufein.openconnect.notify.ForwardTrail.Line>> get() = container.forwardTrail.flow
+
     fun refreshForward() = container.forwarding.refresh()
 
     fun setForward(on: Boolean) = container.forwarding.setEnabled(on)
@@ -602,6 +605,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                     nl.tufein.openconnect.notify.TestResult.SENT -> R.string.forward_test_sent
                     nl.tufein.openconnect.notify.TestResult.NOT_CONNECTED -> R.string.forward_test_not_connected
                     nl.tufein.openconnect.notify.TestResult.WATCH_OFF -> R.string.forward_test_watch_off
+                    nl.tufein.openconnect.notify.TestResult.WATCH_NOT_ASKING -> R.string.forward_test_not_asking
                 },
             ),
         )

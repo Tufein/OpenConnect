@@ -1,6 +1,7 @@
 // OpenConnect, SPDX-License-Identifier: AGPL-3.0-or-later
 package nl.tufein.openconnect.notify
 
+import nl.tufein.openconnect.core.watch.ble.NotifyStats
 import nl.tufein.openconnect.core.watch.ble.PostResult
 import nl.tufein.openconnect.core.watch.ble.WatchNotification
 
@@ -26,6 +27,12 @@ interface NotifyListener {
 
     /** The connection ended by itself: the watch went out of reach or switched off. [reason] is a short note, or null. */
     fun onLost(reason: String?)
+
+    /** How the conversation with the watch stands: what it asked for, what was announced, what it confirmed. */
+    fun onStatus(stats: NotifyStats) {}
+
+    /** One line for the log of what is happening (a step of the connection, a kind of message the watch sent). Never content. */
+    fun onLog(line: String) {}
 }
 
 /** What the person chose for forwarding. The real one is kept in [nl.tufein.openconnect.data.SettingsStore]. */

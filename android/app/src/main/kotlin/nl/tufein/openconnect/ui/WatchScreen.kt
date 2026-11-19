@@ -19,15 +19,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import nl.tufein.openconnect.R
 import nl.tufein.openconnect.core.watch.SkipReason
+import nl.tufein.openconnect.notify.CheckState
 import nl.tufein.openconnect.notify.ForwardAccess
+import nl.tufein.openconnect.notify.ForwardCheckId
+import nl.tufein.openconnect.notify.ForwardChecks
+import nl.tufein.openconnect.notify.ForwardHint
 import nl.tufein.openconnect.notify.ForwardPhase
+import nl.tufein.openconnect.notify.ForwardTrail
 import nl.tufein.openconnect.notify.ForwardUi
 import nl.tufein.openconnect.watch.BleSensor
 import nl.tufein.openconnect.core.watch.BleSync
@@ -61,6 +68,8 @@ fun WatchScreen(
     onGarminArchive: (Boolean) -> Unit = {},
     onGarminBackground: (Boolean) -> Unit = {},
     forward: ForwardUi = ForwardUi(),
+    /** What forwarding did, line by line, for "What is happening?". */
+    forwardLog: List<ForwardTrail.Line> = emptyList(),
     onForwardEnabled: (Boolean) -> Unit = {},
     onForwardApps: () -> Unit = {},
     onForwardTest: () -> Unit = {},
@@ -133,6 +142,7 @@ fun WatchScreen(
             SurfaceCard {
                 ForwardControls(
                     ui = forward,
+                    log = forwardLog,
                     onEnabled = { on -> withBluetoothThen(on, ::withBluetooth, onForwardEnabled) },
                     onApps = onForwardApps,
                     onTest = onForwardTest,
@@ -205,6 +215,7 @@ private fun withBluetoothThen(on: Boolean, withBluetooth: (() -> Unit) -> Unit, 
 @Composable
 private fun ForwardControls(
     ui: ForwardUi,
+    log: List<ForwardTrail.Line>,
     onEnabled: (Boolean) -> Unit,
     onApps: () -> Unit,
     onTest: () -> Unit,
@@ -281,6 +292,7 @@ private fun ForwardControls(
         }
         ForwardPhase.OFF -> Unit
     }
+    ForwardHints(ui)
 
     SecondaryButton(onClick = onApps, modifier = Modifier.fillMaxWidth()) {
         Text(stringResource(R.string.forward_choose_apps, ui.apps.size))
@@ -304,6 +316,134 @@ private fun ForwardControls(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
+    ForwardDetails(ui, log)
+}
+
+/** What to try, picked from what the steps found: the first thing a person wants to know when it does not work. */
+@Composable
+private fun ForwardHints(ui: ForwardUi) {
+    val context = LocalContext.current
+    for (hint in ForwardChecks.hints(ui, ForwardAccess.garminConnectInstalled(context))) {
+        Text(stringResource(hintText(hint)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
+        when (hint) {
+            ForwardHint.LISTENER_NOT_STARTED ->
+                SecondaryButton(onClick = { context.startActivity(ForwardAccess.accessSettingsIntent(context)) }, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.forward_allow_access))
+                }
+            ForwardHint.BATTERY ->
+                SecondaryButton(onClick = { context.startActivity(ForwardAccess.batterySettingsIntent()) }, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.forward_open_battery))
+                }
+            else -> Unit
+        }
+    }
+}
+
+private fun hintText(hint: ForwardHint): Int = when (hint) {
+    ForwardHint.LISTENER_NOT_STARTED -> R.string.forward_hint_listener
+    ForwardHint.NOTHING_SEEN -> R.string.forward_hint_nothing_seen
+    ForwardHint.CLOSE_GARMIN_CONNECT -> R.string.forward_hint_garmin_connect
+    ForwardHint.BATTERY -> R.string.forward_hint_battery
+    ForwardHint.WATCH_NOT_ASKING -> R.string.forward_hint_not_asking
+    ForwardHint.WATCH_SAID_NO -> R.string.forward_hint_said_no
+    ForwardHint.WATCH_IGNORES -> R.string.forward_hint_ignores
+    ForwardHint.CHOOSE_APPS -> R.string.forward_hint_choose_apps
+}
+
+/**
+ * "What is happening?": every step a notification goes through with where it stands, how many were held back and why,
+ * and the last lines of the log, which can be copied. Folded away until asked for.
+ */
+@Composable
+private fun ForwardDetails(ui: ForwardUi, log: List<ForwardTrail.Line>) {
+    val context = LocalContext.current
+    var open by rememberSaveable { mutableStateOf(false) }
+    SecondaryButton(onClick = { open = !open }, modifier = Modifier.fillMaxWidth()) {
+        Text(stringResource(if (open) R.string.forward_details_hide else R.string.forward_details_show))
+    }
+    if (!open) return
+
+    for (check in ForwardChecks.of(ui)) {
+        val label = stringResource(checkLabel(check.id))
+        val detail = when (check.id) {
+            ForwardCheckId.CONNECTION -> when {
+                ui.phase == ForwardPhase.CONNECTING -> ui.connectStep?.let { stringResource(stepText(it)) }
+                else -> check.detail
+            }
+            ForwardCheckId.DELIVERY ->
+                if (ui.notify.announced > 0) stringResource(R.string.forward_check_delivery_detail, ui.notify.announced, ui.notify.asked, ui.notify.answered) else null
+            ForwardCheckId.SEEN -> check.detail?.let { stringResource(R.string.forward_check_seen_detail, it) }
+            else -> check.detail
+        }
+        Text(
+            "${checkMark(check.state)} $label" + (detail?.let { ": $it" } ?: ""),
+            style = MaterialTheme.typography.bodySmall,
+            color = if (check.state == CheckState.FAIL) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+    if (ui.notify.waiting > 0) {
+        Text(
+            stringResource(R.string.forward_check_waiting, ui.notify.waiting),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+    if (ui.skippedBy.isNotEmpty()) {
+        val top = ui.skippedBy.entries.sortedByDescending { it.value }.take(4)
+        val words = top.map { stringResource(skipText(it.key)) } // read here: stringResource cannot be called inside a lambda
+        val counts = top.indices.joinToString(", ") { "${words[it]} ×${top[it].value}" }
+        Text(stringResource(R.string.forward_skipped_counts, counts), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+    val header = stringResource(R.string.forward_log_header)
+    val shown = log.takeLast(LOG_LINES_SHOWN)
+    if (shown.isEmpty()) {
+        Text(stringResource(R.string.forward_log_empty), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    } else {
+        Text(
+            ForwardTrail.format(shown, header),
+            style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+    SecondaryButton(
+        onClick = {
+            val clipboard = context.getSystemService(android.content.ClipboardManager::class.java)
+            clipboard?.setPrimaryClip(android.content.ClipData.newPlainText(header, ForwardTrail.format(log, header)))
+            android.widget.Toast.makeText(context, R.string.forward_log_copied, android.widget.Toast.LENGTH_SHORT).show()
+        },
+        enabled = log.isNotEmpty(),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text(stringResource(R.string.forward_log_copy))
+    }
+}
+
+private const val LOG_LINES_SHOWN = 14
+
+/** Plain marks that every font has: the Handheld look has no icons. */
+private fun checkMark(state: CheckState): String = when (state) {
+    CheckState.OK -> "[x]"
+    CheckState.WARN -> "[~]"
+    CheckState.FAIL -> "[!]"
+    CheckState.WAIT -> "[…]"
+    CheckState.UNKNOWN -> "[ ]"
+}
+
+private fun checkLabel(id: ForwardCheckId): Int = when (id) {
+    ForwardCheckId.ACCESS -> R.string.forward_check_access
+    ForwardCheckId.LISTENER -> R.string.forward_check_listener
+    ForwardCheckId.SEEN -> R.string.forward_check_seen
+    ForwardCheckId.BLUETOOTH -> R.string.forward_check_bluetooth
+    ForwardCheckId.WATCH_KNOWN -> R.string.forward_check_watch_known
+    ForwardCheckId.CONNECTION -> R.string.forward_check_connection
+    ForwardCheckId.WATCH_ASKED -> R.string.forward_check_watch_asked
+    ForwardCheckId.DELIVERY -> R.string.forward_check_delivery
+}
+
+private fun stepText(step: GarminStep): Int = when (step) {
+    GarminStep.PAIRING -> R.string.forward_step_pairing
+    GarminStep.CONNECTING -> R.string.forward_step_connecting
+    GarminStep.HANDSHAKE -> R.string.forward_step_handshake
 }
 
 private fun skipText(reason: SkipReason): Int = when (reason) {

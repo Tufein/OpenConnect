@@ -62,6 +62,8 @@ class AndroidGarminBleLink(
     val registry: LiveWatchRegistry = LiveWatchRegistry(),
     /** The words and app names a notification connection needs; asked for each new connection, so a language change counts. */
     private val notificationOptions: () -> NotificationOptions = { NotificationOptions() },
+    /** One line at a time about what the link is doing (Bluetooth steps, messages from the watch), for the log on the card. */
+    private val diagnostics: (String) -> Unit = {},
 ) : GarminBleLink {
     companion object {
         private val CLIENT_CONFIG: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
@@ -122,7 +124,7 @@ class AndroidGarminBleLink(
         }
         val sync = registry.beginSync() // the notification side waits for us while we hold the link
         val link = try {
-            establish(watch, onStep, notifications = null)
+            establish(watch, onStep, notifications = null, log = { diagnostics("sync: $it") })
         } catch (e: Throwable) {
             sync.close()
             throw e
@@ -140,13 +142,14 @@ class AndroidGarminBleLink(
         listener: NotifyListener,
         onStep: (GarminStep) -> Unit,
     ): WatchNotifyConnection = withContext(Dispatchers.IO) {
-        val link = establish(watch, onStep, notificationOptions())
+        val link = establish(watch, onStep, notificationOptions(), log = listener::onLog)
         val notifier = link.session.notifier
         if (notifier == null) {
             link.shutdown()
             throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, "Notifications are not available")
         }
         notifier.onDismissedOnWatch = listener::onDismissedOnWatch
+        notifier.onChange = listener::onStatus
         val ended = java.util.concurrent.atomic.AtomicBoolean(false)
         val published = registry.publish(
             LiveWatchRegistry.Live(
@@ -199,7 +202,12 @@ class AndroidGarminBleLink(
     }
 
     /** Pairs when needed, connects, raises the MTU and finishes the handshake. Throws [WatchLinkException]. */
-    private fun establish(watch: GarminBleWatch, onStep: (GarminStep) -> Unit, notifications: NotificationOptions?): Established {
+    private fun establish(
+        watch: GarminBleWatch,
+        onStep: (GarminStep) -> Unit,
+        notifications: NotificationOptions?,
+        log: (String) -> Unit,
+    ): Established {
         val adapter = adapter?.takeIf { it.isEnabled }
             ?: throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, "Bluetooth is off")
         val device = try {
@@ -207,8 +215,10 @@ class AndroidGarminBleLink(
         } catch (e: IllegalArgumentException) {
             throw WatchLinkException(WatchLinkException.Reason.NOT_FOUND, "Unknown address")
         }
+        log("Android's pairing state with the watch: ${bondText(device.bondState)}")
         val firstConnect = try {
             if (device.bondState != BluetoothDevice.BOND_BONDED) {
+                log("pairing with the watch")
                 onStep(GarminStep.PAIRING)
                 pair(device)
                 true
@@ -221,7 +231,7 @@ class AndroidGarminBleLink(
 
         onStep(GarminStep.CONNECTING)
         val scheduler = ExecutorScheduler()
-        val connection = GattConnection(device)
+        val connection = GattConnection(device, log)
         val session = GarminBleSession(
             pipe = connection::write,
             phone = PhoneIdentity(
@@ -231,6 +241,7 @@ class AndroidGarminBleLink(
             ),
             scheduler = scheduler,
             firstConnect = firstConnect,
+            log = log,
             notifications = notifications,
         )
         connection.onNotification = session::onNotification
@@ -238,12 +249,15 @@ class AndroidGarminBleLink(
         try {
             val mtu = connection.connect()
             session.maxWrite = MultiLink.maxWrite(mtu)
+            log("Bluetooth is up (MTU $mtu); starting the handshake")
             onStep(GarminStep.HANDSHAKE)
             session.start()
             val info = session.awaitReady(HANDSHAKE_TIMEOUT_MS)
+            log("handshake done with ${info.deviceName} ${info.deviceModel}")
             // the name the watch gives itself, else the model its product number stands for, else what the scan showed
             return Established(session, connection, scheduler, info.nameOr(watch.name))
         } catch (e: Exception) {
+            log("connection failed: ${e::class.java.simpleName}: ${e.message}")
             session.close()
             connection.close()
             scheduler.shutdown()
@@ -254,6 +268,12 @@ class AndroidGarminBleLink(
                 else -> WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, e.message)
             }
         }
+    }
+
+    private fun bondText(state: Int) = when (state) {
+        BluetoothDevice.BOND_BONDED -> "paired"
+        BluetoothDevice.BOND_BONDING -> "pairing"
+        else -> "not paired"
     }
 
     /** Asks Android to pair; the watch (and maybe the phone) show a code to confirm. */
@@ -291,7 +311,7 @@ class AndroidGarminBleLink(
     }
 
     /** One GATT connection: writes go out one at a time, notifications come in on Android's Bluetooth thread. */
-    private inner class GattConnection(private val device: BluetoothDevice) {
+    private inner class GattConnection(private val device: BluetoothDevice, private val log: (String) -> Unit) {
         var onNotification: (ByteArray) -> Unit = {}
         var onLost: () -> Unit = {}
 
@@ -306,6 +326,7 @@ class AndroidGarminBleLink(
 
         private val callback = object : BluetoothGattCallback() {
             override fun onConnectionStateChange(g: BluetoothGatt, status: Int, newState: Int) {
+                log("Bluetooth: connection ${if (newState == BluetoothProfile.STATE_CONNECTED) "up" else "down"} (status $status)")
                 when (newState) {
                     BluetoothProfile.STATE_CONNECTED -> if (!g.requestMtu(515)) g.discoverServices()
                     BluetoothProfile.STATE_DISCONNECTED -> {
@@ -317,11 +338,13 @@ class AndroidGarminBleLink(
             }
 
             override fun onMtuChanged(g: BluetoothGatt, newMtu: Int, status: Int) {
+                log("Bluetooth: packet size $newMtu (status $status)")
                 if (status == BluetoothGatt.GATT_SUCCESS && newMtu >= 23) mtu = newMtu
                 g.discoverServices()
             }
 
             override fun onServicesDiscovered(g: BluetoothGatt, status: Int) {
+                log("Bluetooth: ${g.services.size} services found (status $status)")
                 val service = g.getService(MultiLink.SERVICE)
                 val pair = MultiLink.CHARACTERISTIC_PAIRS.firstNotNullOfOrNull { (rx, tx) ->
                     val r = service?.getCharacteristic(rx)
@@ -329,6 +352,7 @@ class AndroidGarminBleLink(
                     if (r != null && t != null) r to t else null
                 }
                 if (pair == null) {
+                    log("Bluetooth: Garmin's multi-link service is not there; services: ${g.services.joinToString { it.uuid.toString().take(8) }}")
                     ready.completeExceptionally(WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, "This is not a Garmin watch we can sync"))
                     g.disconnect()
                     return
@@ -351,6 +375,7 @@ class AndroidGarminBleLink(
             }
 
             override fun onDescriptorWrite(g: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) {
+                log("Bluetooth: receiving from the watch switched on (status $status)")
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     ready.complete(mtu)
                 } else {
@@ -359,6 +384,7 @@ class AndroidGarminBleLink(
             }
 
             override fun onCharacteristicWrite(g: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
+                if (status != BluetoothGatt.GATT_SUCCESS) log("Bluetooth: a write to the watch failed (status $status)")
                 synchronized(queue) { writing = false }
                 pump()
             }

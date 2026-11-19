@@ -51,6 +51,19 @@ object ForwardAccess {
         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null))
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
+    /** True when the Garmin Connect app is on this phone: it may be holding the watch's one phone link. */
+    fun garminConnectInstalled(context: Context): Boolean = try {
+        context.packageManager.getPackageInfo(GARMIN_CONNECT, 0)
+        true
+    } catch (_: PackageManager.NameNotFoundException) {
+        false
+    }
+
+    /** Android's list of apps that are not limited by battery saving; the person can add OpenConnect there. */
+    fun batterySettingsIntent(): Intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+    private const val GARMIN_CONNECT = "com.garmin.android.apps.connectmobile"
+
     /** True when this phone may show the "restricted settings" step: Android 13 or newer. */
     val mayNeedRestrictedSettings: Boolean get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 }
