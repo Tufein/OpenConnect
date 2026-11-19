@@ -52,7 +52,7 @@ object GfdiType {
     val KNOWN: Set<Int> = (5000..5066).toSet() + (5101..5112).toSet()
 
     private val NAMES: Map<Int, String> = mapOf(
-        RESPONSE to "RESPONSE", BATTERY_STATUS to "BATTERY_STATUS", DEVICE_INFORMATION to "DEVICE_INFORMATION",
+        RESPONSE to "RESPONSE", MUSIC_CONTROL_CAPABILITIES to "MUSIC_CONTROL_CAPABILITIES", SUPPORTED_FILE_TYPES_REQUEST to "SUPPORTED_FILE_TYPES_REQUEST", BATTERY_STATUS to "BATTERY_STATUS", DEVICE_INFORMATION to "DEVICE_INFORMATION",
         DEVICE_SETTINGS to "DEVICE_SETTINGS", SYSTEM_EVENT to "SYSTEM_EVENT", NOTIFICATION_UPDATE to "NOTIFICATION_UPDATE",
         NOTIFICATION_CONTROL to "NOTIFICATION_CONTROL", NOTIFICATION_DATA to "NOTIFICATION_DATA",
         NOTIFICATION_SUBSCRIPTION to "NOTIFICATION_SUBSCRIPTION", SYNCHRONIZATION to "SYNCHRONIZATION",
@@ -73,6 +73,17 @@ object GfdiStatus {
     const val DECODE_ERROR = 3
     const val CRC_ERROR = 4
     const val LENGTH_ERROR = 5
+
+    /** The status as the log shows it: `ACK`, or `status 7` for one we do not know. */
+    fun name(status: Int): String = when (status) {
+        ACK -> "ACK"
+        NAK -> "NAK"
+        UNSUPPORTED -> "UNSUPPORTED"
+        DECODE_ERROR -> "DECODE_ERROR"
+        CRC_ERROR -> "CRC_ERROR"
+        LENGTH_ERROR -> "LENGTH_ERROR"
+        else -> "status $status"
+    }
 }
 
 /** Events the phone announces to the watch with [GfdiType.SYSTEM_EVENT]. */

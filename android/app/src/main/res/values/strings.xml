@@ -1235,7 +1235,7 @@
     <string name="forward_check_connection">Connection to the watch</string>
     <string name="forward_check_watch_asked">Watch asked for notifications</string>
     <string name="forward_check_delivery">Notifications shown on the watch</string>
-    <string name="forward_check_delivery_detail">told %1$d, details asked for %2$d, delivered %3$d</string>
+    <string name="forward_check_delivery_detail">told %1$d, confirmed by the watch %2$d, details asked for %3$d, delivered %4$d</string>
     <string name="forward_check_waiting">Waiting for the watch to ask: %1$d</string>
     <string name="forward_step_pairing">pairing</string>
     <string name="forward_step_connecting">connecting</string>
@@ -1252,6 +1252,7 @@
     <string name="forward_hint_battery">The connection worked and then dropped. The phone may be saving power: set OpenConnect to Unrestricted (not optimised) in the battery settings.</string>
     <string name="forward_hint_not_asking">The watch has not asked for notifications, so OpenConnect sends them anyway. If none show, check the settings of the watch (under Phone) for notifications.</string>
     <string name="forward_hint_said_no">The watch told the phone it does not want notifications. Switch them on in the settings of the watch (under Phone).</string>
+    <string name="forward_hint_silent">The watch does not answer anything we send, not even a confirmation. The connection is probably dead; the app notices that after about a minute and connects again. If it stays like this, switch the setting off and on, and look at the log below.</string>
     <string name="forward_hint_ignores">The watch was told about notifications but never asked what they say. Check the notification settings of the watch, and look at the log below.</string>
     <string name="forward_hint_choose_apps">Android hands over notifications, but no app is chosen yet. Tap Choose apps.</string>
     <string name="forward_check_own_notification">Android lets OpenConnect show its persistent notification</string>

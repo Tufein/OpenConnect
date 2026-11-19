@@ -282,6 +282,10 @@ data class NotifyStats(
     val answered: Int = 0,
     val failed: Int = 0,
     val dismissedOnWatch: Int = 0,
+    /** How many announcements the watch confirmed with its own answer (a RESPONSE to message 5033). */
+    val acknowledged: Int = 0,
+    /** How many announcements got no answer from the watch within [GarminNotifications.ANSWER_WAIT_MS]. */
+    val unanswered: Int = 0,
 )
 
 /**
@@ -305,8 +309,13 @@ class GarminNotifications(
     /** The name of an app, for the watch's "what is this app called" question. */
     private val appName: (String) -> String? = { null },
     private val log: (String) -> Unit = {},
+    /** Seconds since the watch last sent anything (null: never), for the log line that says whether the link is alive. */
+    private val heardAgo: () -> Long? = { null },
 ) {
     companion object {
+        /** How long the watch gets to answer an announcement before the log says it did not. */
+        const val ANSWER_WAIT_MS = 5_000L
+
         /** How many notifications the watch is told about before the oldest is pushed off (Gadgetbridge: 64). */
         const val MAX_KNOWN = 64
         const val MAX_WAITING = 8
@@ -332,6 +341,8 @@ class GarminNotifications(
     private var answered = 0
     private var failed = 0
     private var dismissedOnWatch = 0
+    private var acknowledged = 0
+    private var unanswered = 0
 
     /** Called when the person dismisses notification [id] on the watch. Runs on the Bluetooth thread. */
     @Volatile var onDismissedOnWatch: (Int) -> Unit = {}
@@ -360,6 +371,8 @@ class GarminNotifications(
                 answered = answered,
                 failed = failed,
                 dismissedOnWatch = dismissedOnWatch,
+                acknowledged = acknowledged,
+                unanswered = unanswered,
             )
         }
 
@@ -447,9 +460,14 @@ class GarminNotifications(
     private fun announce(n: WatchNotification) {
         val type = if (known.remove(n.id) != null) NotificationUpdate.MODIFY else NotificationUpdate.ADD
         known[n.id] = n
-        send(GfdiNotifications.update(type, n.category, countOf(n.category), n.id, hasActions = n.canDismiss))
+        val message = GfdiNotifications.update(type, n.category, countOf(n.category), n.id, hasActions = n.canDismiss)
+        send(message)
         announced++
-        log("announced notification ${n.id} to the watch ($type, ${n.category})")
+        val mark = announced
+        // the bytes of an announcement hold only the kind, a flag, the category, a count and the id: never any text
+        val heard = heardAgo()?.let { ", last heard from the watch $it s ago" }.orEmpty()
+        log("announced notification ${n.id} to the watch ($type, ${n.category}); bytes ${hex(message.encode())}$heard")
+        scheduler.schedule(ANSWER_WAIT_MS) { checkAnswered(mark) }
         while (known.size > MAX_KNOWN) {
             val oldest = known.entries.first().value
             known.remove(oldest.id)
@@ -458,6 +476,21 @@ class GarminNotifications(
     }
 
     private fun countOf(category: WatchNotificationCategory) = known.values.count { it.category == category }
+
+    private fun hex(bytes: ByteArray) = bytes.joinToString(" ") { "%02x".format(it.toInt() and 0xFF) }
+
+    /** Announcement number [mark] was made [ANSWER_WAIT_MS] ago: say so if the watch has answered nothing since. */
+    private fun checkAnswered(mark: Int) {
+        synchronized(lock) {
+            if (closed) return
+            // an answer to this one or a later announcement, or the watch asking for its details, counts as heard
+            if (acknowledged + detailsAsked >= mark) return
+            unanswered++
+            val heard = heardAgo()?.let { "last heard from the watch $it s ago" } ?: "never heard from the watch"
+            log("the watch has not answered announcement $mark within ${ANSWER_WAIT_MS / 1000} s ($heard)")
+        }
+        changed()
+    }
 
     // ------------------------------------------------------------------------------ watch side
 
@@ -490,7 +523,8 @@ class GarminNotifications(
             if (closed) return
             asked = if (enable) Asked.ON else Asked.OFF
             send(GfdiNotifications.subscriptionReply(enable, allowed))
-            log("the watch switched notifications ${if (enable) "on" else "off"}${if (allowed) "" else ", but they are off on the phone"}")
+            val bytes = message.payload.joinToString(" ") { "%02x".format(it.toInt() and 0xFF) }
+            log("the watch switched notifications ${if (enable) "on" else "off"} (its message: $bytes)${if (allowed) "" else ", but they are off on the phone"}")
             if (enable && allowed) {
                 flushWaiting()
             } else {
@@ -615,6 +649,19 @@ class GarminNotifications(
             r.short()
         } catch (e: GfdiFormatException) {
             return false
+        }
+        if (original == GfdiType.NOTIFICATION_UPDATE) {
+            // the watch confirms it received an announcement; without this the link may be dead or the message dropped
+            val answer = try {
+                r.byte()
+            } catch (e: GfdiFormatException) {
+                return true
+            }
+            synchronized(lock) {
+                acknowledged++
+                log("the watch confirmed an announcement: ${GfdiStatus.name(answer)}")
+            }
+            return true
         }
         if (original != GfdiType.NOTIFICATION_DATA) return false
         val status = try {

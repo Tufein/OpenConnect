@@ -87,6 +87,19 @@ class ForwardChecksTest {
     }
 
     @Test
+    fun `told and not even confirmed is a silent watch, which has its own hint`() {
+        val ui = ui(notify = NotifyStats(watch = WatchAsk.ON, announced = 1, asked = 0, answered = 0, acknowledged = 0, unanswered = 1))
+        assertEquals(CheckState.FAIL, states(ui)[ForwardCheckId.DELIVERY])
+        val hints = ForwardChecks.hints(ui, garminConnectInstalled = false)
+        assertTrue(ForwardHint.WATCH_SILENT in hints)
+        assertTrue(ForwardHint.WATCH_IGNORES !in hints, "one of the two, the one that fits")
+        // confirmed but never asked what it says: the watch is alive and ignores the notification
+        val ignored = ui(notify = NotifyStats(watch = WatchAsk.ON, announced = 1, asked = 0, answered = 0, acknowledged = 1))
+        assertTrue(ForwardHint.WATCH_IGNORES in ForwardChecks.hints(ignored, garminConnectInstalled = false))
+        assertEquals("1/1/0/0", ForwardChecks.of(ignored).first { it.id == ForwardCheckId.DELIVERY }.detail)
+    }
+
+    @Test
     fun `answers that did not all arrive are a warning`() {
         val ui = ui(notify = NotifyStats(watch = WatchAsk.ON, announced = 3, asked = 3, answered = 2, failed = 1))
         assertEquals(CheckState.WARN, states(ui)[ForwardCheckId.DELIVERY])

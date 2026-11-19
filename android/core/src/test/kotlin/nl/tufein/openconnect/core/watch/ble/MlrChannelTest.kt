@@ -136,4 +136,37 @@ class MlrChannelTest {
         scheduler.advance(10_000)
         assertTrue(sent.isEmpty())
     }
+
+    @Test
+    fun `a watch that never acknowledges is called dead after the last resend, and the log says so`() {
+        val log = ArrayList<String>()
+        var dead = 0
+        val c = MlrChannel(0x81, 20, { sent += it }, { received += it }, scheduler, log = { log += it }, onDead = { dead++ })
+        c.send(byteArrayOf(1, 2, 3))
+        assertEquals(1, sent.size)
+        // waits of 1, 2, 4, 8 and 16 seconds resend; the sixth timeout (20 s) gives up
+        scheduler.advance(1_000 + 2_000 + 4_000 + 8_000 + 16_000)
+        assertEquals(0, dead, "still trying")
+        assertEquals(1 + 5, sent.size, "the packet went out again at every timeout")
+        scheduler.advance(20_000)
+        assertEquals(1, dead)
+        assertEquals(1 + 5, sent.size, "nothing more is sent on a dead link")
+        assertTrue(log.any { "has not acknowledged 1 packet(s); resending (attempt 1)" in it }, log.toString())
+        assertTrue(log.any { "the link is dead" in it }, log.toString())
+        scheduler.advance(60_000)
+        assertEquals(1, dead, "it says so once")
+    }
+
+    @Test
+    fun `an acknowledgement in time starts the count again`() {
+        var dead = 0
+        val c = MlrChannel(0x81, 20, { sent += it }, { received += it }, scheduler, onDead = { dead++ })
+        c.send(byteArrayOf(1))
+        scheduler.advance(1_000 + 2_000 + 4_000 + 8_000) // four resends
+        c.onPacket(MlrChannel.header(1, 1, 0)) // the watch finally acknowledges packet 0
+        c.send(byteArrayOf(2))
+        scheduler.advance(1_000 + 2_000 + 4_000 + 8_000) // four more would have been the eighth in a row
+        assertEquals(0, dead)
+        assertTrue(c.state().contains("unacknowledged"))
+    }
 }

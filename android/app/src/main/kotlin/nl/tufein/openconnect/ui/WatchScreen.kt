@@ -351,6 +351,7 @@ private fun hintText(hint: ForwardHint): Int = when (hint) {
     ForwardHint.WATCH_NOT_ASKING -> R.string.forward_hint_not_asking
     ForwardHint.WATCH_SAID_NO -> R.string.forward_hint_said_no
     ForwardHint.WATCH_IGNORES -> R.string.forward_hint_ignores
+    ForwardHint.WATCH_SILENT -> R.string.forward_hint_silent
     ForwardHint.CHOOSE_APPS -> R.string.forward_hint_choose_apps
     ForwardHint.ALLOW_OWN_NOTIFICATION -> R.string.forward_hint_own_notification
 }
@@ -376,7 +377,7 @@ private fun ForwardDetails(ui: ForwardUi, log: List<ForwardTrail.Line>) {
                 else -> check.detail
             }
             ForwardCheckId.DELIVERY ->
-                if (ui.notify.announced > 0) stringResource(R.string.forward_check_delivery_detail, ui.notify.announced, ui.notify.asked, ui.notify.answered) else null
+                if (ui.notify.announced > 0) stringResource(R.string.forward_check_delivery_detail, ui.notify.announced, ui.notify.acknowledged, ui.notify.asked, ui.notify.answered) else null
             ForwardCheckId.SEEN -> check.detail?.let { stringResource(R.string.forward_check_seen_detail, it) }
             else -> check.detail
         }

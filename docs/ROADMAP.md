@@ -129,11 +129,11 @@ Stefan loopt de lijst in [PUBLIC_RELEASE.md](PUBLIC_RELEASE.md) af met het diagn
 
 Klaar als: G1 groen is.
 
-### M8: v1.0.0-rc.1 ✅ 2026-11-18, v1.0.0-rc.2, rc.3 en rc.4 ✅ 2026-11-19, daarna v1.0.0 🔜 (M)
+### M8: v1.0.0-rc.1 ✅ 2026-11-18, v1.0.0-rc.2, rc.3, rc.4 en rc.5 ✅ 2026-11-19, daarna v1.0.0 🔜 (M)
 
 De kandidaat `v1.0.0-rc.1` is uitgebracht als GitHub pre-release (zelfde code als v0.58.0, versie `1.0.0-rc.1`, `versionCode` 59). Wat nu nog moet is van Stefan: de wachttijd, de proefstappen T1 tot en met T17, de sleutel in GitHub-secrets, privé melden aanzetten, echte schermafbeeldingen en het besluit over de naam. Daarna kijkt Claude naar de poorten in PUBLIC_RELEASE.md en brengt `v1.0.0` uit.
 
-- **Code-bevriezing:** vanaf hier alleen reparaties en teksten. ✅ Vanaf `v1.0.0-rc.1`. **Drie uitzonderingen, op Stefans verzoek:** `v1.0.0-rc.2` (`versionCode` 60) herkent alle Garmin-families (zie [GARMIN_DEVICES.md](GARMIN_DEVICES.md)) en `v1.0.0-rc.3` (`versionCode` 61) stuurt meldingen van de telefoon door naar het horloge (zie [NOTIFICATIONS.md](NOTIFICATIONS.md)); `v1.0.0-rc.4` (`versionCode` 62) laat per stap zien waarom een melding niet aankomt en stuurt ze ook als het horloge er niet om vraagt; de wachttijd van 7 dagen begint daarmee opnieuw voor het horloge.
+- **Code-bevriezing:** vanaf hier alleen reparaties en teksten. ✅ Vanaf `v1.0.0-rc.1`. **Vier uitzonderingen, op Stefans verzoek:** `v1.0.0-rc.2` (`versionCode` 60) herkent alle Garmin-families (zie [GARMIN_DEVICES.md](GARMIN_DEVICES.md)) en `v1.0.0-rc.3` (`versionCode` 61) stuurt meldingen van de telefoon door naar het horloge (zie [NOTIFICATIONS.md](NOTIFICATIONS.md)); `v1.0.0-rc.4` (`versionCode` 62) laat per stap zien waarom een melding niet aankomt en stuurt ze ook als het horloge er niet om vraagt; `v1.0.0-rc.5` (`versionCode` 63) herkent een Bluetooth-verbinding die stil is gevallen, beantwoordt alle berichten van het horloge zoals Gadgetbridge en laat in het logboek zien wat het horloge antwoordt; de wachttijd van 7 dagen begint daarmee opnieuw voor het horloge.
 - ✅ **`release.yml` krijgt een voorlopig-optie** (v0.58.0, voor het eerst doorlopen bij rc.1), zodat een kandidaat als **GitHub pre-release** uitkomt en de updater die niet als nieuwste ziet (getest). De labelcontrole moet `1.0.0-rc.1` en `1.0.0rc1` aan elkaar kunnen koppelen.
 - **Wachttijd van minstens 7 dagen** met de kandidaat in dagelijks gebruik op Stefans eigen telefoon.
 - **Go/no-go:** alle poorten in PUBLIC_RELEASE.md groen, releasenotes in het Nederlands en Engels, de README definitief.
@@ -227,6 +227,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.0.0-rc.2 | Alle Garmin-families herkend: catalogus van 265 modellen (407 productnummers), herkenning op productnummer in de Bluetooth-advertentie, op de naam en in het FIT-bestand, eerlijke notitie per model, apparaatnaam uit het FIT-bestand |
 | v1.0.0-rc.3 | Meldingen van de telefoon op het Garmin-horloge: Garmins meldingsprotocol uit Gadgetbridge, Android-meldingstoegang, per app kiezen, een vaste Bluetooth-verbinding die de sync meebenut, foreground-service, eerlijk over één telefoon per horloge |
 | v1.0.0-rc.4 | Meldingen die niet aankomen: de kaart toont per stap waar het stukloopt (*Wat gebeurt er?*), een kopieerbaar logboek zonder inhoud, tellers, tips, "verstuurd" telt alleen wat het horloge hoorde, terugvalroute als het horloge niet om meldingen vraagt, de luisteraar opnieuw laten binden |
+| v1.0.0-rc.5 | Een stille Bluetooth-verbinding herkennen (zes keer opnieuw sturen zonder bevestiging, dan opnieuw verbinden), een kleine vraag als het horloge stil is, bewaking van een vastgelopen schrijfactie, één keer diensten zoeken, alle berichten van het horloge beantwoorden zoals Gadgetbridge, logboek met de bytes en het antwoord van het horloge, de kaart onderscheidt een stil van een negerend horloge |
 
 ## 9. Hoe releases werken
 
