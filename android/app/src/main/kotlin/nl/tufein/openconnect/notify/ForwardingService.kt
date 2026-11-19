@@ -39,6 +39,7 @@ class ForwardingService : Service() {
                 } else {
                     startForeground(NOTIFICATION_ID, notification(this, state))
                 }
+                log("the persistent notification is up")
             } catch (e: Exception) {
                 // Android refused (a missing Bluetooth permission, or a start it counts as "from the background"):
                 // forwarding goes on without the notification, as long as the listener keeps the app alive.
@@ -66,6 +67,7 @@ class ForwardingService : Service() {
             state = ui
             this.onStop = onStop
             sink = log
+            log("asking Android to show the persistent notification (notifications ${if (NotificationManagerCompat.from(context).areNotificationsEnabled()) "allowed" else "NOT allowed"})")
             try {
                 context.startForegroundService(Intent(context, ForwardingService::class.java))
             } catch (e: Exception) {

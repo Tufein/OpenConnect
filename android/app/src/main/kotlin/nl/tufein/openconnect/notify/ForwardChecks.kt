@@ -4,7 +4,7 @@ package nl.tufein.openconnect.notify
 import nl.tufein.openconnect.core.watch.ble.WatchAsk
 
 /** The things that all have to be in place for a notification to reach the watch, in the order they happen. */
-enum class ForwardCheckId { ACCESS, LISTENER, SEEN, BLUETOOTH, WATCH_KNOWN, CONNECTION, WATCH_ASKED, DELIVERY }
+enum class ForwardCheckId { ACCESS, LISTENER, SEEN, BLUETOOTH, OWN_NOTIFICATION, WATCH_KNOWN, CONNECTION, WATCH_ASKED, DELIVERY }
 
 /** [OK] works, [WARN] works but not the way it should, [FAIL] is where it breaks, [WAIT] is still going, [UNKNOWN] cannot be known yet. */
 enum class CheckState { OK, WARN, FAIL, WAIT, UNKNOWN }
@@ -14,6 +14,7 @@ data class ForwardCheck(val id: ForwardCheckId, val state: CheckState, val detai
 /** What to tell the person to try, picked from what the checks found. */
 enum class ForwardHint {
     LISTENER_NOT_STARTED, NOTHING_SEEN, CLOSE_GARMIN_CONNECT, BATTERY, WATCH_NOT_ASKING, WATCH_SAID_NO, WATCH_IGNORES, CHOOSE_APPS,
+    ALLOW_OWN_NOTIFICATION,
 }
 
 /**
@@ -45,6 +46,8 @@ object ForwardChecks {
                 detail = ui.seen.takeIf { it > 0 }?.toString(),
             ),
             ForwardCheck(ForwardCheckId.BLUETOOTH, if (ui.phase == ForwardPhase.NEEDS_BLUETOOTH) CheckState.FAIL else CheckState.OK),
+            // not needed for forwarding itself, but without it Android hides the persistent notification and ends the app sooner
+            ForwardCheck(ForwardCheckId.OWN_NOTIFICATION, if (ui.ownNotificationAllowed) CheckState.OK else CheckState.WARN),
             ForwardCheck(ForwardCheckId.WATCH_KNOWN, if (ui.phase == ForwardPhase.NEEDS_WATCH) CheckState.FAIL else CheckState.OK, ui.watchName),
             ForwardCheck(
                 ForwardCheckId.CONNECTION,
@@ -96,6 +99,9 @@ object ForwardChecks {
         if (!ui.enabled) return emptyList()
         val out = ArrayList<ForwardHint>()
         val n = ui.notify
+        if (!ui.ownNotificationAllowed && ui.phase in setOf(ForwardPhase.CONNECTING, ForwardPhase.CONNECTED, ForwardPhase.WAITING, ForwardPhase.PROBLEM)) {
+            out += ForwardHint.ALLOW_OWN_NOTIFICATION
+        }
         when (ui.phase) {
             ForwardPhase.OFF, ForwardPhase.NEEDS_ACCESS, ForwardPhase.NEEDS_WATCH, ForwardPhase.NEEDS_BLUETOOTH, ForwardPhase.CONNECTING -> Unit
             ForwardPhase.WAITING, ForwardPhase.PROBLEM -> {

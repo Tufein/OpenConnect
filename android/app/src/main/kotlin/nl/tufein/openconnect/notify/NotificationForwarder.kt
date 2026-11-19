@@ -62,6 +62,8 @@ data class ForwardUi(
     val connectStep: GarminStep? = null,
     /** The connection worked at least once since the app started. */
     val everConnected: Boolean = false,
+    /** Android lets this app show notifications; without it the persistent notification is hidden and the app is ended sooner. */
+    val ownNotificationAllowed: Boolean = true,
     /** What the watch asked for and what we told and gave it, on the current connection. */
     val notify: NotifyStats = NotifyStats(),
 )
@@ -103,6 +105,8 @@ class NotificationForwarder(
     val trail: ForwardTrail = ForwardTrail(),
     /** Asks Android to start the notification listener again, for when access is on but it never started. */
     private val rebindListener: () -> Unit = {},
+    /** Whether Android lets this app show notifications (the persistent one needs it from Android 13). */
+    private val notificationsAllowed: () -> Boolean = { true },
 ) {
     companion object {
         /** How many notifications are remembered by id, to find the one the person dismissed on the watch. */
@@ -175,6 +179,11 @@ class NotificationForwarder(
      */
     fun refresh() {
         synchronized(lock) {
+            val allowed = notificationsAllowed()
+            if (_state.value.ownNotificationAllowed != allowed) {
+                trail.add(if (allowed) "Android lets OpenConnect show notifications" else "Android does not let OpenConnect show notifications: the persistent notification stays hidden")
+                _state.update { it.copy(ownNotificationAllowed = allowed) }
+            }
             val blocked = when {
                 !store.enabled -> ForwardPhase.OFF
                 !accessGranted() -> ForwardPhase.NEEDS_ACCESS

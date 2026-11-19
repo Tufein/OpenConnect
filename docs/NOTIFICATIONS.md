@@ -36,6 +36,7 @@ mark for how far it got, so "it does not arrive" has an answer:
 | Android started the listener | Android runs OpenConnect's listener | the access is on but the listener is not running: switch the access off and on, or restart the phone. The app also asks Android to start it again by itself. |
 | Android hands over notifications | at least one notification came in since the app started | waiting for the first one |
 | Bluetooth permission, Watch known | as it says | allow it / sync the watch over Bluetooth once |
+| Android lets OpenConnect show its persistent notification | notifications are allowed for the app | `[~]`: Android hides the persistent notification (on Android 13 and newer without the notification permission), and ends the app sooner; the hint has a button to the notification settings |
 | Connection to the watch | paired, connected and the introductions are done | the step it is on (pairing, connecting, introductions) while it works, or the error when it failed |
 | Watch asked for notifications | the watch said it wants them | `[~]`: it never asked, so they are sent anyway; `[!]`: the watch said no (check the watch's own settings under Phone) |
 | Notifications shown on the watch | the watch asked what the notifications say and they were delivered | `[!]`: the watch was told about notifications but never asked what they say |

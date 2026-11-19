@@ -45,6 +45,7 @@ class NotificationForwarderTest {
     private val cancelled = CopyOnWriteArrayList<String>()
 
     private var access = true
+    private var notificationsAllowed = true
     private var bluetooth = true
     private var screenOn = false
     private var busy = false
@@ -78,6 +79,7 @@ class NotificationForwarderTest {
         },
         trail = trail,
         rebindListener = { rebinds += "rebind" },
+        notificationsAllowed = { notificationsAllowed },
     )
 
     private fun message(text: String = "Zie je morgen?", pkg: String = "com.whatsapp", key: String = "0|com.whatsapp|1|null|10001") = PhoneNotification(
@@ -512,5 +514,17 @@ class NotificationForwarderTest {
         assertEquals(TestResult.WATCH_OFF, f.sendTest("t", "b"))
         connections.single().result = PostResult.SENT
         assertEquals(TestResult.SENT, f.sendTest("t", "b"))
+    }
+
+    @Test
+    fun `the card knows when android would hide the persistent notification, and notices when that is fixed`() {
+        notificationsAllowed = false
+        val f = forwarder()
+        f.refresh()
+        assertFalse(f.state.value.ownNotificationAllowed)
+        assertTrue(trail.flow.value.any { "does not let OpenConnect show notifications" in it.text })
+        notificationsAllowed = true
+        f.refresh()
+        assertTrue(f.state.value.ownNotificationAllowed)
     }
 }

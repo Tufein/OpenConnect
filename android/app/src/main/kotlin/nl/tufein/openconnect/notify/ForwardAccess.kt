@@ -59,6 +59,13 @@ object ForwardAccess {
         false
     }
 
+    /** Whether Android lets this app show notifications at all (the permission on Android 13 and newer, and the app-wide switch). */
+    fun notificationsAllowed(context: Context): Boolean = NotificationManagerCompat.from(context).areNotificationsEnabled()
+
+    /** This app's notification settings, where the person can allow its notifications. */
+    fun notificationSettingsIntent(context: Context): Intent =
+        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
     /** Android's list of apps that are not limited by battery saving; the person can add OpenConnect there. */
     fun batterySettingsIntent(): Intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 

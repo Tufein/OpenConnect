@@ -1254,5 +1254,8 @@
     <string name="forward_hint_said_no">Het horloge heeft de telefoon laten weten dat het geen meldingen wil. Zet ze aan in de instellingen van het horloge (onder Telefoon).</string>
     <string name="forward_hint_ignores">Het horloge hoorde van meldingen maar vroeg nooit wat erin staat. Kijk in de meldingsinstellingen van het horloge en bekijk het logboek hieronder.</string>
     <string name="forward_hint_choose_apps">Android geeft meldingen door, maar er is nog geen app gekozen. Tik op Kies apps.</string>
+    <string name="forward_check_own_notification">Android laat OpenConnect zijn vaste melding tonen</string>
+    <string name="forward_open_notification_settings">Open de meldingsinstellingen</string>
+    <string name="forward_hint_own_notification">Android laat OpenConnect geen meldingen tonen, dus de vaste melding (Meldingen naar het horloge) blijft verborgen. Zonder die melding stopt Android de app sneller en valt de verbinding met het horloge weg. Sta meldingen voor OpenConnect toe.</string>
     <string name="forward_test_not_asking">Het horloge heeft nog niet om meldingen gevraagd. De test blijft een minuut bewaard en verschijnt zodra het dat doet.</string>
 </resources>

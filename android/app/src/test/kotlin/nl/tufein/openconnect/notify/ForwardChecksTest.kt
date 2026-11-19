@@ -18,7 +18,8 @@ class ForwardChecksTest {
         apps: Set<String> = setOf("com.whatsapp"),
         error: String? = null,
         everConnected: Boolean = true,
-    ) = ForwardUi(enabled = true, phase = phase, watchName = "fenix 8", listenerBound = listener, seen = seen, notify = notify, apps = apps, error = error, everConnected = everConnected)
+        ownNotification: Boolean = true,
+    ) = ForwardUi(enabled = true, phase = phase, watchName = "fenix 8", listenerBound = listener, seen = seen, notify = notify, apps = apps, error = error, everConnected = everConnected, ownNotificationAllowed = ownNotification)
 
     private fun states(ui: ForwardUi) = ForwardChecks.of(ui).associate { it.id to it.state }
 
@@ -124,5 +125,15 @@ class ForwardChecksTest {
         val connection = ForwardChecks.of(ui).first { it.id == ForwardCheckId.CONNECTION }
         assertEquals(CheckState.WAIT, connection.state)
         assertEquals("HANDSHAKE", connection.detail)
+    }
+
+    @Test
+    fun `android hiding the persistent notification is a warning with its hint, but only while a connection is held or sought`() {
+        val hidden = ui(ownNotification = false)
+        assertEquals(CheckState.WARN, states(hidden)[ForwardCheckId.OWN_NOTIFICATION])
+        assertEquals(ForwardCheckId.OWN_NOTIFICATION, ForwardChecks.firstProblem(ForwardChecks.of(hidden))?.id)
+        assertEquals(ForwardHint.ALLOW_OWN_NOTIFICATION, ForwardChecks.hints(hidden, garminConnectInstalled = false).first())
+        val waiting = ui(phase = ForwardPhase.NEEDS_ACCESS, listener = false, seen = 0, ownNotification = false)
+        assertTrue(ForwardHint.ALLOW_OWN_NOTIFICATION !in ForwardChecks.hints(waiting, garminConnectInstalled = false), "nothing is held yet")
     }
 }

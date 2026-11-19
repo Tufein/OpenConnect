@@ -1254,5 +1254,8 @@
     <string name="forward_hint_said_no">The watch told the phone it does not want notifications. Switch them on in the settings of the watch (under Phone).</string>
     <string name="forward_hint_ignores">The watch was told about notifications but never asked what they say. Check the notification settings of the watch, and look at the log below.</string>
     <string name="forward_hint_choose_apps">Android hands over notifications, but no app is chosen yet. Tap Choose apps.</string>
+    <string name="forward_check_own_notification">Android lets OpenConnect show its persistent notification</string>
+    <string name="forward_open_notification_settings">Open notification settings</string>
+    <string name="forward_hint_own_notification">Android does not let OpenConnect show notifications, so the persistent notification (Notifications to the watch) is hidden. Without it Android ends the app sooner and the connection to the watch drops. Allow notifications for OpenConnect.</string>
     <string name="forward_test_not_asking">The watch has not asked for notifications yet. The test is kept for a minute and shown when it does.</string>
 </resources>

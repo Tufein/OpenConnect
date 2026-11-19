@@ -330,6 +330,10 @@ private fun ForwardHints(ui: ForwardUi) {
                 SecondaryButton(onClick = { context.startActivity(ForwardAccess.accessSettingsIntent(context)) }, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.forward_allow_access))
                 }
+            ForwardHint.ALLOW_OWN_NOTIFICATION ->
+                SecondaryButton(onClick = { context.startActivity(ForwardAccess.notificationSettingsIntent(context)) }, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.forward_open_notification_settings))
+                }
             ForwardHint.BATTERY ->
                 SecondaryButton(onClick = { context.startActivity(ForwardAccess.batterySettingsIntent()) }, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.forward_open_battery))
@@ -348,6 +352,7 @@ private fun hintText(hint: ForwardHint): Int = when (hint) {
     ForwardHint.WATCH_SAID_NO -> R.string.forward_hint_said_no
     ForwardHint.WATCH_IGNORES -> R.string.forward_hint_ignores
     ForwardHint.CHOOSE_APPS -> R.string.forward_hint_choose_apps
+    ForwardHint.ALLOW_OWN_NOTIFICATION -> R.string.forward_hint_own_notification
 }
 
 /**
@@ -434,6 +439,7 @@ private fun checkLabel(id: ForwardCheckId): Int = when (id) {
     ForwardCheckId.LISTENER -> R.string.forward_check_listener
     ForwardCheckId.SEEN -> R.string.forward_check_seen
     ForwardCheckId.BLUETOOTH -> R.string.forward_check_bluetooth
+    ForwardCheckId.OWN_NOTIFICATION -> R.string.forward_check_own_notification
     ForwardCheckId.WATCH_KNOWN -> R.string.forward_check_watch_known
     ForwardCheckId.CONNECTION -> R.string.forward_check_connection
     ForwardCheckId.WATCH_ASKED -> R.string.forward_check_watch_asked

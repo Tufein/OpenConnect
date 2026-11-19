@@ -140,6 +140,8 @@ class AppContainer(
     val forwardTrail: nl.tufein.openconnect.notify.ForwardTrail = nl.tufein.openconnect.notify.ForwardTrail(),
     /** Asks Android to start the notification listener again. Tests pass a fake. */
     forwardRebind: () -> Unit = {},
+    /** Whether Android lets the app show notifications. Tests pass a fake; the app asks Android. */
+    forwardNotificationsAllowed: () -> Boolean = { true },
     /** Where a verified update APK is kept until Android installs it. The app uses its own cache directory. */
     updateDir: File = File(System.getProperty("java.io.tmpdir"), "openconnect-updates"),
     /** The network to GitHub's releases. Tests pass a fake. */
@@ -244,6 +246,7 @@ class AppContainer(
         syncBusy = { liveRegistry.syncBusy },
         trail = forwardTrail,
         rebindListener = forwardRebind,
+        notificationsAllowed = forwardNotificationsAllowed,
     )
 
     val garmin = GarminController(
@@ -383,6 +386,7 @@ class OpenConnectApp : Application() {
             forwardOwnPackage = packageName,
             forwardTrail = trail,
             forwardRebind = { PhoneNotificationListener.rebind(this) },
+            forwardNotificationsAllowed = { ForwardAccess.notificationsAllowed(this) },
             updateDir = File(cacheDir, "updates"),
             updateSigner = { apk -> nl.tufein.openconnect.updates.ApkSigners.sameAsInstalled(this, apk) },
         ) }
