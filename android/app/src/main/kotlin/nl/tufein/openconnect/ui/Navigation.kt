@@ -185,6 +185,8 @@ fun OpenConnectRoot(
     val now by vm.now.collectAsState()
     val busy by vm.busy.collectAsState()
     val watch by vm.watch.collectAsState()
+    val forward by vm.forward.collectAsState()
+    val forwardApps by vm.forwardApps.collectAsState()
     var insightsTab by rememberSaveable { mutableStateOf(InsightsTab.Week) }
     // The heatmap reads many tracks: it is only worked out while the Map tab is open (and again after the data changed).
     LaunchedEffect(insightsTab, map.loaded) { if (insightsTab == InsightsTab.HeatMap && !map.loaded) vm.loadMap() }
@@ -425,6 +427,24 @@ fun OpenConnectRoot(
                     onForgetGarmin = vm::forgetGarmin,
                     onGarminArchive = vm::setGarminArchive,
                     onGarminBackground = vm::setGarminBackground,
+                    forward = forward,
+                    onForwardEnabled = vm::setForward,
+                    onForwardApps = { nav.navigate(WATCH_APPS_ROUTE) { launchSingleTop = true } },
+                    onForwardTest = vm::testForward,
+                    onForwardReconnect = vm::forwardReconnect,
+                    onForwardHide = vm::setForwardHide,
+                    onForwardScreenOff = vm::setForwardScreenOff,
+                    onForwardRefresh = vm::refreshForward,
+                    contentPadding = padding,
+                )
+            }
+            composable(WATCH_APPS_ROUTE) {
+                LaunchedEffect(Unit) { vm.loadForwardApps() }
+                NotificationAppsScreen(
+                    apps = forwardApps,
+                    chosen = forward.apps,
+                    onBack = { nav.popBackStack() },
+                    onChoose = vm::setForwardApp,
                     contentPadding = padding,
                 )
             }

@@ -25,6 +25,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import nl.tufein.openconnect.R
+import nl.tufein.openconnect.core.watch.SkipReason
+import nl.tufein.openconnect.notify.ForwardAccess
+import nl.tufein.openconnect.notify.ForwardPhase
+import nl.tufein.openconnect.notify.ForwardUi
 import nl.tufein.openconnect.watch.BleSensor
 import nl.tufein.openconnect.core.watch.BleSync
 import nl.tufein.openconnect.watch.GarminBleWatch
@@ -56,6 +60,15 @@ fun WatchScreen(
     onForgetGarmin: () -> Unit = {},
     onGarminArchive: (Boolean) -> Unit = {},
     onGarminBackground: (Boolean) -> Unit = {},
+    forward: ForwardUi = ForwardUi(),
+    onForwardEnabled: (Boolean) -> Unit = {},
+    onForwardApps: () -> Unit = {},
+    onForwardTest: () -> Unit = {},
+    onForwardReconnect: () -> Unit = {},
+    onForwardHide: (Boolean) -> Unit = {},
+    onForwardScreenOff: (Boolean) -> Unit = {},
+    /** Asked whenever the screen is shown again, so a permission given in Android's settings is noticed. */
+    onForwardRefresh: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     val context = LocalContext.current
@@ -116,6 +129,22 @@ fun WatchScreen(
             }
         }
         item {
+            SectionTitle(stringResource(R.string.forward_title))
+            SurfaceCard {
+                ForwardControls(
+                    ui = forward,
+                    onEnabled = { on -> withBluetoothThen(on, ::withBluetooth, onForwardEnabled) },
+                    onApps = onForwardApps,
+                    onTest = onForwardTest,
+                    onReconnect = onForwardReconnect,
+                    onHide = onForwardHide,
+                    onScreenOff = onForwardScreenOff,
+                    onAllowBluetooth = { withBluetooth(onForwardRefresh) },
+                    onRefresh = onForwardRefresh,
+                )
+            }
+        }
+        item {
             SectionTitle(stringResource(R.string.watch_together_title))
             SurfaceCard {
                 Text(stringResource(R.string.watch_together_body), style = MaterialTheme.typography.bodyMedium)
@@ -163,6 +192,135 @@ fun WatchScreen(
             )
         }
     }
+}
+
+/**
+ * Switching forwarding on first asks for the Bluetooth permission (the connection needs it), then for the permission to
+ * show the persistent notification on Android 13 and newer. Switching off needs nothing.
+ */
+private fun withBluetoothThen(on: Boolean, withBluetooth: (() -> Unit) -> Unit, set: (Boolean) -> Unit) {
+    if (on) withBluetooth { set(true) } else set(false)
+}
+
+@Composable
+private fun ForwardControls(
+    ui: ForwardUi,
+    onEnabled: (Boolean) -> Unit,
+    onApps: () -> Unit,
+    onTest: () -> Unit,
+    onReconnect: () -> Unit,
+    onHide: (Boolean) -> Unit,
+    onScreenOff: (Boolean) -> Unit,
+    onAllowBluetooth: () -> Unit,
+    onRefresh: () -> Unit,
+) {
+    val context = LocalContext.current
+    // Notification access and the Bluetooth permission are given in Android's own screens: look again on return.
+    androidx.lifecycle.compose.LifecycleResumeEffect(Unit) {
+        onRefresh()
+        onPauseOrDispose { }
+    }
+    // The persistent notification needs Android 13's notification permission; without it forwarding works but shows none.
+    val notifyPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { onEnabled(true) }
+    Text(stringResource(R.string.forward_body), style = MaterialTheme.typography.bodyMedium)
+    Text(stringResource(R.string.forward_one_phone), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
+    SwitchRow(
+        checked = ui.enabled,
+        onCheckedChange = { on ->
+            val needsAsk = on && android.os.Build.VERSION.SDK_INT >= 33 &&
+                androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) !=
+                android.content.pm.PackageManager.PERMISSION_GRANTED
+            if (needsAsk) notifyPermission.launch(android.Manifest.permission.POST_NOTIFICATIONS) else onEnabled(on)
+        },
+    ) {
+        Text(stringResource(R.string.forward_switch), style = MaterialTheme.typography.bodyMedium)
+    }
+    if (!ui.enabled) return
+
+    when (ui.phase) {
+        ForwardPhase.NEEDS_ACCESS -> {
+            Text(stringResource(R.string.forward_needs_access), style = MaterialTheme.typography.bodyMedium)
+            PrimaryButton(onClick = { context.startActivity(ForwardAccess.accessSettingsIntent(context)) }, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.forward_allow_access))
+            }
+            if (ForwardAccess.mayNeedRestrictedSettings) {
+                Text(stringResource(R.string.forward_restricted), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                SecondaryButton(onClick = { context.startActivity(ForwardAccess.appDetailsIntent(context)) }, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.forward_open_app_info))
+                }
+            }
+        }
+        ForwardPhase.NEEDS_WATCH -> Text(stringResource(R.string.forward_needs_watch), style = MaterialTheme.typography.bodyMedium)
+        ForwardPhase.NEEDS_BLUETOOTH -> {
+            Text(stringResource(R.string.forward_needs_bluetooth), style = MaterialTheme.typography.bodyMedium)
+            PrimaryButton(onClick = onAllowBluetooth, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.forward_allow_bluetooth)) }
+        }
+        ForwardPhase.CONNECTING -> {
+            Text(stringResource(R.string.forward_connecting, ui.watchName.orEmpty()), style = MaterialTheme.typography.bodyMedium)
+            PixelProgress(Modifier.fillMaxWidth())
+        }
+        ForwardPhase.CONNECTED -> {
+            Text(stringResource(R.string.forward_connected, ui.watchName.orEmpty()), style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.forward_sent_count, ui.sent), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            ui.lastSentAt?.let { at ->
+                Text(stringResource(R.string.forward_last_sent, Fmt.time(at)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        ForwardPhase.WAITING -> {
+            val watch = ui.watchName ?: stringResource(R.string.forward_watch_fallback)
+            Text(
+                if (ui.error.isNullOrBlank()) stringResource(R.string.forward_waiting, watch) else stringResource(R.string.forward_waiting_detail, watch, ui.error),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            SecondaryButton(onClick = onReconnect, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.forward_try_now)) }
+        }
+        ForwardPhase.PROBLEM -> {
+            val watch = ui.watchName ?: stringResource(R.string.forward_watch_fallback)
+            Text(stringResource(R.string.forward_problem, watch, ui.error.orEmpty()), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
+            SecondaryButton(onClick = onReconnect, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.forward_try_now)) }
+        }
+        ForwardPhase.OFF -> Unit
+    }
+
+    SecondaryButton(onClick = onApps, modifier = Modifier.fillMaxWidth()) {
+        Text(stringResource(R.string.forward_choose_apps, ui.apps.size))
+    }
+    if (ui.phase == ForwardPhase.CONNECTED) {
+        SecondaryButton(onClick = onTest, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.forward_test)) }
+    }
+    SwitchRow(checked = ui.hideContent, onCheckedChange = onHide) {
+        Text(stringResource(R.string.forward_hide), style = MaterialTheme.typography.bodyMedium)
+        Text(stringResource(R.string.forward_hide_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+    SwitchRow(checked = ui.onlyWhenScreenOff, onCheckedChange = onScreenOff) {
+        Text(stringResource(R.string.forward_screen_off), style = MaterialTheme.typography.bodyMedium)
+        Text(stringResource(R.string.forward_screen_off_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+    // "It did not arrive" has an answer: the reason the last notification was held back
+    ui.lastSkipped?.let { reason ->
+        Text(
+            stringResource(R.string.forward_skipped, stringResource(skipText(reason))),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+private fun skipText(reason: SkipReason): Int = when (reason) {
+    SkipReason.OFF -> R.string.forward_skip_off
+    SkipReason.OWN_APP -> R.string.forward_skip_own_app
+    SkipReason.APP_NOT_CHOSEN -> R.string.forward_skip_app_not_chosen
+    SkipReason.ONGOING -> R.string.forward_skip_ongoing
+    SkipReason.GROUP_SUMMARY -> R.string.forward_skip_group_summary
+    SkipReason.LOCAL_ONLY -> R.string.forward_skip_local_only
+    SkipReason.CALL -> R.string.forward_skip_call
+    SkipReason.LOW_IMPORTANCE -> R.string.forward_skip_low_importance
+    SkipReason.DO_NOT_DISTURB -> R.string.forward_skip_do_not_disturb
+    SkipReason.EMPTY -> R.string.forward_skip_empty
+    SkipReason.SCREEN_ON -> R.string.forward_skip_screen_on
+    SkipReason.DUPLICATE -> R.string.forward_skip_duplicate
+    SkipReason.NOT_CONNECTED -> R.string.forward_skip_not_connected
+    SkipReason.WATCH_OFF -> R.string.forward_skip_watch_off
 }
 
 @Composable

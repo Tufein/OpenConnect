@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.0.0-rc.3: meldingen van je telefoon op het Garmin-horloge
+
+De **derde release candidate** van 1.0, weer een **GitHub-pre-release** (niet "nieuwste", de updater biedt haar niemand aan). Op verzoek van de eigenaar kan de app nu **de meldingen van je telefoon op het Garmin-horloge tonen**, zoals Gadgetbridge en de Garmin Connect-app dat doen: een bericht van een chat-app, een mail, een agenda-herinnering, voor de apps die jij kiest. Dit is de tweede …
+
+[Release notes](docs/releases/v1.0.0-rc.3.md)
+
 ## v1.0.0-rc.2: alle Garmin-horloges herkend, niet alleen de fenix
 
 De **tweede release candidate** van 1.0, weer een **GitHub-pre-release** (niet "nieuwste", de updater biedt haar niemand aan). Op verzoek van de eigenaar herkent de app nu **elke Garmin-familie**: fenix, Forerunner, Venu, vívoactive, vívosmart, Instinct, Enduro, epix, Edge, tactix, Descent, Lily en de rest, in plaats van een app die om één horloge, de fenix 8, heen was geschreven. Dit is de enige …

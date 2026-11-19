@@ -50,6 +50,11 @@
         <package android:name="com.google.android.apps.healthdata" />
         <!-- Garmin's Connect IQ app: Settings opens it directly, which needs to see whether it is installed. -->
         <package android:name="com.garmin.connectiq" />
+        <!-- The apps with an icon in the launcher: the list to choose from when sending notifications to the watch. -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
     </queries>
 
     <application
@@ -207,6 +212,26 @@
             android:name=".watch.LiveRecordingService"
             android:exported="false"
             android:foregroundServiceType="connectedDevice" />
+
+        <!-- Keeps the Bluetooth connection to the watch alive while notifications are sent to it. -->
+        <service
+            android:name=".notify.ForwardingService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
+
+        <!--
+          Notification access: Android binds this when the person switched it on in Settings, and tells it about every
+          notification. It passes the ones of the chosen apps to the watch (notify/PhoneNotificationListener.kt).
+        -->
+        <service
+            android:name=".notify.PhoneNotificationListener"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
 
         <!-- A verified update APK is shared with Android's installer through this content provider. -->
         <provider

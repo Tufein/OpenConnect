@@ -29,8 +29,13 @@ import nl.tufein.openconnect.core.watch.ble.GarminBleException
 import nl.tufein.openconnect.core.watch.ble.GarminBleSession
 import nl.tufein.openconnect.core.watch.ble.GarminBleWatchSource
 import nl.tufein.openconnect.core.watch.ble.MultiLink
+import nl.tufein.openconnect.core.watch.ble.NotificationOptions
 import nl.tufein.openconnect.core.watch.ble.PhoneIdentity
+import nl.tufein.openconnect.core.watch.ble.PostResult
+import nl.tufein.openconnect.core.watch.ble.WatchNotification
 import nl.tufein.openconnect.core.watch.ble.asFileAccess
+import nl.tufein.openconnect.notify.NotifyListener
+import nl.tufein.openconnect.notify.WatchNotifyConnection
 import java.util.ArrayDeque
 import java.util.UUID
 import java.util.concurrent.CompletableFuture
@@ -50,6 +55,13 @@ class AndroidGarminBleLink(
     private val context: Context,
     /** Asked at every sync, so the switch in the app takes effect at once. */
     private val archiveAfterRead: () -> Boolean = { false },
+    /**
+     * Where an open notification connection and the syncs find out about each other. The watch has room for one phone,
+     * so a sync reads through the connection that is open instead of making a second one.
+     */
+    val registry: LiveWatchRegistry = LiveWatchRegistry(),
+    /** The words and app names a notification connection needs; asked for each new connection, so a language change counts. */
+    private val notificationOptions: () -> NotificationOptions = { NotificationOptions() },
 ) : GarminBleLink {
     companion object {
         private val CLIENT_CONFIG: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
@@ -102,6 +114,92 @@ class AndroidGarminBleLink(
     }
 
     override suspend fun open(watch: GarminBleWatch, onStep: (GarminStep) -> Unit): OpenedWatch = withContext(Dispatchers.IO) {
+        // Notifications are being forwarded: the watch is connected to us already, so read through that connection.
+        registry.sharedFor(watch.address)?.let { live ->
+            return@withContext OpenedWatch(GarminBleWatchSource(live.files, live.name, archiveAfterRead())) {
+                runCatching { live.finishSync() } // "sync complete", but the link stays: notifications still need it
+            }
+        }
+        val sync = registry.beginSync() // the notification side waits for us while we hold the link
+        val link = try {
+            establish(watch, onStep, notifications = null)
+        } catch (e: Throwable) {
+            sync.close()
+            throw e
+        }
+        OpenedWatch(GarminBleWatchSource(link.session.asFileAccess(), link.name, archiveAfterRead())) {
+            runCatching { link.session.finishSync() }
+            Thread.sleep(300) // let "sync complete" leave before the link goes
+            link.shutdown()
+            sync.close()
+        }
+    }
+
+    override suspend fun openNotifications(
+        watch: GarminBleWatch,
+        listener: NotifyListener,
+        onStep: (GarminStep) -> Unit,
+    ): WatchNotifyConnection = withContext(Dispatchers.IO) {
+        val link = establish(watch, onStep, notificationOptions())
+        val notifier = link.session.notifier
+        if (notifier == null) {
+            link.shutdown()
+            throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, "Notifications are not available")
+        }
+        notifier.onDismissedOnWatch = listener::onDismissedOnWatch
+        val ended = java.util.concurrent.atomic.AtomicBoolean(false)
+        val published = registry.publish(
+            LiveWatchRegistry.Live(
+                address = watch.address,
+                name = link.name,
+                files = link.session.asFileAccess(),
+                usable = { !ended.get() },
+                finishSync = { link.session.finishSync() },
+            ),
+        )
+        link.session.onEnded = { error ->
+            ended.set(true)
+            published.close()
+            // Closing it ourselves is not news; a lost link is.
+            if (error.reason != GarminBleException.Reason.CLOSED) listener.onLost(error.message)
+        }
+        if (link.session.isEnded) { // it ended before the callback was in place
+            ended.set(true)
+            published.close()
+            link.shutdown()
+            throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, "The watch disconnected")
+        }
+        object : WatchNotifyConnection {
+            override val watchName: String = link.name
+
+            override fun post(notification: WatchNotification): PostResult = notifier.post(notification)
+
+            override fun remove(id: Int) = notifier.remove(id)
+
+            override fun close() {
+                ended.set(true)
+                published.close()
+                link.shutdown()
+            }
+        }
+    }
+
+    /** One connection that is ready: paired, connected, handshake done. [shutdown] ends it and can be called twice. */
+    private inner class Established(
+        val session: GarminBleSession,
+        private val connection: GattConnection,
+        private val scheduler: ExecutorScheduler,
+        val name: String,
+    ) {
+        fun shutdown() {
+            session.close()
+            connection.close()
+            scheduler.shutdown()
+        }
+    }
+
+    /** Pairs when needed, connects, raises the MTU and finishes the handshake. Throws [WatchLinkException]. */
+    private fun establish(watch: GarminBleWatch, onStep: (GarminStep) -> Unit, notifications: NotificationOptions?): Established {
         val adapter = adapter?.takeIf { it.isEnabled }
             ?: throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, "Bluetooth is off")
         val device = try {
@@ -133,6 +231,7 @@ class AndroidGarminBleLink(
             ),
             scheduler = scheduler,
             firstConnect = firstConnect,
+            notifications = notifications,
         )
         connection.onNotification = session::onNotification
         connection.onLost = { session.onDisconnected() }
@@ -143,14 +242,7 @@ class AndroidGarminBleLink(
             session.start()
             val info = session.awaitReady(HANDSHAKE_TIMEOUT_MS)
             // the name the watch gives itself, else the model its product number stands for, else what the scan showed
-            val name = info.nameOr(watch.name)
-            OpenedWatch(GarminBleWatchSource(session.asFileAccess(), name, archiveAfterRead())) {
-                runCatching { session.finishSync() }
-                Thread.sleep(300) // let "sync complete" leave before the link goes
-                session.close()
-                connection.close()
-                scheduler.shutdown()
-            }
+            return Established(session, connection, scheduler, info.nameOr(watch.name))
         } catch (e: Exception) {
             session.close()
             connection.close()

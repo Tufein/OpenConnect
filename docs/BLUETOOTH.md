@@ -14,6 +14,10 @@ product number in the advertisement and by name (heart rate straps, lights and s
 on the list Gadgetbridge supports, or that needs Garmin's newer sync protocol, carries a note in the list. What is
 recognised and why: [GARMIN_DEVICES.md](GARMIN_DEVICES.md).
 
+**Notifications.** From v1.0.0-rc.3 the same connection can also show your phone's notifications on the watch; see
+[NOTIFICATIONS.md](NOTIFICATIONS.md). The watch has room for one phone: while that is switched on, a sync reads through the
+open connection, and the Garmin Connect app cannot connect to the same watch.
+
 ## How to use it
 
 1. On the watch: *Settings, Connectivity, Phone, Pair phone*.

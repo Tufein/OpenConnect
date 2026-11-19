@@ -28,6 +28,8 @@ class FakeGarminWatch(
     /** Send these extra messages right after DEVICE_INFORMATION, to see how the phone answers. */
     private val extraAfterHello: List<GfdiMessage> = emptyList(),
     private val fileDates: Map<Int, Long> = emptyMap(),
+    /** Subscribe to phone notifications as soon as the introductions are done, and ask for details of every one announced. */
+    private val notifications: Boolean = false,
 ) {
     lateinit var phone: GarminBleSession
     private val thread = Executors.newSingleThreadExecutor { r -> Thread(r, "fake-watch").apply { isDaemon = true } }
@@ -37,6 +39,24 @@ class FakeGarminWatch(
     val fromPhone = CopyOnWriteArrayList<GfdiMessage>()
     val managementFromPhone = CopyOnWriteArrayList<ByteArray>()
     val archived = CopyOnWriteArrayList<Int>()
+
+    /** What the watch learned from each notification update: type, flags, category, count, id, phone flags. */
+    val updates = CopyOnWriteArrayList<IntArray>()
+
+    /** What the watch shows for each notification once it has asked for details: attribute code to bytes. */
+    val shown = java.util.concurrent.ConcurrentHashMap<Int, Map<Int, ByteArray>>()
+
+    /** How many complete answers about a notification the watch has received. */
+    val answersReceived = java.util.concurrent.atomic.AtomicInteger()
+
+    /** The names of apps the watch asked for, package to name. */
+    val appNames = java.util.concurrent.ConcurrentHashMap<String, String>()
+
+    /** The payload of the phone's answer to the watch's last notification subscription. */
+    @Volatile var subscriptionReply: ByteArray? = null
+    private val details = java.io.ByteArrayOutputStream()
+    private var detailsTotal = 0
+    private var detailsCrc = 0
 
     private var handle = 0
     private var mlr: MlrChannel? = null
@@ -51,6 +71,20 @@ class FakeGarminWatch(
     fun shutdown() {
         thread.shutdownNow()
         scheduler.shutdown()
+    }
+
+    /** The watch asks the phone to send (or stop sending) notifications. */
+    fun subscribeToNotifications(on: Boolean = true) =
+        thread.execute { send(GfdiMessage(GfdiType.NOTIFICATION_SUBSCRIPTION, byteArrayOf(if (on) 1 else 0, 0))) }
+
+    /** The person taps "dismiss" on the watch. */
+    fun dismissOnWatch(id: Int) = thread.execute {
+        send(GfdiMessage.build(GfdiType.NOTIFICATION_CONTROL) { byte(0x80); int(id); byte(98) })
+    }
+
+    /** The watch asks what an app is called. */
+    fun askAppName(pkg: String) = thread.execute {
+        send(GfdiMessage.build(GfdiType.NOTIFICATION_CONTROL) { byte(1); bytes(pkg.toByteArray()); byte(0); byte(0) })
     }
 
     /** Waits until everything queued so far has been handled. */
@@ -147,8 +181,12 @@ class FakeGarminWatch(
                         val next = r.int()
                         if (status == 0) sendChunk(next)
                     }
+                    original == GfdiType.NOTIFICATION_SUBSCRIPTION -> subscriptionReply = message.payload
                 }
             }
+            GfdiType.CONFIGURATION -> if (notifications) send(GfdiMessage(GfdiType.NOTIFICATION_SUBSCRIPTION, byteArrayOf(1, 0)))
+            GfdiType.NOTIFICATION_UPDATE -> onNotificationUpdate(message.payload)
+            GfdiType.NOTIFICATION_DATA -> onNotificationData(message)
             GfdiType.DOWNLOAD_REQUEST -> {
                 val index = r.short()
                 val bytes = if (index == 0) directory() else files[index]?.second
@@ -164,6 +202,80 @@ class FakeGarminWatch(
             GfdiType.SET_FILE_FLAG -> {
                 archived += r.short()
                 send(GfdiMessage.response(GfdiType.SET_FILE_FLAG))
+            }
+        }
+    }
+
+    /** The phone announced a notification: note it, acknowledge it and (like a real watch) ask what it says. */
+    private fun onNotificationUpdate(payload: ByteArray) {
+        val b = ByteBuffer.wrap(payload).order(ByteOrder.LITTLE_ENDIAN)
+        val type = b.get().toInt() and 0xFF
+        val flags = b.get().toInt() and 0xFF
+        val category = b.get().toInt() and 0xFF
+        val count = b.get().toInt() and 0xFF
+        val id = b.getInt()
+        val phoneFlags = b.get().toInt() and 0xFF
+        updates += intArrayOf(type, flags, category, count, id, phoneFlags)
+        send(GfdiMessage.response(GfdiType.NOTIFICATION_UPDATE))
+        if (type == 2) {
+            shown.remove(id)
+            return
+        }
+        // APP_IDENTIFIER, TITLE (64), MESSAGE (500), MESSAGE_SIZE, DATE and ACTIONS (32, plus the extra byte)
+        send(
+            GfdiMessage.build(GfdiType.NOTIFICATION_CONTROL) {
+                byte(0); int(id)
+                byte(0); byte(1); short(64); byte(3); short(500); byte(4); byte(5); byte(127); short(32); byte(1)
+            },
+        )
+    }
+
+    /** A chunk of an answer: check the offset and the running checksum, acknowledge, and read the answer when it is whole. */
+    private fun onNotificationData(message: GfdiMessage) {
+        val r = message.reader()
+        val total = r.short()
+        val crc = r.short()
+        val offset = r.short()
+        val chunk = r.rest()
+        if (offset == 0) {
+            details.reset()
+            detailsTotal = total
+            detailsCrc = 0
+        }
+        detailsCrc = GarminCrc.compute(chunk, seed = detailsCrc)
+        if (detailsCrc != crc || offset != details.size()) {
+            send(GfdiMessage.response(GfdiType.NOTIFICATION_DATA) { byte(3) }) // checksum mismatch
+            return
+        }
+        details.write(chunk)
+        send(GfdiMessage.response(GfdiType.NOTIFICATION_DATA) { byte(0) })
+        if (details.size() == detailsTotal) readAnswer(details.toByteArray())
+    }
+
+    private fun readAnswer(bytes: ByteArray) {
+        val b = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
+        when (b.get().toInt()) {
+            0 -> {
+                val id = b.getInt()
+                val attributes = LinkedHashMap<Int, ByteArray>()
+                while (b.hasRemaining()) {
+                    val code = b.get().toInt() and 0xFF
+                    val value = ByteArray(b.getShort().toInt() and 0xFFFF).also { b.get(it) }
+                    attributes[code] = value
+                }
+                shown[id] = attributes
+                answersReceived.incrementAndGet()
+            }
+            1 -> {
+                val pkg = StringBuilder()
+                while (true) {
+                    val c = b.get().toInt()
+                    if (c == 0) break
+                    pkg.append(c.toChar())
+                }
+                b.get() // attribute 0: the name
+                val name = ByteArray(b.getShort().toInt() and 0xFFFF).also { b.get(it) }
+                appNames[pkg.toString()] = String(name)
             }
         }
     }

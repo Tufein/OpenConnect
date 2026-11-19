@@ -42,8 +42,13 @@ class FakeBle : HeartRateLink {
 class FakeGarminBle(
     var nearby: List<GarminBleWatch> = emptyList(),
     var findError: String? = null,
-    var open: suspend (GarminBleWatch, (GarminStep) -> Unit) -> OpenedWatch,
+    /** What opening a connection for notifications does; null means "cannot". */
+    var openNotifications: (suspend (GarminBleWatch, nl.tufein.openconnect.notify.NotifyListener) -> nl.tufein.openconnect.notify.WatchNotifyConnection)? = null,
+    // last, so a test can still pass it as the trailing lambda
+    var open: suspend (GarminBleWatch, (GarminStep) -> Unit) -> OpenedWatch = { _, _ -> error("not opened") },
 ) : GarminBleLink {
+    val notifyOpened = java.util.concurrent.CopyOnWriteArrayList<GarminBleWatch>()
+
     @Volatile var searching = false
     val opened = java.util.concurrent.CopyOnWriteArrayList<GarminBleWatch>()
 
@@ -60,6 +65,16 @@ class FakeGarminBle(
     override suspend fun open(watch: GarminBleWatch, onStep: (GarminStep) -> Unit): OpenedWatch {
         opened += watch
         return open.invoke(watch, onStep)
+    }
+
+    override suspend fun openNotifications(
+        watch: GarminBleWatch,
+        listener: nl.tufein.openconnect.notify.NotifyListener,
+        onStep: (GarminStep) -> Unit,
+    ): nl.tufein.openconnect.notify.WatchNotifyConnection {
+        notifyOpened += watch
+        val make = openNotifications ?: throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, "not available")
+        return make(watch, listener)
     }
 }
 

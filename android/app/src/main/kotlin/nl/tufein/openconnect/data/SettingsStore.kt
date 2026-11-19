@@ -353,6 +353,22 @@ class SettingsStore(
         override val gear: String get() = this@SettingsStore.gear
     }
 
+    /** What the person chose for sending phone notifications to the watch. Everything is off or empty until they choose. */
+    val forwarding: nl.tufein.openconnect.notify.ForwardStore = object : nl.tufein.openconnect.notify.ForwardStore {
+        override var enabled: Boolean
+            get() = prefs.getBoolean(KEY_FORWARD, false)
+            set(value) = prefs.edit().putBoolean(KEY_FORWARD, value).apply()
+        override var apps: Set<String>
+            get() = (prefs.getString(KEY_FORWARD_APPS, "") ?: "").lines().filter { it.isNotBlank() }.toSet()
+            set(value) = prefs.edit().putString(KEY_FORWARD_APPS, value.sorted().joinToString("\n")).apply()
+        override var hideContent: Boolean
+            get() = prefs.getBoolean(KEY_FORWARD_HIDE, false)
+            set(value) = prefs.edit().putBoolean(KEY_FORWARD_HIDE, value).apply()
+        override var onlyWhenScreenOff: Boolean
+            get() = prefs.getBoolean(KEY_FORWARD_SCREEN_OFF, false)
+            set(value) = prefs.edit().putBoolean(KEY_FORWARD_SCREEN_OFF, value).apply()
+    }
+
     /** The Health Connect switch: send activities after every sync. Off by default. */
     val health: HealthSettings = object : HealthSettings {
         override var auto: Boolean
@@ -422,6 +438,10 @@ class SettingsStore(
         private const val KEY_SYNC_LOG = "sync_log"
         private const val KEY_HEALTH_AUTO = "health_connect_auto"
         private const val KEY_HEALTH_LEDGER = "health_connect_ledger"
+        private const val KEY_FORWARD = "forward_enabled"
+        private const val KEY_FORWARD_APPS = "forward_apps"
+        private const val KEY_FORWARD_HIDE = "forward_hide_content"
+        private const val KEY_FORWARD_SCREEN_OFF = "forward_only_screen_off"
         private const val KEY_NUDGES = "nudges_enabled"
         private const val KEY_NUDGES_SENT = "nudges_sent"
         private const val KEY_BLE_ARCHIVE = "ble_archive_after_read"

@@ -7,9 +7,10 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: release candidate 1.0.0-rc.2** (a GitHub *pre-release*; the [latest release](https://github.com/Tufein/OpenConnect/releases/latest)
-> is the last full version, v0.58.0). Code is frozen: only fixes and texts until 1.0 (rc.2 is the one exception, made at
-> the owner's request: every Garmin family is recognised, not only the fenix 8, see [docs/GARMIN_DEVICES.md](docs/GARMIN_DEVICES.md)).
+> **Status: release candidate 1.0.0-rc.3** (a GitHub *pre-release*; the [latest release](https://github.com/Tufein/OpenConnect/releases/latest)
+> is the last full version, v0.58.0). Code is frozen: only fixes and texts until 1.0 (rc.2 and rc.3 are the two exceptions, made at
+> the owner's request: rc.2 recognises every Garmin family, not only the fenix 8, see [docs/GARMIN_DEVICES.md](docs/GARMIN_DEVICES.md);
+> rc.3 sends your phone's notifications to the watch, see [docs/NOTIFICATIONS.md](docs/NOTIFICATIONS.md)).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). What stands between this candidate and 1.0 is in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).
