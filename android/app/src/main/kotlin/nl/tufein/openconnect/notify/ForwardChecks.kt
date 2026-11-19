@@ -13,7 +13,7 @@ data class ForwardCheck(val id: ForwardCheckId, val state: CheckState, val detai
 
 /** What to tell the person to try, picked from what the checks found. */
 enum class ForwardHint {
-    LISTENER_NOT_STARTED, NOTHING_SEEN, CLOSE_GARMIN_CONNECT, BATTERY, WATCH_NOT_ASKING, WATCH_SAID_NO, WATCH_IGNORES, CHOOSE_APPS,
+    LISTENER_NOT_STARTED, NOTHING_SEEN, CLOSE_GARMIN_CONNECT, BATTERY, WATCH_NOT_ASKING, WATCH_SAID_NO, WATCH_IGNORES, WATCH_SILENT, CHOOSE_APPS,
     ALLOW_OWN_NOTIFICATION,
 }
 
@@ -81,11 +81,11 @@ object ForwardChecks {
                     n.answered > 0 && n.failed == 0 -> CheckState.OK
                     n.answered > 0 -> CheckState.WARN
                     n.announced == 0 -> CheckState.WAIT
-                    n.asked == 0 -> CheckState.FAIL // the watch was told, and never asked what it says
+                    n.asked == 0 -> CheckState.FAIL // the watch was told, and never asked what it says (or even confirmed it)
                     n.failed > 0 -> CheckState.FAIL
                     else -> CheckState.WAIT
                 },
-                detail = if (n.announced > 0) "${n.announced}/${n.asked}/${n.answered}" else null,
+                detail = if (n.announced > 0) "${n.announced}/${n.acknowledged}/${n.asked}/${n.answered}" else null,
             ),
         )
     }
@@ -111,6 +111,8 @@ object ForwardChecks {
             ForwardPhase.CONNECTED -> when {
                 n.watch == WatchAsk.OFF -> out += ForwardHint.WATCH_SAID_NO
                 n.watch == WatchAsk.ASSUMED -> out += ForwardHint.WATCH_NOT_ASKING
+                // told, and not a word back: the link is probably dead, which the connection notices and repairs by itself
+                n.announced > 0 && n.asked == 0 && n.acknowledged == 0 && n.unanswered > 0 -> out += ForwardHint.WATCH_SILENT
                 n.announced > 0 && n.asked == 0 -> out += ForwardHint.WATCH_IGNORES
             }
         }

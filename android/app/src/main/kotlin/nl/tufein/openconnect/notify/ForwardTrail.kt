@@ -20,7 +20,8 @@ class ForwardTrail(
     private val capacity: Int = 150,
     private val now: () -> Instant = { Instant.now() },
 ) {
-    data class Line(val at: Instant, val text: String)
+    /** One line; [repeat] says how many times in a row the same line came (the watch sends many alike in a burst). */
+    data class Line(val at: Instant, val text: String, val repeat: Int = 1)
 
     private val lock = Any()
     private val lines = ArrayDeque<Line>()
@@ -32,7 +33,14 @@ class ForwardTrail(
     fun add(text: String) {
         val line = Line(now(), text.take(MAX_LINE))
         synchronized(lock) {
-            lines.addLast(line)
+            // the same line again right after itself is counted, not repeated: a burst of twenty alike would push out the rest
+            val last = lines.lastOrNull()
+            if (last != null && last.text == line.text) {
+                lines.removeLast()
+                lines.addLast(line.copy(repeat = last.repeat + 1))
+            } else {
+                lines.addLast(line)
+            }
             while (lines.size > capacity) lines.removeFirst()
             _lines.value = lines.toList()
         }
@@ -56,7 +64,7 @@ class ForwardTrail(
             val time = DateTimeFormatter.ofPattern("HH:mm:ss").withZone(zone)
             return buildString {
                 appendLine(header)
-                for (line in lines) appendLine("${time.format(line.at)}  ${line.text}")
+                for (line in lines) appendLine("${time.format(line.at)}  ${line.text}${if (line.repeat > 1) " (x${line.repeat})" else ""}")
             }.trimEnd()
         }
     }

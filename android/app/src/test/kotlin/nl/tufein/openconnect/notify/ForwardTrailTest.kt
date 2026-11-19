@@ -54,4 +54,21 @@ class ForwardTrailTest {
         workers.forEach { it.join() }
         assertEquals(400, t.flow.value.size)
     }
+
+    @Test
+    fun `the same line again and again is counted once, not repeated`() {
+        val t = trail(capacity = 5)
+        t.add("start")
+        repeat(11) { t.add("watch sent PROTOBUF_REQUEST (5043)") }
+        t.add("end")
+        assertEquals(3, t.flow.value.size)
+        assertEquals(11, t.flow.value[1].repeat)
+        val text = t.asText("header", ZoneId.of("Europe/Amsterdam"))
+        assertTrue("watch sent PROTOBUF_REQUEST (5043) (x11)" in text, text)
+        assertTrue("start" in text && "end" in text)
+        // a line that was seen before, but not just now, is a new line
+        t.add("start")
+        t.add("start")
+        assertEquals(listOf(1, 11, 1, 2), t.flow.value.map { it.repeat })
+    }
 }

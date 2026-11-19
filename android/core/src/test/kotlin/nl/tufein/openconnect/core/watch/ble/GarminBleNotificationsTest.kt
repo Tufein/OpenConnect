@@ -30,12 +30,14 @@ class GarminBleNotificationsTest {
         useMlr: Boolean = true,
         notifications: NotificationOptions? = NotificationOptions("Dismiss", { if (it == "com.whatsapp") "WhatsApp" else null }),
         askGraceMs: Long = GarminBleSession.ASK_GRACE_MS,
+        heartbeatMs: Long = GarminBleSession.HEARTBEAT_MS,
+        clock: () -> Instant = { Instant.parse("2026-11-19T13:30:05Z") },
     ): GarminBleSession {
         watches += watch
         val session = GarminBleSession(
             watch.pipe, phone, scheduler, maxWrite = 20, useMlr = useMlr,
-            now = { Instant.parse("2026-11-19T13:30:05Z") }, zone = { ZoneId.of("Europe/Amsterdam") },
-            log = { log += it }, notifications = notifications, askGraceMs = askGraceMs,
+            now = clock, zone = { ZoneId.of("Europe/Amsterdam") },
+            log = { log += it }, notifications = notifications, askGraceMs = askGraceMs, heartbeatMs = heartbeatMs,
         )
         watch.phone = session
         session.start()
@@ -252,5 +254,74 @@ class GarminBleNotificationsTest {
         assertTrue(log.any { "watch sent CONFIGURATION (5050)" in it }, "log: $log")
         assertTrue(log.any { "watch sent NOTIFICATION_SUBSCRIPTION (5036)" in it }, "log: $log")
         session.close()
+    }
+
+    private fun registered(handle: Int, reliable: Boolean) = java.nio.ByteBuffer.allocate(16).order(java.nio.ByteOrder.LITTLE_ENDIAN).apply {
+        put(0)
+        put(MultiLink.REGISTER_RESP.toByte())
+        putLong(MultiLink.CLIENT_ID)
+        putShort(MultiLink.SERVICE_GFDI.toShort())
+        put(0) // status: granted
+        put(handle.toByte())
+        put(if (reliable) 1 else 0)
+    }.array().copyOf(15)
+
+    @Test
+    fun `a watch that stops acknowledging ends the session, so the connection is made again, and the log shows what was sent`() {
+        val manual = ManualScheduler()
+        var clock = Instant.parse("2026-11-19T19:02:00Z")
+        val lines = ArrayList<String>()
+        val written = ArrayList<ByteArray>()
+        val session = GarminBleSession(
+            { written += it }, phone, manual, maxWrite = 20, useMlr = true, now = { clock },
+            zone = { ZoneId.of("Europe/Amsterdam") }, log = { lines += it }, notifications = NotificationOptions(),
+        )
+        var ended: GarminBleException? = null
+        session.onEnded = { ended = it }
+
+        assertEquals(null, session.heardSecondsAgo(), "nothing heard yet")
+        session.onNotification(registered(handle = 1, reliable = true))
+        clock = clock.plusSeconds(95)
+        assertEquals(95L, session.heardSecondsAgo())
+
+        session.notifier!!.assumeSubscribed()
+        session.notifier!!.post(note(7))
+        assertTrue(lines.any { it.startsWith("to the watch: NOTIFICATION_UPDATE (5033), link: 0 unacknowledged, 0 waiting, window 32") }, lines.toString())
+        assertTrue(lines.any { "announced notification 7 to the watch" in it && "last heard from the watch 95 s ago" in it }, lines.toString())
+
+        manual.advance(5_001)
+        assertEquals(1, session.notifier!!.stats.unanswered)
+        assertEquals(null, ended, "not dead yet")
+        manual.advance(60_000)
+        assertEquals(GarminBleException.Reason.DISCONNECTED, ended?.reason, lines.toString())
+        assertTrue(session.isEnded)
+        assertTrue(lines.any { "the link is dead" in it }, lines.toString())
+    }
+
+    @Test
+    fun `what the watch answers is named in the log, and a message nobody handles is answered unsupported`() {
+        val watch = FakeGarminWatch(files = emptyMap(), notifications = true)
+        val session = connect(watch)
+        eventually("the watch subscribes") { session.notifier!!.subscribed }
+        assertEquals(PostResult.SENT, session.notifier!!.post(note(9)))
+        eventually("the watch confirms the announcement") { log.any { "watch answered NOTIFICATION_UPDATE (5033): ACK" in it } }
+        eventually("the notifier counts the confirmation") { session.notifier!!.stats.acknowledged >= 1 }
+        assertTrue(log.any { "to the watch: SUPPORTED_FILE_TYPES_REQUEST (5031)" in it }, log.toString())
+    }
+
+    @Test
+    fun `a link that has been quiet gets a small question, again and again`() {
+        val watch = FakeGarminWatch(files = emptyMap(), notifications = true)
+        // the real clock, a heartbeat every 200 ms: quiet means 150 ms without a packet
+        val session = connect(watch, heartbeatMs = 200, clock = { Instant.now() })
+        eventually("the watch subscribes") { session.notifier!!.subscribed }
+        eventually("the heartbeat goes out") { log.any { "heartbeat: the watch has been quiet" in it } }
+        eventually("and again") { log.count { "heartbeat: the watch has been quiet" in it } >= 3 }
+        // each one is a real question the watch can answer: a file types request after the introductions
+        assertTrue(watch.fromPhone.count { it.type == GfdiType.SUPPORTED_FILE_TYPES_REQUEST } >= 3)
+        session.close()
+        val heartbeats = log.count { "heartbeat:" in it }
+        Thread.sleep(500)
+        assertEquals(heartbeats, log.count { "heartbeat:" in it }, "a closed session asks nothing more")
     }
 }

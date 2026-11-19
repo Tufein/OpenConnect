@@ -205,8 +205,8 @@ class GarminBleSessionTest {
         assertEquals(3, answers.getValue(GfdiType.PROTOBUF_REQUEST).payload.size) // a plain ACK: the message was whole
         assertEquals(GfdiStatus.ACK, answers.getValue(GfdiType.BATTERY_STATUS).payload[2].toInt())
         assertEquals(GfdiStatus.UNSUPPORTED, answers.getValue(4999).payload[2].toInt())
-        // a known message we have no use for is left alone, as Gadgetbridge does
-        assertTrue(GfdiType.MUSIC_CONTROL_CAPABILITIES !in answers)
+        // the watch's question about music commands is answered (Gadgetbridge answers it too), with none: ACK and zero commands
+        assertEquals(listOf(GfdiStatus.ACK, 0), answers.getValue(GfdiType.MUSIC_CONTROL_CAPABILITIES).payload.drop(2).map { it.toInt() })
         session.close()
     }
 

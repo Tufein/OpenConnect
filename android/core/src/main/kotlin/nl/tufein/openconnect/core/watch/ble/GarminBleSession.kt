@@ -63,6 +63,8 @@ class GarminBleSession(
     notifications: NotificationOptions? = null,
     /** How long a notification session waits for the watch to ask for notifications before it sends them anyway. */
     private val askGraceMs: Long = ASK_GRACE_MS,
+    /** How often a notification session checks that the watch is still there; a quiet link gets a small question. */
+    private val heartbeatMs: Long = HEARTBEAT_MS,
 ) {
     private val lock = Any()
     private val cobs = CobsStream()
@@ -74,7 +76,16 @@ class GarminBleSession(
     private var info: GarminDeviceInfo? = null
     private var initialized = false
     private var assumeTimer: Scheduler.Cancellable? = null
+    private var heartbeat: Scheduler.Cancellable? = null
     @Volatile private var closed = false
+
+    /** When anything last came in from the watch (any packet at all), in epoch milliseconds; 0 before the first. */
+    @Volatile private var lastHeardMs = 0L
+
+    /** Seconds since the watch last sent anything, or null when it never has: a link that went quiet shows here. */
+    fun heardSecondsAgo(): Long? = heardMillisAgo()?.let { it / 1000 }
+
+    private fun heardMillisAgo(): Long? = lastHeardMs.takeIf { it > 0 }?.let { (now().toEpochMilli() - it).coerceAtLeast(0) }
     private var transfer: Transfer? = null
 
     /**
@@ -84,7 +95,7 @@ class GarminBleSession(
     val notifier: GarminNotifications? = notifications?.let {
         GarminNotifications(
             send = ::send, scheduler = scheduler, zone = zone, now = now, dismissLabel = it.dismissLabel,
-            appName = it.appName, log = log,
+            appName = it.appName, log = log, heardAgo = ::heardSecondsAgo,
         )
     }
 
@@ -119,6 +130,7 @@ class GarminBleSession(
 
     fun onNotification(packet: ByteArray) {
         if (closed || packet.isEmpty()) return
+        lastHeardMs = now().toEpochMilli()
         val (channel, gfdi) = synchronized(lock) { mlr to gfdiHandle }
         if (channel != null && gfdi != null && MlrChannel.isMlr(packet) && MlrChannel.handleOf(packet) == (gfdi and 0x07)) {
             channel.onPacket(packet)
@@ -151,6 +163,7 @@ class GarminBleSession(
             transfer = null
         }
         assumeTimer?.cancel()
+        heartbeat?.cancel()
         notifier?.close()
         readyFuture.completeExceptionally(error)
         pending?.result?.completeExceptionally(error)
@@ -186,7 +199,10 @@ class GarminBleSession(
                     mlr?.close()
                     gfdiHandle = m.handle
                     mlr = if (m.reliable) {
-                        MlrChannel(m.handle, maxWrite, pipe::write, ::onGfdiBytes, scheduler)
+                        MlrChannel(
+                            m.handle, maxWrite, pipe::write, ::onGfdiBytes, scheduler, log = log,
+                            onDead = { fail(GarminBleException(GarminBleException.Reason.DISCONNECTED, "The watch stopped acknowledging what we send")) },
+                        )
                     } else {
                         null
                     }
@@ -231,6 +247,10 @@ class GarminBleSession(
     private fun send(message: GfdiMessage) {
         val (handle, channel) = synchronized(lock) { gfdiHandle to mlr }
         if (handle == null || closed) return
+        // what the phone starts (answers and the bulk of file and notification data are left out, the notifier logs its own)
+        if (message.type != GfdiType.RESPONSE && message.type != GfdiType.NOTIFICATION_DATA && message.type != GfdiType.FILE_TRANSFER_DATA) {
+            log("to the watch: ${GfdiType.describe(message.type)}${channel?.let { ", link: ${it.state()}" }.orEmpty()}")
+        }
         val payload = Cobs.encode(message.encode())
         if (channel != null) {
             channel.maxPacketSize = maxWrite
@@ -249,7 +269,11 @@ class GarminBleSession(
     // --------------------------------------------------------------------------------------- GFDI
 
     private fun handle(message: GfdiMessage) {
-        if (message.type != GfdiType.FILE_TRANSFER_DATA) log("watch sent ${GfdiType.describe(message.type)}")
+        if (message.type == GfdiType.RESPONSE) {
+            log("watch answered ${answerText(message)}")
+        } else if (message.type != GfdiType.FILE_TRANSFER_DATA) {
+            log("watch sent ${GfdiType.describe(message.type)}")
+        }
         when (message.type) {
             GfdiType.DEVICE_INFORMATION -> {
                 val device = GarminDeviceInfo.parse(message)
@@ -302,12 +326,24 @@ class GarminBleSession(
                     )
                 }
             }
+            // the watch asks which music commands we can do: none, but it gets its answer (Gadgetbridge answers with its list)
+            GfdiType.MUSIC_CONTROL_CAPABILITIES -> send(GfdiMessage.response(message.type) { byte(0) })
             GfdiType.BATTERY_STATUS, GfdiType.FILE_AVAILABLE, GfdiType.SYNCHRONIZATION, GfdiType.WEATHER_REQUEST,
             GfdiType.FIND_MY_PHONE_REQUEST, GfdiType.FIND_MY_PHONE_CANCEL,
             -> send(GfdiMessage.response(message.type))
-            in GfdiType.KNOWN -> log("ignored message ${message.type}")
+            // every message gets an answer, as Gadgetbridge does: one we do not handle gets "unsupported", never silence
             else -> send(GfdiMessage.response(message.type, GfdiStatus.UNSUPPORTED))
         }
+    }
+
+    /** What a RESPONSE from the watch says, for the log: which message it answers and with what status. */
+    private fun answerText(message: GfdiMessage): String = try {
+        val r = message.reader()
+        val original = r.short()
+        val status = r.byte()
+        "${GfdiType.describe(original)}: ${GfdiStatus.name(status)}"
+    } catch (e: GfdiFormatException) {
+        "(unreadable answer)"
     }
 
     /** A session that only syncs files answers the watch's "may I send you notifications" with no, as Gadgetbridge does when they are off. */
@@ -337,12 +373,35 @@ class GarminBleSession(
         notifier?.let { n ->
             // the watch normally asks for notifications by itself soon after the introductions; if it does not, send anyway
             assumeTimer = scheduler.schedule(askGraceMs) { n.assumeSubscribed() }
+            scheduleHeartbeat()
         }
         readyFuture.complete(device ?: GarminDeviceInfo(0, 0, 0, 0, 0, "", "Garmin", ""))
     }
 
+    /**
+     * A link can die without Android saying so, and nothing notices until something is sent (a notification, which is then
+     * lost). So a connection kept open for notifications asks the watch something small when it has been quiet for most
+     * of [heartbeatMs]: the answer proves the link lives, and no answer makes the channel give up and the connection
+     * start again, before the next notification needs it.
+     */
+    private fun scheduleHeartbeat() {
+        if (closed) return
+        heartbeat = scheduler.schedule(heartbeatMs) { beat() }
+    }
+
+    private fun beat() {
+        if (closed) return
+        val quiet = heardMillisAgo()
+        if (quiet == null || quiet >= heartbeatMs * 3 / 4) {
+            log("heartbeat: the watch has been quiet; asking it something small")
+            send(GfdiOut.supportedFileTypesRequest())
+        }
+        scheduleHeartbeat()
+    }
+
     companion object {
         const val ASK_GRACE_MS = 10_000L
+        const val HEARTBEAT_MS = 60_000L
     }
 
     private fun onResponse(r: GfdiReader) {

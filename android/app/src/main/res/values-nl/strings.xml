@@ -1235,7 +1235,7 @@
     <string name="forward_check_connection">Verbinding met het horloge</string>
     <string name="forward_check_watch_asked">Horloge vroeg om meldingen</string>
     <string name="forward_check_delivery">Meldingen getoond op het horloge</string>
-    <string name="forward_check_delivery_detail">gemeld %1$d, details gevraagd %2$d, afgeleverd %3$d</string>
+    <string name="forward_check_delivery_detail">gemeld %1$d, door het horloge bevestigd %2$d, details gevraagd %3$d, afgeleverd %4$d</string>
     <string name="forward_check_waiting">Wachtend tot het horloge erom vraagt: %1$d</string>
     <string name="forward_step_pairing">koppelen</string>
     <string name="forward_step_connecting">verbinden</string>
@@ -1252,6 +1252,7 @@
     <string name="forward_hint_battery">De verbinding werkte en viel daarna weg. De telefoon bespaart misschien stroom: zet OpenConnect in de batterij-instellingen op Onbeperkt (niet geoptimaliseerd).</string>
     <string name="forward_hint_not_asking">Het horloge heeft niet om meldingen gevraagd, dus OpenConnect stuurt ze toch. Komt er niets op, kijk dan in de instellingen van het horloge (onder Telefoon) of meldingen aan staan.</string>
     <string name="forward_hint_said_no">Het horloge heeft de telefoon laten weten dat het geen meldingen wil. Zet ze aan in de instellingen van het horloge (onder Telefoon).</string>
+    <string name="forward_hint_silent">Het horloge antwoordt op niets wat we sturen, zelfs niet met een bevestiging. De verbinding is waarschijnlijk dood; de app merkt dat na ongeveer een minuut en verbindt opnieuw. Blijft het zo, zet de instelling dan uit en aan en bekijk het logboek hieronder.</string>
     <string name="forward_hint_ignores">Het horloge hoorde van meldingen maar vroeg nooit wat erin staat. Kijk in de meldingsinstellingen van het horloge en bekijk het logboek hieronder.</string>
     <string name="forward_hint_choose_apps">Android geeft meldingen door, maar er is nog geen app gekozen. Tik op Kies apps.</string>
     <string name="forward_check_own_notification">Android laat OpenConnect zijn vaste melding tonen</string>

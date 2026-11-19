@@ -492,4 +492,55 @@ class GarminNotificationsTest {
         assertEquals(PostResult.SENT, h.post(note(1)))
         assertEquals(1, updates().size)
     }
+
+    @Test
+    fun `the announcement is logged with its bytes, which hold no text, and how long ago the watch last spoke`() {
+        val log = ArrayList<String>()
+        val h = GarminNotifications(
+            send = { sent += it }, scheduler = scheduler, zone = { ZoneId.of("Europe/Amsterdam") },
+            now = { Instant.parse("2026-11-19T13:30:05Z") }, appName = { apps[it] }, log = { log += it }, heardAgo = { 95L },
+        )
+        h.handle(GfdiMessage(GfdiType.NOTIFICATION_SUBSCRIPTION, byteArrayOf(1, 0)))
+        h.post(note(7, body = "geheim bericht"))
+        val line = log.single { it.startsWith("announced notification 7") }
+        assertTrue("last heard from the watch 95 s ago" in line, line)
+        assertTrue("bytes " in line && "geheim" !in line && "Jan" !in line, line)
+        // [length lo, hi][type 5033 = a9 13][add=00][flags 12][category sms=0c][count 01][id 4 bytes][phone flags][crc 2]
+        val hex = line.substringAfter("bytes ").substringBefore(",")
+        assertTrue(hex.startsWith("0f 00 a9 13 00 12 0c 01"), hex)
+        assertTrue(log.any { "(its message: 01 00)" in it }, log.toString())
+    }
+
+    @Test
+    fun `an announcement the watch confirms is counted, and one it does not is said so after five seconds`() {
+        val log = ArrayList<String>()
+        val h = GarminNotifications(
+            send = { sent += it }, scheduler = scheduler, now = { Instant.parse("2026-11-19T13:30:05Z") },
+            log = { log += it }, heardAgo = { null },
+        )
+        h.handle(GfdiMessage(GfdiType.NOTIFICATION_SUBSCRIPTION, byteArrayOf(1, 0)))
+        h.post(note(1))
+        h.handle(GfdiMessage.response(GfdiType.NOTIFICATION_UPDATE))
+        assertEquals(1, h.stats.acknowledged)
+        assertTrue(log.any { "the watch confirmed an announcement: ACK" in it }, log.toString())
+        scheduler.advance(GarminNotifications.ANSWER_WAIT_MS + 1)
+        assertEquals(0, h.stats.unanswered, "it was confirmed")
+
+        h.post(note(2))
+        scheduler.advance(GarminNotifications.ANSWER_WAIT_MS - 1)
+        assertEquals(0, h.stats.unanswered)
+        scheduler.advance(2)
+        assertEquals(1, h.stats.unanswered)
+        assertTrue(log.any { "has not answered announcement 2 within 5 s (never heard from the watch)" in it }, log.toString())
+    }
+
+    @Test
+    fun `asking for the details counts as an answer to the announcement`() {
+        val h = handler()
+        subscribe(h)
+        h.post(note(5))
+        h.handle(controlRequest(5, NotificationAttribute.TITLE to 32))
+        scheduler.advance(GarminNotifications.ANSWER_WAIT_MS + 1)
+        assertEquals(0, h.stats.unanswered)
+    }
 }

@@ -126,8 +126,14 @@ class MlrChannel(
     private val transmit: (ByteArray) -> Unit,
     private val receive: (ByteArray) -> Unit,
     private val scheduler: Scheduler,
+    /** Where the channel says what it is doing when things go wrong (packets the watch does not acknowledge). */
+    private val log: (String) -> Unit = {},
+    /** Called once when the watch has not acknowledged anything for [MAX_RESENDS] resends in a row: the link is dead. */
+    private val onDead: () -> Unit = {},
 ) {
     companion object {
+        /** The watch gets this many resends (about 50 seconds with the doubling wait) before the link is called dead. */
+        const val MAX_RESENDS = 6
         private const val SEQ_MOD = 64
         private const val INITIAL_WINDOW = 0x20
         private const val INITIAL_TIMEOUT = 1000L
@@ -159,7 +165,13 @@ class MlrChannel(
     private val sent = arrayOfNulls<Sent>(SEQ_MOD)
     private var ackTimer: Scheduler.Cancellable? = null
     private var resendTimer: Scheduler.Cancellable? = null
+    private var resends = 0
     @Volatile private var closed = false
+
+    /** How the sending side stands, for the log: packets the watch has not acknowledged, packets waiting, the window. */
+    fun state(): String = synchronized(lock) {
+        "${(nextSendSeq - lastReceivedAck + SEQ_MOD) % SEQ_MOD} unacknowledged, ${queue.size} waiting, window $window"
+    }
 
     fun send(message: ByteArray) {
         if (message.isEmpty()) return
@@ -222,6 +234,7 @@ class MlrChannel(
             i = (i + 1) % SEQ_MOD
         }
         lastReceivedAck = ack
+        resends = 0
         timeout = INITIAL_TIMEOUT
         window = minOf(window + count, INITIAL_WINDOW)
         if (lastReceivedAck != nextSendSeq) startResendTimer()
@@ -263,16 +276,31 @@ class MlrChannel(
     }
 
     private fun onResendTimeout() {
+        var dead = false
         synchronized(lock) {
             if (closed) return
+            resends++
             timeout = minOf(timeout * 2, MAX_TIMEOUT)
             window = maxOf(1, window / 2)
-            var i = lastReceivedAck
-            while (i != nextSendSeq) {
-                sent[i]?.let { transmit(header(handle, it.ack, i) + it.data) }
-                i = (i + 1) % SEQ_MOD
+            val waiting = (nextSendSeq - lastReceivedAck + SEQ_MOD) % SEQ_MOD
+            if (resends == 1 || resends % 3 == 0) log("Bluetooth: the watch has not acknowledged $waiting packet(s); resending (attempt $resends)")
+            if (resends >= MAX_RESENDS) {
+                dead = true
+                closed = true
+                ackTimer?.cancel()
+                queue.clear()
+            } else {
+                var i = lastReceivedAck
+                while (i != nextSendSeq) {
+                    sent[i]?.let { transmit(header(handle, it.ack, i) + it.data) }
+                    i = (i + 1) % SEQ_MOD
+                }
+                startResendTimer()
             }
-            startResendTimer()
+        }
+        if (dead) {
+            log("Bluetooth: the watch stopped acknowledging; the link is dead")
+            onDead()
         }
     }
 }

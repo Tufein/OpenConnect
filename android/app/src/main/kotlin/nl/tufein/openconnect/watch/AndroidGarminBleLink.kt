@@ -21,6 +21,7 @@ import android.content.IntentFilter
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -42,6 +43,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Syncs a Garmin watch over Bluetooth Low Energy with Garmin's own protocol: Android pairs ("bonds") with the watch,
@@ -70,6 +72,12 @@ class AndroidGarminBleLink(
         private const val PAIR_TIMEOUT_S = 90L
         private const val CONNECT_TIMEOUT_S = 30L
         private const val HANDSHAKE_TIMEOUT_MS = 30_000L
+
+        /** A write Android has not confirmed after this long is given up on; the link's own resending covers what was lost. */
+        private const val WRITE_STUCK_MS = 4_000L
+
+        /** This many stuck writes in a row and the connection is treated as lost, so the forwarder reconnects. */
+        private const val MAX_STUCK_WRITES = 3
     }
 
     private val adapter: BluetoothAdapter? get() = (context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)?.adapter
@@ -322,13 +330,47 @@ class AndroidGarminBleLink(
         private var mtu = 23
         private val queue = ArrayDeque<ByteArray>()
         private var writing = false
+        private var writeStartedAt = 0L
+        private var stuck = 0
+        private val stuckCheck = Runnable { checkStuck() }
+        private val discoveryStarted = AtomicBoolean(false)
+        private val servicesHandled = AtomicBoolean(false)
         @Volatile private var closed = false
+
+        /** Android asks for services once, however often it reports the packet size (the watch asks for one too). */
+        private fun startDiscovery(g: BluetoothGatt) {
+            if (discoveryStarted.compareAndSet(false, true)) {
+                g.discoverServices()
+            } else {
+                log("Bluetooth: services are already being looked up; not asking again")
+            }
+        }
+
+        /** A write that Android never confirmed would hold up every packet behind it; give up on it and go on. */
+        private fun checkStuck() {
+            var lost = false
+            synchronized(queue) {
+                if (!writing || closed) return
+                if (SystemClock.elapsedRealtime() - writeStartedAt < WRITE_STUCK_MS) return // a newer write is on its way
+                stuck++
+                writing = false
+                lost = stuck >= MAX_STUCK_WRITES
+            }
+            log("Bluetooth: Android did not confirm a write to the watch within ${WRITE_STUCK_MS / 1000} s (stuck $stuck in a row)")
+            if (lost) {
+                log("Bluetooth: writes keep getting stuck; treating the connection as lost")
+                if (!closed) onLost()
+                runCatching { gatt?.disconnect() }
+            } else {
+                pump()
+            }
+        }
 
         private val callback = object : BluetoothGattCallback() {
             override fun onConnectionStateChange(g: BluetoothGatt, status: Int, newState: Int) {
                 log("Bluetooth: connection ${if (newState == BluetoothProfile.STATE_CONNECTED) "up" else "down"} (status $status)")
                 when (newState) {
-                    BluetoothProfile.STATE_CONNECTED -> if (!g.requestMtu(515)) g.discoverServices()
+                    BluetoothProfile.STATE_CONNECTED -> if (!g.requestMtu(515)) startDiscovery(g)
                     BluetoothProfile.STATE_DISCONNECTED -> {
                         ready.completeExceptionally(WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, "Connection lost (status $status)"))
                         if (!closed) onLost()
@@ -340,11 +382,15 @@ class AndroidGarminBleLink(
             override fun onMtuChanged(g: BluetoothGatt, newMtu: Int, status: Int) {
                 log("Bluetooth: packet size $newMtu (status $status)")
                 if (status == BluetoothGatt.GATT_SUCCESS && newMtu >= 23) mtu = newMtu
-                g.discoverServices()
+                startDiscovery(g)
             }
 
             override fun onServicesDiscovered(g: BluetoothGatt, status: Int) {
                 log("Bluetooth: ${g.services.size} services found (status $status)")
+                if (!servicesHandled.compareAndSet(false, true)) {
+                    log("Bluetooth: services were reported again; going on with the first")
+                    return
+                }
                 val service = g.getService(MultiLink.SERVICE)
                 val pair = MultiLink.CHARACTERISTIC_PAIRS.firstNotNullOfOrNull { (rx, tx) ->
                     val r = service?.getCharacteristic(rx)
@@ -385,7 +431,11 @@ class AndroidGarminBleLink(
 
             override fun onCharacteristicWrite(g: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
                 if (status != BluetoothGatt.GATT_SUCCESS) log("Bluetooth: a write to the watch failed (status $status)")
-                synchronized(queue) { writing = false }
+                main.removeCallbacks(stuckCheck)
+                synchronized(queue) {
+                    writing = false
+                    stuck = 0
+                }
                 pump()
             }
 
@@ -424,6 +474,7 @@ class AndroidGarminBleLink(
             val packet = synchronized(queue) {
                 if (writing || queue.isEmpty() || closed) return
                 writing = true
+                writeStartedAt = SystemClock.elapsedRealtime()
                 queue.removeFirst()
             }
             val started = try {
@@ -447,11 +498,14 @@ class AndroidGarminBleLink(
                     writing = false
                 }
                 main.postDelayed({ pump() }, 20)
+            } else {
+                main.postDelayed(stuckCheck, WRITE_STUCK_MS)
             }
         }
 
         fun close() {
             closed = true
+            main.removeCallbacks(stuckCheck)
             val g = gatt ?: return
             runCatching { g.disconnect() }
             // a link that never connected sends no "disconnected" to close it there, so close it here a moment later

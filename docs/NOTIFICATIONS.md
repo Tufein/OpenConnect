@@ -39,7 +39,7 @@ mark for how far it got, so "it does not arrive" has an answer:
 | Android lets OpenConnect show its persistent notification | notifications are allowed for the app | `[~]`: Android hides the persistent notification (on Android 13 and newer without the notification permission), and ends the app sooner; the hint has a button to the notification settings |
 | Connection to the watch | paired, connected and the introductions are done | the step it is on (pairing, connecting, introductions) while it works, or the error when it failed |
 | Watch asked for notifications | the watch said it wants them | `[~]`: it never asked, so they are sent anyway; `[!]`: the watch said no (check the watch's own settings under Phone) |
-| Notifications shown on the watch | the watch asked what the notifications say and they were delivered | `[!]`: the watch was told about notifications but never asked what they say |
+| Notifications shown on the watch | the watch asked what the notifications say and they were delivered; the detail reads *told / confirmed by the watch / details asked / delivered* | `[!]`: the watch was told about notifications but never asked what they say (confirmed, so it is alive and ignores them) or never even confirmed (silent, the link looks dead) |
 
 Under the steps: how many notifications each reason held back since the app started, and the last lines of a **log**. The
 log records the listener starting, each notification (the **app's name** and what was decided, never its title or text),
@@ -54,6 +54,26 @@ A watch that never asks for notifications: Gadgetbridge waits for the watch to s
 anything. Not every model sends it at once, or at all, so after 10 seconds of silence OpenConnect sends notifications
 anyway (`[~]` on the card). A watch that does not want them ignores them, and a later *no* from the watch still switches
 them off. This is a guess about models nobody has tried here; the log says which case you are in.
+
+### A link that has gone silent (v1.0.0-rc.5)
+
+The first log from a real watch (a fenix 8, rc.4) showed the introductions completing and the watch asking for
+notifications, but the announcement of a notification (message 5033) was never answered and the watch's own periodic
+messages stopped: the link was probably silent while the app still said *connected*. Nothing proves that was the cause,
+but rc.5 no longer lets it go unnoticed:
+
+- the reliable layer (MLR) gives up after six resends without an acknowledgement (about 51 seconds) and ends the session,
+  so the connection is rebuilt, where it used to resend for ever;
+- after 45 seconds of silence the app asks the watch something small (the supported file types);
+- a Bluetooth write Android never confirms is released after 4 seconds, and three in a row end the link;
+- every message from the watch is answered like Gadgetbridge does: 5042 (music control) with zero commands, anything else
+  known but unhandled with *unsupported*;
+- the log shows each message sent with the state of the reliable layer, the raw bytes of each announcement, when the watch
+  was last heard, and the watch's own answer to an announcement.
+
+A card that says *told 1, confirmed 0, details asked 0* means the watch is silent (switch Bluetooth off and on); *confirmed
+1, details asked 0* means the watch is alive and ignores the notification (its own notification settings, or one phone per
+watch). Both are inferences from the log, not measurements on every model.
 
 ## What is forwarded, and what is not
 
