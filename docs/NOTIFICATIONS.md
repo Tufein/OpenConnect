@@ -75,6 +75,22 @@ A card that says *told 1, confirmed 0, details asked 0* means the watch is silen
 1, details asked 0* means the watch is alive and ignores the notification (its own notification settings, or one phone per
 watch). Both are inferences from the log, not measurements on every model.
 
+### A watch that stops answering (v1.0.0-rc.6)
+
+With rc.5 the first notification reached a fenix 8 and the later ones did not. In the rc.5 and the rc.4 logs the watch
+stops sending messages about a minute after connecting, while the link still acknowledges every packet. Both times it had
+sent a batch of protobuf questions (location, calendar, Connect IQ web requests and the like) right after connecting and
+the same batch again exactly 60 seconds later, because the app answered only with a plain ACK. rc.6 does two things:
+
+- every protobuf question gets the answer Gadgetbridge gives to what it does not handle: "kept" for each part but the
+  last, "discarded, unknown request" for the last part or a whole question; the log names the service, never the content;
+- when the watch does not answer an announcement within 5 seconds and has sent nothing at all since, the app connects
+  again and sends the missed notification once more (once per notification, only when it is still on the phone and at
+  most 2 minutes old), so it arrives about 20 seconds late instead of not at all.
+
+That the watch stalls because it waits for those answers is a hypothesis; the next log shows whether the second round of
+questions goes away.
+
 ## What is forwarded, and what is not
 
 A notification goes to the watch when **all** of these hold, in this order (the first reason that applies is shown on the

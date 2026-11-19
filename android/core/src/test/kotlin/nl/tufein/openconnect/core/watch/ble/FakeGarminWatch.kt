@@ -30,6 +30,11 @@ class FakeGarminWatch(
     private val fileDates: Map<Int, Long> = emptyMap(),
     /** Subscribe to phone notifications as soon as the introductions are done, and ask for details of every one announced. */
     private val notifications: Boolean = false,
+    /**
+     * After this many notification updates the watch's message layer gets stuck, as a fenix 8 was seen to do: the link
+     * still acknowledges every packet, but no message gets an answer and the watch sends nothing of its own.
+     */
+    private val stuckAfterUpdates: Int = Int.MAX_VALUE,
 ) {
     lateinit var phone: GarminBleSession
     private val thread = Executors.newSingleThreadExecutor { r -> Thread(r, "fake-watch").apply { isDaemon = true } }
@@ -158,10 +163,16 @@ class FakeGarminWatch(
         extraAfterHello.forEach(::send)
     }
 
+    /** True once the message layer is stuck (see [stuckAfterUpdates]). */
+    @Volatile var stuck = false
+        private set
+
     private fun gfdiBytes(bytes: ByteArray) {
         for (frame in cobs.feed(bytes)) {
             val message = GfdiMessage.parse(frame)
             fromPhone += message
+            if (!stuck && message.type == GfdiType.NOTIFICATION_UPDATE && updates.size >= stuckAfterUpdates) stuck = true
+            if (stuck) continue
             onMessage(message)
         }
     }

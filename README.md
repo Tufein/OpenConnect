@@ -7,10 +7,10 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: release candidate 1.0.0-rc.5** (a GitHub *pre-release*; the [latest release](https://github.com/Tufein/OpenConnect/releases/latest)
-> is the last full version, v0.58.0). Code is frozen: only fixes and texts until 1.0 (rc.2, rc.3, rc.4 and rc.5 are the exceptions, made at
+> **Status: release candidate 1.0.0-rc.6** (a GitHub *pre-release*; the [latest release](https://github.com/Tufein/OpenConnect/releases/latest)
+> is the last full version, v0.58.0). Code is frozen: only fixes and texts until 1.0 (rc.2 to rc.6 are the exceptions, made at
 > the owner's request: rc.2 recognises every Garmin family, not only the fenix 8, see [docs/GARMIN_DEVICES.md](docs/GARMIN_DEVICES.md);
-> rc.3 sends your phone's notifications to the watch, rc.4 shows step by step why one does not arrive and rc.5 notices a Bluetooth link that has gone silent, see
+> rc.3 sends your phone's notifications to the watch, rc.4 shows step by step why one does not arrive, rc.5 notices a Bluetooth link that has gone silent and rc.6 stops the watch from waiting on questions the app does not answer, see
 > [docs/NOTIFICATIONS.md](docs/NOTIFICATIONS.md)).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). What stands between this candidate and 1.0 is in

@@ -158,6 +158,7 @@ class AndroidGarminBleLink(
         }
         notifier.onDismissedOnWatch = listener::onDismissedOnWatch
         notifier.onChange = listener::onStatus
+        notifier.onUndelivered = listener::onUndelivered
         val ended = java.util.concurrent.atomic.AtomicBoolean(false)
         val published = registry.publish(
             LiveWatchRegistry.Live(

@@ -33,6 +33,12 @@ interface NotifyListener {
 
     /** One line for the log of what is happening (a step of the connection, a kind of message the watch sent). Never content. */
     fun onLog(line: String) {}
+
+    /**
+     * The watch got stuck: these notifications were announced but never arrived. The connection ends right after (see
+     * [onLost]); they can be sent again over the next one.
+     */
+    fun onUndelivered(notifications: List<WatchNotification>) {}
 }
 
 /** What the person chose for forwarding. The real one is kept in [nl.tufein.openconnect.data.SettingsStore]. */

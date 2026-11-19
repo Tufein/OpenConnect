@@ -65,6 +65,8 @@ class GarminBleSession(
     private val askGraceMs: Long = ASK_GRACE_MS,
     /** How often a notification session checks that the watch is still there; a quiet link gets a small question. */
     private val heartbeatMs: Long = HEARTBEAT_MS,
+    /** How long the watch gets to answer an announcement (the tests make it short). */
+    private val answerWaitMs: Long = GarminNotifications.ANSWER_WAIT_MS,
 ) {
     private val lock = Any()
     private val cobs = CobsStream()
@@ -82,6 +84,9 @@ class GarminBleSession(
     /** When anything last came in from the watch (any packet at all), in epoch milliseconds; 0 before the first. */
     @Volatile private var lastHeardMs = 0L
 
+    /** How many whole GFDI messages came in from the watch: the link can carry acknowledgements while this stands still. */
+    private val messagesIn = java.util.concurrent.atomic.AtomicLong()
+
     /** Seconds since the watch last sent anything, or null when it never has: a link that went quiet shows here. */
     fun heardSecondsAgo(): Long? = heardMillisAgo()?.let { it / 1000 }
 
@@ -95,7 +100,10 @@ class GarminBleSession(
     val notifier: GarminNotifications? = notifications?.let {
         GarminNotifications(
             send = ::send, scheduler = scheduler, zone = zone, now = now, dismissLabel = it.dismissLabel,
-            appName = it.appName, log = log, heardAgo = ::heardSecondsAgo,
+            appName = it.appName, log = log, heardAgo = ::heardSecondsAgo, answerWaitMs = answerWaitMs,
+            watchMessages = { messagesIn.get() },
+            // the watch took the announcement on the link but its message layer says nothing: a new connection gets it going
+            onStalled = { fail(GarminBleException(GarminBleException.Reason.DISCONNECTED, "The watch stopped answering; connecting again")) },
         )
     }
 
@@ -236,6 +244,7 @@ class GarminBleSession(
                 log("dropped a message: ${e.message}")
                 continue
             }
+            messagesIn.incrementAndGet()
             try {
                 handle(message)
             } catch (e: GfdiFormatException) {
@@ -306,26 +315,7 @@ class GarminBleSession(
             GfdiType.NOTIFICATION_SUBSCRIPTION -> notifier?.handle(message) ?: declineNotifications(message)
             GfdiType.NOTIFICATION_CONTROL -> if (notifier?.handle(message) != true) log("ignored a notification message; notifications are off")
             GfdiType.FILE_TRANSFER_DATA -> onFileData(message.reader())
-            GfdiType.PROTOBUF_REQUEST, GfdiType.PROTOBUF_RESPONSE -> {
-                // We do not speak protobuf (settings, calendars and the like); acknowledge so the watch is not left waiting.
-                val r = message.reader()
-                val requestId = r.short()
-                val offset = r.int()
-                val total = r.int()
-                val length = r.int()
-                if (offset == 0 && total == length) {
-                    send(GfdiMessage.response(message.type))
-                } else {
-                    send(
-                        GfdiMessage.response(message.type) {
-                            short(requestId)
-                            int(offset)
-                            byte(0) // kept
-                            byte(0) // no error
-                        },
-                    )
-                }
-            }
+            GfdiType.PROTOBUF_REQUEST, GfdiType.PROTOBUF_RESPONSE -> onProtobuf(message)
             // the watch asks which music commands we can do: none, but it gets its answer (Gadgetbridge answers with its list)
             GfdiType.MUSIC_CONTROL_CAPABILITIES -> send(GfdiMessage.response(message.type) { byte(0) })
             GfdiType.BATTERY_STATUS, GfdiType.FILE_AVAILABLE, GfdiType.SYNCHRONIZATION, GfdiType.WEATHER_REQUEST,
@@ -334,6 +324,22 @@ class GarminBleSession(
             // every message gets an answer, as Gadgetbridge does: one we do not handle gets "unsupported", never silence
             else -> send(GfdiMessage.response(message.type, GfdiStatus.UNSUPPORTED))
         }
+    }
+
+    /**
+     * We do not speak protobuf (location, calendars, Connect IQ web requests and the like). A plain ACK made the watch wait
+     * for an answer that never came and ask again a minute later; on a fenix 8 it stopped answering anything after the second
+     * round. So every chunk is answered as Gadgetbridge answers a request it does not handle: kept while more is coming,
+     * "discarded, unknown request" on the last one, and the log names the service (never the content).
+     */
+    private fun onProtobuf(message: GfdiMessage) {
+        val chunk = GarminProtobuf.parse(message)
+        if (chunk.offset == 0) {
+            val what = GarminProtobuf.describe(chunk.data)
+            val more = if (chunk.last) "" else " (in parts)"
+            log("watch asked over protobuf: $what$more; not handled, the watch is told so")
+        }
+        send(GarminProtobuf.answer(message.type, chunk))
     }
 
     /** What a RESPONSE from the watch says, for the log: which message it answers and with what status. */

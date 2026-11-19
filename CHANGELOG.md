@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.0.0-rc.6: het horloge niet langer laten wachten op protobuf-vragen, en een vastgelopen horloge opnieuw verbinden
+
+De **zesde release candidate** van 1.0, weer een **GitHub-pre-release** (niet "nieuwste", de updater biedt haar niemand aan). Met rc.5 kwam op Stefans fenix 8 **de eerste melding aan**, maar de meldingen daarna niet. Het logboek van rc.5 en dat van rc.4 laten hetzelfde patroon zien, en deze versie pakt dat op twee manieren aan. **De oorzaak is nog niet bewezen:** er is geen horloge in deze …
+
+[Release notes](docs/releases/v1.0.0-rc.6.md)
+
 ## v1.0.0-rc.5: een dode Bluetooth-verbinding herkennen, en het logboek laat zien wat het horloge antwoordt
 
 De **vijfde release candidate** van 1.0, weer een **GitHub-pre-release** (niet "nieuwste", de updater biedt haar niemand aan). Het logboek van rc.4 op een fenix 8 liet zien dat de kennismaking klopt en het horloge om meldingen vraagt, maar dat het daarna **geen enkel antwoord meer gaf** op de melding die we aankondigden. **Dit is geen bevestigde oplossing:** er is geen horloge in deze omgeving …

@@ -112,6 +112,10 @@ class NotificationForwarder(
         /** How many notifications are remembered by id, to find the one the person dismissed on the watch. */
         private const val MAX_KNOWN = 200
 
+        /** A notification that did not reach a stuck watch is sent once more, if the new connection comes within this time. */
+        val SEND_AGAIN_WITHIN: java.time.Duration = java.time.Duration.ofMinutes(2)
+        private const val MAX_SEND_AGAIN = 8
+
         /** The phases in which the persistent notification is shown, because a connection is held or being sought. */
         private val HOLDING = setOf(ForwardPhase.CONNECTING, ForwardPhase.CONNECTED, ForwardPhase.WAITING)
     }
@@ -135,6 +139,15 @@ class NotificationForwarder(
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, String>?) = size > MAX_KNOWN
     }
     private var testCounter = 0
+
+    /** Notifications a stuck watch never got, to send once more over the next connection. */
+    private class SendAgain(val notification: WatchNotification, val at: Instant)
+
+    private val sendAgain = ArrayList<SendAgain>()
+
+    /** Ids that were already sent a second time: if the watch gets stuck on them again, they are let go. */
+    private val sentAgain = LinkedHashSet<Int>()
+    private val sendAgainLock = Any()
 
     /** How many notifications the current connection had announced when we last looked, to count only the new ones. */
     private var announcedSeen = 0
@@ -250,6 +263,8 @@ class NotificationForwarder(
                 override fun onStatus(stats: NotifyStats) = statusChanged(stats)
 
                 override fun onLog(line: String) = trail.add(line)
+
+                override fun onUndelivered(notifications: List<WatchNotification>) = keepForNextConnection(notifications)
             }
             synchronized(statsLock) { announcedSeen = 0 }
             _state.update { it.copy(notify = NotifyStats(), connectStep = null) }
@@ -265,6 +280,7 @@ class NotificationForwarder(
                     trail.add("connected to ${opened.watchName.ifBlank { watch.name }}")
                     setPhase(ForwardPhase.CONNECTED, error = null, watchName = opened.watchName.ifBlank { watch.name })
                     attempt = 0
+                    sendAgainOver(opened)
                     val reason = lost.await()
                     attempt = 1
                     forgetConnection(opened)
@@ -294,6 +310,42 @@ class NotificationForwarder(
             }
             trail.add("trying again in ${retryWaitText(attempt)}")
             retryDelay(attempt)
+        }
+    }
+
+    /** The watch got stuck before these arrived: keep them for the next connection, unless they already had a second go. */
+    private fun keepForNextConnection(notifications: List<WatchNotification>) {
+        val at = now()
+        synchronized(sendAgainLock) {
+            for (n in notifications) {
+                sendAgain.removeAll { it.notification.id == n.id }
+                if (n.id in sentAgain) {
+                    trail.add("notification ${n.id} did not arrive on the second try either; letting it go")
+                } else {
+                    sendAgain += SendAgain(n, at)
+                }
+            }
+            while (sendAgain.size > MAX_SEND_AGAIN) sendAgain.removeAt(0)
+        }
+    }
+
+    /** Sends what a stuck watch missed over the new connection [open], if it is recent enough; each one only once. */
+    private fun sendAgainOver(open: WatchNotifyConnection) {
+        val due = synchronized(sendAgainLock) {
+            val cutoff = now().minus(SEND_AGAIN_WITHIN)
+            val fresh = sendAgain.filter { !it.at.isBefore(cutoff) }.map { it.notification }
+            val stale = sendAgain.size - fresh.size
+            if (stale > 0) trail.add("$stale missed notification(s) are too old to send again")
+            sendAgain.clear()
+            for (n in fresh) {
+                sentAgain += n.id
+                while (sentAgain.size > MAX_KNOWN) sentAgain.remove(sentAgain.first())
+            }
+            fresh
+        }
+        for (n in due) {
+            val result = open.post(n)
+            trail.add("notification ${n.id} sent again after the watch got stuck: $result")
         }
     }
 
@@ -396,6 +448,7 @@ class NotificationForwarder(
     fun onRemoved(key: String) {
         val id = NotificationRules.idOf(key)
         repeats.forget(id)
+        synchronized(sendAgainLock) { sendAgain.removeAll { it.notification.id == id } } // gone from the phone: not sent again
         val wasSent = synchronized(known) { known.remove(id) != null }
         if (wasSent) connection?.remove(id)
     }

@@ -12,6 +12,8 @@ import nl.tufein.openconnect.core.watch.SkipReason
 import nl.tufein.openconnect.core.watch.NotificationRules
 import nl.tufein.openconnect.core.watch.ble.PostResult
 import nl.tufein.openconnect.core.watch.ble.WatchAsk
+import nl.tufein.openconnect.core.watch.ble.WatchNotification
+import nl.tufein.openconnect.core.watch.ble.WatchNotificationCategory
 import nl.tufein.openconnect.watch.GarminStep
 import nl.tufein.openconnect.watch.FakeGarminBle
 import nl.tufein.openconnect.watch.GarminBleWatch
@@ -526,5 +528,49 @@ class NotificationForwarderTest {
         notificationsAllowed = true
         f.refresh()
         assertTrue(f.state.value.ownNotificationAllowed)
+    }
+
+    // ----------------------------------------------------------------------------- a watch that gets stuck
+
+    private fun missed(id: Int) = WatchNotification(
+        id = id, appId = "com.whatsapp", appName = "WhatsApp", title = "Jan", body = "Zie je morgen?",
+        whenMillis = now.toEpochMilli(), category = WatchNotificationCategory.SMS,
+    )
+
+    private fun inTrail(text: String) = trail.flow.value.any { text in it.text }
+
+    @Test
+    fun `what a stuck watch missed goes again over the next connection, but only once`() {
+        val f = forwarder()
+        f.refresh()
+        listeners[0].onUndelivered(listOf(missed(42)))
+        listeners[0].onLost("The watch stopped answering; connecting again")
+        assertTrue(connections[0].closed)
+        retryGate.trySend(Unit)
+        assertEquals(ForwardPhase.CONNECTED, f.state.value.phase)
+        assertEquals(listOf(42), connections[1].posted.map { it.id })
+        assertTrue(inTrail("notification 42 sent again after the watch got stuck: SENT"), trail.flow.value.toString())
+
+        // stuck again on the same one: it had its second go, and is let go so it cannot keep the connection busy
+        listeners[1].onUndelivered(listOf(missed(42)))
+        listeners[1].onLost("The watch stopped answering; connecting again")
+        retryGate.trySend(Unit)
+        assertTrue(connections[2].posted.isEmpty())
+        assertTrue(inTrail("notification 42 did not arrive on the second try either; letting it go"), trail.flow.value.toString())
+    }
+
+    @Test
+    fun `a missed notification that is too old, or was removed on the phone meanwhile, is not sent again`() {
+        val f = forwarder()
+        f.refresh()
+        val key = "0|com.whatsapp|7|null|10001"
+        listeners[0].onUndelivered(listOf(missed(NotificationRules.idOf(key)), missed(43)))
+        listeners[0].onLost("The watch stopped answering; connecting again")
+        f.onRemoved(key) // the person swiped it away on the phone
+        now = now.plus(NotificationForwarder.SEND_AGAIN_WITHIN).plusSeconds(1)
+        retryGate.trySend(Unit)
+        assertEquals(ForwardPhase.CONNECTED, f.state.value.phase)
+        assertTrue(connections[1].posted.isEmpty(), connections[1].posted.toString())
+        assertTrue(inTrail("1 missed notification(s) are too old to send again"), trail.flow.value.toString())
     }
 }

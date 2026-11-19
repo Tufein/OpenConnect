@@ -9,6 +9,7 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.test.fail
 
@@ -32,12 +33,14 @@ class GarminBleNotificationsTest {
         askGraceMs: Long = GarminBleSession.ASK_GRACE_MS,
         heartbeatMs: Long = GarminBleSession.HEARTBEAT_MS,
         clock: () -> Instant = { Instant.parse("2026-11-19T13:30:05Z") },
+        answerWaitMs: Long = GarminNotifications.ANSWER_WAIT_MS,
     ): GarminBleSession {
         watches += watch
         val session = GarminBleSession(
             watch.pipe, phone, scheduler, maxWrite = 20, useMlr = useMlr,
             now = clock, zone = { ZoneId.of("Europe/Amsterdam") },
             log = { log += it }, notifications = notifications, askGraceMs = askGraceMs, heartbeatMs = heartbeatMs,
+            answerWaitMs = answerWaitMs,
         )
         watch.phone = session
         session.start()
@@ -275,6 +278,7 @@ class GarminBleNotificationsTest {
         val session = GarminBleSession(
             { written += it }, phone, manual, maxWrite = 20, useMlr = true, now = { clock },
             zone = { ZoneId.of("Europe/Amsterdam") }, log = { lines += it }, notifications = NotificationOptions(),
+            answerWaitMs = 600_000, // this test is about the link layer giving up, not about the unanswered announcement
         )
         var ended: GarminBleException? = null
         session.onEnded = { ended = it }
@@ -290,7 +294,6 @@ class GarminBleNotificationsTest {
         assertTrue(lines.any { "announced notification 7 to the watch" in it && "last heard from the watch 95 s ago" in it }, lines.toString())
 
         manual.advance(5_001)
-        assertEquals(1, session.notifier!!.stats.unanswered)
         assertEquals(null, ended, "not dead yet")
         manual.advance(60_000)
         assertEquals(GarminBleException.Reason.DISCONNECTED, ended?.reason, lines.toString())
@@ -323,5 +326,46 @@ class GarminBleNotificationsTest {
         val heartbeats = log.count { "heartbeat:" in it }
         Thread.sleep(500)
         assertEquals(heartbeats, log.count { "heartbeat:" in it }, "a closed session asks nothing more")
+    }
+
+    @Test
+    fun `a watch whose messages stop being answered is noticed, what it missed is handed over, and the session ends to start again`() {
+        val watch = FakeGarminWatch(files = emptyMap(), notifications = true, stuckAfterUpdates = 1)
+        val session = connect(watch, answerWaitMs = 300)
+        val missed = java.util.concurrent.CopyOnWriteArrayList<WatchNotification>()
+        session.notifier!!.onUndelivered = { missed += it }
+        val ended = java.util.concurrent.CompletableFuture<GarminBleException>()
+        session.onEnded = { ended.complete(it) }
+        eventually("the watch subscribes") { session.notifier!!.subscribed }
+
+        assertEquals(PostResult.SENT, session.notifier!!.post(note(1)))
+        eventually("the first one is shown and its last chunk confirmed") { session.notifier!!.stats.answered >= 1 }
+        assertFalse(ended.isDone, "a watch that answers is left alone")
+
+        assertEquals(PostResult.SENT, session.notifier!!.post(note(2)))
+        val error = ended.get(5, java.util.concurrent.TimeUnit.SECONDS)
+        assertTrue(watch.stuck)
+        assertEquals(GarminBleException.Reason.DISCONNECTED, error.reason)
+        assertTrue("stopped answering" in (error.message ?: ""), error.message)
+        assertEquals(listOf(2), missed.map { it.id }, "only the one that did not arrive goes again")
+        assertTrue(log.any { "announcement 2" in it && "has sent nothing since" in it && "it is stuck" in it }, log.toString())
+        assertTrue(session.isEnded)
+    }
+
+    @Test
+    fun `the watch's protobuf questions are named in the log and told they are not handled`() {
+        val watch = FakeGarminWatch(
+            files = emptyMap(),
+            extraAfterHello = listOf(
+                // core_service, get_location_request
+                GfdiMessage.build(GfdiType.PROTOBUF_REQUEST) { short(4); int(0); int(4); int(4); bytes(byteArrayOf(0x6a, 2, 0x1a, 0)) },
+            ),
+        )
+        val session = connect(watch)
+        eventually("the question is answered") { watch.fromPhone.any { it.type == GfdiType.RESPONSE && it.reader().short() == GfdiType.PROTOBUF_REQUEST } }
+        assertTrue(log.any { it == "watch asked over protobuf: core_service, get_location_request; not handled, the watch is told so" }, log.toString())
+        val answer = watch.fromPhone.first { it.type == GfdiType.RESPONSE && it.reader().short() == GfdiType.PROTOBUF_REQUEST }.payload
+        assertEquals(listOf(GarminProtobuf.CHUNK_DISCARDED, GarminProtobuf.UNKNOWN_REQUEST_ID), answer.takeLast(2).map { it.toInt() and 0xFF })
+        session.close()
     }
 }

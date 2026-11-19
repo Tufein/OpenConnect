@@ -202,7 +202,10 @@ class GarminBleSessionTest {
         auth.byte()
         assertEquals(0x01, auth.int())
 
-        assertEquals(3, answers.getValue(GfdiType.PROTOBUF_REQUEST).payload.size) // a plain ACK: the message was whole
+        // a protobuf question we do not handle is answered as Gadgetbridge does: "discarded, unknown request", not a plain ACK
+        val protobuf = answers.getValue(GfdiType.PROTOBUF_REQUEST).reader()
+        protobuf.short()
+        assertEquals(listOf(GfdiStatus.ACK, 12, 0, GarminProtobuf.CHUNK_DISCARDED, GarminProtobuf.UNKNOWN_REQUEST_ID), listOf(protobuf.byte(), protobuf.short(), protobuf.int(), protobuf.byte(), protobuf.byte()))
         assertEquals(GfdiStatus.ACK, answers.getValue(GfdiType.BATTERY_STATUS).payload[2].toInt())
         assertEquals(GfdiStatus.UNSUPPORTED, answers.getValue(4999).payload[2].toInt())
         // the watch's question about music commands is answered (Gadgetbridge answers it too), with none: ACK and zero commands
