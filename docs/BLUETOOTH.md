@@ -5,9 +5,14 @@ account and no Garmin Connect app. It speaks Garmin's own Bluetooth protocol, po
 [Gadgetbridge](https://codeberg.org/Freeyourgadget/Gadgetbridge). Because Gadgetbridge is AGPL-3.0, OpenConnect is
 AGPL-3.0 from this version on (see [NOTICE](../NOTICE)).
 
-> **Not yet tried on a real watch.** It was written for the fenix 8 and checked against real bytes that Gadgetbridge
-> recorded from an Instinct 2S, and against a simulated watch in the tests. The first real sync may well fail; the error
-> text in the app says at which step.
+> **Not yet tried on a real watch.** It was written with the fenix 8 in mind and checked against real bytes that
+> Gadgetbridge recorded from an Instinct 2S, and against a simulated watch in the tests. The first real sync, on any
+> model, may well fail; the error text in the app says at which step.
+
+**Any Garmin family.** From v1.0.0-rc.2 the search recognises every Garmin watch, golf watch and bike computer, by the
+product number in the advertisement and by name (heart rate straps, lights and scales are left out). A model that is not
+on the list Gadgetbridge supports, or that needs Garmin's newer sync protocol, carries a note in the list. What is
+recognised and why: [GARMIN_DEVICES.md](GARMIN_DEVICES.md).
 
 ## How to use it
 
@@ -15,7 +20,7 @@ AGPL-3.0 from this version on (see [NOTICE](../NOTICE)).
 2. In the app: *Watch, Sync a Garmin watch over Bluetooth, Find watch*. Allow the Bluetooth permission.
 3. Tap your watch. Android asks to pair; accept on the phone and on the watch.
 4. The app connects, does the handshake, lists the files on the watch and downloads the new ones. Next time a single
-   *Sync fenix 8* button is enough; the watch is remembered until you tap *Forget this watch*.
+   *Sync <your watch>* button is enough; the watch is remembered until you tap *Forget this watch*.
 
 ## What is downloaded
 
@@ -63,6 +68,7 @@ request and notifications, and pushes bytes in and out of the session.
 - A watch is paired with one phone app at a time. **Garmin Connect on the same phone will likely stop syncing** while
   OpenConnect is paired, and the other way around.
 - Files are not marked as archived on the watch, so Garmin Connect would still see them as new.
-- Only the classic file sync is built, which is what Gadgetbridge uses for the fenix 8. The newer protobuf file sync,
+- Only the classic file sync is built, which is what Gadgetbridge uses for most watches. The newer protobuf file sync (which Gadgetbridge switches on for
+  the Venu 4, Venu X1 and Cirqa Smart Band),
   Bluetooth Classic (RFCOMM), notifications, weather, GPS updates and settings are not.
 - The background sync job does not use Bluetooth yet; tap *Sync* on the Watch screen.

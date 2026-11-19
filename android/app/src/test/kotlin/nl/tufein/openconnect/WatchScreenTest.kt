@@ -1,10 +1,12 @@
 package nl.tufein.openconnect
 
 import android.content.Context
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import nl.tufein.openconnect.core.DailySummary
+import nl.tufein.openconnect.core.watch.BleSync
 import nl.tufein.openconnect.core.watch.HeartRateMeasurement
 import nl.tufein.openconnect.core.watch.InMemoryWatchSource
 import nl.tufein.openconnect.core.watch.SensorContact
@@ -152,6 +154,36 @@ class WatchScreenTest : AppTestBase() {
         assertEquals("fenix 8 - 47mm", SettingsStore(ApplicationProvider.getApplicationContext()).garminWatch.load()?.name)
         clickText("Forget this watch")
         rule.waitUntil(5_000) { !hasText("Sync fenix 8 - 47mm", substring = false) }
+    }
+
+    @Test
+    fun theFindListSaysHonestlyWhichWatchesAreNotOnTheListTheSyncWasMadeFor() {
+        val garmin = FakeGarminBle(
+            nearby = listOf(
+                GarminBleWatch("AA:01", "Forerunner 965", paired = false, bleSync = BleSync.LISTED),
+                GarminBleWatch("AA:02", "Edge 1040", paired = false, bleSync = BleSync.UNKNOWN),
+                GarminBleWatch("AA:03", "Venu X1", paired = false, bleSync = BleSync.NEEDS_NEWER_PROTOCOL),
+            ),
+        ) { _, _ -> error("not opened") }
+        launchFresh { app ->
+            app.containerOverride = AppContainer(SqliteRepository(app), SettingsStore(app), usb, ble, garminBle = garmin)
+        }
+        shadowOf(ApplicationProvider.getApplicationContext<Context>() as android.app.Application)
+            .grantPermissions(*bluetoothPermissions())
+        waitForText("Connect watch")
+        rule.onNodeWithText("Connect watch").performClick()
+        waitForText("Sync a Garmin watch over Bluetooth")
+        assertTrue(!hasText("every kind of Garmin watch", substring = true), "the note about what is searched is shown once there is a search")
+
+        clickText("Find watch")
+        waitForText("every kind of Garmin watch", substring = true)
+        waitForText("Forerunner 965")
+        waitForText("Edge 1040")
+        waitForText("Venu X1")
+        // one note for each of the two that carry a doubt, none for the one on the list
+        assertEquals(1, rule.onAllNodesWithText("nothing was tried on this model", substring = true).fetchSemanticsNodes().size)
+        assertEquals(1, rule.onAllNodesWithText("needs Garmin's newer sync protocol", substring = true).fetchSemanticsNodes().size)
+        shot("17b-watch-ble-found-notes")
     }
 
     @Test

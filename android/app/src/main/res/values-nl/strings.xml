@@ -367,6 +367,9 @@
     <string name="default_model">Standaardmodel gebruiken</string>
     <string name="watch_ble_title">Garmin-horloge syncen via Bluetooth</string>
     <string name="watch_ble_body">Experimenteel. OpenConnect praat met het horloge zoals de Garmin Connect-app dat doet (het protocol dat Gadgetbridge heeft uitgezocht) en haalt op wat nieuw is: activiteiten, stappen, hartslag, stress, Body Battery, slaap en HRV. Geen kabel, geen Garmin-account. De eerste keer koppelt Android met het horloge: zet het horloge in koppelmodus (Instellingen, Connectiviteit, Telefoon, Koppel telefoon) en bevestig de code.</string>
+    <string name="watch_ble_families">Zoekt elk soort Garmin-horloge, golfhorloge en fietscomputer, op naam en op het modelnummer dat het apparaat uitzendt. Hartslagbanden, lampen en weegschalen blijven buiten beeld: daar valt niets van te synchroniseren. Modellen die niet op de lijst staan waarvoor deze sync is gemaakt, krijgen een opmerking.</string>
+    <string name="watch_ble_hint_unknown">Niet op de lijst waar deze sync van is overgenomen, en met dit model is niets geprobeerd. Synchroniseren kan mislukken; via je Garmin-account kan het ook.</string>
+    <string name="watch_ble_hint_newer">Dit model heeft Garmins nieuwere syncprotocol nodig, dat OpenConnect niet heeft, dus er kunnen bestanden ontbreken. Via je Garmin-account is het veiliger.</string>
     <string name="watch_ble_warning">Een horloge dat aan OpenConnect gekoppeld is, synct in de praktijk niet meer met de Garmin Connect-app. De bestanden blijven op het horloge staan.</string>
     <string name="watch_ble_find">Zoek horloge</string>
     <string name="watch_ble_stop">Stop met zoeken</string>

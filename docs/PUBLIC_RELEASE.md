@@ -14,8 +14,8 @@ Stand op 2026-11-18, na v0.53.0: nog niets aangevinkt dat van een echt apparaat 
 - [ ] Bestanden importeren, hetzelfde bestand twee keer geeft geen dubbele activiteit (T3)
 - [ ] Bijwerken over een oudere versie heen, gegevens blijven staan, en de updater onder Instellingen (T4)
 - [ ] Garmin-account met een eigen sleutel (T5)
-- [ ] fenix 8 over USB (T6)
-- [ ] fenix 8 over Bluetooth (T7)
+- [ ] Een Garmin-horloge over USB, bij Stefan de fenix 8 (T6)
+- [ ] Een Garmin-horloge over Bluetooth, bij Stefan de fenix 8 (T7)
 - [ ] Live hartslag met het scherm uit (T8)
 - [ ] Health Connect lezen en schrijven (T9)
 - [ ] Back-up, alles wissen, terugzetten (T13)
@@ -78,8 +78,8 @@ Noteer bij elke stap de **versie van de app** (die staat in Instellingen) en de 
 | T3 | Deel een FIT-, GPX- of TCX-bestand met OpenConnect (of kies het onder Jouw gegevens). Doe het **twee keer** met hetzelfde bestand | De activiteit staat er één keer, met route en grafieken | Naam van het bestand en wat er misging |
 | T4 | Installeer een nieuwere release **over** de oudere heen. Daarna Instellingen, Updates: laat de updater zoeken | Gegevens en sleutels staan er nog, de updater zegt dat je bij bent of biedt de nieuwere aan | Schermafbeelding, versies voor en na |
 | T5 | Maak je eigen Garmin-sleutel (zie [GARMIN.md](GARMIN.md)), plak hem onder Je toestellen, synchroniseer. Vergelijk de stappen en de slaap van **één dag** met de Garmin Connect-app | Dezelfde stappen en slaaptijd (kleine verschillen in afronding mogen), activiteiten met hun FIT-bestand | Welk getal verschilt, voor welke dag |
-| T6 | Sluit de fenix 8 met de kabel aan, onder Horloge: **Horloge uitlezen met een USB-kabel** | Telling van gelezen bestanden en nieuwe activiteiten, de laatste activiteit klopt met het horloge | De melding (bijvoorbeeld "antwoordde niet als opslagapparaat") |
-| T7 | Koppel het horloge over Bluetooth en synchroniseer ([BLUETOOTH.md](BLUETOOTH.md)) | Activiteiten, stappen, slaap en hartslag komen binnen, het Synclogboek noemt "Horloge (Bluetooth)" | Het Synclogboek en of het horloge om een koppelcode vroeg |
+| T6 | Sluit je Garmin-horloge (Stefan: de fenix 8) met de kabel aan, onder Horloge: **Horloge uitlezen met een USB-kabel** | Telling van gelezen bestanden en nieuwe activiteiten, de laatste activiteit klopt met het horloge | De melding (bijvoorbeeld "antwoordde niet als opslagapparaat") |
+| T7 | Koppel het horloge over Bluetooth en synchroniseer ([BLUETOOTH.md](BLUETOOTH.md)). Kijk ook of de lijst *Zoek horloge* het horloge onder zijn eigen naam toont en wat het Synclogboek bij "recognised as" zegt ([GARMIN_DEVICES.md](GARMIN_DEVICES.md)) | Activiteiten, stappen, slaap en hartslag komen binnen, het Synclogboek noemt "Horloge (Bluetooth)" | Het Synclogboek en of het horloge om een koppelcode vroeg |
 | T8 | Zet op het horloge hartslag uitzenden aan, start onder Horloge **Live hartslag**, zet het scherm uit en loop tien minuten. Open daarna de app en sla op als activiteit | De melding bleef staan en telde door, de opgeslagen activiteit heeft de tien minuten | Of de melding verdween en na hoeveel minuten |
 | T9 | Zet Health Connect aan (Instellingen, Health Connect), sta de rechten toe. Schrijf een activiteit weg en lees stappen en slaap terug | De activiteit staat in Health Connect, geen dubbel geteld, de dagen zijn aangevuld | Welke rechten Android toonde en weigerde |
 | T10 | **Alleen met een Oura Ring:** log in met je eigen Oura-toepassing, synchroniseer, open het Oura-tabblad en het Dag-tabblad van Inzichten. Vergelijk paraatheid en slaapscore met de Oura-app voor dezelfde dag | Dezelfde scores | De foutmelding en op welke stap |
@@ -94,7 +94,7 @@ Een stap die niet kan (geen ring, geen band) hoef je niet te doen: die bron blij
 
 ## 3. De kandidaat (release candidate)
 
-**Stand:** `v1.0.0-rc.1` is uitgebracht (2026-11-18) als GitHub pre-release; de code is bevroren. De wachttijd van 7 dagen en de proefstappen T1 tot en met T16 zijn aan Stefan.
+**Stand:** `v1.0.0-rc.2` is de huidige kandidaat (2026-11-19, GitHub pre-release); `rc.1` (2026-11-18) ging eraan vooraf. De code is bevroren, op één uitzondering na: op Stefans verzoek herkent de app in `rc.2` **alle** Garmin-families in plaats van vooral de fenix 8 ([GARMIN_DEVICES.md](GARMIN_DEVICES.md)). Dat raakt Bluetooth, USB en het FIT-importeren, dus **de wachttijd van 7 dagen begint opnieuw** voor het horloge (T6, T7). Er is niets op een echt horloge geprobeerd, ook niet op de fenix 8. De wachttijd van 7 dagen en de proefstappen T1 tot en met T16 zijn aan Stefan.
 
 1. **Bevriezen:** vanaf de eerste kandidaat alleen reparaties en teksten. Een nieuwe functie wacht op 1.1.
 2. **Voorlopige uitgave:** `release.yml` krijgt een voorlopig-optie, zodat `v1.0.0-rc.1` als **GitHub pre-release** uitkomt. De updater vraagt `releases/latest` van GitHub, dat voorlopige uitgaven overslaat, dus een kandidaat wordt niemand opgedrongen; een test bewijst dat. De versiecontrole in de workflow moet `1.0.0-rc.1` (tag), `1.0.0rc1` (Python) en `1.0.0-rc.1` (Android) aan elkaar koppelen.

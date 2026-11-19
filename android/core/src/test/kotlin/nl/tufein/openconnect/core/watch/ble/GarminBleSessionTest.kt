@@ -41,6 +41,14 @@ class GarminBleSessionTest {
     private fun bytes(size: Int, seed: Int) = Random(seed).nextBytes(size)
 
     @Test
+    fun `the handshake says which Garmin the watch is`() {
+        val watch = FakeGarminWatch(files = emptyMap())
+        connect(watch).awaitReady(5_000)
+        // the fake sends product number 4536, which is the fenix 8 in Garmin's list
+        assertTrue(log.any { "recognised as fenix 8 (product number)" in it }, log.toString())
+    }
+
+    @Test
     fun `the handshake over a reliable link ends ready, with the watch's name`() {
         val watch = FakeGarminWatch(files = emptyMap())
         val session = connect(watch)

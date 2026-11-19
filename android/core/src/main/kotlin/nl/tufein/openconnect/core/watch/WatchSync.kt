@@ -132,7 +132,8 @@ class WatchSyncService(private val zone: ZoneId = ZoneId.systemDefault()) {
                 val bytes = source.read(file)
                 if (file.folder == WatchFolder.ACTIVITY) {
                     val activity = Formats.import(bytes, file.name)
-                        .let { it.copy(source = "watch", deviceName = source.deviceName) }
+                        // the file knows which Garmin wrote it (file_id); the transport only knows what the cable or the folder is called
+                        .let { it.copy(source = "watch", deviceName = it.deviceName ?: source.deviceName) }
                     // the same run may already be here under another id, for instance from the Garmin account route
                     val twin = repo.listActivities(start = activity.startTime.minusSeconds(120), end = activity.startTime.plusSeconds(120), limit = 1)
                     if (repo.getActivity(activity.id) == null && twin.isEmpty()) {

@@ -7,6 +7,8 @@
  */
 package nl.tufein.openconnect.core.watch.ble
 
+import nl.tufein.openconnect.core.watch.GarminDevice
+import nl.tufein.openconnect.core.watch.GarminDevices
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.time.Instant
@@ -168,6 +170,12 @@ data class GarminDeviceInfo(
 ) {
     /** "21.19" for 2119. */
     val softwareVersionText: String get() = "%d.%02d".format(softwareVersion / 100, softwareVersion % 100)
+
+    /** Which Garmin this is, from its product number first and then its part number and names; null when none is known. */
+    val recognised: GarminDevice? get() = GarminDevices.fromDeviceInfo(productNumber, deviceName, deviceModel, bluetoothName)
+
+    /** The name to show: the one the watch gave itself, else the one in the table for its product number, else [fallback]. */
+    fun nameOr(fallback: String): String = deviceName.ifBlank { recognised?.displayName ?: fallback }
 
     companion object {
         fun parse(message: GfdiMessage): GarminDeviceInfo {

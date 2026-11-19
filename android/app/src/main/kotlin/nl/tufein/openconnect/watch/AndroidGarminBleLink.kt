@@ -52,12 +52,6 @@ class AndroidGarminBleLink(
     private val archiveAfterRead: () -> Boolean = { false },
 ) : GarminBleLink {
     companion object {
-        /** Names Garmin gives its watches and bike computers ("fenix 8 - 47mm", "Forerunner 965", ...). */
-        val GARMIN_NAME = Regex(
-            "^(fenix|forerunner|venu|v[ií]voactive|v[ií]vomove|v[ií]vosmart|v[ií]vosport|instinct|epix|enduro|descent|" +
-                "edge|approach|lily|marq|quatix|tactix|d2|bounce|swim|bike|index|hrm|cirqa|garmin)",
-            RegexOption.IGNORE_CASE,
-        )
         private val CLIENT_CONFIG: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
         private const val PAIR_TIMEOUT_S = 90L
         private const val CONNECT_TIMEOUT_S = 30L
@@ -78,8 +72,8 @@ class AndroidGarminBleLink(
         val reported = HashSet<String>()
         try {
             for (device in adapter.bondedDevices.orEmpty()) {
-                val name = nameOf(device) ?: continue
-                if (GARMIN_NAME.containsMatchIn(name) && reported.add(device.address)) onFound(GarminBleWatch(device.address, name, paired = true))
+                val watch = garminCandidate(device.address, nameOf(device), null, paired = true) ?: continue
+                if (reported.add(device.address)) onFound(watch)
             }
         } catch (e: SecurityException) {
             onError("Bluetooth permission is missing")
@@ -89,10 +83,11 @@ class AndroidGarminBleLink(
         val main = Handler(Looper.getMainLooper())
         val callback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult) {
-                val name = nameOf(result.device, result.scanRecord?.deviceName) ?: return
-                if (!GARMIN_NAME.containsMatchIn(name)) return
+                val name = nameOf(result.device, result.scanRecord?.deviceName)
                 val paired = runCatching { result.device.bondState == BluetoothDevice.BOND_BONDED }.getOrDefault(false)
-                main.post { if (reported.add(result.device.address)) onFound(GarminBleWatch(result.device.address, name, paired)) }
+                // every Garmin family: the product number in Garmin's manufacturer data, then the name (see GarminScan.kt)
+                val watch = garminCandidate(result.device.address, name, result.scanRecord?.manufacturerSpecificData, paired) ?: return
+                main.post { if (reported.add(watch.address)) onFound(watch) }
             }
 
             override fun onScanFailed(errorCode: Int) = onError("Bluetooth scan failed (code $errorCode)")
@@ -147,7 +142,8 @@ class AndroidGarminBleLink(
             onStep(GarminStep.HANDSHAKE)
             session.start()
             val info = session.awaitReady(HANDSHAKE_TIMEOUT_MS)
-            val name = info.deviceName.ifBlank { watch.name }
+            // the name the watch gives itself, else the model its product number stands for, else what the scan showed
+            val name = info.nameOr(watch.name)
             OpenedWatch(GarminBleWatchSource(session.asFileAccess(), name, archiveAfterRead())) {
                 runCatching { session.finishSync() }
                 Thread.sleep(300) // let "sync complete" leave before the link goes

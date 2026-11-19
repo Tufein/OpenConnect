@@ -7,9 +7,10 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: release candidate 1.0.0-rc.1** (a GitHub *pre-release*; the [latest release](https://github.com/Tufein/OpenConnect/releases/latest)
-> is the last full version, v0.58.0). Code is frozen: only fixes and texts until 1.0. It runs end to end on demo data with
-> no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
+> **Status: release candidate 1.0.0-rc.2** (a GitHub *pre-release*; the [latest release](https://github.com/Tufein/OpenConnect/releases/latest)
+> is the last full version, v0.58.0). Code is frozen: only fixes and texts until 1.0 (rc.2 is the one exception, made at
+> the owner's request: every Garmin family is recognised, not only the fenix 8, see [docs/GARMIN_DEVICES.md](docs/GARMIN_DEVICES.md)).
+> It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). What stands between this candidate and 1.0 is in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).
 > Not affiliated with or endorsed by Garmin, Oura, WHOOP or Hume.
@@ -30,7 +31,8 @@ Check the download with `sha256sum -c openconnect-vX.Y.Z.apk.sha256`. Every rele
 update installs over the old app and keeps your data; *Settings, Updates* can fetch and verify the next one for you.
 The signing certificate is listed in [SECURITY.md](SECURITY.md). A phone with Android 8 stays on v0.51.0.
 
-Then connect what you have, all optional: a Garmin watch over USB or Bluetooth ([docs/WATCH.md](docs/WATCH.md),
+Then connect what you have, all optional: a Garmin watch, bike computer or golf device (any family, see
+[docs/GARMIN_DEVICES.md](docs/GARMIN_DEVICES.md)) over USB or Bluetooth ([docs/WATCH.md](docs/WATCH.md),
 [docs/BLUETOOTH.md](docs/BLUETOOTH.md)), your Garmin account with your own key ([docs/GARMIN.md](docs/GARMIN.md)), an
 Oura Ring ([docs/OURA.md](docs/OURA.md)), WHOOP ([docs/WHOOP.md](docs/WHOOP.md)), a Hume Band
 ([docs/HUME.md](docs/HUME.md)), Claude or Gemini for reports and the coach ([docs/AI.md](docs/AI.md)). Everything about

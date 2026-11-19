@@ -6,6 +6,7 @@ import nl.tufein.openconnect.core.TrackPoint
 import nl.tufein.openconnect.core.FitStep
 import nl.tufein.openconnect.core.clampInt
 import nl.tufein.openconnect.core.finalizeActivity
+import nl.tufein.openconnect.core.watch.GarminDevices
 import java.io.ByteArrayOutputStream
 import java.time.Instant
 
@@ -232,19 +233,24 @@ internal object Fit {
 
     // ----------------------------------------------------------------------------- decoding
 
+    private const val FILE_ID_MSG = 0
     private const val RECORD_MSG = 20
     private const val SESSION_MSG = 18
+    /** file_id: manufacturer and product, which name the device that wrote the file. */
+    private val FILE_ID_FIELDS = setOf(1, 2)
     private val RECORD_FIELDS = setOf(253, 0, 1, 2, 78, 3, 4, 5, 7)
     private val SESSION_FIELDS = setOf(2, 7, 8, 9, 5, 6, 11, 16, 17, 22)
 
     fun parse(data: ByteArray): Activity {
         val track = ArrayList<TrackPoint>()
         var session: Map<Int, Long>? = null
+        var device: String? = null
 
         FitReader.read(
             data,
             wanted = {
                 when (it) {
+                    FILE_ID_MSG -> FILE_ID_FIELDS
                     RECORD_MSG -> RECORD_FIELDS
                     SESSION_MSG -> SESSION_FIELDS
                     else -> null
@@ -252,6 +258,9 @@ internal object Fit {
             },
         ) { global, v ->
             when (global) {
+                FILE_ID_MSG -> if (device == null) {
+                    device = GarminDevices.fromFit(v[1]?.toInt(), v[2]?.toInt())?.displayName
+                }
                 RECORD_MSG -> {
                     val ts = v[253]
                     if (ts != null) {
@@ -280,7 +289,7 @@ internal object Fit {
         if (s == null && track.isEmpty()) throw FormatError("FIT file contains no activity data")
 
         val start = s?.get(2)?.let { Instant.ofEpochSecond(it + FIT_EPOCH_OFFSET) } ?: track.first().time
-        var activity = Activity(id = "pending", source = "import", startTime = start, track = track)
+        var activity = Activity(id = "pending", source = "import", startTime = start, track = track, deviceName = device)
         if (s != null) {
             val timer = s[8]?.takeIf { it != 0L } ?: s[7] ?: 0L
             activity = activity.copy(

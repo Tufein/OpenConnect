@@ -27,7 +27,7 @@ You need three things, once:
 
 1. **The Connect IQ SDK and your watch's device files.** Garmin's SDK Manager downloads both and asks for your Garmin
    login. The SDK alone is not enough: `monkeyc` refuses a device id whose files are not downloaded. In the SDK Manager
-   pick the device that is yours (the app offers `fenix843mm`, `fenix847mm`, `fenix8pro47mm`, `fenix8solar47mm` and `fenix8solar51mm`; the Solar ones have a different screen than the AMOLED ones, and the preview is drawn for the AMOLED).
+   pick the device that is yours. The faces were made for the fenix 8 (`fenix843mm`, `fenix847mm`, `fenix8pro47mm`, `fenix8solar47mm` and `fenix8solar51mm`, the ids the app offers; the Solar ones have a different screen than the AMOLED ones, and the preview is drawn for the AMOLED), but any Garmin watch with Connect IQ is a valid `--device`: the ids are in the SDK Manager (a Forerunner 965 is `fr965`, for example), they are **not** the product numbers of [GARMIN_DEVICES.md](GARMIN_DEVICES.md), and no other family was ever built or tried.
 2. **A developer key:** `watch/build.sh --make-key` creates `watch/developer_key.der`. Keep it; faces built with another
    key do not replace each other.
 3. **`bash`, `openssl` and Java.**
@@ -67,7 +67,7 @@ several variants can sit on the watch side by side.
 ## For the Connect IQ store (v0.24.0)
 
 `watch/build.sh --package` (with `--type watchface` or `--type widget`) packs one `.iq` file instead of a `.prg`: every
-fenix 8 model in one file (`--products` changes the list), one fixed app id per app, and settings. The face reads
+fenix 8 model in one file by default (`--products a,b,c` takes the Connect IQ id of any other Garmin watch), one fixed app id per app, and settings. The face reads
 `Application.Properties` through `source/Prefs.mc`: `Design`, `Colour` and `Field1` to `Field4`, with the values the
 package was built with as defaults (`resources/settings` and `resources/properties` are written into `gen/`). A value
 that is missing or not valid falls back to the built-in `Config`, so the screen is never empty. English and Dutch names

@@ -216,7 +216,8 @@ class GarminBleSession(
             GfdiType.DEVICE_INFORMATION -> {
                 val device = GarminDeviceInfo.parse(message)
                 synchronized(lock) { info = device }
-                log("watch: ${device.deviceName} ${device.deviceModel}, software ${device.softwareVersionText}, protocol ${device.protocolVersion}")
+                val known = device.recognised?.let { "${it.displayName} (${it.recognisedBy.label})" } ?: "no known model"
+                log("watch: ${device.deviceName} ${device.deviceModel}, software ${device.softwareVersionText}, protocol ${device.protocolVersion}, recognised as $known")
                 send(GfdiMessage.response(GfdiType.DEVICE_INFORMATION))
                 send(GfdiOut.deviceInformationReply(device, phone.name, phone.manufacturer, phone.model))
             }

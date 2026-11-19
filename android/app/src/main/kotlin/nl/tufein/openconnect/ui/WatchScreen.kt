@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import nl.tufein.openconnect.R
 import nl.tufein.openconnect.watch.BleSensor
+import nl.tufein.openconnect.core.watch.BleSync
 import nl.tufein.openconnect.watch.GarminBleWatch
 import nl.tufein.openconnect.watch.GarminStep
 import nl.tufein.openconnect.watch.LivePhase
@@ -210,9 +211,19 @@ private fun GarminBleControls(
     if (g.searching && g.found.isEmpty()) {
         Text(stringResource(R.string.watch_ble_searching), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
+    // what the search covers, once there is a search: kept out of the card's top so the cards below it stay where they were
+    if (g.searching || g.found.isNotEmpty()) {
+        Text(stringResource(R.string.watch_ble_families), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
     for (watch in g.found.filter { it.address != g.remembered?.address }) {
         SecondaryButton(onClick = { onSync(watch) }, enabled = !running, modifier = Modifier.fillMaxWidth()) {
             Text(if (watch.paired) stringResource(R.string.watch_ble_paired, watch.name) else watch.name)
+        }
+        // a model that is not on the list the sync was made for says so, instead of promising what nobody has tried
+        when (watch.bleSync) {
+            BleSync.UNKNOWN -> BleHint(R.string.watch_ble_hint_unknown)
+            BleSync.NEEDS_NEWER_PROTOCOL -> BleHint(R.string.watch_ble_hint_newer)
+            else -> Unit
         }
     }
     g.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) }
@@ -240,6 +251,11 @@ private fun GarminBleControls(
     if (g.remembered != null && !running) {
         QuietButton(onClick = onForget) { Text(stringResource(R.string.watch_ble_forget)) }
     }
+}
+
+@Composable
+private fun BleHint(text: Int) {
+    Text(stringResource(text), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }
 
 @Composable

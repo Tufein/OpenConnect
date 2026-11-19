@@ -367,6 +367,9 @@
     <string name="default_model">Use default model</string>
     <string name="watch_ble_title">Sync a Garmin watch over Bluetooth</string>
     <string name="watch_ble_body">Experimental. OpenConnect talks to the watch the way the Garmin Connect app does (the protocol Gadgetbridge worked out) and copies what is new: activities, steps, heart rate, stress, Body Battery, sleep and HRV. No cable, no Garmin account. The first time, Android pairs with the watch: put the watch in pairing mode (Settings, Connectivity, Phone, Pair phone) and confirm the code.</string>
+    <string name="watch_ble_families">Looks for every kind of Garmin watch, golf watch and bike computer, by its name and by the model number it advertises. Heart rate straps, lights and scales are left out: there is nothing to sync from them. Models that are not on the list this sync was made for carry a note.</string>
+    <string name="watch_ble_hint_unknown">Not on the list this sync was ported from, and nothing was tried on this model. Syncing may fail; the Garmin account route is the safe one.</string>
+    <string name="watch_ble_hint_newer">This model needs Garmin\'s newer sync protocol, which OpenConnect does not have, so some files may be missing. The Garmin account route is safer.</string>
     <string name="watch_ble_warning">A watch paired with OpenConnect will in practice no longer sync with the Garmin Connect app. The files stay on the watch.</string>
     <string name="watch_ble_find">Find watch</string>
     <string name="watch_ble_stop">Stop looking</string>
