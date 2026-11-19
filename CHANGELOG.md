@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.0.0-rc.4: laat zien waarom een melding niet aankomt, en stuurt ze ook zonder dat het horloge erom vraagt
+
+De **vierde release candidate** van 1.0, weer een **GitHub-pre-release** (niet "nieuwste", de updater biedt haar niemand aan). Na rc.3 kwamen de meldingen van de telefoon niet op het horloge aan. **Dit is geen bevestigde oplossing:** er is geen horloge in deze omgeving, dus de oorzaak is niet gezien. Wel is de code naast Gadgetbridge gelegd, zijn er vijf zwakke plekken gevonden en aangepakt (één …
+
+[Release notes](docs/releases/v1.0.0-rc.4.md)
+
 ## v1.0.0-rc.3: meldingen van je telefoon op het Garmin-horloge
 
 De **derde release candidate** van 1.0, weer een **GitHub-pre-release** (niet "nieuwste", de updater biedt haar niemand aan). Op verzoek van de eigenaar kan de app nu **de meldingen van je telefoon op het Garmin-horloge tonen**, zoals Gadgetbridge en de Garmin Connect-app dat doen: een bericht van een chat-app, een mail, een agenda-herinnering, voor de apps die jij kiest. Dit is de tweede …

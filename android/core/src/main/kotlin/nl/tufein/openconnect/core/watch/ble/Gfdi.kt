@@ -50,6 +50,19 @@ object GfdiType {
 
     /** Ids Garmin uses that we know of; anything else is answered with "unsupported". */
     val KNOWN: Set<Int> = (5000..5066).toSet() + (5101..5112).toSet()
+
+    private val NAMES: Map<Int, String> = mapOf(
+        RESPONSE to "RESPONSE", BATTERY_STATUS to "BATTERY_STATUS", DEVICE_INFORMATION to "DEVICE_INFORMATION",
+        DEVICE_SETTINGS to "DEVICE_SETTINGS", SYSTEM_EVENT to "SYSTEM_EVENT", NOTIFICATION_UPDATE to "NOTIFICATION_UPDATE",
+        NOTIFICATION_CONTROL to "NOTIFICATION_CONTROL", NOTIFICATION_DATA to "NOTIFICATION_DATA",
+        NOTIFICATION_SUBSCRIPTION to "NOTIFICATION_SUBSCRIPTION", SYNCHRONIZATION to "SYNCHRONIZATION",
+        FIND_MY_PHONE_REQUEST to "FIND_MY_PHONE_REQUEST", FIND_MY_PHONE_CANCEL to "FIND_MY_PHONE_CANCEL",
+        MUSIC_CONTROL to "MUSIC_CONTROL", PROTOBUF_REQUEST to "PROTOBUF_REQUEST", PROTOBUF_RESPONSE to "PROTOBUF_RESPONSE",
+        CONFIGURATION to "CONFIGURATION", CURRENT_TIME_REQUEST to "CURRENT_TIME_REQUEST", AUTH_NEGOTIATION to "AUTH_NEGOTIATION",
+    )
+
+    /** The name and number of a message type, for the log: `NOTIFICATION_SUBSCRIPTION (5036)`. */
+    fun describe(type: Int): String = NAMES[type]?.let { "$it ($type)" } ?: type.toString()
 }
 
 /** The status byte of a [GfdiType.RESPONSE]. */

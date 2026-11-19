@@ -39,9 +39,11 @@ class ForwardingService : Service() {
                 } else {
                     startForeground(NOTIFICATION_ID, notification(this, state))
                 }
-            } catch (_: Exception) {
+                log("the persistent notification is up")
+            } catch (e: Exception) {
                 // Android refused (a missing Bluetooth permission, or a start it counts as "from the background"):
                 // forwarding goes on without the notification, as long as the listener keeps the app alive.
+                log("Android refused the persistent notification: ${e::class.java.simpleName}: ${e.message}")
                 stopSelf()
             }
         }
@@ -58,16 +60,24 @@ class ForwardingService : Service() {
         /** Called from the notification's "Turn off" action; set by [start]. */
         @Volatile private var onStop: () -> Unit = {}
 
-        fun start(context: Context, ui: ForwardUi, onStop: () -> Unit) {
+        /** Where to write down what went wrong; set by [start], because the service itself has no way to be asked. */
+        @Volatile private var sink: (String) -> Unit = {}
+
+        fun start(context: Context, ui: ForwardUi, onStop: () -> Unit, log: (String) -> Unit = {}) {
             state = ui
             this.onStop = onStop
+            sink = log
+            log("asking Android to show the persistent notification (notifications ${if (NotificationManagerCompat.from(context).areNotificationsEnabled()) "allowed" else "NOT allowed"})")
             try {
                 context.startForegroundService(Intent(context, ForwardingService::class.java))
-            } catch (_: Exception) {
+            } catch (e: Exception) {
                 // Android can refuse a foreground service started from the background (in Doze, say). The listener keeps
                 // the app alive while notification access is on, so forwarding carries on; only the notification is missing.
+                log("Android would not start the persistent notification: ${e::class.java.simpleName}: ${e.message}")
             }
         }
+
+        private fun log(line: String) = sink(line)
 
         fun update(context: Context, ui: ForwardUi) {
             state = ui
@@ -136,8 +146,8 @@ class ForwardingService : Service() {
 }
 
 /** The real [ForwardingKeeper]: the notification shown by [ForwardingService]. */
-class ForegroundForwarding(private val context: Context) : ForwardingKeeper {
-    override fun start(state: ForwardUi, onStop: () -> Unit) = ForwardingService.start(context, state, onStop)
+class ForegroundForwarding(private val context: Context, private val log: (String) -> Unit = {}) : ForwardingKeeper {
+    override fun start(state: ForwardUi, onStop: () -> Unit) = ForwardingService.start(context, state, onStop, log)
 
     override fun update(state: ForwardUi) = ForwardingService.update(context, state)
 

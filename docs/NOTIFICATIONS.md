@@ -25,6 +25,36 @@ OpenConnect already uses to sync the watch. The protocol is ported from
 Two options: **Hide the text on the watch** (the watch then shows only the app's name and *New notification*), and **Only
 while the phone screen is off** (while you look at the phone, the watch stays quiet).
 
+## When it does not arrive: "What is happening?"
+
+Since v1.0.0-rc.4 the card has a button **What is happening?**. It shows every step a notification goes through, with a
+mark for how far it got, so "it does not arrive" has an answer:
+
+| Step | `[x]` means | `[!]` / `[…]` means |
+|------|-------------|---------------------|
+| Notification access given | Android lets OpenConnect read notifications | give it (the card says how) |
+| Android started the listener | Android runs OpenConnect's listener | the access is on but the listener is not running: switch the access off and on, or restart the phone. The app also asks Android to start it again by itself. |
+| Android hands over notifications | at least one notification came in since the app started | waiting for the first one |
+| Bluetooth permission, Watch known | as it says | allow it / sync the watch over Bluetooth once |
+| Android lets OpenConnect show its persistent notification | notifications are allowed for the app | `[~]`: Android hides the persistent notification (on Android 13 and newer without the notification permission), and ends the app sooner; the hint has a button to the notification settings |
+| Connection to the watch | paired, connected and the introductions are done | the step it is on (pairing, connecting, introductions) while it works, or the error when it failed |
+| Watch asked for notifications | the watch said it wants them | `[~]`: it never asked, so they are sent anyway; `[!]`: the watch said no (check the watch's own settings under Phone) |
+| Notifications shown on the watch | the watch asked what the notifications say and they were delivered | `[!]`: the watch was told about notifications but never asked what they say |
+
+Under the steps: how many notifications each reason held back since the app started, and the last lines of a **log**. The
+log records the listener starting, each notification (the **app's name** and what was decided, never its title or text),
+every step of the Bluetooth connection, and every kind of message the watch sends. **Copy the log** puts all of it on the
+clipboard, to paste into a message. It lives in memory only (150 lines) and is gone when the app ends.
+
+Hints appear under the status when a step points at something to try: close the Garmin Connect app (only shown when it is
+installed), switch off battery optimisation for OpenConnect after a connection that worked and dropped, or the watch's own
+notification settings.
+
+A watch that never asks for notifications: Gadgetbridge waits for the watch to send message 5036 before it announces
+anything. Not every model sends it at once, or at all, so after 10 seconds of silence OpenConnect sends notifications
+anyway (`[~]` on the card). A watch that does not want them ignores them, and a later *no* from the watch still switches
+them off. This is a guess about models nobody has tried here; the log says which case you are in.
+
 ## What is forwarded, and what is not
 
 A notification goes to the watch when **all** of these hold, in this order (the first reason that applies is shown on the
@@ -107,6 +137,7 @@ Code, all tested without a phone:
 - `core/watch/ble/GarminBleSession.kt`: routes the four message types to the conversation when notifications are on, and
   tells the watch *disabled* when they are off.
 - `app/.../notify/NotificationForwarder.kt`: keeps the one connection, retries, counts, and exposes the state of the card.
+- `app/.../notify/ForwardChecks.kt` and `ForwardTrail.kt`: the steps and the hints behind *What is happening?*, and the log.
 - `app/.../notify/PhoneNotificationListener.kt` and `StatusBarMapper.kt`: Android's side; they only describe a notification
   and hand it over.
 - `app/.../watch/LiveWatchRegistry.kt`: how a sync and the notification connection share the watch.

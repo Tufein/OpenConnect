@@ -50,6 +50,8 @@
         <package android:name="com.google.android.apps.healthdata" />
         <!-- Garmin's Connect IQ app: Settings opens it directly, which needs to see whether it is installed. -->
         <package android:name="com.garmin.connectiq" />
+        <!-- Garmin Connect: it holds the watch's one phone link, so the card on the Watch screen says so when it is installed. -->
+        <package android:name="com.garmin.android.apps.connectmobile" />
         <!-- The apps with an icon in the launcher: the list to choose from when sending notifications to the watch. -->
         <intent>
             <action android:name="android.intent.action.MAIN" />

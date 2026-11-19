@@ -23,12 +23,18 @@ class PhoneNotificationListener : NotificationListenerService() {
 
     override fun onListenerConnected() {
         instance = this
-        worker.execute { runCatching { forwarder.refresh() } }
+        worker.execute {
+            runCatching { forwarder.listenerChanged(true) }
+            runCatching { forwarder.refresh() }
+        }
     }
 
     override fun onListenerDisconnected() {
         if (instance === this) instance = null
-        worker.execute { runCatching { forwarder.refresh() } }
+        worker.execute {
+            runCatching { forwarder.listenerChanged(false) }
+            runCatching { forwarder.refresh() }
+        }
         // Android drops a listener now and then (a crash elsewhere, a low-memory phase); ask to be bound again.
         if (ForwardAccess.hasNotificationAccess(this)) {
             runCatching { requestRebind(ComponentName(this, PhoneNotificationListener::class.java)) }
@@ -59,6 +65,11 @@ class PhoneNotificationListener : NotificationListenerService() {
 
     companion object {
         @Volatile private var instance: PhoneNotificationListener? = null
+
+        /** Asks Android to start the listener again: it does not always do so by itself after an update. */
+        fun rebind(context: android.content.Context) {
+            runCatching { requestRebind(ComponentName(context, PhoneNotificationListener::class.java)) }
+        }
 
         /** Swipes a notification away on the phone, for when the person dismissed it on the watch. */
         fun cancel(key: String) {

@@ -162,7 +162,7 @@ class GfdiNotificationsTest {
         assertEquals("com.whatsapp", String(value(NotificationAttribute.APP_IDENTIFIER)))
         assertEquals("14", String(value(NotificationAttribute.MESSAGE_SIZE)), "the length of the whole text, as a number in text")
         assertEquals("", String(value(NotificationAttribute.NEGATIVE_ACTION_LABEL)))
-        assertEquals("0", String(value(NotificationAttribute.ATTACHMENTS)), "we never send pictures")
+        assertEquals("1", String(value(NotificationAttribute.ATTACHMENTS)), "what Gadgetbridge answers, whatever the notification holds")
     }
 
     @Test

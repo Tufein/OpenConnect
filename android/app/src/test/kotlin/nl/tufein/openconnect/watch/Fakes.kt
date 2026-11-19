@@ -74,6 +74,8 @@ class FakeGarminBle(
     ): nl.tufein.openconnect.notify.WatchNotifyConnection {
         notifyOpened += watch
         val make = openNotifications ?: throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, "not available")
+        onStep(GarminStep.CONNECTING)
+        onStep(GarminStep.HANDSHAKE)
         return make(watch, listener)
     }
 }

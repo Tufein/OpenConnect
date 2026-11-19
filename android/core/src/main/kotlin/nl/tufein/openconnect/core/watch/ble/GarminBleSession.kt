@@ -61,6 +61,8 @@ class GarminBleSession(
     private val log: (String) -> Unit = {},
     /** Null for a session that only syncs files; set to also show phone notifications on the watch (see [notifier]). */
     notifications: NotificationOptions? = null,
+    /** How long a notification session waits for the watch to ask for notifications before it sends them anyway. */
+    private val askGraceMs: Long = ASK_GRACE_MS,
 ) {
     private val lock = Any()
     private val cobs = CobsStream()
@@ -71,6 +73,7 @@ class GarminBleSession(
     private var triedPlain = false
     private var info: GarminDeviceInfo? = null
     private var initialized = false
+    private var assumeTimer: Scheduler.Cancellable? = null
     @Volatile private var closed = false
     private var transfer: Transfer? = null
 
@@ -147,6 +150,7 @@ class GarminBleSession(
             pending = transfer
             transfer = null
         }
+        assumeTimer?.cancel()
         notifier?.close()
         readyFuture.completeExceptionally(error)
         pending?.result?.completeExceptionally(error)
@@ -245,6 +249,7 @@ class GarminBleSession(
     // --------------------------------------------------------------------------------------- GFDI
 
     private fun handle(message: GfdiMessage) {
+        if (message.type != GfdiType.FILE_TRANSFER_DATA) log("watch sent ${GfdiType.describe(message.type)}")
         when (message.type) {
             GfdiType.DEVICE_INFORMATION -> {
                 val device = GarminDeviceInfo.parse(message)
@@ -329,7 +334,15 @@ class GarminBleSession(
             send(GfdiOut.systemEvent(SystemEvent.SYNC_COMPLETE))
             send(GfdiOut.systemEvent(SystemEvent.SETUP_WIZARD_COMPLETE))
         }
+        notifier?.let { n ->
+            // the watch normally asks for notifications by itself soon after the introductions; if it does not, send anyway
+            assumeTimer = scheduler.schedule(askGraceMs) { n.assumeSubscribed() }
+        }
         readyFuture.complete(device ?: GarminDeviceInfo(0, 0, 0, 0, 0, "", "Garmin", ""))
+    }
+
+    companion object {
+        const val ASK_GRACE_MS = 10_000L
     }
 
     private fun onResponse(r: GfdiReader) {

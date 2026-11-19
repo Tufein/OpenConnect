@@ -388,4 +388,108 @@ class GarminNotificationsTest {
         scheduler.advance(60_000)
         assertEquals(before, sent.size)
     }
+
+    // ------------------------------------------------------------------ a watch that does not ask
+
+    @Test
+    fun `a watch that never asks gets its notifications anyway once we give up waiting`() {
+        val h = handler()
+        assertEquals(PostResult.WAITING, h.post(note(1)))
+        assertEquals(WatchAsk.NOT_YET, h.stats.watch)
+        assertEquals(1, h.stats.waiting)
+        assertTrue(updates().isEmpty())
+
+        h.assumeSubscribed()
+
+        assertEquals(WatchAsk.ASSUMED, h.stats.watch)
+        assertTrue(h.sending)
+        assertFalse(h.subscribed, "the watch itself did not say yes")
+        assertEquals(listOf(NotificationUpdate.ADD), updates().map { updateOf(it).first })
+        assertEquals(0, h.stats.waiting)
+        assertEquals(PostResult.SENT, h.post(note(2)))
+        assertEquals(2, updates().size)
+    }
+
+    @Test
+    fun `giving up waiting does nothing once the watch has answered, either way`() {
+        val yes = handler()
+        subscribe(yes)
+        yes.assumeSubscribed()
+        assertEquals(WatchAsk.ON, yes.stats.watch)
+
+        val no = handler()
+        subscribe(no, on = false)
+        no.assumeSubscribed()
+        assertEquals(WatchAsk.OFF, no.stats.watch)
+        assertEquals(PostResult.OFF, no.post(note(1)))
+    }
+
+    @Test
+    fun `a no from the watch after we sent anyway switches notifications off again`() {
+        val h = handler()
+        h.assumeSubscribed()
+        h.post(note(1))
+        subscribe(h, on = false)
+        assertEquals(WatchAsk.OFF, h.stats.watch)
+        assertFalse(h.sending)
+        assertEquals(PostResult.OFF, h.post(note(2)))
+    }
+
+    @Test
+    fun `giving up waiting after the connection closed does nothing`() {
+        val h = handler()
+        h.post(note(1))
+        h.close()
+        h.assumeSubscribed()
+        assertTrue(updates().isEmpty())
+        assertFalse(h.sending)
+    }
+
+    @Test
+    fun `a notification that waits for the watch is not counted as announced`() {
+        val h = handler()
+        h.post(note(1))
+        assertEquals(0, h.stats.announced)
+        assertEquals(1, h.stats.waiting)
+        subscribe(h)
+        assertEquals(1, h.stats.announced)
+        assertEquals(0, h.stats.waiting)
+    }
+
+    // ------------------------------------------------------------------ the counts
+
+    @Test
+    fun `the counts follow the conversation, and every change is reported`() {
+        val h = handler()
+        val seen = ArrayList<NotifyStats>()
+        h.onChange = { seen += it }
+        subscribe(h)
+        h.post(note(5))
+        assertEquals(1, h.stats.announced)
+
+        h.handle(controlRequest(5, NotificationAttribute.TITLE to 100, NotificationAttribute.MESSAGE to 1000))
+        assertEquals(1, h.stats.asked)
+        assertEquals(0, h.stats.answered, "not until the watch confirmed the last chunk")
+        h.handle(watchSays())
+        assertEquals(1, h.stats.answered)
+
+        h.handle(action(5, 98))
+        assertEquals(1, h.stats.dismissedOnWatch)
+
+        h.post(note(6, body = "x".repeat(700)))
+        h.handle(controlRequest(6, NotificationAttribute.MESSAGE to 1000))
+        scheduler.advance(GarminNotifications.CHUNK_TIMEOUT_MS)
+        assertEquals(1, h.stats.failed)
+        assertTrue(seen.size >= 6, "reported after each step: $seen")
+        assertEquals(h.stats, seen.last())
+    }
+
+    @Test
+    fun `a listener that throws does not break the conversation`() {
+        val h = handler()
+        h.onChange = { error("boom") }
+        subscribe(h)
+        assertEquals(PostResult.SENT, h.post(note(1)))
+        assertEquals(1, updates().size)
+    }
 }
