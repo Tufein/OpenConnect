@@ -311,6 +311,15 @@ class GarminNotifications(
     private val log: (String) -> Unit = {},
     /** Seconds since the watch last sent anything (null: never), for the log line that says whether the link is alive. */
     private val heardAgo: () -> Long? = { null },
+    /** How long the watch gets to answer an announcement before it counts as unanswered. */
+    private val answerWaitMs: Long = ANSWER_WAIT_MS,
+    /**
+     * How many whole messages the watch has sent so far, or null when unknown. With it, an unanswered announcement after
+     * which the watch sent nothing at all counts as a stuck watch: [onUndelivered] gets what did not arrive and
+     * [onStalled] is called once, so the connection can be made again.
+     */
+    private val watchMessages: (() -> Long)? = null,
+    private val onStalled: () -> Unit = {},
 ) {
     companion object {
         /** How long the watch gets to answer an announcement before the log says it did not. */
@@ -344,8 +353,26 @@ class GarminNotifications(
     private var acknowledged = 0
     private var unanswered = 0
 
+    /** One notification update that went out; the watch answers them in the order they were sent. */
+    private class Update(val seq: Int, val notification: WatchNotification?)
+
+    /** Updates the watch has not answered yet, oldest first (a removal has no notification). */
+    private val unconfirmed = ArrayDeque<Update>()
+    private var updatesSent = 0
+    private var updatesAnswered = 0
+
+    /** Ids the watch asked the details of: it certainly heard about those. */
+    private val askedIds = LinkedHashSet<Int>()
+    private var stalled = false
+
     /** Called when the person dismisses notification [id] on the watch. Runs on the Bluetooth thread. */
     @Volatile var onDismissedOnWatch: (Int) -> Unit = {}
+
+    /**
+     * Called once, just before [onStalled], with the notifications the watch was told about but never answered: they did
+     * not arrive and can be sent again over a new connection.
+     */
+    @Volatile var onUndelivered: (List<WatchNotification>) -> Unit = {}
 
     /** Called after anything changed in [stats]: the watch asked, something was announced, an answer was confirmed. */
     @Volatile var onChange: (NotifyStats) -> Unit = {}
@@ -431,7 +458,7 @@ class GarminNotifications(
             waiting.removeAll { w -> (w.notification.id == id).also { if (it) w.expiry.cancel() } }
             val gone = known.remove(id) ?: return
             if (asked == Asked.ON || asked == Asked.ASSUMED) {
-                send(GfdiNotifications.update(NotificationUpdate.REMOVE, gone.category, countOf(gone.category), id, hasActions = false))
+                sendUpdate(GfdiNotifications.update(NotificationUpdate.REMOVE, gone.category, countOf(gone.category), id, hasActions = false), null)
             }
         }
         changed()
@@ -461,35 +488,64 @@ class GarminNotifications(
         val type = if (known.remove(n.id) != null) NotificationUpdate.MODIFY else NotificationUpdate.ADD
         known[n.id] = n
         val message = GfdiNotifications.update(type, n.category, countOf(n.category), n.id, hasActions = n.canDismiss)
-        send(message)
+        askedIds.remove(n.id) // a changed notification has to be asked about again
+        val messagesBefore = watchMessages?.invoke()
+        val seq = sendUpdate(message, n)
         announced++
         val mark = announced
         // the bytes of an announcement hold only the kind, a flag, the category, a count and the id: never any text
         val heard = heardAgo()?.let { ", last heard from the watch $it s ago" }.orEmpty()
         log("announced notification ${n.id} to the watch ($type, ${n.category}); bytes ${hex(message.encode())}$heard")
-        scheduler.schedule(ANSWER_WAIT_MS) { checkAnswered(mark) }
+        scheduler.schedule(answerWaitMs) { checkAnswered(mark, seq, n, messagesBefore) }
         while (known.size > MAX_KNOWN) {
             val oldest = known.entries.first().value
             known.remove(oldest.id)
-            send(GfdiNotifications.update(NotificationUpdate.REMOVE, oldest.category, countOf(oldest.category), oldest.id, hasActions = false))
+            sendUpdate(GfdiNotifications.update(NotificationUpdate.REMOVE, oldest.category, countOf(oldest.category), oldest.id, hasActions = false), null)
         }
+    }
+
+    /** Sends a notification update and remembers it until the watch answers; returns its number among all updates. */
+    private fun sendUpdate(message: GfdiMessage, notification: WatchNotification?): Int {
+        send(message)
+        updatesSent++
+        unconfirmed.addLast(Update(updatesSent, notification))
+        while (unconfirmed.size > MAX_KNOWN * 2) unconfirmed.removeFirst()
+        return updatesSent
     }
 
     private fun countOf(category: WatchNotificationCategory) = known.values.count { it.category == category }
 
     private fun hex(bytes: ByteArray) = bytes.joinToString(" ") { "%02x".format(it.toInt() and 0xFF) }
 
-    /** Announcement number [mark] was made [ANSWER_WAIT_MS] ago: say so if the watch has answered nothing since. */
-    private fun checkAnswered(mark: Int) {
+    /**
+     * Announcement number [mark] (update number [seq], for [n]) was made [answerWaitMs] ago: say so if the watch has not
+     * answered it. When the watch sent nothing at all since ([messagesBefore] still stands), it is stuck: hand over what
+     * did not arrive and let the session start again.
+     */
+    private fun checkAnswered(mark: Int, seq: Int, n: WatchNotification, messagesBefore: Long?) {
+        var lost: List<WatchNotification>? = null
         synchronized(lock) {
             if (closed) return
-            // an answer to this one or a later announcement, or the watch asking for its details, counts as heard
-            if (acknowledged + detailsAsked >= mark) return
+            // the watch answers updates in order, so an answer to this one or a later one counts; so does asking for details
+            if (updatesAnswered >= seq || n.id in askedIds) return
             unanswered++
             val heard = heardAgo()?.let { "last heard from the watch $it s ago" } ?: "never heard from the watch"
-            log("the watch has not answered announcement $mark within ${ANSWER_WAIT_MS / 1000} s ($heard)")
+            val silent = messagesBefore != null && watchMessages?.invoke() == messagesBefore
+            if (!silent) {
+                log("the watch has not answered announcement $mark within ${answerWaitMs / 1000} s ($heard)")
+            } else {
+                log("the watch has not answered announcement $mark within ${answerWaitMs / 1000} s and has sent nothing since ($heard): it is stuck")
+                if (!stalled) {
+                    stalled = true
+                    lost = unconfirmed.mapNotNull { it.notification }.filter { it.id in known && it.id !in askedIds }.distinctBy { it.id }
+                }
+            }
         }
         changed()
+        val undelivered = lost ?: return
+        log("connecting again; ${undelivered.size} notification(s) to send again")
+        runCatching { onUndelivered(undelivered) } // a listener that throws must not stop the new connection
+        onStalled()
     }
 
     // ------------------------------------------------------------------------------ watch side
@@ -549,6 +605,8 @@ class GarminNotifications(
                 is NotificationControl.GetAttributes -> {
                     send(GfdiNotifications.controlAck())
                     detailsAsked++
+                    askedIds += control.id
+                    while (askedIds.size > MAX_KNOWN * 2) askedIds.remove(askedIds.first())
                     val notification = known[control.id]
                     if (notification == null) {
                         log("the watch asked about notification ${control.id}, which is gone")
@@ -658,9 +716,16 @@ class GarminNotifications(
                 return true
             }
             synchronized(lock) {
-                acknowledged++
-                log("the watch confirmed an announcement: ${GfdiStatus.name(answer)}")
+                updatesAnswered++
+                val update = unconfirmed.removeFirstOrNull()
+                if (update?.notification != null) {
+                    acknowledged++
+                    log("the watch confirmed an announcement: ${GfdiStatus.name(answer)}")
+                } else {
+                    log("the watch confirmed a removal: ${GfdiStatus.name(answer)}")
+                }
             }
+            changed()
             return true
         }
         if (original != GfdiType.NOTIFICATION_DATA) return false

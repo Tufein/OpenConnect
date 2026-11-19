@@ -543,4 +543,86 @@ class GarminNotificationsTest {
         scheduler.advance(GarminNotifications.ANSWER_WAIT_MS + 1)
         assertEquals(0, h.stats.unanswered)
     }
+
+    @Test
+    fun `an unanswered announcement is reported even after the watch asked twice about an earlier one`() {
+        // seen on a fenix 8: the watch asked twice about the first notification, which hid the later unanswered ones
+        val log = ArrayList<String>()
+        val h = GarminNotifications(send = { sent += it }, scheduler = scheduler, log = { log += it })
+        subscribe(h)
+        h.post(note(1))
+        h.handle(GfdiMessage.response(GfdiType.NOTIFICATION_UPDATE))
+        h.handle(controlRequest(1, NotificationAttribute.TITLE to 32))
+        h.handle(controlRequest(1, NotificationAttribute.MESSAGE to 100))
+        h.post(note(2))
+        scheduler.advance(GarminNotifications.ANSWER_WAIT_MS + 1)
+        assertEquals(1, h.stats.unanswered)
+        assertTrue(log.any { "has not answered announcement 2" in it }, log.toString())
+    }
+
+    @Test
+    fun `the answer to a removal is not counted as a confirmed announcement`() {
+        val log = ArrayList<String>()
+        val h = GarminNotifications(send = { sent += it }, scheduler = scheduler, log = { log += it })
+        subscribe(h)
+        h.post(note(1))
+        h.handle(GfdiMessage.response(GfdiType.NOTIFICATION_UPDATE))
+        h.remove(1)
+        h.handle(GfdiMessage.response(GfdiType.NOTIFICATION_UPDATE))
+        assertEquals(1, h.stats.acknowledged)
+        assertTrue(log.any { "the watch confirmed a removal: ACK" in it }, log.toString())
+    }
+
+    @Test
+    fun `a watch that sends nothing at all after an announcement is stuck, and what it missed is handed over once`() {
+        val log = ArrayList<String>()
+        val messages = 10L
+        var stalls = 0
+        val h = GarminNotifications(
+            send = { sent += it }, scheduler = scheduler, log = { log += it }, heardAgo = { 2L },
+            watchMessages = { messages }, onStalled = { stalls++ },
+        )
+        val missed = ArrayList<List<Int>>()
+        h.onUndelivered = { list -> missed += list.map { it.id } }
+        subscribe(h)
+        h.post(note(1))
+        h.post(note(2))
+        h.remove(2) // gone from the phone before the watch got stuck: nothing to send again
+        h.post(note(3))
+        scheduler.advance(GarminNotifications.ANSWER_WAIT_MS + 1)
+        assertEquals(1, stalls, "once, however many announcements are unanswered")
+        assertEquals(listOf(listOf(1, 3)), missed)
+        assertTrue(log.any { "has not answered announcement 1 within 5 s and has sent nothing since (last heard from the watch 2 s ago): it is stuck" in it }, log.toString())
+        assertTrue(log.any { "connecting again; 2 notification(s) to send again" in it }, log.toString())
+    }
+
+    @Test
+    fun `a watch that sent something else meanwhile is not called stuck`() {
+        var messages = 10L
+        var stalls = 0
+        val h = GarminNotifications(
+            send = { sent += it }, scheduler = scheduler, watchMessages = { messages }, onStalled = { stalls++ },
+        )
+        subscribe(h)
+        h.post(note(1))
+        messages++ // the watch said something, only not about this announcement
+        scheduler.advance(GarminNotifications.ANSWER_WAIT_MS + 1)
+        assertEquals(1, h.stats.unanswered)
+        assertEquals(0, stalls)
+    }
+
+    @Test
+    fun `a watch that answered, or asked about the notification, is not stuck`() {
+        var stalls = 0
+        val h = GarminNotifications(send = { sent += it }, scheduler = scheduler, watchMessages = { 5L }, onStalled = { stalls++ })
+        subscribe(h)
+        h.post(note(1))
+        h.handle(controlRequest(1, NotificationAttribute.TITLE to 32)) // asked without confirming first
+        h.post(note(2))
+        h.handle(GfdiMessage.response(GfdiType.NOTIFICATION_UPDATE)) // answers the first update; the second stays open
+        h.handle(GfdiMessage.response(GfdiType.NOTIFICATION_UPDATE)) // and the second
+        scheduler.advance(GarminNotifications.ANSWER_WAIT_MS + 1)
+        assertEquals(0, h.stats.unanswered)
+        assertEquals(0, stalls)
+    }
 }
