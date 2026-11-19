@@ -74,6 +74,18 @@ interface GarminBleLink {
 
     /** Pairs when needed, connects and finishes the handshake. Throws [WatchLinkException]. */
     suspend fun open(watch: GarminBleWatch, onStep: (GarminStep) -> Unit = {}): OpenedWatch
+
+    /**
+     * Like [open], but the connection stays open so phone notifications can go to the watch the moment they arrive.
+     * A sync that starts meanwhile reads through this same connection, because the watch has room for one phone.
+     * Throws [WatchLinkException].
+     */
+    suspend fun openNotifications(
+        watch: GarminBleWatch,
+        listener: nl.tufein.openconnect.notify.NotifyListener,
+        onStep: (GarminStep) -> Unit = {},
+    ): nl.tufein.openconnect.notify.WatchNotifyConnection =
+        throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, "Notifications are not available")
 }
 
 /**

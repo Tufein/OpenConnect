@@ -132,6 +132,18 @@ class GfdiReader(bytes: ByteArray) {
     fun long(): Long = need(8).let { buf.getLong() }
     fun bytes(n: Int): ByteArray = need(n).let { ByteArray(n).also { buf.get(it) } }
     fun string(): String = String(bytes(byte()), Charsets.UTF_8)
+
+    /** Text that ends at the next zero byte (Garmin uses this in notification requests). */
+    fun nullTerminatedString(): String {
+        val out = java.io.ByteArrayOutputStream()
+        while (true) {
+            val b = byte()
+            if (b == 0) break
+            out.write(b)
+        }
+        return String(out.toByteArray(), Charsets.UTF_8)
+    }
+
     fun rest(): ByteArray = bytes(buf.remaining())
 }
 

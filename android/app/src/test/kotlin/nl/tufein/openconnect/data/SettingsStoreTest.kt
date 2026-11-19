@@ -118,4 +118,24 @@ class SettingsStoreTest {
         s.weeklyGoals = WeeklyGoals(intensityMinutes = 99_999, distanceKm = -4, activities = 99)
         assertEquals(WeeklyGoals(1000, 0, 21), s.weeklyGoals)
     }
+
+    @Test
+    fun `forwarding notifications to the watch is off and empty until the person chooses, and what they choose is kept`() {
+        val fresh = store().forwarding
+        assertFalse(fresh.enabled)
+        assertEquals(emptySet(), fresh.apps)
+        assertFalse(fresh.hideContent)
+        assertFalse(fresh.onlyWhenScreenOff)
+
+        val s = store().forwarding
+        s.enabled = true
+        s.apps = setOf("com.whatsapp", "com.google.android.gm")
+        s.hideContent = true
+        s.onlyWhenScreenOff = true
+        val again = store().forwarding // the app was restarted
+        assertTrue(again.enabled && again.hideContent && again.onlyWhenScreenOff)
+        assertEquals(setOf("com.whatsapp", "com.google.android.gm"), again.apps)
+        again.apps = emptySet()
+        assertEquals(emptySet(), store().forwarding.apps, "the last app can be taken off again")
+    }
 }

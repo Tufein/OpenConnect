@@ -237,6 +237,7 @@ private val FIRST_DAY = LocalDate.of(1970, 1, 1)
 private val LAST_DAY = LocalDate.of(2100, 12, 31)
 
 const val WATCH_ROUTE = "watch"
+const val WATCH_APPS_ROUTE = "watch-apps"
 const val GARMIN_ROUTE = "garmin"
 const val OURA_ROUTE = "oura"
 
@@ -573,6 +574,45 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun setGarminArchive(on: Boolean) = container.watch.setGarminArchive(on)
 
     fun setGarminBackground(on: Boolean) = container.watch.setGarminBackground(on)
+
+    // ------------------------------------------------------------------ notifications on the watch
+
+    /** Where forwarding stands, the person's choices and what was sent; lives in [AppContainer.forwarding]. */
+    val forward: StateFlow<nl.tufein.openconnect.notify.ForwardUi> get() = container.forwarding.state
+
+    /** Looks at what is still needed (access, a watch, Bluetooth) and connects when it is all there. */
+    fun refreshForward() = container.forwarding.refresh()
+
+    fun setForward(on: Boolean) = container.forwarding.setEnabled(on)
+
+    fun forwardReconnect() = container.forwarding.reconnect()
+
+    fun setForwardHide(on: Boolean) = container.forwarding.setHideContent(on)
+
+    fun setForwardScreenOff(on: Boolean) = container.forwarding.setOnlyWhenScreenOff(on)
+
+    fun setForwardApp(packageName: String, on: Boolean) = container.forwarding.setApp(packageName, on)
+
+    /** Sends a test notification to the watch and says what happened. */
+    fun testForward() {
+        val result = container.forwarding.sendTest(text(R.string.forward_test_title), text(R.string.forward_test_body))
+        tell(
+            text(
+                when (result) {
+                    nl.tufein.openconnect.notify.TestResult.SENT -> R.string.forward_test_sent
+                    nl.tufein.openconnect.notify.TestResult.NOT_CONNECTED -> R.string.forward_test_not_connected
+                    nl.tufein.openconnect.notify.TestResult.WATCH_OFF -> R.string.forward_test_watch_off
+                },
+            ),
+        )
+    }
+
+    private val _forwardApps = MutableStateFlow<List<nl.tufein.openconnect.notify.InstalledApp>?>(null)
+
+    /** The apps to choose from; null until [loadForwardApps] has asked Android (it can take a moment). */
+    val forwardApps: StateFlow<List<nl.tufein.openconnect.notify.InstalledApp>?> = _forwardApps.asStateFlow()
+
+    fun loadForwardApps() = io { _forwardApps.value = container.installedApps.list() }
 
     fun saveLive(name: String) {
         if (container.watch.saveLive(name, Sport.OTHER)) tell(text(R.string.watch_live_saved))

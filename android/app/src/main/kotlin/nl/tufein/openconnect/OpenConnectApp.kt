@@ -18,8 +18,18 @@ import nl.tufein.openconnect.core.health.NoHealthConnect
 import nl.tufein.openconnect.health.AndroidHealthConnectGateway
 import nl.tufein.openconnect.health.HealthConnectController
 import nl.tufein.openconnect.health.HealthSettings
+import nl.tufein.openconnect.notify.AndroidInstalledApps
 import nl.tufein.openconnect.notify.AndroidNudgeNotifier
+import nl.tufein.openconnect.notify.ForegroundForwarding
+import nl.tufein.openconnect.notify.ForwardAccess
+import nl.tufein.openconnect.notify.ForwardStore
+import nl.tufein.openconnect.notify.ForwardingKeeper
+import nl.tufein.openconnect.notify.InstalledApps
+import nl.tufein.openconnect.notify.NoForwardingKeeper
+import nl.tufein.openconnect.notify.NoInstalledApps
+import nl.tufein.openconnect.notify.NotificationForwarder
 import nl.tufein.openconnect.notify.NudgeNotifier
+import nl.tufein.openconnect.notify.PhoneNotificationListener
 import nl.tufein.openconnect.notify.NudgeService
 import nl.tufein.openconnect.notify.NudgeSettings
 import nl.tufein.openconnect.notify.WorkManagerNudgeSync
@@ -46,6 +56,7 @@ import nl.tufein.openconnect.watch.FolderLink
 import nl.tufein.openconnect.watch.ForegroundLiveRecording
 import nl.tufein.openconnect.watch.GarminBleLink
 import nl.tufein.openconnect.watch.HeartRateLink
+import nl.tufein.openconnect.watch.LiveWatchRegistry
 import nl.tufein.openconnect.watch.LiveRecordingKeeper
 import nl.tufein.openconnect.watch.NoGarminBleLink
 import nl.tufein.openconnect.watch.NoLiveRecordingKeeper
@@ -106,6 +117,25 @@ class AppContainer(
     humeSync: BackgroundSync = BackgroundSync { },
     /** Keeps a live heart-rate recording alive with the screen off. Tests pass a fake; the app posts a notification. */
     keeper: LiveRecordingKeeper = NoLiveRecordingKeeper,
+    /** What the person chose for notifications on the watch. */
+    forwardStore: ForwardStore = settings.forwarding,
+    /** Keeps the watch connection alive while notifications are sent. Tests pass a fake; the app shows a notification. */
+    forwardKeeper: ForwardingKeeper = NoForwardingKeeper,
+    /** Whether Android's notification access is given. Tests pass a fake; the app asks Android. */
+    forwardAccess: () -> Boolean = { false },
+    /** Whether the Bluetooth permission is given. Tests pass a fake; the app asks Android. */
+    forwardBluetooth: () -> Boolean = { false },
+    forwardScreenOn: () -> Boolean = { true },
+    /** The line the watch shows when the text is hidden (translated by the app). */
+    forwardHiddenBody: () -> String = { "New notification" },
+    /** Swipes a notification away on the phone when it was dismissed on the watch. */
+    forwardDismiss: (key: String) -> Unit = {},
+    /** The apps to choose from. Tests pass a fake. */
+    val installedApps: InstalledApps = NoInstalledApps,
+    /** Where a notification connection and a sync find out about each other; the app shares it with the Bluetooth link. */
+    val liveRegistry: LiveWatchRegistry = LiveWatchRegistry(),
+    /** The name of this app's package, whose notifications are never sent on. */
+    forwardOwnPackage: String = "nl.tufein.openconnect",
     /** Where a verified update APK is kept until Android installs it. The app uses its own cache directory. */
     updateDir: File = File(System.getProperty("java.io.tmpdir"), "openconnect-updates"),
     /** The network to GitHub's releases. Tests pass a fake. */
@@ -191,6 +221,23 @@ class AppContainer(
         garminOptions = bleOptions,
         onBleBackgroundWanted = bleBackgroundSync::set,
         keeper = keeper,
+    )
+
+    /** Sends phone notifications to the watch (the card on the Watch screen). */
+    val forwarding = NotificationForwarder(
+        store = forwardStore,
+        memory = settings.garminWatch,
+        link = garminBle,
+        scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+        io = Dispatchers.IO,
+        ownPackage = forwardOwnPackage,
+        accessGranted = forwardAccess,
+        screenOn = forwardScreenOn,
+        bluetoothAllowed = forwardBluetooth,
+        keeper = forwardKeeper,
+        hiddenBody = forwardHiddenBody,
+        dismissOnPhone = forwardDismiss,
+        syncBusy = { liveRegistry.syncBusy },
     )
 
     val garmin = GarminController(
@@ -286,14 +333,27 @@ class OpenConnectApp : Application() {
     var unlockerOverride: ((androidx.activity.ComponentActivity) -> nl.tufein.openconnect.lock.Unlocker)? = null
 
     val container: AppContainer by lazy {
-        containerOverride ?: SettingsStore(this).let { settingsStore -> AppContainer(
+        containerOverride ?: SettingsStore(this).let { settingsStore ->
+            val registry = LiveWatchRegistry()
+            val apps = AndroidInstalledApps(this)
+            AppContainer(
             SqliteRepository(this),
             settingsStore,
             UsbWatchLink(this),
             BleHeartRateLink(this),
             folder = SafFolderLink(this),
             backgroundSync = WorkManagerBackgroundSync(this),
-            garminBle = AndroidGarminBleLink(this, archiveAfterRead = { settingsStore.garminBle.archiveAfterRead }),
+            garminBle = AndroidGarminBleLink(
+                this,
+                archiveAfterRead = { settingsStore.garminBle.archiveAfterRead },
+                registry = registry,
+                notificationOptions = {
+                    nl.tufein.openconnect.core.watch.ble.NotificationOptions(
+                        dismissLabel = getString(R.string.forward_dismiss),
+                        appName = { pkg -> apps.labelOf(pkg).takeIf { it != pkg } },
+                    )
+                },
+            ),
             bleBackgroundSync = WorkManagerBleBackgroundSync(this),
             nudgeNotifier = AndroidNudgeNotifier(this),
             nudgeSync = WorkManagerNudgeSync(this),
@@ -304,6 +364,15 @@ class OpenConnectApp : Application() {
             humeGateway = nl.tufein.openconnect.health.AndroidHumeGateway(this),
             humeSync = nl.tufein.openconnect.sync.WorkManagerHumeSync(this),
             keeper = ForegroundLiveRecording(this),
+            forwardKeeper = ForegroundForwarding(this),
+            forwardAccess = { ForwardAccess.hasNotificationAccess(this) },
+            forwardBluetooth = { ForwardAccess.bluetoothAllowed(this) },
+            forwardScreenOn = { ForwardAccess.screenOn(this) },
+            forwardHiddenBody = { getString(R.string.forward_hidden_body) },
+            forwardDismiss = PhoneNotificationListener::cancel,
+            installedApps = apps,
+            liveRegistry = registry,
+            forwardOwnPackage = packageName,
             updateDir = File(cacheDir, "updates"),
             updateSigner = { apk -> nl.tufein.openconnect.updates.ApkSigners.sameAsInstalled(this, apk) },
         ) }

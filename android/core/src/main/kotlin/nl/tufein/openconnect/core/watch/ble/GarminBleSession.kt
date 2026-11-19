@@ -22,6 +22,14 @@ fun interface GarminBlePipe {
 /** How the phone introduces itself to the watch. */
 data class PhoneIdentity(val name: String, val manufacturer: String, val model: String)
 
+/** Switches on the notification conversation for a session; without it the watch is told notifications are off. */
+data class NotificationOptions(
+    /** The label of the one action the watch may offer on a notification (dismiss). */
+    val dismissLabel: String = "Dismiss",
+    /** The name of an app, for the watch's "what is this app called" question. */
+    val appName: (String) -> String? = { null },
+)
+
 class GarminBleException(val reason: Reason, message: String) : Exception(message) {
     enum class Reason { NOT_READY, REFUSED, TIMEOUT, BROKEN, DISCONNECTED, CLOSED }
 }
@@ -51,6 +59,8 @@ class GarminBleSession(
     private val now: () -> Instant = { Instant.now() },
     private val zone: () -> ZoneId = { ZoneId.systemDefault() },
     private val log: (String) -> Unit = {},
+    /** Null for a session that only syncs files; set to also show phone notifications on the watch (see [notifier]). */
+    notifications: NotificationOptions? = null,
 ) {
     private val lock = Any()
     private val cobs = CobsStream()
@@ -63,6 +73,27 @@ class GarminBleSession(
     private var initialized = false
     @Volatile private var closed = false
     private var transfer: Transfer? = null
+
+    /**
+     * The notification conversation, when this session was made with [NotificationOptions]: hand it notifications with
+     * [GarminNotifications.post] and [GarminNotifications.remove].
+     */
+    val notifier: GarminNotifications? = notifications?.let {
+        GarminNotifications(
+            send = ::send, scheduler = scheduler, zone = zone, now = now, dismissLabel = it.dismissLabel,
+            appName = it.appName, log = log,
+        )
+    }
+
+    /**
+     * Called once when the session ends, for whatever reason: [GarminBleException.Reason.CLOSED] when we closed it,
+     * anything else when the link broke. A connection kept open for notifications uses it to know it must reconnect.
+     * It may be called from a Bluetooth thread.
+     */
+    @Volatile var onEnded: (GarminBleException) -> Unit = {}
+
+    /** True once the session has ended, whatever the reason. */
+    val isEnded: Boolean get() = closed
 
     /** The watch's own description, once it has sent it. */
     val deviceInfo: GarminDeviceInfo? get() = synchronized(lock) { info }
@@ -116,8 +147,10 @@ class GarminBleSession(
             pending = transfer
             transfer = null
         }
+        notifier?.close()
         readyFuture.completeExceptionally(error)
         pending?.result?.completeExceptionally(error)
+        runCatching { onEnded(error) } // a listener that throws must not break the shutdown
     }
 
     // ------------------------------------------------------------------------------- multi-link
@@ -239,7 +272,10 @@ class GarminBleSession(
                     },
                 )
             }
-            GfdiType.RESPONSE -> onResponse(message.reader())
+            // the watch's answer to a notification chunk belongs to the notification conversation; any other answer is ours
+            GfdiType.RESPONSE -> if (notifier?.handle(message) != true) onResponse(message.reader())
+            GfdiType.NOTIFICATION_SUBSCRIPTION -> notifier?.handle(message) ?: declineNotifications(message)
+            GfdiType.NOTIFICATION_CONTROL -> if (notifier?.handle(message) != true) log("ignored a notification message; notifications are off")
             GfdiType.FILE_TRANSFER_DATA -> onFileData(message.reader())
             GfdiType.PROTOBUF_REQUEST, GfdiType.PROTOBUF_RESPONSE -> {
                 // We do not speak protobuf (settings, calendars and the like); acknowledge so the watch is not left waiting.
@@ -267,6 +303,17 @@ class GarminBleSession(
             in GfdiType.KNOWN -> log("ignored message ${message.type}")
             else -> send(GfdiMessage.response(message.type, GfdiStatus.UNSUPPORTED))
         }
+    }
+
+    /** A session that only syncs files answers the watch's "may I send you notifications" with no, as Gadgetbridge does when they are off. */
+    private fun declineNotifications(message: GfdiMessage) {
+        val requested = try {
+            GfdiNotifications.parseSubscription(message)
+        } catch (e: GfdiFormatException) {
+            log("unreadable notification subscription: ${e.message}")
+            return
+        }
+        send(GfdiNotifications.subscriptionReply(requested, allowed = false))
     }
 
     private fun completeInitialization() {

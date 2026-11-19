@@ -73,6 +73,9 @@ class WatchScreenTest : AppTestBase() {
         shot("08-home-with-watch-card")
         rule.onNodeWithText("Connect watch").performClick()
 
+        // the USB card sits below the Bluetooth and notification cards, and a list only composes what is on screen
+        waitForText("Sync a Garmin watch over Bluetooth")
+        scrollToText("Read the watch with a USB cable")
         waitForText("Read the watch with a USB cable")
         scrollToText("Search again")
         waitForText("No Garmin watch found", substring = true)

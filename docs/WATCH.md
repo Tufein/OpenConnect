@@ -110,6 +110,13 @@ On many Garmin watches the broadcast has to be switched on first (in the watch's
 or similar, the exact name depends on the model), because the watch only advertises the heart rate service while it
 is on.
 
+### 5. Notifications on the watch (`GarminNotifications`, `NotificationForwarder`)
+
+Since v1.0.0-rc.3 a Garmin watch can show the notifications of the apps you choose. It uses the Bluetooth connection of
+the Bluetooth sync ([BLUETOOTH.md](BLUETOOTH.md)), kept open, with Garmin's notification messages (5033 to 5036) ported from Gadgetbridge, and Android's
+notification access to read the phone's notifications. A foreground service keeps the connection alive. How, what is
+forwarded and what is not, the one-phone limit and what was not tried: [NOTIFICATIONS.md](NOTIFICATIONS.md).
+
 ## Permissions
 
 | Permission | Why |
@@ -117,6 +124,8 @@ is on.
 | `BLUETOOTH_SCAN` (flagged *never for location*) and `BLUETOOTH_CONNECT` | Find and connect to a heart rate sensor (Android 12 and newer) |
 | `BLUETOOTH`, `BLUETOOTH_ADMIN`, `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` (Android 11 and older only) | Older versions only allow scanning together with the location permission. Nothing uses your location. |
 | USB device permission (asked by Android when you plug the watch in) | Read the watch's files |
+| Notification access (a switch in Android's settings, only if you switch on *Notifications on the watch*) | Read the notifications of the apps you chose, to pass them to the watch |
+| Foreground service of type *connected device*, and the notification permission on Android 13 and newer | Keep the Bluetooth connection alive for a live heart-rate recording or for notifications on the watch |
 
 `INTERNET` is still only used for the optional Claude report. The USB and Bluetooth features declare
 `required="false"`, so the app also installs on phones without them.

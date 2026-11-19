@@ -46,10 +46,11 @@ Connect IQ store, the source code) are opened in your browser; the app itself do
 
 - **Internet**: for the services above, and nothing else.
 - **Install packages**: the updater asks Android to install the APK it downloaded and checked. Android asks you each time.
-- **Notifications**: nudges and the live heart-rate notification.
+- **Notifications**: nudges, the live heart-rate notification and the one that shows while notifications are sent to the watch.
+- **Notification access** (only if you switch on *Notifications on the watch* and give it in Android's settings): the app reads the notifications of the apps you chose, only to pass their title and text to your watch over Bluetooth. Nothing is stored, logged or sent anywhere else. Without this access the app sees none of your notifications. You can take it back in Android at any time. See [NOTIFICATIONS.md](NOTIFICATIONS.md).
 - **Bluetooth (nearby devices)**: to talk to your watch or a heart-rate strap. On Android 11 and older, Android only lets an app
   scan for Bluetooth devices when it may also see the location, so it asks for location there; the app never reads your location.
-- **Foreground service (connected device)**: only while *Live heart rate* runs.
+- **Foreground service (connected device)**: only while *Live heart rate* runs, or while *Notifications on the watch* is on and keeps its Bluetooth connection.
 - **Biometrics**: only for the app lock, if you switch it on.
 - **Health Connect**: only when you switch it on, and only the types you allow in Android's own screen: steps, sleep, heart
   rate, resting heart rate, HRV, SpO2, active calories, exercise and distance are read; exercise, distance and calories are

@@ -129,11 +129,11 @@ Stefan loopt de lijst in [PUBLIC_RELEASE.md](PUBLIC_RELEASE.md) af met het diagn
 
 Klaar als: G1 groen is.
 
-### M8: v1.0.0-rc.1 ✅ 2026-11-18, v1.0.0-rc.2 ✅ 2026-11-19, daarna v1.0.0 🔜 (M)
+### M8: v1.0.0-rc.1 ✅ 2026-11-18, v1.0.0-rc.2 en rc.3 ✅ 2026-11-19, daarna v1.0.0 🔜 (M)
 
-De kandidaat `v1.0.0-rc.1` is uitgebracht als GitHub pre-release (zelfde code als v0.58.0, versie `1.0.0-rc.1`, `versionCode` 59). Wat nu nog moet is van Stefan: de wachttijd, de proefstappen T1 tot en met T16, de sleutel in GitHub-secrets, privé melden aanzetten, echte schermafbeeldingen en het besluit over de naam. Daarna kijkt Claude naar de poorten in PUBLIC_RELEASE.md en brengt `v1.0.0` uit.
+De kandidaat `v1.0.0-rc.1` is uitgebracht als GitHub pre-release (zelfde code als v0.58.0, versie `1.0.0-rc.1`, `versionCode` 59). Wat nu nog moet is van Stefan: de wachttijd, de proefstappen T1 tot en met T17, de sleutel in GitHub-secrets, privé melden aanzetten, echte schermafbeeldingen en het besluit over de naam. Daarna kijkt Claude naar de poorten in PUBLIC_RELEASE.md en brengt `v1.0.0` uit.
 
-- **Code-bevriezing:** vanaf hier alleen reparaties en teksten. ✅ Vanaf `v1.0.0-rc.1`. **Eén uitzondering, op Stefans verzoek:** `v1.0.0-rc.2` (`versionCode` 60) herkent alle Garmin-families (zie [GARMIN_DEVICES.md](GARMIN_DEVICES.md)); de wachttijd van 7 dagen begint daarmee opnieuw voor het horloge.
+- **Code-bevriezing:** vanaf hier alleen reparaties en teksten. ✅ Vanaf `v1.0.0-rc.1`. **Twee uitzonderingen, op Stefans verzoek:** `v1.0.0-rc.2` (`versionCode` 60) herkent alle Garmin-families (zie [GARMIN_DEVICES.md](GARMIN_DEVICES.md)) en `v1.0.0-rc.3` (`versionCode` 61) stuurt meldingen van de telefoon door naar het horloge (zie [NOTIFICATIONS.md](NOTIFICATIONS.md)); de wachttijd van 7 dagen begint daarmee opnieuw voor het horloge.
 - ✅ **`release.yml` krijgt een voorlopig-optie** (v0.58.0, voor het eerst doorlopen bij rc.1), zodat een kandidaat als **GitHub pre-release** uitkomt en de updater die niet als nieuwste ziet (getest). De labelcontrole moet `1.0.0-rc.1` en `1.0.0rc1` aan elkaar kunnen koppelen.
 - **Wachttijd van minstens 7 dagen** met de kandidaat in dagelijks gebruik op Stefans eigen telefoon.
 - **Go/no-go:** alle poorten in PUBLIC_RELEASE.md groen, releasenotes in het Nederlands en Engels, de README definitief.
@@ -225,6 +225,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v0.58.0 | M5, M6 en de afhankelijkheden: de APK 30 naar 10 MB door R8, prestatiebudget met vijf jaar historie, rooktest op een emulator in CI en als poort in `release.yml`, privacyverklaring (ook in de app, met een test op elk adres), installatiegids, vaste kop op de releasepagina, voorbereiding op een release candidate (voorlopige release, `1.0.0-rc.1` en `1.0.0rc1` als dezelfde versie, de updater kent voorlopige versies) |
 | v1.0.0-rc.1 | M8: de kandidaat voor 1.0 als GitHub pre-release, code bevroren; changelog sorteert een eindversie boven haar kandidaten |
 | v1.0.0-rc.2 | Alle Garmin-families herkend: catalogus van 265 modellen (407 productnummers), herkenning op productnummer in de Bluetooth-advertentie, op de naam en in het FIT-bestand, eerlijke notitie per model, apparaatnaam uit het FIT-bestand |
+| v1.0.0-rc.3 | Meldingen van de telefoon op het Garmin-horloge: Garmins meldingsprotocol uit Gadgetbridge, Android-meldingstoegang, per app kiezen, een vaste Bluetooth-verbinding die de sync meebenut, foreground-service, eerlijk over één telefoon per horloge |
 
 ## 9. Hoe releases werken
 
