@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.0.0: een moderne app, en de eerste volledige versie
+
+Dit is **1.0**: na zeven release candidates komt er een stabiele release bij. Nieuw is het uiterlijk: een moderne, rustige interface met afgeronde kaarten, Plex Sans, pill-vormige bediening en een zwevende tabbalk. De oude Handheld-look blijft beschikbaar als Retro.
+
+[Release notes](docs/releases/v1.0.0.md)
+
 ## v1.0.0-rc.7: de hele code nagelopen, en wat daarbij misging gerepareerd
 
 De **zevende release candidate** van 1.0, weer een **GitHub-pre-release** (niet "nieuwste", de updater biedt haar niemand aan). Op Stefans verzoek ("verbeter de code tot op de puntjes") is **alle code van de Python-server en van de Android-app doorgelopen** op fouten, foutafhandeling, privacy, toegankelijkheid en verouderde documentatie. Er komt **geen nieuwe functie** bij; wat er stond is …

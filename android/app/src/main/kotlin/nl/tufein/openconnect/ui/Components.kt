@@ -4,6 +4,8 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -101,11 +103,17 @@ fun ScreenTitle(text: String, modifier: Modifier = Modifier, trailing: @Composab
     }
 }
 
-/** A section heading: a signal-coloured square like a menu cursor, the title in pixel letters and a dotted rule to the edge. */
+/** A section heading: a small signal-coloured marker, the title and a rule to the edge. The marker is a rounded bar in
+ * the modern style and the old square cursor in retro. */
 @Composable
 fun SectionTitle(text: String, modifier: Modifier = Modifier) {
+    val retro = LocalStyle.current == Style.RETRO
     Row(modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Box(Modifier.size(10.dp).background(MaterialTheme.colorScheme.primary))
+        if (retro) {
+            Box(Modifier.size(10.dp).background(MaterialTheme.colorScheme.primary))
+        } else {
+            Box(Modifier.size(width = 4.dp, height = 18.dp).background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp)))
+        }
         Text(text, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onBackground)
         DottedRule(Modifier.weight(1f))
     }
@@ -211,10 +219,11 @@ fun SurfaceCard(modifier: Modifier = Modifier, accent: Color? = null, content: @
     Panel(modifier.fillMaxWidth(), tint = accent) { content() }
 }
 
-/** A small square in a signal's colour, the bullet in front of a label. */
+/** A small marker in a signal's colour, the bullet in front of a label: a dot in the modern style, a square in retro. */
 @Composable
 fun ColorDot(color: Color, modifier: Modifier = Modifier) {
-    Box(modifier.size(8.dp).background(color))
+    val retro = LocalStyle.current == Style.RETRO
+    Box(modifier.size(8.dp).background(color, if (retro) androidx.compose.ui.graphics.RectangleShape else CircleShape))
 }
 
 @Composable
@@ -303,14 +312,24 @@ fun RingGauge(
     val shown = remember { androidx.compose.animation.core.Animatable(0f) }
     androidx.compose.runtime.LaunchedEffect(progress) { shown.animateTo(progress.coerceIn(0f, 1f), androidx.compose.animation.core.tween(800)) }
     val off = color.copy(alpha = 0.18f)
+    val modern = LocalStyle.current != Style.RETRO
     Box(modifier.size(size).semantics { if (description.isNotEmpty()) contentDescription = description }, contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
-            val ticks = 40
             val outer = this.size.minDimension / 2f
             val inner = outer - stroke.toPx()
+            val centre = Offset(this.size.width / 2f, this.size.height / 2f)
+            if (modern) {
+                // One smooth arc with rounded ends; the retro style keeps its 40 separate meter ticks.
+                val arc = Size(inner * 2f, inner * 2f)
+                val topLeft = Offset(centre.x - inner, centre.y - inner)
+                val paint = Stroke(width = stroke.toPx(), cap = StrokeCap.Round)
+                drawArc(off, 0f, 360f, false, topLeft, arc, style = paint)
+                if (shown.value > 0f) drawArc(color, -90f, 360f * shown.value.coerceIn(0f, 1f), false, topLeft, arc, style = paint)
+                return@Canvas
+            }
+            val ticks = 40
             val width = (2f * Math.PI.toFloat() * outer / ticks) * 0.55f
             val lit = Math.round(shown.value * ticks)
-            val centre = Offset(this.size.width / 2f, this.size.height / 2f)
             for (i in 0 until ticks) {
                 val angle = Math.toRadians(-90.0 + 360.0 * i / ticks)
                 val dx = cos(angle).toFloat()

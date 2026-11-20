@@ -7,13 +7,11 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: release candidate 1.0.0-rc.7** (a GitHub *pre-release*; the [latest release](https://github.com/Tufein/OpenConnect/releases/latest)
-> is the last full version, v0.58.0). Code is frozen: only fixes and texts until 1.0 (rc.2 to rc.7 are the exceptions, made at
-> the owner's request: rc.2 recognises every Garmin family, not only the fenix 8, see [docs/GARMIN_DEVICES.md](docs/GARMIN_DEVICES.md);
-> rc.3 sends your phone's notifications to the watch, rc.4 shows step by step why one does not arrive, rc.5 notices a Bluetooth link that has gone silent rc.6 stops the watch from waiting on questions the app does not answer and rc.7 is a pass over all the code that repairs what it found, see the [release notes](docs/releases/v1.0.0-rc.7.md); notifications: see
-> [docs/NOTIFICATIONS.md](docs/NOTIFICATIONS.md)).
+> **Status: v1.0.0, the first full release.** The last candidate was `v1.0.0-rc.7`; this one adds the modern look —
+> rounded cards, clear type, pill controls and a floating tab bar — on top of everything repaired in the candidates.
+> The original "Handheld" console look is still one tap away in Settings → Appearance. [Release notes](docs/releases/v1.0.0.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
-> or band yet** (see [what is tested](#what-is-tested)). What stands between this candidate and 1.0 is in
+> or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).
 > Not affiliated with or endorsed by Garmin, Oura, WHOOP or Hume.
 
@@ -52,7 +50,7 @@ the [changelog](CHANGELOG.md).
 ## What is tested
 
 Everything has automated tests that run without a network, an account or a key (more than 970 of them). **Real
-hardware is another matter.** The register that decides when 1.0 can ship is in
+hardware is another matter.** The register of what has and has not been checked is in
 [docs/ROADMAP.md](docs/ROADMAP.md#7-wat-nog-niet-is-gecontroleerd-register):
 
 | Source | State |
@@ -167,7 +165,7 @@ Garmin and Garmin Connect are trademarks of Garmin Ltd.
 
 ## Documentation
 
-[Changelog](CHANGELOG.md) · [Roadmap to 1.0](docs/ROADMAP.md) · [Release checklist](docs/PUBLIC_RELEASE.md) ·
+[Changelog](CHANGELOG.md) · [Roadmap](docs/ROADMAP.md) · [Release checklist](docs/PUBLIC_RELEASE.md) ·
 [Install](docs/INSTALL.md) · [Privacy](docs/PRIVACY.md) · [Performance](docs/PERFORMANCE.md) ·
 [Versioning](docs/VERSIONING.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md) ·
 [Release notes](docs/releases)

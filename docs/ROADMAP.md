@@ -129,7 +129,11 @@ Stefan loopt de lijst in [PUBLIC_RELEASE.md](PUBLIC_RELEASE.md) af met het diagn
 
 Klaar als: G1 groen is.
 
-### M8: v1.0.0-rc.1 ✅ 2026-11-18, v1.0.0-rc.2 tot en met rc.7 ✅ 2026-11-19 en 2026-11-20, daarna v1.0.0 🔜 (M)
+### M8: v1.0.0-rc.1 ✅ 2026-11-18, rc.2 tot en met rc.7 ✅ 2026-11-19 en 2026-11-20, v1.0.0 ✅ 2026-11-20
+
+Op verzoek van Stefan is `v1.0.0` na rc.7 uitgebracht als eerste volledige release, met de moderne standaardstijl. De
+openstaande apparaatproeven (T1–T17) en go/no-go-vakjes in [PUBLIC_RELEASE.md](PUBLIC_RELEASE.md) blijven staan en zijn
+eerlijk opgenomen in de [releasenotes](releases/v1.0.0.md); de RC's en/of een latere versie kunnen die alsnog afdekken.
 
 De kandidaat `v1.0.0-rc.1` is uitgebracht als GitHub pre-release (zelfde code als v0.58.0, versie `1.0.0-rc.1`, `versionCode` 59). Wat nu nog moet is van Stefan: de wachttijd, de proefstappen T1 tot en met T17, de sleutel in GitHub-secrets, privé melden aanzetten, echte schermafbeeldingen en het besluit over de naam. Daarna kijkt Claude naar de poorten in PUBLIC_RELEASE.md en brengt `v1.0.0` uit.
 
@@ -230,6 +234,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.0.0-rc.5 | Een stille Bluetooth-verbinding herkennen (zes keer opnieuw sturen zonder bevestiging, dan opnieuw verbinden), een kleine vraag als het horloge stil is, bewaking van een vastgelopen schrijfactie, één keer diensten zoeken, alle berichten van het horloge beantwoorden zoals Gadgetbridge, logboek met de bytes en het antwoord van het horloge, de kaart onderscheidt een stil van een negerend horloge |
 | v1.0.0-rc.6 | Eerste melding kwam aan op de fenix 8, de rest niet: protobuf-vragen krijgen het antwoord van Gadgetbridge (weggegooid, onbekend verzoek) in plaats van een kale ACK, het logboek noemt de dienst, een vastgelopen horloge wordt herkend en opnieuw verbonden met de gemiste melding nog één keer, telfout in "niet beantwoord binnen 5 s" hersteld |
 | v1.0.0-rc.7 | Doorloop van alle code, zonder nieuwe functie: een geannuleerde achtergrond-sync blokkeert de volgende niet meer (Oura, WHOOP, Hume Band, Garmin), annuleren wordt niet meer als fout gemeld, een kapotte sleutelkluis laat opslaan niet crashen, vergeten horloge tijdens verversen, `Retry-After` kan niet overlopen, aantikbare rijen als knop voor TalkBack; server: wachtwoord met accent, sessiecookie met afgeleide sleutel en `Secure`, beveiligingsheaders ook op weigeringen, Garmin-antwoord dat geen JSON is, opruimen van wachtende logins |
+| v1.0.0 | M8: eerste volledige release, op verzoek van Stefan na rc.7. Moderne standaardstijl: afgeronde kaarten met zachte schaduw, Plex Sans, pill-vormige bediening, vloeiende grafieken en een zwevende tabbalk; Retro en Classic blijven kiesbaar, net als de 24 kleurenthema's. Robolectric-runtime wordt gecachet in CI. |
 
 ## 9. Hoe releases werken
 

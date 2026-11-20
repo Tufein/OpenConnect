@@ -784,7 +784,7 @@
     <string name="style_retro">Retro</string>
     <string name="style_clean">Sleek</string>
     <string name="style_classic">Classic</string>
-    <string name="style_note">Retro is the pixel look. Sleek and Classic have rounded corners, thin lines and clear letters. Classic has serif titles.</string>
+    <string name="style_note">Sleek is the modern default: rounded cards, soft shadows and clear letters. Retro is the pixel look; Classic has small corners and serif titles.</string>
     <string name="insights_form">Form</string>
     <string name="advice_title">Training advice</string>
     <string name="advice_rest">Take a rest day</string>

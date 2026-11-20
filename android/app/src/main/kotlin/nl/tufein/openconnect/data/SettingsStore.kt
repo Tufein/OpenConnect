@@ -91,10 +91,10 @@ class SettingsStore(
         get() = prefs.getString(KEY_LETTERS, "pixel")?.takeIf { it == "pixel" || it == "clear" } ?: "pixel"
         set(value) = prefs.edit().putString(KEY_LETTERS, if (value == "clear") "clear" else "pixel").apply()
 
-    /** The style of shapes and lines, a key of [nl.tufein.openconnect.ui.Style]: "retro" (default), "clean" or "classic". */
+    /** The style of shapes and lines, a key of [nl.tufein.openconnect.ui.Style]: "clean" (the modern default), "retro" or "classic". */
     var style: String
-        get() = prefs.getString(KEY_STYLE, "retro")?.takeIf { it == "clean" || it == "classic" } ?: "retro"
-        set(value) = prefs.edit().putString(KEY_STYLE, if (value == "clean" || value == "classic") value else "retro").apply()
+        get() = prefs.getString(KEY_STYLE, "clean")?.takeIf { it == "clean" || it == "retro" || it == "classic" } ?: "clean"
+        set(value) = prefs.edit().putString(KEY_STYLE, if (value == "retro" || value == "classic") value else "clean").apply()
 
     /** The record of the last syncs, as the text [nl.tufein.openconnect.core.SyncLog] writes. */
     var syncLogText: String

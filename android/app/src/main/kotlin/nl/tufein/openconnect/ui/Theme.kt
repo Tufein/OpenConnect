@@ -28,15 +28,17 @@ import androidx.compose.ui.unit.sp
 import nl.tufein.openconnect.R
 
 /*
- * The OpenConnect look ("Handheld", v0.31.0).
+ * The OpenConnect look (v1.0.0).
  *
- * One design for the whole app, made to look like the screen of a handheld console rather than like a stock Material app:
- *  - Jersey 10, a pixel typeface made for sports shirts, for headlines and every big number; IBM Plex Sans for reading
- *    and IBM Plex Mono for small labels and data. Fonts are bundled (res/font), so the app looks the same on every phone.
- *  - Corners are cut in pixel steps ([PixelCornerShape]) instead of rounded.
- *  - Panels are flat: a fine ink outline and a hard offset shadow, no gradients, no glow, no blur.
- *  - Warm cream paper in light mode and warm black in dark mode instead of the usual blue-grey, with orange as the one
- *    signal colour. Icons are pixel art (PixelIcons.kt).
+ * From 1.0 the app is modern by default: readable Plex Sans type, generous rounded cards on softly lifted surfaces, a
+ * calm floating navigation bar and the same warm neutral palette as before. The "Handheld" console look is still here
+ * as the Retro style and the other 23 colour themes still work in every style; it is just no longer the first thing a
+ * new install shows.
+ *  - IBM Plex Sans carries headlines and numbers, Plex Mono the small labels. The fonts are bundled (res/font), so the
+ *    app looks the same on every phone. Jersey 10 remains for people who choose Retro.
+ *  - Modern surfaces use large rounded corners and a soft shadow; Retro keeps its pixel-cut corners and hard shadow.
+ *  - Warm cream paper in light mode and warm black in dark mode, with orange as the one signal colour.
+ *  - The icons are our own small grid icons (PixelIcons.kt), drawn crisply at every size.
  */
 
 /** Jersey 10: pixel headlines and numbers. It has one weight, so styles using it never ask for bold. */
@@ -105,19 +107,19 @@ enum class Letters(val key: String) {
 val LocalLetters = staticCompositionLocalOf { Letters.PIXEL }
 
 /**
- * The style of the shapes and lines (v0.33.0): "retro" is the Handheld look (pixel-cut corners, thick ink outlines, a
- * hard shadow, pixel letters by choice), "clean" is sleek (round corners, hairlines, clear letters) and "classic" is
- * formal (small corners, thin lines, clear letters with serif titles). The colour themes work in all three.
+ * The style of the shapes and lines. "clean" is the modern default: big rounded corners, soft shadows, clear letters.
+ * "retro" keeps the original Handheld console look (pixel-cut corners, ink outlines, hard shadow, pixel letters by
+ * choice) and "classic" is formal (small corners, thin lines, serif titles). The colour themes work in all three.
  */
 enum class Style(val key: String) {
     RETRO("retro"), CLEAN("clean"), CLASSIC("classic");
 
     companion object {
-        fun of(key: String?): Style = entries.firstOrNull { it.key == key } ?: RETRO
+        fun of(key: String?): Style = entries.firstOrNull { it.key == key } ?: CLEAN
     }
 }
 
-val LocalStyle = staticCompositionLocalOf { Style.RETRO }
+val LocalStyle = staticCompositionLocalOf { Style.CLEAN }
 
 /** The key colours of one theme, for its dark and its light version. [onAccent] is the colour of text on the three accents. */
 private class Keys(
@@ -289,15 +291,15 @@ private val HandheldTypography = Typography(
 )
 
 /**
- * The same sizes and structure with no pixel face: Plex Sans for everything, semi-bold for titles and numbers, and a
- * slightly larger body. For people who find the pixel letters hard to read.
+ * The modern face: Plex Sans throughout, semi-bold titles and numbers with slightly tighter tracking, and a roomy body
+ * for long explanations. The same sizes as the old clear face, so nothing clips when the phone's font scale is large.
  */
 private val ClearTypography = Typography(
-    displayLarge = style(PlexSans, 56, 60, FontWeight.SemiBold),
-    displayMedium = style(PlexSans, 44, 48, FontWeight.SemiBold),
-    displaySmall = style(PlexSans, 36, 40, FontWeight.SemiBold),
-    headlineLarge = style(PlexSans, 32, 38, FontWeight.SemiBold),
-    headlineMedium = style(PlexSans, 28, 34, FontWeight.SemiBold),
+    displayLarge = style(PlexSans, 56, 60, FontWeight.SemiBold, tracking = -1.5),
+    displayMedium = style(PlexSans, 44, 48, FontWeight.SemiBold, tracking = -1.0),
+    displaySmall = style(PlexSans, 36, 40, FontWeight.SemiBold, tracking = -0.5),
+    headlineLarge = style(PlexSans, 32, 38, FontWeight.SemiBold, tracking = -0.5),
+    headlineMedium = style(PlexSans, 28, 34, FontWeight.SemiBold, tracking = -0.25),
     headlineSmall = style(PlexSans, 24, 30, FontWeight.SemiBold),
     titleLarge = style(PlexSans, 22, 28, FontWeight.SemiBold),
     titleMedium = style(PlexSans, 17, 24, FontWeight.SemiBold),
@@ -378,12 +380,13 @@ private val HandheldShapes = Shapes(
     extraLarge = PixelCornerShape(16.dp),
 )
 
-private val CleanShapes = Shapes(
-    extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
-    small = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-    medium = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-    large = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-    extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
+/** Rounded, generous corners: cards read as separate soft layers instead of framed boxes. */
+internal val ModernShapes = Shapes(
+    extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+    small = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+    medium = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+    large = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
+    extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(36.dp),
 )
 
 private val ClassicShapes = Shapes(
@@ -419,7 +422,7 @@ internal fun paletteSwatch(palette: Palette, dark: Boolean): Pair<Color, Color>?
 
 /** [mode] is "system" (follow the phone), "dark" or "light"; [palette] is a key of [Palette]; [letters] a key of [Letters], [style] a key of [Style]. */
 @Composable
-fun OpenConnectTheme(mode: String = "system", palette: String = "handheld", letters: String = "pixel", style: String = "retro", content: @Composable () -> Unit) {
+fun OpenConnectTheme(mode: String = "system", palette: String = "handheld", letters: String = "clear", style: String = "clean", content: @Composable () -> Unit) {
     val dark = when (mode) {
         "dark" -> true
         "light" -> false
@@ -445,7 +448,7 @@ fun OpenConnectTheme(mode: String = "system", palette: String = "handheld", lett
             },
             shapes = when (chosenStyle) {
                 Style.RETRO -> HandheldShapes
-                Style.CLEAN -> CleanShapes
+                Style.CLEAN -> ModernShapes
                 Style.CLASSIC -> ClassicShapes
             },
             content = content,

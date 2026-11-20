@@ -1,22 +1,26 @@
-# The OpenConnect look ("Handheld")
+# The OpenConnect look
 
-Since v0.31.0 the app has one look of its own; v0.33.0 added a choice of style (see "Styles" below); v0.32.0 added many more colour themes, clear letters and a choice of launcher icon. It replaces the three designs (Clean Pro, Dashboard Dark, Retro Pro) and
-the three styles (Sport, Round, Pixel) of v0.18.0 to v0.30.0. The idea: the screen of a handheld console, not a stock
-Material app. Everything below lives in `android/app/src/main/kotlin/nl/tufein/openconnect/ui/`.
+From v1.0.0 a fresh install opens in a **modern** style: readable Plex Sans type, generous rounded cards that sit softly
+on the background, pill-shaped controls and a floating bottom bar. The original **Handheld** console look (v0.31.0) is
+still here as the *Retro* style, and all colour themes work in every style, so nobody loses a look they chose in an older
+version. Everything below lives in `android/app/src/main/kotlin/nl/tufein/openconnect/ui/`.
 
 ## The rules
 
-| | |
-|---|---|
-| **Type** | *Jersey 10* (a pixel face made for sports shirts) for every headline and every big number, *IBM Plex Sans* for sentences, *IBM Plex Mono* for labels, units and data. All three are bundled in `res/font`, so every phone draws the same letters. Jersey has one weight and looks smaller than its size, so its sizes are larger than the usual Material ones. |
-| **Corners** | Cut in pixel steps (`PixelCornerShape` in `Theme.kt`): two steps of half the corner size, like a rounded corner on graph paper. It is a Material `CornerBasedShape`, so every Material component that takes its shape from the theme (dialogs, text fields, the snackbar) gets the same corners. |
-| **Panels** | `Panel` (`Pixel.kt`): flat surface, 2 dp ink outline, hard offset shadow (3 dp right and down, no blur). No gradients and no glow anywhere. A *tint* washes a little of a signal colour into the surface. |
-| **Colour** | Warm paper (`#ECE5D0`) in light mode, warm black (`#131210`) in dark mode, orange as the one signal colour. Text and outlines are the same ink colour. On a dark screen the outline is softened and the shadow becomes a faint ghost. Each body signal keeps its own colour in every theme. |
-| **Icons** | Pixel art on a 12 by 12 grid, written as text (`PixelIcons.kt`) and drawn by `PixelIcon`. No icon pack. |
-| **Logo** | A pixel heart with a pulse through it (`PixelIcons.Logo`). The launcher icon (`res/drawable/ic_launcher_*.xml`) is generated from the same grid. |
-| **Controls** | `PrimaryButton`, `SecondaryButton` and `QuietButton` (a pressed button sinks onto its shadow), `PixelChip` (the chosen one is filled with ink, like the highlighted entry of a menu), `PixelSwitch`, `PixelSpinner` and `PixelProgress` (blocks), and since v0.44.0 `PixelSelect`, a dropdown: a framed field with the chosen entry and a pixel arrow that opens a list, the chosen entry filled with ink. Use chips for two or three entries and `PixelSelect` for more, or when the choice is one of several on a narrow screen. |
-| **Charts** | Bar charts are stacks of blocks like the level meter of a stereo; line charts have a scan-line fill under a square-capped line; the dial (`RingGauge`) is 40 blocks around a centre; the readiness score on Home is a 25-block health bar. Since v0.44.0 every chart that can be read by touch has dates under it (`DateAxis` in `Charts.kt`: the first and the last point and up to three between, each centred under its own point; which points is `AxisTicks` in `core`). |
-| **Tab bar** | A flat strip under an ink line; the open tab is a block filled with ink, like the highlighted entry in a game menu. |
+| | Modern (default, `clean`) | Retro (`retro`) |
+|---|---|---|
+| **Type** | *IBM Plex Sans* for headlines, numbers and sentences, with slightly tighter tracking on big titles; *IBM Plex Mono* for labels, units and data. | *Jersey 10* (a pixel face made for sports shirts) for headlines and big numbers, Plex Sans for sentences, Plex Mono for labels. |
+| **Corners** | Rounded corners of 12, 16, 20, 28 and 36 dp (`ModernShapes`), so a card reads as one soft layer. | Corners cut in pixel steps (`PixelCornerShape`): two steps of half the corner size, like a rounded corner on graph paper. |
+| **Panels** | `Panel` in `Pixel.kt`: surface with a soft 4 dp shadow, no border, 18 dp padding when the caller uses the default. | Flat surface, 2 dp ink outline and a hard offset shadow (3 dp right and down, no blur). |
+| **Colour** | Warm paper (`#ECE5D0`) in light mode, warm black (`#131210`) in dark mode, orange as the one signal colour. Text and outlines are ink; on a dark screen the outline is softened. Each body signal keeps its own colour in every theme. | The same palettes. |
+| **Icons** | Our own small grid icons (`PixelIcons.kt`), written as text and drawn by `PixelIcon`; no icon pack. | The same icons. |
+| **Logo** | A pixel heart with a pulse through it (`PixelIcons.Logo`). The launcher icon (`res/drawable/ic_launcher_*.xml`) is generated from the same grid. | The same logo. |
+| **Controls** | `PrimaryButton`, `SecondaryButton` and `QuietButton` are pills with a soft lift; `PixelChip` is a pill whose chosen entry is filled with the main colour. `PixelSwitch` has a round knob, `PixelProgress` still uses 24 blocks for progress. | A pressed button sinks onto its hard shadow and the chosen chip is filled with ink, like a highlighted menu entry. |
+| **Charts** | `SegmentBar` draws one rounded bar and `RingGauge` one smooth arc with rounded ends. Date axes and chart content descriptions are unchanged. | Block bars, a square-capped line and a dial of 40 ticks. |
+| **Tab bar** | One softly lifted strip with a rounded pill behind the open tab (`ModernBar` in `Navigation.kt`); every tab is at least 56 dp high. | A flat strip under an ink line, the open tab a block filled with ink. |
+
+No gradients and no blur are used in either style; emphasis comes from colour, a tint or a shadow. A `tint` washes a
+little of a signal colour into a panel.
 
 ## Colour themes, letters and the launcher icon
 
@@ -38,10 +42,8 @@ the main colour against a panel at least 3:1 (WCAG contrast ratios). A new theme
 A theme saved by an older version (Arcade, Clean, Midnight) no longer exists and opens as Handheld. Ocean and Sunset
 exist again, with new colours.
 
-**Letters** (*Settings, Appearance, Letters*): *Pixel letters* is the look described above. *Clear letters* swaps Jersey
-and Plex Mono for Plex Sans (semi-bold for titles and numbers) with a slightly larger body, for people who find the pixel
-face hard to read. It is a second `Typography` (`ClearTypography`); every screen takes its text styles from the theme, so
-nothing else changes.
+**Letters** (*Settings, Appearance, Letters*) only apply to Retro: *Pixel letters* is the console look above, *Clear
+letters* swaps Jersey and Plex Mono for Plex Sans. Modern and Classic always use the clear type.
 
 **Launcher icon** (*Settings, App icon*): eight icons, each an `activity-alias` of the main screen in the manifest
 (`.IconHandheld`, `.IconNight`, and so on) with its own adaptive icon in `res/mipmap-anydpi-v26`. Exactly one alias is
@@ -51,20 +53,20 @@ grids as the app by `android/tools/launcher_icons.py` (the colours in that scrip
 first icon is hand-made). The launcher may take a moment to show the new icon, and on some phones the app closes once.
 
 Since v0.43.0 the whole look is one section of Settings (*Appearance*) that is folded away until its header is tapped
-(`FoldSection` in `Components.kt`): dark or light, style, letters, colour themes and the launcher icon. The header shows what is
-chosen now (for example "Handheld · Retro · Pixel letters"). A new section that is long and not needed every day should fold
-the same way; the body is only composed while it is open.
+(`FoldSection` in `Components.kt`): dark or light, style, letters (Retro only), colour themes and the launcher icon. The
+header shows what is chosen now (for example "Handheld · Sleek").
 
 The watch faces (Clean, Dashboard, Retro, see [WATCH_FACES.md](WATCH_FACES.md)) are not part of the app since v0.43.0: they are Connect IQ code
 for the watch and keep their own three designs.
 
 ## Adding a screen
 
-1. Put content in `SurfaceCard` or `Panel`, titles in `SectionTitle`, numbers in the Jersey styles
-   (`displayMedium`, `titleLarge`) and sentences in `bodyMedium`.
+1. Put content in `SurfaceCard` or `Panel`, titles in `SectionTitle`, numbers in `displayMedium` or `titleLarge` and
+   sentences in `bodyMedium`. Take text styles from the theme: they change with the style and the phone's font scale.
 2. Use the controls above, never `Button`, `FilterChip`, `Switch` or an icon from the Material icon set.
 3. A new icon is a new grid in `PixelIcons.kt`: `#` is filled, anything else is empty, and every row has the same length.
-4. Never add a gradient, a blur or a rounded corner. If something needs emphasis, use ink, a tint or the shadow.
+4. Never add a gradient or a blur. If something needs emphasis, use a tint, a colour or a shadow. Check the screen in
+   both the modern default and Retro, at 200% font size and in dark and light mode.
 
 ## Fonts
 
@@ -73,14 +75,14 @@ licensed under the SIL Open Font License 1.1; the texts are in `licenses/` and t
 
 ## Styles
 
-Retro is the Handheld look described above. Two more styles exist for people who find it too much (v0.33.0), chosen in
-Settings, Appearance, Style (`Style` in `Theme.kt`, saved as `theme_style`, read through `LocalStyle`):
+`Style` in `Theme.kt` is saved as `theme_style` and read through `LocalStyle`:
 
-- **Sleek** (`clean`): round corners (8 to 28 dp), 1 dp lines in `outline`, no shadow, a chosen chip filled with the main
-  colour, a round switch, one rounded bar instead of block bars, clear letters.
-- **Classic** (`classic`): small corners (2 to 8 dp), 1 dp lines, no shadow, clear letters with serif titles and big numbers.
+- **Sleek** (`clean`): the modern default above, with `ModernShapes` (12 to 36 dp), soft shadows, pill controls, clear
+  letters and smooth charts.
+- **Retro** (`retro`): the original Handheld console look, with pixel-cut corners, ink outlines and a hard shadow.
+- **Classic** (`classic`): small corners (2 to 8 dp), hairlines, no shadow, clear letters with serif titles.
 
-The shapes come from `MaterialTheme.shapes`, so everything that uses them follows. Outlines use `lineWidth()` and `inkColor()`,
-the hard shadow uses `shadowColor()` (transparent outside retro); use those and not fixed values. Sleek and Classic always
-use the clear letters (`Letters` only applies to retro). Not changed by the style: the pixel icons, the dashed ring and the
-line charts. Every colour theme works in every style.
+Shapes come from `MaterialTheme.shapes`, so everything that uses them follows the style. Outlines use `lineWidth()` and
+`inkColor()`, the hard shadow uses `shadowColor()` (transparent outside Retro) and `softShadow()` lifts modern cards; use
+those rather than fixed values. Only Retro has a choice of letters. What does not change with the style: the pixel icons
+and the launcher icon. Every colour theme works in every style.

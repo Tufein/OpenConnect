@@ -59,8 +59,8 @@ class SettingsFoldAndConnectIqTest : AppTestBase() {
         tab("Settings").performClick()
         waitForText("Appearance")
         // Closed: the header says what is chosen, and none of the choices are on screen.
-        assertTrue(hasText("Handheld · Retro · Pixel letters", substring = false))
-        for (hidden in listOf("Colours", "Style", "Follow phone", "Game Boy", "App icon", "Clear letters")) {
+        assertTrue(hasText("Handheld · Sleek", substring = false))
+        for (hidden in listOf("Colours", "Style", "Follow phone", "Game Boy", "App icon", "Retro")) {
             assertFalse(hasText(hidden, substring = false), "\"$hidden\" is folded away")
         }
         // What used to be three screens down is now right under it.
@@ -69,7 +69,7 @@ class SettingsFoldAndConnectIqTest : AppTestBase() {
 
         clickText("Appearance")
         waitForText("Colours")
-        for (shown in listOf("Style", "Follow phone", "Game Boy", "App icon", "Clear letters")) {
+        for (shown in listOf("Style", "Follow phone", "Game Boy", "App icon", "Retro")) {
             assertTrue(hasText(shown, substring = false), "\"$shown\" shows once the section is open")
         }
         shot("77-settings-appearance-open")
@@ -86,7 +86,7 @@ class SettingsFoldAndConnectIqTest : AppTestBase() {
         openAppearance()
         clickText("Synthwave")
         rule.waitUntil(5_000) { settings().palette == "synthwave" }
-        waitForText("Synthwave · Retro · Pixel letters")
+        waitForText("Synthwave · Sleek")
         shot("44-settings-themes")
         tab("Home").performClick()
         waitForText("Readiness")

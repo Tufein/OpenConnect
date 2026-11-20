@@ -107,6 +107,10 @@ class ThemesLettersAndIconTest : AppTestBase() {
         assertEquals("pixel", settings().letters)
         tab("Settings").performClick()
         openAppearance()
+        // The modern default already uses clear letters. The choice only shows up in the retro style, so open that first.
+        clickText("Retro")
+        rule.waitUntil(5_000) { settings().style == "retro" }
+        waitForText("Clear letters")
         clickText("Clear letters")
         rule.waitUntil(5_000) { settings().letters == "clear" }
         scenario.onActivity { assertEquals("clear", it.viewModel.look.value.letters) }
@@ -127,7 +131,7 @@ class ThemesLettersAndIconTest : AppTestBase() {
     fun sleekAndClassicStylesAreChosenAndKept() {
         launchFresh { app -> app.containerOverride = container(app) }
         loadDemo()
-        assertEquals("retro", settings().style)
+        assertEquals("clean", settings().style, "the modern style is the default from v1.0.0")
         tab("Settings").performClick()
         openAppearance()
         clickText("Sleek")

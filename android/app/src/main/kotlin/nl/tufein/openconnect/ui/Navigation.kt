@@ -13,7 +13,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -32,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
@@ -69,11 +74,11 @@ private enum class Tab(val route: String, val label: Int, val icon: PixelArt, va
 private const val DETAIL = "activity/{id}"
 
 /**
- * The tab bar: a flat strip under a 2 dp ink line. The open tab is a block filled with ink and its icon and word in the
- * background colour, like the highlighted entry in the menu of a game; the other tabs are plain.
+ * The retro tab bar: a flat strip under a 2 dp ink line. The open tab is a block filled with ink and its icon and word
+ * in the background colour, like the highlighted entry in the menu of a game; the other tabs are plain.
  */
 @Composable
-private fun HandheldBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
+private fun RetroBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
     val colors = MaterialTheme.colorScheme
     val ink = inkColor()
     val shape = MaterialTheme.shapes.small
@@ -118,6 +123,70 @@ private fun HandheldBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) 
             }
         }
     }
+}
+
+/**
+ * The modern tab bar: one softly lifted strip with a pill behind the open tab, so the bottom of the screen looks like a
+ * current Android app rather than a game menu. Labels, roles and the auto-shrink rule are the same as in [RetroBar], so
+ * Dutch words fit at any font scale and TalkBack still hears a tab.
+ */
+@Composable
+private fun ModernBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    val labels = tabs.map { stringResource(if (tabs.size > 5) it.compact else it.label) }
+    val letters = LocalLetters.current
+    var labelSize by remember(labels, letters) { mutableFloatStateOf(14f) }
+    val barShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 10.dp,
+                shape = barShape,
+                clip = false,
+                ambientColor = Color.Black.copy(alpha = 0.10f),
+                spotColor = Color.Black.copy(alpha = 0.20f),
+            )
+            .background(colors.surfaceContainer, barShape)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(horizontal = 8.dp, vertical = 8.dp),
+    ) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            for ((index, tab) in tabs.withIndex()) {
+                val selected = route == tab.route
+                val content = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .heightIn(min = 56.dp)
+                        .clip(CircleShape)
+                        .background(if (selected) colors.primaryContainer else Color.Transparent)
+                        .selectable(selected = selected, role = Role.Tab, onClick = { onOpen(tab) })
+                        .padding(horizontal = 2.dp, vertical = 6.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    PixelIcon(tab.icon, size = 22.dp, tint = content)
+                    Text(
+                        labels[index],
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        softWrap = false,
+                        color = content,
+                        style = MaterialTheme.typography.labelMedium.copy(fontSize = labelSize.sp, lineHeight = 16.sp),
+                        onTextLayout = { if (it.didOverflowWidth && labelSize > 10f) labelSize -= 0.5f },
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** The style follows the same choice as the rest of the app. */
+@Composable
+private fun TabBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
+    if (LocalStyle.current == Style.RETRO) RetroBar(tabs, route, onOpen) else ModernBar(tabs, route, onOpen)
 }
 
 @Composable
@@ -234,7 +303,7 @@ fun OpenConnectRoot(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbar) },
-        bottomBar = { if (showBar) HandheldBar(tabs, route, ::openTab) },
+        bottomBar = { if (showBar) TabBar(tabs, route, ::openTab) },
     ) { padding ->
         // On a tablet or an unfolded phone the screens stop at a reading width in the middle, instead of stretching across.
         NavHost(
