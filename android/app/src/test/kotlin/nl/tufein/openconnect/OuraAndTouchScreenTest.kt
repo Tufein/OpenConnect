@@ -89,8 +89,9 @@ class OuraAndTouchScreenTest : AppTestBase() {
         scrollToText("Address after the login")
         rule.onNode(hasText("Address after the login") and hasSetTextAction()).performTextInput("openconnect://oura?code=abc&state=${p["state"]}")
         clickText("Finish the login")
+        scrollToTop() // the setup list left the dashboard scrolled to the bottom
         // The ring's own dashboard on top of the tab, the link and what the sync brought below it.
-        scrollToText("Readiness")
+        waitForText("Readiness")
         scrollToText("7:13 asleep", substring = true)
         shot("39-oura-tab")
         scrollToText("1 days, 1 nights and 1 workouts updated")

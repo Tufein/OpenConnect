@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performScrollToNode
@@ -115,6 +116,11 @@ abstract class AppTestBase {
         waitForText("Appearance")
         if (!hasText("Colours", substring = false)) clickText("Appearance")
         waitForText("Colours")
+    }
+
+    /** Back to the top of a list; a setup screen can leave the next screen scrolled to its old position. */
+    protected fun scrollToTop() {
+        rule.onAllNodes(hasScrollAction())[0].performScrollToIndex(0)
     }
 
     /** Scroll the first scrollable list until [text] has been composed. */

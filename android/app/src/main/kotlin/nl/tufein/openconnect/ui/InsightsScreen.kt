@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
@@ -210,7 +211,10 @@ private fun RecordsCard(sport: Sport, entries: Map<String, RecordEntry>, onOpenA
                 else -> R.string.record_fastest_pace to Fmt.pace(entry.value) + " /km"
             }
             Row(
-                Modifier.fillMaxWidth().clickable(role = Role.Button) { onOpenActivity(entry.activityId) },
+                Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+                    .clickable(role = Role.Button) { onOpenActivity(entry.activityId) },
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(stringResource(label) + " · " + Fmt.date(entry.date), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
