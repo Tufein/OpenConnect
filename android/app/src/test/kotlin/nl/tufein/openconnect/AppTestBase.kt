@@ -103,7 +103,7 @@ abstract class AppTestBase {
         try {
             rule.waitUntil(45_000) { hasText(text, substring) }
         } catch (e: Throwable) {
-            println("--- screen when waiting for \"$text\" ---\n" + rule.onRoot().printToString(maxDepth = 8))
+            println("--- screen when waiting for \"$text\" ---\n" + rule.onRoot().printToString(maxDepth = 100))
             throw e
         }
     }
