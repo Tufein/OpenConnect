@@ -1,30 +1,32 @@
 # OpenConnect: roadmap naar 1.0 en verder
 
-Waar OpenConnect staat en hoe het een grote, openbare release wordt. Opnieuw geschreven op 2026-11-18, na v0.51.0, op
-verzoek van Stefan ("een grootse release voorbereiden met een heuse roadmap"). Alles is **test-first** gebouwd: eerst
-de test, dan de code, en niets gaat uit zonder dat CI groen is. Wat zonder horloge, ring of telefoon niet te
-controleren is, staat er eerlijk bij.
+Waar OpenConnect staat en hoe het verder groeit. Opnieuw geschreven op 2026-11-20, na v1.0.4. 1.0 is uitgebracht en er
+komen reparaties en verbeteringen in de reeksen 1.0.x en 1.1; dit plan zegt wat de volgorde is. Alles is **test-first**
+gebouwd: eerst de test, dan de code, en niets gaat uit zonder dat CI groen is. Wat zonder horloge, ring of telefoon
+niet te controleren is, staat er eerlijk bij.
 
 De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparaten en het terugdraaiplan staan in
 **[PUBLIC_RELEASE.md](PUBLIC_RELEASE.md)**. Dit bestand is het plan; dat bestand is de lijst die je afvinkt.
 
 **Legenda:** ✅ klaar · 🔜 volgende · 🧪 gebouwd en getest met nepgegevens, nog nooit op echte hardware of tegen de echte dienst · ❓ heeft iets nodig dat alleen de eigenaar kan geven · **S/M/L** = klein (een sessie), middel, groot (meerdere releases)
 
-## 1. Waar we staan (v0.51.0, 2026-11-18)
+## 1. Waar we staan (v1.0.4, 2026-11-20)
 
-- **51 releases**, ruim 970 tests (Python, `core` en de app), AGPL-3.0, openbare repository, een Android-app die zonder server werkt en een
+- **71 releases en kandidaten**, ruim 1.300 tests (Python, `core` en de app), AGPL-3.0, openbare repository, een Android-app die zonder server werkt en een
   Python-server voor wie die liever zelf draait. Nederlands en Engels.
 - **Bronnen:** Garmin-horloge (USB, Bluetooth, map met bestanden), Garmin-account met een eigen sleutel, Oura Ring, WHOOP, Hume Band
   (via Health Connect), bestanden (FIT, GPX, TCX), Claude en Gemini voor de coach.
-- **Sterk:** alles is test-first, gegevens blijven op de telefoon, horloge, ring en banden worden nooit door elkaar gemengd, en elke release zegt eerlijk wat niet is gecontroleerd.
-- **Zwak voor een openbare release:**
-  1. Op één bron na (de Garmin-account, die live is geprobeerd) is **niets op een echte telefoon, horloge, ring of band geprobeerd**. Zie het register in paragraaf 7.
-  2. De README is een muur van "New in vX" en zegt nog "an early foundation"; er is geen privacyverklaring.
-  3. De ondertekeningssleutel staat in een privé-conceptrelease in plaats van in GitHub-secrets.
-  4. Dertien Dependabot-voorstellen (#43 tot en met #55) liggen open, sommige met grote sprongen (Compose-BOM 2024.10 naar 2026.09).
-  5. De in-app-updater (`REQUEST_INSTALL_PACKAGES`) past niet in Google Play of F-Droid. **Besloten op 2026-11-18: 1.0 komt alleen op GitHub**, dus de updater blijft en winkels komen na 1.0 (paragraaf 6).
-  6. Een proefrond op echte apparaten levert niets op zonder diagnose: er is geen "deel een rapport"-knop.
-  7. De naam: er bestaat al een bekende VPN-client die OpenConnect heet. Zoeken en winkelnamen kunnen daardoor botsen.
+- **Sterk:** alles is test-first, gegevens blijven op de telefoon, horloge, ring en banden worden nooit door elkaar gemengd, elke release zegt eerlijk
+  wat niet is gecontroleerd, en de app is met een in-app-updater te bijwerken met SHA-256-controle.
+- **Het uiterlijk is sportief en rustig** (v1.0.2 tot en met v1.0.4, op verzoek van Stefan): Graphite met één accent, strakke panelen, scores open en
+  grafieken in tabs of ingeklapte secties, zes Insights-tabs met de rest achter *Meer*, widget en startscherm in het gekozen palet, en een live
+  voorbeeld met keuze bij de eerste start.
+- **Zwak voor het verdere verhaal:**
+  1. Op één bron na (de Garmin-account, die live is geprobeerd) is **niets op een echte telefoon, horloge, ring of band geproefd**. Zie het register in paragraaf 7; M9 is dat spoor.
+  2. Of de meldingen op de fenix 8 nu bij elk bericht trillen, wacht op een nieuw logboek; v1.0.1 pakte de meest waarschijnlijke oorzaak aan.
+  3. De naam: er bestaat al een bekende VPN-client die OpenConnect heet; het besluit staat nog open (G6).
+  4. Dertien Dependabot-voorstellen (#43 tot en met #55) liggen open, met grote sprongen (Compose-BOM 2024.10 naar 2026.09). M12 pakt ze op.
+  5. De in-app-updater past niet in Google Play of F-Droid; winkels komen als `store`-variant in M10.
 
 ## 2. Wat "1.0" betekent
 
@@ -37,8 +39,9 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
 Na 1.0 geldt versiebeleid: `1.x` voegt toe en repareert, een databaseschema gaat nooit stuk (een migratie of een verwijderfunctie, nooit stilte), en
 **Android 9 is het minimum** (besloten op 2026-11-18, uitgebracht in v0.52.0) en blijft dat tot een grote versie zegt van niet.
 
-**Afbakening (aanname, zeg het als het anders moet):** 1.0 is de **Android-app**. De Python-server krijgt hetzelfde versienummer maar blijft voor
-wie zelf host, met zijn beschreven beperkingen ([SECURITY.md](../SECURITY.md)); er komt geen nieuw serverwerk voor 1.0 behalve beveiligingsfixes.
+**Afbakening (aanname, zeg het als het anders moet):** het hart is de **Android-app**. De Python-server krijgt hetzelfde versienummer maar blijft voor
+wie zelf host, met zijn beschreven beperkingen ([SECURITY.md](../SECURITY.md)); vóór 1.0 kwam er alleen beveiligingswerk aan te pas, en de sporen hieronder
+raken de server alleen als dat nodig is.
 
 ## 3. De zeven poorten
 
@@ -143,28 +146,53 @@ De kandidaat `v1.0.0-rc.1` is uitgebracht als GitHub pre-release (zelfde code al
 - **Go/no-go:** alle poorten in PUBLIC_RELEASE.md groen, releasenotes in het Nederlands en Engels, de README definitief.
 - **v1.0.0** via dezelfde workflow, daarna de controle zoals altijd (SHA-256, handtekening, installeren over de kandidaat heen).
 
+### M9: proeven op echte apparaten 🔜 (S per proef, loopt, Stefan bepaalt het tempo)
+
+Het register in paragraaf 7 is de lijst. Per bron: installeren en bijwerken over de vorige versie, demo en import, de Garmin-sleutel, de fenix 8 over
+USB en over Bluetooth (sync, live hartslag, en voor de meldingen een **nieuw logboek** zodat blijkt of de reparaties van v1.0.1 houden), Health Connect,
+en Oura, WHOOP of Hume als die er zijn. Wat klopt, krijgt in de app het label *Getest op echt apparaat* met datum en versie; wat niet kan blijft
+*Experimenteel*. Reparaties komen als gewone 1.0.x-uitgaven; geen nieuwe features in dit spoor. Schermafbeeldingen van je eigen telefoon horen hier
+ook bij (G5), evenals het besluit over de naam (G6), dat Stefan alleen kan nemen.
+
+### M10: winkels 🔜 (L)
+
+F-Droid en Google Play als een **`store`-variant** naast de GitHub-versie: zonder updater en zonder `REQUEST_INSTALL_PACKAGES`, met de
+Health Connect-verklaring, de antwoorden op Play's gegevensveiligheid en een `fastlane/metadata`-boom. F-Droid ondertekent met een eigen sleutel,
+dus die APK installeert niet over de GitHub-APK heen; dat hoort in de uitleg. Google Play vraagt eenmalig ongeveer 25 dollar voor een
+ontwikkelaarsaccount en een recent genoeg targetSdk. De updater blijft gewoon in de GitHub-versie.
+
+### M11: inhoud na 1.0 🔜 (M-L)
+
+Geen belofte, wel de volgorde zoals die in paragraaf 6 stond:
+
+- **Dagboekvakjes uitbreiden** en een **trend van actieve tijd** (uit de app-vergelijking, sectie 7): klein en past bij wat er is.
+- **Garmin's nieuwere protobuf-synchronisatie** voor horloges die de klassieke map niet meer gebruiken.
+- **Het watchface** terug, als er een Garmin-ontwikkelaarsaccount en een eerste upload zijn (de Monkey C-map staat nog in `watch/` maar is nooit gecompileerd).
+
+### M12: opschonen en bereik 🔜 (M)
+
+- **Dependabot-voorstellen afwerken** (#43 tot en met #55), met de grote sprongen als eigen releases en de APK-maat- en prestatiebudgetten als poort.
+- **Meer talen** (Duits, Frans) zodra de tekstpariteitstest er is.
+- **Een eerlijke "wat gebeurt er met mijn gegevens"-pagina** in de app met een overzicht van elk verzoek dat naar buiten gaat.
+- **De naam beslissen** (houden of veranderen; de pakketnaam `nl.tufein.openconnect` verandert in elk geval niet) — dit is een vakje van Stefan, maar de voorbereiding kan hier.
+
 ## 5. Wat alleen Stefan kan
 
 | Wanneer | Wat | Waarom het niet zonder jou kan |
 |---------|-----|--------------------------------|
-| Voor M1 klaar is | De sleutel in GitHub-secrets zetten en een offline kopie bewaren | Alleen de eigenaar bewaart een kopie; secrets maak je in de instellingen van de repository |
-| Voor M1 klaar is | Privé melden van kwetsbaarheden aanzetten (Settings, Security) | Een instelling van de eigenaar |
-| Zodra M2 uit is | De proefronde op echte apparaten: telefoon, fenix 8, en de ring of banden die je hebt | Alleen jij hebt de apparaten en de accounts |
-| ✅ 2026-11-18 | Gekozen waar 1.0 uitkomt: alleen GitHub | Gedaan: winkels (F-Droid, Google Play) komen na 1.0 |
+| Open | De sleutel in GitHub-secrets zetten en een offline kopie bewaren (de releases werken nu via secrets óf de privé-conceptrelease; G3 wil het eerste) | Alleen de eigenaar bewaart een kopie; secrets maak je in de instellingen van de repository |
+| Open | Privé melden van kwetsbaarheden aanzetten (Settings, Security) | Een instelling van de eigenaar |
+| Nu (M9 loopt) | De proefronde op echte apparaten: telefoon, fenix 8, en de ring of banden die je hebt, met een nieuw meldingenlogboek voor de reparaties van v1.0.1 | Alleen jij hebt de apparaten en de accounts |
+| ✅ 2026-11-18 | Gekozen waar 1.0 uitkomt: alleen GitHub | Gedaan: winkels (F-Droid, Google Play) komen in M10 |
 | ✅ 2026-11-18 | Minimum Android van 8.0 naar 9 | Gedaan in v0.52.0; telefoons met Android 8 blijven op v0.51.0 |
-| **Open**, voor M8 begint | Beslissen over de naam: houden of veranderen (de pakketnaam `nl.tufein.openconnect` verandert in elk geval niet). Voorlopig blijft het OpenConnect | Het is jouw project en jouw merk |
-| Bij M6 | Schermafbeeldingen van je eigen telefoon aanleveren | Mijn plaatjes komen uit een test, niet van een toestel |
+| **Open**, vóór M12 af is | Beslissen over de naam: houden of veranderen (de pakketnaam `nl.tufein.openconnect` verandert in elk geval niet). Voorlopig blijft het OpenConnect | Het is jouw project en jouw merk |
+| Bij M9 | Schermafbeeldingen van je eigen telefoon aanleveren | Mijn plaatjes komen uit een test, niet van een toestel |
 
 ## 6. Na 1.0
 
-Geen belofte, wel de volgorde als er iets bijkomt:
-
-- **Winkels (1.1 of later):** F-Droid en Google Play, met een variant `store` zonder updater en zonder `REQUEST_INSTALL_PACKAGES`, de Health Connect-verklaring, de antwoorden op Google Play's gegevensveiligheid en een `fastlane/metadata`-boom. F-Droid ondertekent met een eigen sleutel, dus die APK installeert niet over de GitHub-APK heen. Google Play vraagt eenmalig ongeveer 25 dollar voor een ontwikkelaarsaccount en een recent genoeg targetSdk.
-- **Dagboekvakjes uitbreiden** en een **trend van actieve tijd** (uit de app-vergelijking, sectie 7): klein en past bij wat er is.
-- **Garmin's nieuwere protobuf-synchronisatie** voor horloges die de klassieke map niet meer gebruiken.
-- **Het watchface** terug, als er een Garmin-ontwikkelaarsaccount en een eerste upload zijn (de Monkey C-map staat nog in `watch/` maar is nooit gecompileerd).
-- **Meer talen** (Duits, Frans) zodra de tekstpariteitstest er is.
-- **Een eerlijke "wat gebeurt er met mijn gegevens"-pagina** in de app met een overzicht van elk verzoek dat naar buiten gaat.
+De vier sporen staan als **M9 tot en met M12** bij de mijlpalen (paragraaf 4); dit hoofdstuk blijft de korte samenvatting:
+M9 proeft alles op echte apparaten, M10 brengt winkelversies, M11 voegt inhoud toe (dagboekvakjes, actieve tijd, nieuwere
+protobuf-sync, watchface) en M12 ruimt op (afhankelijkheden, talen, gegevenspagina, naam).
 
 **Bewust niet:** vermogensanalyse, een horlogecompanion, upload naar Intervals.icu of Strava (hun voorwaarden), segmenten en sociaal, labuitslagen, biologische leeftijd, Wear OS.
 
