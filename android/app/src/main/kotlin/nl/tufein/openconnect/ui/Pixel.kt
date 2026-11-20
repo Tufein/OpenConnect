@@ -45,7 +45,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -105,19 +104,10 @@ private fun DrawScope.fillOutline(outline: Outline, color: Color) {
     }
 }
 
-/** The modern counterpart of [Modifier.hardShadow]: a low, soft lift so cards sit on the background instead of framing it. */
-private fun Modifier.softShadow(shape: Shape, elevation: Dp = 4.dp): Modifier = this.shadow(
-    elevation = elevation,
-    shape = shape,
-    clip = false,
-    ambientColor = Color.Black.copy(alpha = 0.08f),
-    spotColor = Color.Black.copy(alpha = 0.16f),
-)
-
 /**
- * The card of the app. The modern style is a rounded, softly lifted surface with roomy padding and no border; the retro
- * style keeps its pixel-cut corners, ink outline and hard shadow. A [tint] mixes a little of that colour into the surface
- * (a flat wash, never a gradient). Content is laid out in a padded column.
+ * The card of the app. The modern style is a flat surface with a hairline border and tight padding, like a panel in a
+ * training dashboard; the retro style keeps its pixel-cut corners, ink outline and hard shadow. A [tint] mixes a little
+ * of that colour into the surface (a flat wash, never a gradient). Content is laid out in a padded column.
  */
 @Composable
 fun Panel(
@@ -130,14 +120,14 @@ fun Panel(
     val colors = MaterialTheme.colorScheme
     val shape = MaterialTheme.shapes.medium
     val modern = LocalStyle.current == Style.CLEAN
-    val fill = if (tint == null) colors.surface else lerp(colors.surface, tint, 0.14f)
+    val fill = if (tint == null) colors.surface else lerp(colors.surface, tint, 0.10f)
     Column(
         modifier
-            .then(if (modern) Modifier.softShadow(shape) else Modifier.hardShadow(shadowColor(), shape))
+            .then(if (modern) Modifier else Modifier.hardShadow(shadowColor(), shape))
             .background(fill, shape)
-            .then(if (modern) Modifier else Modifier.border(lineWidth(), inkColor(), shape))
+            .border(if (modern) 1.dp else lineWidth(), if (modern) colors.outlineVariant else inkColor(), shape)
             .clip(shape)
-            .padding(if (modern) padding + 2.dp else padding),
+            .padding(if (modern) padding - 2.dp else padding),
         verticalArrangement = Arrangement.spacedBy(spacing),
         content = content,
     )
@@ -163,8 +153,8 @@ private fun ButtonBase(
 ) {
     val retro = LocalStyle.current == Style.RETRO
     val modern = LocalStyle.current == Style.CLEAN
-    // Modern actions are pills; the other styles use the shape from the theme.
-    val shape = if (modern) CircleShape else MaterialTheme.shapes.small
+    // Modern actions are compact rectangles with the theme's small radius, not pills.
+    val shape = MaterialTheme.shapes.small
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val ink = inkColor()
@@ -178,13 +168,17 @@ private fun ButtonBase(
         Row(
             Modifier
                 .offset(push, push)
+                .then(if (framed && enabled && !modern) Modifier.hardShadow(shadowColor(), shape) else Modifier)
+                .background(if (!framed) Color.Transparent else if (enabled) shown else colors.surfaceVariant, shape)
                 .then(
-                    if (framed && enabled && push == 0.dp) {
-                        if (modern) Modifier.softShadow(shape, 3.dp) else Modifier.hardShadow(shadowColor(), shape)
+                    if (framed) {
+                        Modifier.border(
+                            if (modern) 1.dp else lineWidth(),
+                            if (modern) colors.outlineVariant else if (enabled) ink else ink.copy(alpha = 0.3f),
+                            shape,
+                        )
                     } else Modifier
                 )
-                .background(if (!framed) Color.Transparent else if (enabled) shown else colors.surfaceVariant, shape)
-                .then(if (framed && !modern) Modifier.border(lineWidth(), if (enabled) ink else ink.copy(alpha = 0.3f), shape) else Modifier)
                 .clip(shape)
                 .clickable(interactionSource = interaction, indication = null, enabled = enabled, role = Role.Button, onClick = onClick)
                 // 48 dp is the smallest target a thumb reliably hits (the Android accessibility guideline).
@@ -247,7 +241,7 @@ fun PixelChip(
 ) {
     val colors = MaterialTheme.colorScheme
     val retro = LocalStyle.current == Style.RETRO
-    val shape = if (retro) MaterialTheme.shapes.small else CircleShape
+    val shape = MaterialTheme.shapes.small
     // The chosen chip is ink in the retro style (like a highlighted menu entry) and the main colour in the others.
     val fill = if (selected) (if (retro) colors.onBackground else colors.primary) else colors.surface
     val text = if (selected) (if (retro) colors.background else colors.onPrimary) else colors.onSurface

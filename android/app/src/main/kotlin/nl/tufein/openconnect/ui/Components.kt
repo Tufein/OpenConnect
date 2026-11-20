@@ -144,7 +144,11 @@ fun FoldSection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Box(Modifier.size(10.dp).background(MaterialTheme.colorScheme.primary))
+            if (LocalStyle.current == Style.RETRO) {
+                Box(Modifier.size(10.dp).background(MaterialTheme.colorScheme.primary))
+            } else {
+                Box(Modifier.size(width = 4.dp, height = 18.dp).background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp)))
+            }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(title, style = MaterialTheme.typography.titleMedium)
                 Text(summary, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

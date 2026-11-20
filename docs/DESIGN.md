@@ -1,33 +1,35 @@
 # The OpenConnect look
 
-From v1.0.0 a fresh install opens in a **modern** style: readable Plex Sans type, generous rounded cards that sit softly
-on the background, pill-shaped controls and a floating bottom bar. On Android 12 and newer it also starts on the phone's
-**wallpaper colours**; older phones start on Handheld. The original **Handheld** console look (v0.31.0) is still here as
-the *Retro* style, and all colour themes work in every style, so nobody loses a look they chose in an older version.
-Everything below lives in `android/app/src/main/kotlin/nl/tufein/openconnect/ui/`.
+A fresh install opens in a **sporty modern** style: compact Plex Sans type, flat panels with a hairline border and
+restrained corners, rectangular controls and a plain bottom bar. The default colours are **Graphite**, cool neutrals with
+one blue accent; **Track** is the same idea with an orange accent. The original **Handheld** console look (v0.31.0) is
+still here as the *Retro* style, and all colour themes work in every style, so nobody loses a look they chose in an
+older version. Everything below lives in `android/app/src/main/kotlin/nl/tufein/openconnect/ui/`.
 
 ## The rules
 
 | | Modern (default, `clean`) | Retro (`retro`) |
 |---|---|---|
-| **Type** | *IBM Plex Sans* for headlines, numbers and sentences, with slightly tighter tracking on big titles; *IBM Plex Mono* for labels, units and data. | *Jersey 10* (a pixel face made for sports shirts) for headlines and big numbers, Plex Sans for sentences, Plex Mono for labels. |
-| **Corners** | Rounded corners of 12, 16, 20, 28 and 36 dp (`ModernShapes`), so a card reads as one soft layer. | Corners cut in pixel steps (`PixelCornerShape`): two steps of half the corner size, like a rounded corner on graph paper. |
-| **Panels** | `Panel` in `Pixel.kt`: surface with a soft 4 dp shadow, no border, 18 dp padding when the caller uses the default. | Flat surface, 2 dp ink outline and a hard offset shadow (3 dp right and down, no blur). |
-| **Colour** | Warm paper (`#ECE5D0`) in light mode, warm black (`#131210`) in dark mode, orange as the one signal colour. Text and outlines are ink; on a dark screen the outline is softened. Each body signal keeps its own colour in every theme. | The same palettes. |
+| **Type** | *IBM Plex Sans* for headlines, numbers and sentences, compact and semi-bold, with tighter tracking on big titles; *IBM Plex Mono* for labels, units and data. | *Jersey 10* (a pixel face made for sports shirts) for headlines and big numbers, Plex Sans for sentences, Plex Mono for labels. |
+| **Corners** | Restrained corners of 8, 10, 12, 16 and 20 dp (`ModernShapes`): enough to read as a panel, not a bubble. | Corners cut in pixel steps (`PixelCornerShape`): two steps of half the corner size, like a rounded corner on graph paper. |
+| **Panels** | `Panel` in `Pixel.kt`: a flat surface with a 1 dp hairline border, no shadow and 14 dp padding when the caller uses the default. A tint is only a 10% wash. | Flat surface, 2 dp ink outline and a hard offset shadow (3 dp right and down, no blur). |
+| **Colour** | Graphite: cool neutral surfaces (`#0E1116` dark, `#F4F6F8` light) with one blue accent (`#4C9AFF` / `#1D4ED8`). Track swaps in orange. Each body signal keeps its own colour in every theme. | The same palettes. |
 | **Icons** | Our own small grid icons (`PixelIcons.kt`), written as text and drawn by `PixelIcon`; no icon pack. | The same icons. |
 | **Logo** | A pixel heart with a pulse through it (`PixelIcons.Logo`). The launcher icon (`res/drawable/ic_launcher_*.xml`) is generated from the same grid. | The same logo. |
-| **Controls** | `PrimaryButton`, `SecondaryButton` and `QuietButton` are pills with a soft lift; `PixelChip` is a pill whose chosen entry is filled with the main colour. `PixelSwitch` has a round knob, `PixelProgress` still uses 24 blocks for progress. | A pressed button sinks onto its hard shadow and the chosen chip is filled with ink, like a highlighted menu entry. |
+| **Controls** | `PrimaryButton`, `SecondaryButton` and `QuietButton` are compact rectangles with a 10 dp radius and a hairline outline; a chosen `PixelChip` is filled with the accent colour. `PixelSwitch` has a round knob, `PixelProgress` still uses 24 blocks for progress. | A pressed button sinks onto its hard shadow and the chosen chip is filled with ink, like a highlighted menu entry. |
 | **Charts** | `SegmentBar` draws one rounded bar and `RingGauge` one smooth arc with rounded ends. Date axes and chart content descriptions are unchanged. | Block bars, a square-capped line and a dial of 40 ticks. |
-| **Tab bar** | One softly lifted strip with a rounded pill behind the open tab (`ModernBar` in `Navigation.kt`); every tab is at least 56 dp high. | A flat strip under an ink line, the open tab a block filled with ink. |
+| **Tab bar** | A flat strip with a hairline above it and a short accent line under the open tab (`ModernBar` in `Navigation.kt`); every tab is at least 56 dp high. | A flat strip under an ink line, the open tab a block filled with ink. |
+| **Hierarchy** | The day stays open; the month chart and the recent-activity list are folded away with their headline value in the header (`FoldSection`). Folds are for secondary information only. | The same hierarchy. |
 
 No gradients and no blur are used in either style; emphasis comes from colour, a tint or a shadow. A `tint` washes a
 little of a signal colour into a panel.
 
 ## Colour themes, letters and the launcher icon
 
-**Colour themes** (*Settings, Appearance*) come in four groups, 24 in all, each with a dark and a light version:
+**Colour themes** (*Settings, Appearance*) come in five groups, 26 in all, each with a dark and a light version:
 
-- **Retro screens**: Handheld (the default), Game Boy, Virtual Boy, Famicom, Commodore 64, Atari, Amber terminal, Terminal
+- **Sport**: Graphite (the default, cool neutrals with one blue accent) and Track (near-black with an orange accent).
+- **Retro screens**: Handheld, Game Boy, Virtual Boy, Famicom, Commodore 64, Atari, Amber terminal, Terminal
   and Synthwave. Game Boy, Virtual Boy and Terminal keep to the shades of their one colour, also for the body signals.
 - **Easy on the eyes**: High contrast (pure black and white), Grey, Slate, Sand, Nord, Solarized, Gruvbox and Dracula.
 - **Colourful**: Ocean, Forest, Sunset, Candy, Violet and Cherry.
@@ -55,7 +57,7 @@ first icon is hand-made). The launcher may take a moment to show the new icon, a
 
 Since v0.43.0 the whole look is one section of Settings (*Appearance*) that is folded away until its header is tapped
 (`FoldSection` in `Components.kt`): dark or light, style, letters (Retro only), colour themes and the launcher icon. The
-header shows what is chosen now (for example "Wallpaper · Sleek"). At the top sits a live **preview** (`LookPreview`):
+header shows what is chosen now (for example "Graphite · Sleek"). At the top sits a live **preview** (`LookPreview`):
 a small dashboard drawn in the chosen theme, so a colour or style can be judged before it is kept instead of from two
 little squares. The first start shows the same preview with a choice of style and theme (`OnboardingScreen`).
 
@@ -68,8 +70,10 @@ for the watch and keep their own three designs.
    sentences in `bodyMedium`. Take text styles from the theme: they change with the style and the phone's font scale.
 2. Use the controls above, never `Button`, `FilterChip`, `Switch` or an icon from the Material icon set.
 3. A new icon is a new grid in `PixelIcons.kt`: `#` is filled, anything else is empty, and every row has the same length.
-4. Never add a gradient or a blur. If something needs emphasis, use a tint, a colour or a shadow. Check the screen in
+4. Never add a gradient or a blur. If something needs emphasis, use a tint, a colour or a weight. Check the screen in
    both the modern default and Retro, at 200% font size and in dark and light mode.
+5. Fold only secondary information, with its headline value in the fold header (`FoldSection`). The day's key numbers and
+   anything a test or the daily glance needs stay visible.
 
 ## Fonts
 

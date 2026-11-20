@@ -59,7 +59,7 @@ class SettingsFoldAndConnectIqTest : AppTestBase() {
         tab("Settings").performClick()
         waitForText("Appearance")
         // Closed: the header says what is chosen, and none of the choices are on screen.
-        assertTrue(hasText("Wallpaper · Sleek", substring = false))
+        assertTrue(hasText("Graphite · Sleek", substring = false))
         for (hidden in listOf("Colours", "Style", "Follow phone", "Game Boy", "App icon", "Retro", "Preview")) {
             assertFalse(hasText(hidden, substring = false), "\"$hidden\" is folded away")
         }

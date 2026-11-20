@@ -93,8 +93,8 @@ class LookTest : AppTestBase() {
     fun theFirstStartLetsYouPickALookAndKeepsIt() {
         launchFresh(onboarded = false) { app -> app.containerOverride = container(app) }
         waitForText("Choose your look")
-        // Android 13 and newer: the wallpaper colours are the fresh-install theme. Robolectric runs this at API 34.
-        assertEquals("dynamic", settings().palette)
+        // Graphite, the cool neutral sport theme, is what a fresh install starts on.
+        assertEquals("graphite", settings().palette)
         assertEquals("clean", settings().style)
         clickText("Retro")
         rule.waitUntil(5_000) { settings().style == "retro" }

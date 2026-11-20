@@ -27,6 +27,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -87,6 +91,9 @@ fun HomeScreen(
 ) {
     val badge = syncBadge(garmin).takeIf { useGarmin }
     val metrics = OpenConnectColors.metrics
+    // The day itself stays open; the month chart and the activity list are one tap away, which keeps the first screen calm.
+    var showMonth by rememberSaveable { mutableStateOf(false) }
+    var showRecent by rememberSaveable { mutableStateOf(false) }
     // Pulling down syncs the Garmin account, like in Garmin Connect; without one there is nothing to fetch.
     PullToRefreshBox(
         isRefreshing = useGarmin && garmin.sync is GarminSyncUi.Running,
@@ -204,9 +211,12 @@ fun HomeScreen(
                 )
             }
             item {
-                SectionTitle(stringResource(R.string.steps_30_days))
-                Spacer(Modifier.padding(top = 8.dp))
-                SurfaceCard {
+                FoldSection(
+                    title = stringResource(R.string.steps_30_days),
+                    summary = overview.stepsChangePct?.let { (if (it >= 0) "+" else "") + Fmt.oneDecimal(it) + "%" }.orEmpty(),
+                    open = showMonth,
+                    onToggle = { showMonth = !showMonth },
+                ) {
                     BarChart(
                         values = overview.trend.map { it.steps?.toDouble() },
                         goal = 10_000.0,
@@ -235,8 +245,16 @@ fun HomeScreen(
                     SecondaryButton(onClick = onCoach, Modifier.weight(1f)) { Text(stringResource(R.string.action_coach_short), maxLines = 1) }
                 }
             }
-            item { SectionTitle(stringResource(R.string.recent_activities)) }
-            items(overview.recentActivities, key = { it.id }) { ActivityRow(it, onOpenActivity) }
+            item {
+                FoldSection(
+                    title = stringResource(R.string.recent_activities),
+                    summary = overview.recentActivities.size.toString(),
+                    open = showRecent,
+                    onToggle = { showRecent = !showRecent },
+                ) {
+                    for (activity in overview.recentActivities.take(6)) ActivityRow(activity, onOpenActivity)
+                }
+            }
         }
     }
 }

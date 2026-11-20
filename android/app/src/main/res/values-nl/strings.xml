@@ -637,6 +637,9 @@
     <string name="letters_pixel">Pixelletters</string>
     <string name="letters_clear">Duidelijke letters</string>
     <string name="letters_note">Pixelletters passen bij het uiterlijk van de app. Duidelijke letters zijn gewoon en iets groter, en makkelijker te lezen.</string>
+    <string name="palette_group_sport">Sport</string>
+    <string name="palette_graphite">Graphite</string>
+    <string name="palette_track">Baan</string>
     <string name="palette_group_retro">Retroschermen</string>
     <string name="palette_group_eyes">Prettig voor de ogen</string>
     <string name="palette_group_colour">Kleurrijk</string>

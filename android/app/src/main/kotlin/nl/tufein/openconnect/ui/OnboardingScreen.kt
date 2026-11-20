@@ -69,8 +69,8 @@ fun OnboardingScreen(
             }
             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 val palettes = buildList {
+                    add("graphite" to R.string.palette_graphite)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) add("dynamic" to R.string.palette_dynamic)
-                    add("handheld" to R.string.palette_handheld)
                     add("contrast" to R.string.palette_contrast)
                 }
                 for ((key, label) in palettes) {

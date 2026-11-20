@@ -21,11 +21,8 @@ class ModernLookTest {
     }
 
     @Test
-    fun `a fresh install follows the wallpaper on android 12 and newer`() {
-        assertEquals("handheld", defaultPaletteKey(28))
-        assertEquals("handheld", defaultPaletteKey(30))
-        assertEquals("dynamic", defaultPaletteKey(31))
-        assertEquals("dynamic", defaultPaletteKey(34))
+    fun `a fresh install starts on the graphite theme`() {
+        assertEquals("graphite", defaultPaletteKey())
     }
 
     @Test

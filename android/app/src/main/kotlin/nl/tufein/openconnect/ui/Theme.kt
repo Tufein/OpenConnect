@@ -55,7 +55,8 @@ internal val PlexMono = FontFamily(Font(R.font.plex_mono_medium, FontWeight.Medi
 
 /** How the themes are grouped in Settings. */
 enum class PaletteGroup(@StringRes val label: Int) {
-    RETRO(R.string.palette_group_retro), EYES(R.string.palette_group_eyes), COLOUR(R.string.palette_group_colour), PHONE(R.string.palette_group_phone),
+    SPORT(R.string.palette_group_sport), RETRO(R.string.palette_group_retro), EYES(R.string.palette_group_eyes),
+    COLOUR(R.string.palette_group_colour), PHONE(R.string.palette_group_phone),
 }
 
 /**
@@ -65,6 +66,8 @@ enum class PaletteGroup(@StringRes val label: Int) {
  * any more and open as "handheld"; ocean and sunset exist again, with new colours.
  */
 enum class Palette(val key: String, @StringRes val label: Int, val group: PaletteGroup) {
+    GRAPHITE("graphite", R.string.palette_graphite, PaletteGroup.SPORT),
+    TRACK("track", R.string.palette_track, PaletteGroup.SPORT),
     HANDHELD("handheld", R.string.palette_handheld, PaletteGroup.RETRO),
     GAMEBOY("gameboy", R.string.palette_gameboy, PaletteGroup.RETRO),
     VIRTUALBOY("virtualboy", R.string.palette_virtualboy, PaletteGroup.RETRO),
@@ -128,6 +131,12 @@ private class Keys(
 )
 
 private val PaletteKeys: Map<Palette, Pair<Keys, Keys>> = mapOf(
+    // Graphite: cool neutrals and one electric blue, the sporty default. Everything that is not data stays quiet.
+    Palette.GRAPHITE to (Keys(Color(0xFF4C9AFF), Color(0xFF93A4B8), Color(0xFF6B7F96), Color(0xFF0E1116), Color(0xFF161A21), Color(0xFFE8EDF3)) to
+        Keys(Color(0xFF1D4ED8), Color(0xFF475569), Color(0xFF64748B), Color(0xFFF4F6F8), Color(0xFFFFFFFF), Color(0xFF0F172A))),
+    // Track: near-black with a single orange accent, for people who want the app to feel like a training log.
+    Palette.TRACK to (Keys(Color(0xFFFF7A1A), Color(0xFFC9A227), Color(0xFF7E8B99), Color(0xFF0B0C0E), Color(0xFF15171A), Color(0xFFEDEFF2)) to
+        Keys(Color(0xFFC2410C), Color(0xFF8A6A12), Color(0xFF475569), Color(0xFFF5F5F3), Color(0xFFFFFFFF), Color(0xFF141414))),
     // Handheld: warm black and warm paper, orange as the signal, ink-coloured text on every accent.
     Palette.HANDHELD to (Keys(Color(0xFFFF7A3D), Color(0xFFFFD23F), Color(0xFF5BC8F5), Color(0xFF131210), Color(0xFF1F1D19), Color(0xFFF0E9D6), Color(0xFF15110C)) to
         Keys(Color(0xFFDB5614), Color(0xFFC98F00), Color(0xFF2080E8), Color(0xFFECE5D0), Color(0xFFF7F2E2), Color(0xFF17150F), Color(0xFF17150F))),
@@ -291,25 +300,26 @@ private val HandheldTypography = Typography(
 )
 
 /**
- * The modern face: Plex Sans throughout, semi-bold titles and numbers with slightly tighter tracking, and a roomy body
- * for long explanations. The same sizes as the old clear face, so nothing clips when the phone's font scale is large.
+ * The modern face: Plex Sans throughout, compact semi-bold titles and numbers, small labels with a little tracking, and
+ * a body that stays readable. Sizes are deliberately a step smaller than a consumer app's, so a dashboard fits more on
+ * one screen without looking cramped.
  */
 private val ClearTypography = Typography(
-    displayLarge = style(PlexSans, 56, 60, FontWeight.SemiBold, tracking = -1.5),
-    displayMedium = style(PlexSans, 44, 48, FontWeight.SemiBold, tracking = -1.0),
-    displaySmall = style(PlexSans, 36, 40, FontWeight.SemiBold, tracking = -0.5),
-    headlineLarge = style(PlexSans, 32, 38, FontWeight.SemiBold, tracking = -0.5),
-    headlineMedium = style(PlexSans, 28, 34, FontWeight.SemiBold, tracking = -0.25),
-    headlineSmall = style(PlexSans, 24, 30, FontWeight.SemiBold),
-    titleLarge = style(PlexSans, 22, 28, FontWeight.SemiBold),
-    titleMedium = style(PlexSans, 17, 24, FontWeight.SemiBold),
+    displayLarge = style(PlexSans, 48, 52, FontWeight.SemiBold, tracking = -1.2),
+    displayMedium = style(PlexSans, 38, 42, FontWeight.SemiBold, tracking = -0.8),
+    displaySmall = style(PlexSans, 30, 34, FontWeight.SemiBold, tracking = -0.4),
+    headlineLarge = style(PlexSans, 28, 32, FontWeight.SemiBold, tracking = -0.4),
+    headlineMedium = style(PlexSans, 24, 28, FontWeight.SemiBold, tracking = -0.2),
+    headlineSmall = style(PlexSans, 20, 24, FontWeight.SemiBold),
+    titleLarge = style(PlexSans, 20, 26, FontWeight.SemiBold),
+    titleMedium = style(PlexSans, 16, 22, FontWeight.SemiBold),
     titleSmall = style(PlexSans, 14, 20, FontWeight.SemiBold),
-    bodyLarge = style(PlexSans, 16, 24),
-    bodyMedium = style(PlexSans, 15, 22),
-    bodySmall = style(PlexSans, 13, 18),
-    labelLarge = style(PlexSans, 14, 20, FontWeight.SemiBold),
-    labelMedium = style(PlexSans, 13, 18, FontWeight.SemiBold),
-    labelSmall = style(PlexSans, 12, 16, FontWeight.SemiBold),
+    bodyLarge = style(PlexSans, 15, 22),
+    bodyMedium = style(PlexSans, 14, 20),
+    bodySmall = style(PlexSans, 12, 16),
+    labelLarge = style(PlexSans, 13, 18, FontWeight.SemiBold, tracking = 0.2),
+    labelMedium = style(PlexSans, 12, 16, FontWeight.SemiBold, tracking = 0.4),
+    labelSmall = style(PlexSans, 11, 14, FontWeight.SemiBold, tracking = 0.6),
 )
 
 /**
@@ -380,13 +390,13 @@ private val HandheldShapes = Shapes(
     extraLarge = PixelCornerShape(16.dp),
 )
 
-/** Rounded, generous corners: cards read as separate soft layers instead of framed boxes. */
+/** Restrained corners: cards read as panels in a dashboard, not as soft bubbles. */
 internal val ModernShapes = Shapes(
-    extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-    small = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-    medium = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-    large = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
-    extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(36.dp),
+    extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+    small = androidx.compose.foundation.shape.RoundedCornerShape(10.dp),
+    medium = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+    large = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+    extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
 )
 
 private val ClassicShapes = Shapes(

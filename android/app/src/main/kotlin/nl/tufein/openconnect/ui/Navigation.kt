@@ -14,10 +14,10 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -36,7 +36,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
@@ -135,34 +134,25 @@ private fun ModernBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
     val colors = MaterialTheme.colorScheme
     val labels = tabs.map { stringResource(if (tabs.size > 5) it.compact else it.label) }
     val letters = LocalLetters.current
-    var labelSize by remember(labels, letters) { mutableFloatStateOf(14f) }
-    val barShape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    var labelSize by remember(labels, letters) { mutableFloatStateOf(13f) }
     Box(
         Modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = 10.dp,
-                shape = barShape,
-                clip = false,
-                ambientColor = Color.Black.copy(alpha = 0.10f),
-                spotColor = Color.Black.copy(alpha = 0.20f),
-            )
-            .background(colors.surfaceContainer, barShape)
+            .background(colors.surface)
+            .drawBehind { drawLine(colors.outlineVariant, Offset(0f, 0f), Offset(size.width, 0f), strokeWidth = 1.dp.toPx()) }
             .windowInsetsPadding(WindowInsets.navigationBars)
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+            .padding(horizontal = 4.dp, vertical = 4.dp),
     ) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
             for ((index, tab) in tabs.withIndex()) {
                 val selected = route == tab.route
-                val content = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant
+                val content = if (selected) colors.primary else colors.onSurfaceVariant
                 Column(
                     Modifier
                         .weight(1f)
                         .heightIn(min = 56.dp)
-                        .clip(CircleShape)
-                        .background(if (selected) colors.primaryContainer else Color.Transparent)
                         .selectable(selected = selected, role = Role.Tab, onClick = { onOpen(tab) })
-                        .padding(horizontal = 2.dp, vertical = 6.dp),
+                        .padding(horizontal = 1.dp, vertical = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(2.dp),
                 ) {
@@ -176,6 +166,13 @@ private fun ModernBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
                         color = content,
                         style = MaterialTheme.typography.labelMedium.copy(fontSize = labelSize.sp, lineHeight = 16.sp),
                         onTextLayout = { if (it.didOverflowWidth && labelSize > 10f) labelSize -= 0.5f },
+                    )
+                    Box(
+                        Modifier
+                            .padding(top = 2.dp)
+                            .width(18.dp)
+                            .height(2.dp)
+                            .background(if (selected) colors.primary else Color.Transparent),
                     )
                 }
             }

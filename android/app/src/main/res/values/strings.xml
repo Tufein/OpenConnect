@@ -637,6 +637,9 @@
     <string name="letters_pixel">Pixel letters</string>
     <string name="letters_clear">Clear letters</string>
     <string name="letters_note">Pixel letters go with the look of the app. Clear letters are plain and a little larger, and easier to read.</string>
+    <string name="palette_group_sport">Sport</string>
+    <string name="palette_graphite">Graphite</string>
+    <string name="palette_track">Track</string>
     <string name="palette_group_retro">Retro screens</string>
     <string name="palette_group_eyes">Easy on the eyes</string>
     <string name="palette_group_colour">Colourful</string>

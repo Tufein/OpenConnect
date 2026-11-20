@@ -2,7 +2,6 @@ package nl.tufein.openconnect.data
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.os.Build
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import nl.tufein.openconnect.ai.AiSettings
@@ -17,18 +16,17 @@ import nl.tufein.openconnect.watch.GarminWatchMemory
 import java.util.Locale
 
 /**
+ * The theme a fresh install starts with: Graphite, cool neutrals with one blue accent. The wallpaper colours and the
+ * older Handheld look stay available in Settings.
+ */
+internal fun defaultPaletteKey(): String = "graphite"
+
+/**
  * App settings. Every key (Claude, Gemini, Garmin) lives in Android Keystore-backed encrypted preferences; if that is
  * unavailable on a device the key is simply not stored, never written in plain text.
  *
  * [secure] makes the encrypted preferences, or null when the phone cannot; tests pass plain preferences instead.
  */
-/**
- * The theme a fresh install starts with: the phone's own wallpaper colours on Android 12 and newer, Handheld on older
- * phones where there are none. Pure so a test can check both ends without a phone.
- */
-internal fun defaultPaletteKey(sdk: Int = Build.VERSION.SDK_INT): String =
-    if (sdk >= Build.VERSION_CODES.S) "dynamic" else "handheld"
-
 class SettingsStore(
     private val context: Context,
     secure: () -> SharedPreferences? = { encryptedPreferences(context) },
@@ -87,9 +85,8 @@ class SettingsStore(
         set(value) = prefs.edit().putString(KEY_THEME, value.takeIf { it in THEMES } ?: "system").apply()
 
     /**
-     * The colour theme, a key of [nl.tufein.openconnect.ui.Palette]. A fresh install follows the phone's wallpaper
-     * colours on Android 12+ and starts on Handheld elsewhere; a key that is no theme any more (arcade, clean, midnight,
-     * from before v0.31.0) opens as "handheld".
+     * The colour theme, a key of [nl.tufein.openconnect.ui.Palette]. A fresh install starts on Graphite; a key that is
+     * no theme any more (arcade, clean, midnight, from before v0.31.0) opens as "handheld".
      */
     var palette: String
         get() = prefs.getString(KEY_PALETTE, null) ?: defaultPaletteKey()
