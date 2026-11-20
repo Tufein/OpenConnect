@@ -410,7 +410,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (e: Exception) {
-                println("OCDEBUG io failed: " + e + " at " + e.stackTrace.take(6).joinToString(" | "))
                 tell(e.message ?: text(R.string.error_generic))
             }
         }
@@ -703,7 +702,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     // ------------------------------------------------------------------------------- loading
 
     fun refreshAll() {
-        println("OCDEBUG refreshAll start " + Thread.currentThread().name)
         _map.value = MapState() // stale: the Map tab works it out again when it is open
         io { _overview.value = DataOverview.of(repo) }
         loadHome()
@@ -726,9 +724,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun loadHome() = io {
-        println("OCDEBUG loadHome start " + Thread.currentThread().name + " t=" + System.currentTimeMillis())
         val overview = container.stats.overview()
-        println("OCDEBUG loadHome overview done t=" + System.currentTimeMillis())
         val goals = container.settings.weeklyGoals
         val today = overview.today
         val sleep = today?.let { repo.listSleep(it.date.minusDays(1), it.date).lastOrNull() }
@@ -748,7 +744,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             Recovery.dayLoad(activities, todayUtc),
             todayLocal,
         )
-        println("OCDEBUG loadHome calculators done t=" + System.currentTimeMillis())
         _home.value = HomeState(
             loaded = true,
             overview = overview,
@@ -779,7 +774,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
                 todayLocal,
             ),
         )
-        println("OCDEBUG loadHome end t=" + System.currentTimeMillis())
     }
 
     fun loadTrophies() = io {

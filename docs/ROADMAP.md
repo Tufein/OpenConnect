@@ -171,7 +171,7 @@ Geen belofte, wel de volgorde zoals die in paragraaf 6 stond:
 
 ### M12: opschonen en bereik 🔜 (M)
 
-- **Dependabot-voorstellen afwerken** (#43 tot en met #55), met de grote sprongen als eigen releases en de APK-maat- en prestatiebudgetten als poort. ✅ De grote sprong (AGP 9, Kotlin 2.4, Gradle 9, Compose-BOM 2026.11, compile-SDK 37.1) is v1.0.5; de Python-afhankelijkheden staan als vloer waaronder de nieuwste versies al voldoen.
+- **Dependabot-voorstellen afwerken** (#43 tot en met #55), met de grote sprongen als eigen releases en de APK-maat- en prestatiebudgetten als poort. ❓ **Eerste poging (v1.0.5) teruggedraaid.** De sprong naar AGP 9.5.2 + Kotlin 2.4.21 + Gradle 9.9.2 + Compose-BOM 2026.11 + compile-SDK 37.1 (met Activity 1.13, Lifecycle 2.11, Navigation 2.10, core-ktx 1.19, Robolectric 4.18.1) kompilde en haalde lokaal alle 444 tests, maar op de CI-runner bleef Home daarna soms in de ongeladen stand (`loaded` bleef uit), 13 tests liepen op hun 45 s-timeout; een debugronde wees niet op een uitzondering en de oorzaak is niet gevonden. De sprong wacht op een CI-only debugronde (bijvoorbeeld tests met een langere wachttijd of een profiling-run) vóórdat hij opnieuw gaat; de Python-afhankelijkheden staan als vloer waaronder de nieuwste versies al voldoen.
 - **Meer talen** (Duits, Frans) zodra de tekstpariteitstest er is.
 - **Een eerlijke "wat gebeurt er met mijn gegevens"-pagina** in de app met een overzicht van elk verzoek dat naar buiten gaat.
 - **De naam beslissen** (houden of veranderen; de pakketnaam `nl.tufein.openconnect` verandert in elk geval niet) — dit is een vakje van Stefan, maar de voorbereiding kan hier.
@@ -268,7 +268,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.0.2 | Sportieve pas: Graphite (koel neutraal, één blauw accent) en Track (oranje) als nieuwe thema's, Graphite als standaard, hoeken 8–20 dp, vlakke panelen met haarlijn, rechte knoppen en een platte tabbalk, compactere typografie; op Home klappen de maandgrafiek en de activiteitenlijst in met hun waarde in de kop |
 | v1.0.3 | Alleen scores open: de vier signaaltegels tonen geen lijntjes meer, die zitten met de maandgrafiek en de activiteiten in ingeklapte secties; Insights houdt zes dagelijkse tabs en zet de rest achter *Meer*; widget en startachtergrond volgen het palet |
 | v1.0.4 | Op Health één grafiek tegelijk in tabs onder de scores (alleen grafieken met metingen); tikken op een score opent de bijbehorende grafiek, en een "open Health"-tegel komt op de gevraagde grafiek uit |
-| v1.0.5 | M12 (deel): de bouw actueel — AGP 9, Kotlin 2.4, Gradle 9.9.2, Compose-BOM 2026.11, compile-SDK 37.1, Activity 1.13/Lifecycle 2.11/Navigation 2.10/core-ktx 1.19/Robolectric 4.18.1; minimale Android en appgedrag onveranderd; de telefoontaal wordt op vijf plekken observable gelezen (nieuwe Compose-lintregel) |
+| v1.0.5 | Zonder Health Connect geen crash: de gatewaystatus wordt via `runCatchingUnlessCancelled` gelezen, een telefoon zonder de dienst rapporteert "niet beschikbaar" (getest). De sprong naar AGP 9/Kotlin 2.4/Compose 2026.11 kompilde en haalde alle tests lokaal, maar bleef op de CI-runner soms in een ongeladen Home hangen (13 timeouts) en is voor de release teruggedraaid; de bevindingen staan bij M12 |
 
 ## 9. Hoe releases werken
 

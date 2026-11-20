@@ -1,12 +1,12 @@
 plugins {
     id("com.android.application")
+    id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
     namespace = "nl.tufein.openconnect"
-    compileSdk = 37
-    compileSdkMinor = 1
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "nl.tufein.openconnect"
@@ -44,7 +44,7 @@ android {
             val shrink = providers.gradleProperty("openconnect.minify").orNull != "false"
             isMinifyEnabled = shrink
             isShrinkResources = shrink
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
     }
 
@@ -82,28 +82,28 @@ kotlin {
 dependencies {
     implementation(project(":core"))
 
-    val composeBom = platform("androidx.compose:compose-bom:2026.11.01")
+    val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    implementation("androidx.activity:activity-compose:1.13.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.11.1")
-    implementation("androidx.navigation:navigation-compose:2.10.2")
+    implementation("androidx.activity:activity-compose:1.9.3")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    implementation("androidx.navigation:navigation-compose:2.8.4")
     implementation("androidx.security:security-crypto:1.1.0")
-    implementation("androidx.core:core-ktx:1.19.1")
+    implementation("androidx.core:core-ktx:1.16.0")
     implementation("androidx.work:work-runtime-ktx:2.12.0")
     implementation("androidx.health.connect:connect-client:1.1.0-alpha10")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:2.4.21")
+    testImplementation(kotlin("test"))
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.robolectric:robolectric:4.18.1")
+    testImplementation("org.robolectric:robolectric:4.18")
     testImplementation("androidx.test:core-ktx:1.6.1")
     testImplementation("androidx.work:work-testing:2.12.0")
     // The AI tests read the request bodies the app sends, to prove what leaves the phone.
-    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.13.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     testImplementation(composeBom)
     testImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")

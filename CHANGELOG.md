@@ -2,6 +2,18 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.0.5: de Health Connect-poort dicht
+
+Geen nieuwe functies. Op een telefoon **zonder de Health Connect-dienst** crashte de opstart-coroutine van de Health Connect- en Hume-bronnen; die vragen nu netjes "niet beschikbaar" en de app gaat door. Een poging om de bouw naar AGP 9 en Compose 2026.11 te verhogen is **voor de release teruggedraaid** en in de roadmap vastgelegd.
+
+[Release notes](docs/releases/v1.0.5.md)
+
+## v1.0.5: de Health Connect-poort dicht
+
+Geen nieuwe functies: dit is een reparatie- en voorzorgsrelease. Op een telefoon **zonder de Health Connect-dienst** (of met een kapotte) crashte de opstart-coroutine van de Health Connect- en Hume-bronnen; die vragen nu netjes "niet beschikbaar" en de app gaat door. Verder is een poging om de bouwtags (AGP 9, Kotlin 2.4, Compose 2026.11) te verhogen **voor de release teruggedraaid** — de bestaande bouw blijft, en de poging is in de [roadmap](https://github.com/Tufein/OpenConnect/blob/main/docs/ROADMAP.md) vastgelegd met wat er misging.
+
+[Release notes](docs/releases/v1.0.5.md)
+
 ## v1.0.5: de bouw up-to-date
 
 Geen nieuwe functies en niets aan het gedrag: dit is de onderhoudsrelease die de bouw opnieuw actueel maakt (spoor M12 in de [roadmap](https://github.com/Tufein/OpenConnect/blob/main/docs/ROADMAP.md)). De Android-bouwtools en de Compose-stack sprongen samen naar de versies van nu, met de bestaande tests, de APK-maatgrens en het prestatiebudget als poorten.
