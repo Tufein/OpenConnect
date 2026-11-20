@@ -4,6 +4,7 @@ package nl.tufein.openconnect.notify
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import nl.tufein.openconnect.core.watch.ble.GarminProtobuf
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -20,8 +21,11 @@ class ForwardTrail(
     private val capacity: Int = 150,
     private val now: () -> Instant = { Instant.now() },
 ) {
-    /** One line; [repeat] says how many times in a row the same line came (the watch sends many alike in a burst). */
-    data class Line(val at: Instant, val text: String, val repeat: Int = 1)
+    /**
+     * One line; [repeat] says how many times the same line came, in a row (the watch sends many alike in a burst) or,
+     * for a question the watch keeps asking, since [since].
+     */
+    data class Line(val at: Instant, val text: String, val repeat: Int = 1, val since: Instant? = null)
 
     private val lock = Any()
     private val lines = ArrayDeque<Line>()
@@ -35,7 +39,12 @@ class ForwardTrail(
         synchronized(lock) {
             // the same line again right after itself is counted, not repeated: a burst of twenty alike would push out the rest
             val last = lines.lastOrNull()
-            if (last != null && last.text == line.text) {
+            val earlier = if (summarised(line.text)) lines.indexOfLast { it.text == line.text } else -1
+            if (earlier >= 0) {
+                // a question the watch asks every half minute: one line, moved to where it came last, with how often since when
+                val old = lines.removeAt(earlier)
+                lines.addLast(line.copy(repeat = old.repeat + 1, since = old.since ?: old.at))
+            } else if (last != null && last.text == line.text) {
                 lines.removeLast()
                 lines.addLast(line.copy(repeat = last.repeat + 1))
             } else {
@@ -59,12 +68,25 @@ class ForwardTrail(
     companion object {
         private const val MAX_LINE = 300
 
+        /**
+         * Lines that come back every half minute or so (the watch's protobuf questions). Kept as one line each, or twenty
+         * minutes of them pushed the notifications themselves out of the 150 lines (seen in a log from a fenix 8).
+         */
+        private fun summarised(text: String): Boolean = text.startsWith(GarminProtobuf.LOG_PREFIX)
+
         /** [lines] as text, oldest first, one per line, each with the time it happened. */
         fun format(lines: List<Line>, header: String, zone: ZoneId = ZoneId.systemDefault()): String {
             val time = DateTimeFormatter.ofPattern("HH:mm:ss").withZone(zone)
             return buildString {
                 appendLine(header)
-                for (line in lines) appendLine("${time.format(line.at)}  ${line.text}${if (line.repeat > 1) " (x${line.repeat})" else ""}")
+                for (line in lines) {
+                    val count = when {
+                        line.repeat <= 1 -> ""
+                        line.since != null -> " (x${line.repeat} since ${time.format(line.since)})"
+                        else -> " (x${line.repeat})"
+                    }
+                    appendLine("${time.format(line.at)}  ${line.text}$count")
+                }
             }.trimEnd()
         }
     }

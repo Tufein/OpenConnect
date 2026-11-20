@@ -91,6 +91,23 @@ the same batch again exactly 60 seconds later, because the app answered only wit
 That the watch stalls because it waits for those answers is a hypothesis; the next log shows whether the second round of
 questions goes away.
 
+### Not every message buzzes (v1.0.1-rc.1)
+
+The log from v1.0.0 showed the watch talking for twenty minutes without getting stuck, and most notifications arriving.
+Two things in the code explain the ones that did not, and one thing in the log hid them:
+
+- a second message in a chat that already has a notification (WhatsApp keeps one notification per chat, with the same
+  Android key) went to the watch as a change to the one it had, which Garmin shows quietly. Gadgetbridge gives every new
+  version a new id. Now new words in a notification the watch has go out as a new notification with a new id, after the
+  old one is taken off; only an app that asks Android to alert once (a progress bar) gets the quiet change, as on the phone;
+- a notification that came while the connection was being made again was dropped. Now it is kept for up to 2 minutes
+  (newest words only) and sent once the watch is back;
+- the watch asks for calendar events every 30 seconds and Connect IQ widgets ask for web resources. Those questions now
+  get "no events" and "network request timed out", what Gadgetbridge sends when it has nothing to give, and each kind is
+  one line in the log with a count, so they no longer push the notifications out of its 150 lines.
+
+There is no polling on the phone side: Android hands each notification over the moment it appears.
+
 ## What is forwarded, and what is not
 
 A notification goes to the watch when **all** of these hold, in this order (the first reason that applies is shown on the

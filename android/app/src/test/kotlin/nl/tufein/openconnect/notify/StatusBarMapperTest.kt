@@ -93,8 +93,9 @@ class StatusBarMapperTest {
         assertTrue(StatusBarMapper.map(sbn(flags = Notification.FLAG_FOREGROUND_SERVICE), "x").ongoing)
         assertTrue(StatusBarMapper.map(sbn(flags = Notification.FLAG_GROUP_SUMMARY), "x").groupSummary)
         assertTrue(StatusBarMapper.map(sbn(flags = Notification.FLAG_LOCAL_ONLY), "x").localOnly)
+        assertTrue(StatusBarMapper.map(sbn(flags = Notification.FLAG_ONLY_ALERT_ONCE), "x").onlyAlertOnce)
         val plain = StatusBarMapper.map(sbn(), "x")
-        assertFalse(plain.ongoing || plain.groupSummary || plain.localOnly)
+        assertFalse(plain.ongoing || plain.groupSummary || plain.localOnly || plain.onlyAlertOnce)
     }
 
     @Test

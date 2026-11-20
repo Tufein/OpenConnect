@@ -115,9 +115,12 @@ class NotificationForwarder(
         /** How many notifications are remembered by id, to find the one the person dismissed on the watch. */
         private const val MAX_KNOWN = 200
 
-        /** A notification that did not reach a stuck watch is sent once more, if the new connection comes within this time. */
+        /**
+         * A notification that did not reach a stuck watch, or came while the connection was being made again, is sent
+         * once the connection is back, if that is within this time.
+         */
         val SEND_AGAIN_WITHIN: java.time.Duration = java.time.Duration.ofMinutes(2)
-        private const val MAX_SEND_AGAIN = 8
+        private const val MAX_SEND_AGAIN = 16
 
         /** The phases in which the persistent notification is shown, because a connection is held or being sought. */
         private val HOLDING = setOf(ForwardPhase.CONNECTING, ForwardPhase.CONNECTED, ForwardPhase.WAITING)
@@ -137,14 +140,21 @@ class NotificationForwarder(
     private var keeping = false
     private val keeperLock = Any()
 
-    /** What was sent, by the id the watch knows, so a dismissal on the watch finds its notification. */
+    /**
+     * What was sent, by the id the watch knows, so a dismissal on the watch finds its notification. A notification that
+     * changed and buzzed again has a new id (see [onPosted]), so one key can be here more than once; the newest counts.
+     */
     private val known = object : LinkedHashMap<Int, String>() {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, String>?) = size > MAX_KNOWN
     }
     private var testCounter = 0
+    private var freshCounter = 0
 
-    /** Notifications a stuck watch never got, to send once more over the next connection. */
-    private class SendAgain(val notification: WatchNotification, val at: Instant)
+    /**
+     * Notifications to send over the next connection: ones a stuck watch never got ([missed]), and ones that came while
+     * there was no connection. [key] is the phone's key, when known.
+     */
+    private class SendAgain(val notification: WatchNotification, val at: Instant, val key: String?, val missed: Boolean)
 
     private val sendAgain = ArrayList<SendAgain>()
 
@@ -328,30 +338,57 @@ class NotificationForwarder(
                 if (n.id in sentAgain) {
                     trail.add("notification ${n.id} did not arrive on the second try either; letting it go")
                 } else {
-                    sendAgain += SendAgain(n, at)
+                    sendAgain += SendAgain(n, at, key = synchronized(known) { known[n.id] }, missed = true)
                 }
             }
             while (sendAgain.size > MAX_SEND_AGAIN) sendAgain.removeAt(0)
         }
     }
 
-    /** Sends what a stuck watch missed over the new connection [open], if it is recent enough; each one only once. */
+    /**
+     * A notification came while the connection is being made again (the watch went out of reach, or got stuck): keep its
+     * newest words for when it is back, instead of dropping it.
+     */
+    private fun keepUntilConnected(send: WatchNotification, key: String, packageName: String) {
+        synchronized(sendAgainLock) {
+            sendAgain.removeAll { !it.missed && it.key == key }
+            sendAgain += SendAgain(send, now(), key = key, missed = false)
+            while (sendAgain.size > MAX_SEND_AGAIN) sendAgain.removeAt(0)
+        }
+        trail.add("$packageName: not connected right now; kept to send when the watch is back (within ${SEND_AGAIN_WITHIN.toMinutes()} min)")
+        connection?.let { sendAgainOver(it) } // the connection came back while this was being kept
+    }
+
+    /**
+     * Sends over the new connection [open] what a stuck watch missed and what came while there was no connection, if it
+     * is recent enough; each one only once.
+     */
     private fun sendAgainOver(open: WatchNotifyConnection) {
         val due = synchronized(sendAgainLock) {
             val cutoff = now().minus(SEND_AGAIN_WITHIN)
-            val fresh = sendAgain.filter { !it.at.isBefore(cutoff) }.map { it.notification }
+            val fresh = sendAgain.filter { !it.at.isBefore(cutoff) }
             val stale = sendAgain.size - fresh.size
             if (stale > 0) trail.add("$stale missed notification(s) are too old to send again")
             sendAgain.clear()
             for (n in fresh) {
-                sentAgain += n.id
+                sentAgain += n.notification.id
                 while (sentAgain.size > MAX_KNOWN) sentAgain.remove(sentAgain.first())
             }
             fresh
         }
-        for (n in due) {
+        for (entry in due) {
+            val n = entry.notification
             val result = open.post(n)
-            trail.add("notification ${n.id} sent again after the watch got stuck: $result")
+            if (entry.key != null && result != PostResult.OFF) {
+                synchronized(known) { known[n.id] = entry.key }
+                // remember the words, so the same words posted again are not a second buzz
+                repeats.isNew(n.copy(id = NotificationRules.idOf(entry.key)))
+            }
+            if (entry.missed) {
+                trail.add("notification ${n.id} sent again after the watch got stuck: $result")
+            } else {
+                trail.add("${n.appId}: sent now that the watch is back: $result")
+            }
         }
     }
 
@@ -433,14 +470,38 @@ class NotificationForwarder(
             is ForwardDecision.Skip -> return skipped(decision.reason, notification.packageName)
             is ForwardDecision.Send -> decision.notification
         }
-        val open = connection ?: return skipped(SkipReason.NOT_CONNECTED, notification.packageName)
+        val open = connection
+        // no connection and none being sought (forwarding waits for the person): nothing to keep it for
+        if (open == null && synchronized(lock) { job?.isActive != true }) return skipped(SkipReason.NOT_CONNECTED, notification.packageName)
         if (!repeats.isNew(send)) return skipped(SkipReason.DUPLICATE, notification.packageName)
-        when (val result = open.post(send)) {
+        if (open == null) return keepUntilConnected(send, notification.key, notification.packageName)
+        // A notification the watch already has, with new words: the watch takes an update to an id it knows as a quiet
+        // change (no buzz, often not noticed), while the phone does alert. Gadgetbridge gives every change a new id, so the
+        // watch announces it as new; this does the same, and takes the old one off the watch first so it does not show
+        // both. Only an app that asked to alert once (a progress bar) gets the quiet change, as on the phone.
+        val onWatch = synchronized(known) { known.entries.lastOrNull { it.value == notification.key }?.key }
+        val buzzAgain = onWatch != null && !notification.onlyAlertOnce
+        val outgoing = when {
+            onWatch == null -> send
+            buzzAgain -> send.copy(id = synchronized(known) { freshId(notification.key) })
+            else -> send.copy(id = onWatch)
+        }
+        if (buzzAgain && onWatch != null) {
+            synchronized(known) { known.remove(onWatch) }
+            open.remove(onWatch)
+        }
+        when (val result = open.post(outgoing)) {
             PostResult.SENT, PostResult.WAITING -> {
-                synchronized(known) { known[send.id] = notification.key }
+                synchronized(known) { known[outgoing.id] = notification.key }
                 // the count of what reached the watch comes from the connection (statusChanged): a notification the
                 // watch has not asked for yet is only waiting, and is not counted as sent
-                trail.add("${notification.packageName}: ${if (result == PostResult.SENT) "announced to the watch" else "waiting, the watch has not asked for notifications yet"}")
+                val what = when {
+                    result == PostResult.WAITING -> "waiting, the watch has not asked for notifications yet"
+                    buzzAgain -> "new words in a notification the watch has; sent as a new one so the watch buzzes"
+                    onWatch != null -> "changed on the watch without a buzz (the app asks to alert only once)"
+                    else -> "announced to the watch"
+                }
+                trail.add("${notification.packageName}: $what")
                 _state.update { it.copy(lastSkipped = null) }
             }
             PostResult.OFF -> {
@@ -454,9 +515,22 @@ class NotificationForwarder(
     fun onRemoved(key: String) {
         val id = NotificationRules.idOf(key)
         repeats.forget(id)
-        synchronized(sendAgainLock) { sendAgain.removeAll { it.notification.id == id } } // gone from the phone: not sent again
-        val wasSent = synchronized(known) { known.remove(id) != null }
-        if (wasSent) connection?.remove(id)
+        // gone from the phone: not sent again
+        synchronized(sendAgainLock) { sendAgain.removeAll { it.key == key || it.notification.id == id } }
+        val onWatch = synchronized(known) {
+            known.entries.filter { it.value == key }.map { it.key }.also { ids -> ids.forEach { known.remove(it) } }
+        }
+        onWatch.forEach { connection?.remove(it) }
+    }
+
+    /** A watch id for [key] that is not its usual one and not in use, for a changed notification that should buzz again. */
+    private fun freshId(key: String): Int {
+        val usual = NotificationRules.idOf(key)
+        var id: Int
+        do {
+            id = NotificationRules.idOf("$key#${++freshCounter}")
+        } while (id == usual || id in known)
+        return id
     }
 
     private fun skipped(reason: SkipReason, packageName: String? = null) {
@@ -466,7 +540,7 @@ class NotificationForwarder(
 
     private fun dismissedOnWatch(id: Int) {
         val key = synchronized(known) { known.remove(id) } ?: return
-        repeats.forget(id)
+        repeats.forget(NotificationRules.idOf(key))
         dismissOnPhone(key)
     }
 

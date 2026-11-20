@@ -368,4 +368,27 @@ class GarminBleNotificationsTest {
         assertEquals(listOf(GarminProtobuf.CHUNK_DISCARDED, GarminProtobuf.UNKNOWN_REQUEST_ID), answer.takeLast(2).map { it.toInt() and 0xFF })
         session.close()
     }
+
+    @Test
+    fun `the watch's calendar question is answered with an empty calendar, and the log says so once`() {
+        val watch = FakeGarminWatch(
+            files = emptyMap(),
+            extraAfterHello = listOf(
+                // calendar_events_service, calendar_events_request
+                GfdiMessage.build(GfdiType.PROTOBUF_REQUEST) { short(9); int(0); int(4); int(4); bytes(byteArrayOf(0x0a, 2, 0x0a, 0)) },
+            ),
+        )
+        val session = connect(watch)
+        eventually("the calendar is sent") { watch.fromPhone.any { it.type == GfdiType.PROTOBUF_RESPONSE } }
+        // first "received" (a plain ACK, as Gadgetbridge does for a whole question it handles), then the answer
+        val ack = watch.fromPhone.first { it.type == GfdiType.RESPONSE && it.reader().short() == GfdiType.PROTOBUF_REQUEST }
+        assertEquals(3, ack.payload.size, "original type and status, nothing about chunks")
+        assertTrue(watch.fromPhone.indexOf(ack) < watch.fromPhone.indexOfFirst { it.type == GfdiType.PROTOBUF_RESPONSE })
+        val r = watch.fromPhone.first { it.type == GfdiType.PROTOBUF_RESPONSE }.reader()
+        assertEquals(listOf(9, 0, 6, 6), listOf(r.short(), r.int(), r.int(), r.int()))
+        assertEquals(listOf(0x0a, 4, 0x12, 2, 0x08, 1), r.rest().map { it.toInt() and 0xFF })
+        assertTrue(log.any { it == "watch asked over protobuf: calendar_events_service, calendar_events_request; answered: no calendar events" }, log.toString())
+        assertFalse(log.any { it.startsWith("watch sent PROTOBUF_REQUEST") }, "the line above says it already: ${log}")
+        session.close()
+    }
 }

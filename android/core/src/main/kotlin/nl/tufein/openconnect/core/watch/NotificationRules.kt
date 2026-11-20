@@ -35,6 +35,11 @@ data class PhoneNotification(
     val lowImportance: Boolean = false,
     /** Do Not Disturb hides it from the person right now. */
     val silencedByDoNotDisturb: Boolean = false,
+    /**
+     * The app asked Android to make a sound only the first time (a progress bar, a running score): a change to it is
+     * quiet on the phone, so it is quiet on the watch too. Without it, every change with new words alerts on the phone.
+     */
+    val onlyAlertOnce: Boolean = false,
 )
 
 /** What the person chose: which apps, and how much of the text the watch may show. */

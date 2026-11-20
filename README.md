@@ -10,6 +10,8 @@ Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files.
 > **Status: v1.0.0, the first full release.** The last candidate was `v1.0.0-rc.7`; this one adds the modern look —
 > rounded cards, clear type, pill controls and a floating tab bar — on top of everything repaired in the candidates.
 > The original "Handheld" console look is still one tap away in Settings → Appearance. [Release notes](docs/releases/v1.0.0.md).
+> **Candidate `v1.0.1-rc.1`** (pre-release): every new message buzzes the watch again, not only the first of a chat, and
+> notifications that come while the watch reconnects are kept. [Release notes](docs/releases/v1.0.1-rc.1.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).
