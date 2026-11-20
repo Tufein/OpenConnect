@@ -14,12 +14,6 @@ Geen nieuwe functies: dit is een reparatie- en voorzorgsrelease. Op een telefoon
 
 [Release notes](docs/releases/v1.0.5.md)
 
-## v1.0.5: de bouw up-to-date
-
-Geen nieuwe functies en niets aan het gedrag: dit is de onderhoudsrelease die de bouw opnieuw actueel maakt (spoor M12 in de [roadmap](https://github.com/Tufein/OpenConnect/blob/main/docs/ROADMAP.md)). De Android-bouwtools en de Compose-stack sprongen samen naar de versies van nu, met de bestaande tests, de APK-maatgrens en het prestatiebudget als poorten.
-
-[Release notes](docs/releases/v1.0.5.md)
-
 ## v1.0.4: één grafiek tegelijk, in tabs
 
 Op Health stonden tien grafieken onder elkaar; dat was één lange muur. De scores blijven bovenaan staan, daaronder kies je met tabs welke grafiek je ziet. Tik je op een score, dan opent de bijbehorende grafiek. De ingeklapte secties van Home en Insights blijven zoals ze zijn.
