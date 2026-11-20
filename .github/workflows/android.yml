@@ -23,6 +23,16 @@ jobs:
           distribution: temurin
           java-version: "17"
       - uses: gradle/actions/setup-gradle@v6
+      # Robolectric downloads its Android runtime jars from Maven Central the first time it runs. Caching them
+      # stops one flaky download from failing every UI test ("Failed to fetch maven artifact
+      # org.robolectric:android-all-instrumented:...").
+      - name: Cache Robolectric's Android runtime
+        uses: actions/cache@v6
+        with:
+          path: ~/.m2/repository/org/robolectric
+          key: robolectric-${{ runner.os }}-${{ hashFiles('android/app/build.gradle.kts') }}
+          restore-keys: |
+            robolectric-${{ runner.os }}-
       - name: Core tests
         run: ./gradlew :core:test --console=plain
       - name: App tests (includes UI smoke tests that write screenshots)

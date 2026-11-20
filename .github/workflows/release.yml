@@ -34,6 +34,15 @@ jobs:
           distribution: temurin
           java-version: "17"
       - uses: gradle/actions/setup-gradle@v6
+      # Same cache as the Android workflow: these tests fetch Robolectric's Android runtime from Maven Central,
+      # and a failed download would fail the whole release.
+      - name: Cache Robolectric's Android runtime
+        uses: actions/cache@v6
+        with:
+          path: ~/.m2/repository/org/robolectric
+          key: robolectric-${{ runner.os }}-${{ hashFiles('android/app/build.gradle.kts') }}
+          restore-keys: |
+            robolectric-${{ runner.os }}-
       - name: Verify the tag matches the app version
         run: |
           grep -q "versionName = \"${TAG#v}\"" android/app/build.gradle.kts || {
