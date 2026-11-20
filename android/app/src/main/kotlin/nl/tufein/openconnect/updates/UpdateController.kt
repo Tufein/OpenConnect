@@ -1,5 +1,6 @@
 package nl.tufein.openconnect.updates
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -69,6 +70,8 @@ class UpdateController(
                 _state.update { it.copy(error = UpdateError.NETWORK) }
             } catch (e: UpdateFailure) {
                 _state.update { it.copy(error = e.kind) }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _state.update { it.copy(error = UpdateError.UNKNOWN) }
             } finally {
@@ -110,6 +113,8 @@ class UpdateController(
                 _state.update { it.copy(error = UpdateError.NETWORK) }
             } catch (e: UpdateFailure) {
                 _state.update { it.copy(error = e.kind) }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _state.update { it.copy(error = UpdateError.UNKNOWN) }
             } finally {

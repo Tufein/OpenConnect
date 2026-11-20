@@ -1,6 +1,7 @@
 package nl.tufein.openconnect.data
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
 import nl.tufein.openconnect.core.WeeklyGoals
 import nl.tufein.openconnect.core.reports.AiVendor
@@ -137,5 +138,32 @@ class SettingsStoreTest {
         assertEquals(setOf("com.whatsapp", "com.google.android.gm"), again.apps)
         again.apps = emptySet()
         assertEquals(emptySet(), store().forwarding.apps, "the last app can be taken off again")
+    }
+
+    /** Preferences like the Keystore-backed ones on a phone whose key store went bad: reading works, encrypting throws. */
+    private class FailingWrites(private val real: SharedPreferences) : SharedPreferences by real {
+        override fun edit(): SharedPreferences.Editor {
+            val editor = real.edit()
+            return java.lang.reflect.Proxy.newProxyInstance(javaClass.classLoader, arrayOf(SharedPreferences.Editor::class.java)) { proxy, method, args ->
+                if (method.name == "putString") throw SecurityException("Could not encrypt data")
+                val result = method.invoke(editor, *(args ?: emptyArray()))
+                if (result === editor) proxy else result
+            } as SharedPreferences.Editor
+        }
+    }
+
+    @Test
+    fun `a key store that fails while writing is not a crash, the secret is just not stored`() {
+        val s = SettingsStore(context, secure = { FailingWrites(context.getSharedPreferences("test_secure", Context.MODE_PRIVATE)) })
+        s.setKey(AiVendor.CLAUDE, "sk-ant-claude-key-0123456789") // used to throw from the screen that saves it
+        s.garmin.key = "GCDC_0123456789abcdef.fedcba9876543210.AbCdEf/12+34=="
+        s.oura.clientSecret = "oura-secret-FAKE"
+        s.whoop.clientSecret = "whoop-secret-FAKE"
+        assertNull(s.key(AiVendor.CLAUDE))
+        assertNull(s.garmin.key)
+        assertNull(s.oura.clientSecret)
+        assertNull(s.whoop.clientSecret)
+        val plain = context.getSharedPreferences("settings", Context.MODE_PRIVATE).all.toString()
+        assertFalse("claude-key" in plain || "FAKE" in plain, "nothing falls back to the plain preferences")
     }
 }

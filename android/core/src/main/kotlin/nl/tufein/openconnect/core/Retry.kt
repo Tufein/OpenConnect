@@ -47,7 +47,8 @@ class RetryPolicy(
                 continue
             }
             if (!isTransient(status(answer)) || retries >= delaysMs.size) return answer
-            val asked = RetryAfter.seconds(headers(answer)["retry-after"], now())?.times(1000)
+            // in milliseconds; a silly header (seconds beyond what a Long can hold as milliseconds) must not wrap around
+            val asked = RetryAfter.seconds(headers(answer)["retry-after"], now())?.coerceAtMost(Long.MAX_VALUE / 1000)?.times(1000)
             if (asked != null && asked > maxWaitMs) return answer
             pause(maxOf(asked ?: 0L, delaysMs[retries++]))
         }

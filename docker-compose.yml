@@ -12,8 +12,8 @@ services:
     volumes:
       - openconnect-data:/data
     ports:
-      # Published on localhost only. OpenConnect has no login: put a reverse proxy with
-      # authentication in front of it before exposing it to a network.
+      # Published on localhost only. Without OPENCONNECT_PASSWORD OpenConnect has no login: set it (and put a
+      # reverse proxy with HTTPS in front) before exposing the port to a network.
       - "127.0.0.1:8000:8000"
 
 volumes:

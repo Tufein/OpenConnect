@@ -176,3 +176,41 @@ def test_disconnect_removes_tokens():
     oauth.complete("c", state)
     oauth.disconnect()
     assert repo.get_tokens("garmin") is None and not oauth.is_connected()
+
+
+def test_an_unreadable_token_answer_is_an_auth_error_not_a_crash():
+    for answer in (
+        httpx.Response(200, text="<html>Please log in to the hotspot</html>"),
+        httpx.Response(200, json={"error": "no token here"}),
+        httpx.Response(200, json=["not", "an", "object"]),
+        httpx.Response(200, json={"access_token": "a", "expires_in": "soon"}),
+    ):
+        oauth, _, _ = make_oauth(lambda r, answer=answer: answer)
+        _, state = oauth.start()
+        with pytest.raises(GarminAuthError, match="could not be read"):
+            oauth.complete(code="c", state=state)
+        assert not oauth.is_connected()
+
+
+def test_pending_logins_are_removed_when_used_and_when_abandoned():
+    oauth, repo, clock = make_oauth(lambda r: token_response())
+    _, used = oauth.start()
+    oauth.complete(code="c", state=used)
+    assert repo.state_with_prefix("oauth_pending:") == {}  # nothing left behind by a used login
+
+    _, abandoned = oauth.start()
+    assert len(repo.state_with_prefix("oauth_pending:")) == 1
+    clock.now += 11 * 60
+    _, fresh = oauth.start()  # starting a new login sweeps the one nobody came back to
+    assert list(repo.state_with_prefix("oauth_pending:")) == [f"oauth_pending:{fresh}"]
+    with pytest.raises(GarminAuthError, match="state"):
+        oauth.complete(code="c", state=abandoned)
+
+
+def test_state_with_prefix_treats_the_prefix_literally():
+    repo = Repository(Database(":memory:"))
+    repo.set_state("a%b:1", "x")
+    repo.set_state("axb:2", "y")
+    assert repo.state_with_prefix("a%b:") == {"a%b:1": "x"}
+    repo.delete_state("a%b:1")
+    assert repo.get_state("a%b:1") is None

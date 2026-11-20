@@ -2,6 +2,9 @@ package nl.tufein.openconnect.garmin
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import nl.tufein.openconnect.core.InMemoryRepository
 import nl.tufein.openconnect.core.garmin.GarminApiException
@@ -233,6 +236,21 @@ class GarminBackgroundTest {
         assertNull(c.state.value.lastSync)
         c.autoSyncIfDue()
         assertEquals(now, c.state.value.lastSync)
+    }
+
+    @Test
+    fun `a background sync that is cancelled before it starts does not leave the controller stuck`() {
+        val c = controller()
+        runBlocking {
+            val job = launch {
+                currentCoroutineContext().job.cancel() // the job scheduler stops the worker right here
+                c.syncInBackground()
+            }
+            job.join()
+            assertTrue(job.isCancelled)
+        }
+        assertEquals(GarminSyncUi.Idle, c.state.value.sync, "no sync left looking as if it were running")
+        assertEquals(BackgroundOutcome.SYNCED, runBlocking { c.syncInBackground() }, "the next background sync is not blocked for good")
     }
 
     private companion object {

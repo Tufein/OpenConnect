@@ -119,7 +119,10 @@ class HttpGarminSource:
                     break
                 if response.status_code != 200:
                     raise self._error(response)
-                body = response.json()
+                try:
+                    body = response.json()
+                except ValueError as exc:  # an HTML page from a proxy is not Garmin's answer
+                    raise GarminAPIError(f"Garmin returned invalid JSON for {kind}") from exc
                 if not isinstance(body, list):
                     raise GarminAPIError(f"Garmin returned an unexpected shape for {kind}")
                 payload[kind].extend(body)

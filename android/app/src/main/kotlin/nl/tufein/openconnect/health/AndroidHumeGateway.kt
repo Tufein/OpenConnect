@@ -19,7 +19,9 @@ import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
+import kotlinx.coroutines.CancellationException
 import nl.tufein.openconnect.core.health.HealthAccess
+import nl.tufein.openconnect.core.runCatchingUnlessCancelled
 import nl.tufein.openconnect.core.hume.HumeExercise
 import nl.tufein.openconnect.core.hume.HumeGateway
 import nl.tufein.openconnect.core.hume.HumeReadings
@@ -66,6 +68,8 @@ class AndroidHumeGateway(private val context: Context, private val zone: () -> Z
         if (HealthConnectClient.getSdkStatus(context) != HealthConnectClient.SDK_AVAILABLE) return HealthAccess.UNAVAILABLE
         return try {
             if (granted().containsAll(CORE)) HealthAccess.READY else HealthAccess.NEEDS_PERMISSION
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             HealthAccess.UNAVAILABLE
         }
@@ -75,6 +79,8 @@ class AndroidHumeGateway(private val context: Context, private val zone: () -> Z
     override suspend fun permissionsToAsk(): Set<String> {
         val background = try {
             client.features.getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_IN_BACKGROUND) == HealthConnectFeatures.FEATURE_STATUS_AVAILABLE
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             false
         }
@@ -92,6 +98,8 @@ class AndroidHumeGateway(private val context: Context, private val zone: () -> Z
         throw e
     } catch (e: SecurityException) {
         throw e
+    } catch (e: CancellationException) {
+        throw e // a cancelled coroutine is not a Health Connect failure
     } catch (e: Exception) {
         throw IOException(e.message ?: "Health Connect refused", e)
     }
@@ -105,7 +113,7 @@ class AndroidHumeGateway(private val context: Context, private val zone: () -> Z
         // app hide a lower one's steps in a total, but not its heart rate or its nights.
         suspend fun ask(permission: String, metric: AggregateMetric<*>) {
             if (permission !in allowed) return
-            runCatching { client.aggregate(AggregateRequest(metrics = setOf(metric), timeRangeFilter = filter)) }
+            runCatchingUnlessCancelled { client.aggregate(AggregateRequest(metrics = setOf(metric), timeRangeFilter = filter)) }
                 .getOrNull()?.dataOrigins?.mapTo(found) { it.packageName }
         }
         ask(read(StepsRecord::class), StepsRecord.COUNT_TOTAL)

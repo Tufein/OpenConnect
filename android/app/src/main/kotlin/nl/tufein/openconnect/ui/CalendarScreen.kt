@@ -27,6 +27,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import nl.tufein.openconnect.R
@@ -162,7 +165,8 @@ private fun DayCell(day: LocalDate?, totals: DayTotals?, longestM: Double, selec
             .background(background)
             .then(if (selected) Modifier.border(lineWidth(), primary, shape) else Modifier)
             .testTag(dayTag(day))
-            .clickable(onClick = onClick),
+            .semantics { this.selected = selected }
+            .clickable(role = Role.Button, onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {

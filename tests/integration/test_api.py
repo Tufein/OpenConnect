@@ -7,7 +7,7 @@ from tests.fakes import FakeAnthropic
 
 
 def test_healthz(app):
-    assert app.client.get("/healthz").json() == {"status": "ok", "version": "1.0.0rc6"}
+    assert app.client.get("/healthz").json() == {"status": "ok", "version": "1.0.0rc7"}
 
 
 def test_password_protects_pages_and_api(make_app):
@@ -29,6 +29,49 @@ def test_password_protects_pages_and_api(make_app):
     assert app.client.get("/", follow_redirects=False).status_code == 303
     app.client.cookies.set("oc_session", "forged.token")
     assert app.client.get("/", follow_redirects=False).status_code == 303
+
+
+def test_login_works_with_a_password_that_has_accents(make_app):
+    app = make_app(password="wachtwoord€é")
+    wrong = app.client.post("/ui/login", data={"password": "wachtwoord€e"}, follow_redirects=False)
+    assert wrong.status_code == 303 and wrong.headers["location"] == "/login?error=1"
+    good = app.client.post("/ui/login", data={"password": "wachtwoord€é"}, follow_redirects=False)
+    assert good.status_code == 303 and good.headers["location"] == "/"
+    assert app.client.get("/api/activities").status_code == 200
+    # a cookie with characters outside ASCII (raw bytes, as a hostile client can send) is refused,
+    # not a server error
+    app.client.cookies.clear()
+    raw = {"cookie": "oc_session=1.é".encode("latin-1")}
+    assert app.client.get("/api/activities", headers=raw).status_code == 401
+
+
+def test_the_login_cookie_is_secure_only_behind_https(make_app):
+    plain = make_app(password="secret")
+    cookie = plain.client.post("/ui/login", data={"password": "secret"}, follow_redirects=False)
+    assert "secure" not in cookie.headers["set-cookie"].lower()
+    assert "httponly" in cookie.headers["set-cookie"].lower()
+
+    behind_proxy = make_app(password="secret", base_url="https://oc.example")
+    cookie = behind_proxy.client.post(
+        "/ui/login",
+        data={"password": "secret"},
+        follow_redirects=False,
+        headers={"host": "oc.example"},
+    )
+    assert "secure" in cookie.headers["set-cookie"].lower()
+
+
+def test_refusals_carry_the_security_headers_too(make_app):
+    app = make_app(password="secret")
+    for response in (
+        app.client.get("/api/activities"),  # 401 from the login check
+        app.client.get("/", follow_redirects=False),  # redirect to the login page
+        app.client.post("/ui/sync", headers={"origin": "https://evil.example"}),  # 403, cross-site
+    ):
+        assert response.status_code in {401, 303, 403}
+        assert response.headers["x-content-type-options"] == "nosniff"
+        assert "frame-ancestors 'none'" in response.headers["content-security-policy"]
+        assert response.headers["x-frame-options"] == "DENY"
 
 
 # --------------------------------------------------------------------- sync and activities

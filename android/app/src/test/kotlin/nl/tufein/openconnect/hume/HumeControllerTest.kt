@@ -1,7 +1,11 @@
 package nl.tufein.openconnect.hume
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import nl.tufein.openconnect.FakeHumeHealth
 import nl.tufein.openconnect.core.InMemoryRepository
@@ -16,6 +20,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -164,5 +169,34 @@ class HumeControllerTest {
         gateway.access = HealthAccess.READY
         assertEquals(true, c.syncInBackground(Duration.ofMinutes(10)))
         assertEquals(false, c.syncInBackground(Duration.ofMinutes(10)), "just synced")
+    }
+
+    @Test
+    fun `a background sync that is cancelled before it starts does not leave the controller stuck`() {
+        gateway.byOrigin[hume] = HumeReadings(steps = mapOf(today() to 1_000))
+        val c = controller()
+        runBlocking {
+            val job = launch {
+                currentCoroutineContext().job.cancel() // the job scheduler stops the worker right here
+                c.syncInBackground(Duration.ZERO)
+            }
+            job.join()
+            assertTrue(job.isCancelled)
+        }
+        assertTrue(gateway.reads.isEmpty())
+        assertEquals(false, c.state.value.busy)
+        assertTrue(runBlocking { c.syncInBackground(Duration.ZERO) }, "the next background sync is not blocked for good")
+    }
+
+    @Test
+    fun `a cancellation while asking Health Connect is passed on, not taken for no access`() {
+        gateway.byOrigin[hume] = HumeReadings(steps = mapOf(today() to 1_000))
+        val c = controller()
+        gateway.cancelOnAccess = true
+        assertFailsWith<CancellationException> { runBlocking { c.syncInBackground(Duration.ZERO) } }
+        assertEquals(false, c.state.value.busy)
+
+        gateway.cancelOnAccess = false
+        assertTrue(runBlocking { c.syncInBackground(Duration.ZERO) }, "the flag was freed on the way out")
     }
 }

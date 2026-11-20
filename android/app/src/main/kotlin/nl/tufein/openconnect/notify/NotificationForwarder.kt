@@ -68,6 +68,9 @@ data class ForwardUi(
     val notify: NotifyStats = NotifyStats(),
 )
 
+/** The wait before connection attempt number [attempt] (1, 2, ...): 10 seconds, doubling each time, at most 5 minutes. */
+internal fun retryWaitMs(attempt: Int): Long = minOf(10_000L shl (attempt - 1).coerceIn(0, 5), 300_000L)
+
 /** What "send a test" came to: the watch was told, there is no connection, the watch said no, or it has not asked yet. */
 enum class TestResult { SENT, NOT_CONNECTED, WATCH_OFF, WATCH_NOT_ASKING }
 
@@ -100,7 +103,7 @@ class NotificationForwarder(
     private val waitWhileBusy: suspend () -> Unit = { delay(2_000) },
     private val now: () -> Instant = { Instant.now() },
     /** Waits before connection attempt number [attempt] (1, 2, ...) after a failure or a lost connection. */
-    private val retryDelay: suspend (attempt: Int) -> Unit = { attempt -> delay(minOf(10_000L shl (attempt - 1).coerceIn(0, 5), 300_000L)) },
+    private val retryDelay: suspend (attempt: Int) -> Unit = { attempt -> delay(retryWaitMs(attempt)) },
     /** What happened, for the "What is happening?" part of the card. Never holds the text of a notification. */
     val trail: ForwardTrail = ForwardTrail(),
     /** Asks Android to start the notification listener again, for when access is on but it never started. */
@@ -197,24 +200,27 @@ class NotificationForwarder(
                 trail.add(if (allowed) "Android lets OpenConnect show notifications" else "Android does not let OpenConnect show notifications: the persistent notification stays hidden")
                 _state.update { it.copy(ownNotificationAllowed = allowed) }
             }
+            // read once: the person can forget the watch at any moment, between a check and the use of it
+            val watch = memory.load()
             val blocked = when {
                 !store.enabled -> ForwardPhase.OFF
                 !accessGranted() -> ForwardPhase.NEEDS_ACCESS
-                memory.load() == null -> ForwardPhase.NEEDS_WATCH
+                watch == null -> ForwardPhase.NEEDS_WATCH
                 !bluetoothAllowed() -> ForwardPhase.NEEDS_BLUETOOTH
                 else -> null
             }
-            if (blocked != null) {
-                if (_state.value.phase != blocked) trail.add("waiting for the person: $blocked")
+            if (blocked != null || watch == null) { // no watch always has a reason above; the check tells the compiler it exists below
+                val reason = blocked ?: ForwardPhase.NEEDS_WATCH
+                if (_state.value.phase != reason) trail.add("waiting for the person: $reason")
                 stopJob()
-                setPhase(blocked, error = null)
+                setPhase(reason, error = null)
             } else {
                 if (!_state.value.listenerBound) {
                     // access is on but Android has not started the listener (after an update, say): ask it to
                     trail.add("notification access is on but Android has not started the listener; asking it to")
                     runCatching { rebindListener() }
                 }
-                if (job?.isActive != true) startJob(memory.load()!!)
+                if (job?.isActive != true) startJob(watch)
             }
         }
     }
@@ -375,7 +381,7 @@ class NotificationForwarder(
     }
 
     private fun retryWaitText(attempt: Int): String {
-        val seconds = minOf(10L shl (attempt - 1).coerceIn(0, 5), 300L)
+        val seconds = retryWaitMs(attempt) / 1_000
         return if (seconds >= 60) "${seconds / 60} min" else "$seconds s"
     }
 

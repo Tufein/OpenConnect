@@ -45,9 +45,11 @@ with Android 8 stays on v0.51.0, which will not get fixes.
 ## The server (for people who host it themselves)
 
 - **Optional sign-in.** Set `OPENCONNECT_PASSWORD` to require a signed seven-day cookie for every page and API (only
-  `/healthz` and static files stay public). Without it there is **no login**: anyone who can reach the HTTP port can
-  read, sync and delete data. `docker-compose.yml` publishes `127.0.0.1:8000` only, but the image itself sets
-  `OPENCONNECT_HOST=0.0.0.0`, so a plain `docker run -p 8000:8000` exposes it to your whole network.
+  `/healthz` and static files stay public). The cookie is signed with a key derived from the password (PBKDF2), not
+  with the password itself, and gets the `Secure` flag when `OPENCONNECT_BASE_URL` starts with `https://`. Wrong
+  guesses are not rate limited, so choose a long password. Without the setting there is **no login**: anyone who can
+  reach the HTTP port can read, sync and delete data. `docker-compose.yml` publishes `127.0.0.1:8000` only, but the
+  image itself sets `OPENCONNECT_HOST=0.0.0.0`, so a plain `docker run -p 8000:8000` exposes it to your whole network.
 - **The Garmin webhook is open unless configured.** `POST /api/garmin/webhook` only checks a token when
   `OPENCONNECT_WEBHOOK_TOKEN` is set (`src/openconnect/web/routes_api.py`); with an empty setting, anyone who can
   reach the port can submit data. Ping/Pull callback URLs are only fetched from the HTTPS hosts in

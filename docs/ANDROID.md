@@ -182,9 +182,9 @@ what is verified, is in [GARMIN.md](GARMIN.md) and [WATCH.md](WATCH.md).
 
 | Verified by automated tests | Not verified (needs a real phone or credentials) |
 |-----------------------------|--------------------------------------------------|
-| Core logic, formats, reports, both AI providers, the coach, readiness, trophies, the watch readers and the Garmin account client (228 core tests) | Behaviour on real devices and Android versions other than the emulated API 34 |
+| Core logic, formats, reports, both AI providers, the coach, readiness, trophies, the watch readers and the Garmin account client (the `core` tests) | Behaviour on real devices and Android versions other than the emulated API 34 |
 | SQLite storage on the JVM (Robolectric), including the upgrade from v0.2.0 | File pickers, share and open-with intents, the save dialog |
-| The real app driven through every tab: demo data, activity detail, offline reports, English dark and Dutch light, the Watch screen with a fake USB link, folder and Bluetooth sensor, the Garmin screen with a fake Garmin, and the v0.5.0 screens (keys, coach, trophies, readiness, sync pill, search, theme) with a fake AI (138 app tests) | Android Keystore encryption of the API key (the JVM tests have no Keystore) |
+| The real app driven through every tab: demo data, activity detail, offline reports, English dark and Dutch light, the Watch screen with a fake USB link, folder and Bluetooth sensor, the Garmin screen with a fake Garmin, and the v0.5.0 screens (keys, coach, trophies, readiness, sync pill, search, theme) with a fake AI (the `app` tests) | Android Keystore encryption of the API key (the JVM tests have no Keystore) |
 | Watch FIT files written by Garmin's own encoder: steps, distance, calories, heart rate, stress, Body Battery, SpO2, respiration, HRV, sleep stages | **Live Claude and Gemini calls** (no key was available) and how the background job behaves on a real phone (timing is decided by Android) |
 | The release APK builds, is not debuggable, and is signed with the release key from v0.2.0 on | **USB permission and `MtpDevice` on a real phone, and real Garmin files** (only synthetic files so far) |
 | Lint has no errors | **Bluetooth scan and connection to a real watch or strap**, the folder picker on a phone |

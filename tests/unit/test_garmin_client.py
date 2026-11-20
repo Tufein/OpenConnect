@@ -139,3 +139,11 @@ def test_request_backfill_surfaces_errors():
     src = source_with(lambda r: httpx.Response(409, text="duplicate"))
     with pytest.raises(GarminAPIError):
         src.request_backfill("dailies", T0, T0 + timedelta(days=1))
+
+
+def test_an_answer_that_is_not_json_is_a_garmin_error_not_a_crash():
+    src = source_with(
+        lambda r: httpx.Response(200, text="<html>proxy error</html>"), kinds=("dailies",)
+    )
+    with pytest.raises(GarminAPIError, match="invalid JSON for dailies"):
+        src.fetch(T0, T0 + timedelta(hours=1))

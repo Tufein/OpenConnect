@@ -43,7 +43,13 @@ class FakeHumeHealth(
     val reads = ArrayList<Pair<LocalDate, LocalDate>>()
     var failWith: Exception? = null
 
-    override suspend fun access(): HealthAccess = access
+    /** Makes the next [access] fail the way a stopped background job does: with the coroutine's cancellation. */
+    var cancelOnAccess = false
+
+    override suspend fun access(): HealthAccess {
+        if (cancelOnAccess) throw kotlinx.coroutines.CancellationException("the job was stopped")
+        return access
+    }
 
     override suspend fun permissionsToAsk(): Set<String> = if (access == HealthAccess.UNAVAILABLE) emptySet() else setOf("android.permission.health.READ_STEPS")
 

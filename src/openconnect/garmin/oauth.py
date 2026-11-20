@@ -21,6 +21,7 @@ PROVIDER = "garmin"
 DEFAULT_AUTHORIZE_URL = "https://connect.garmin.com/oauth2Confirm"
 DEFAULT_TOKEN_URL = "https://connectapi.garmin.com/di-oauth2-service/oauth/token"
 PENDING_TTL_S = 10 * 60
+PENDING_PREFIX = "oauth_pending:"
 EXPIRY_MARGIN_S = 60
 
 
@@ -71,9 +72,10 @@ class GarminOAuth:
 
     def start(self) -> tuple[str, str]:
         """Return ``(authorize_url, state)``; the PKCE verifier is kept server-side."""
+        self._forget_stale_logins()
         verifier, state = new_code_verifier(), secrets.token_urlsafe(24)
         self.repo.set_state(
-            f"oauth_pending:{state}",
+            f"{PENDING_PREFIX}{state}",
             json.dumps({"verifier": verifier, "created": self._clock()}),
         )
         query = urlencode(
@@ -88,22 +90,35 @@ class GarminOAuth:
         )
         return f"{self.authorize_url}?{query}", state
 
+    def _forget_stale_logins(self) -> None:
+        """Drops the pending logins nobody came back to, so abandoned attempts do not pile up."""
+        now = self._clock()
+        for key, raw in self.repo.state_with_prefix(PENDING_PREFIX).items():
+            try:
+                created = float(json.loads(raw)["created"])
+            except (ValueError, TypeError, KeyError):
+                created = 0.0  # unreadable: nothing can complete it anyway
+            if now - created > PENDING_TTL_S:
+                self.repo.delete_state(key)
+
     def complete(self, code: str, state: str) -> TokenSet:
-        key = f"oauth_pending:{state}"
+        key = f"{PENDING_PREFIX}{state}"
         raw = self.repo.get_state(key)
-        if raw is None:
+        if not raw:
             raise GarminAuthError("Unknown or already used OAuth state")
-        self.repo.set_state(key, "")  # single use, even if the exchange below fails
-        pending = json.loads(raw) if raw else None
-        if not pending:
-            raise GarminAuthError("Unknown or already used OAuth state")
-        if self._clock() - pending["created"] > PENDING_TTL_S:
+        self.repo.delete_state(key)  # single use, even if the exchange below fails
+        try:
+            pending = json.loads(raw)
+            created, verifier = float(pending["created"]), str(pending["verifier"])
+        except (ValueError, TypeError, KeyError) as exc:
+            raise GarminAuthError("Unknown or already used OAuth state") from exc
+        if self._clock() - created > PENDING_TTL_S:
             raise GarminAuthError("OAuth state expired; start the connection again")
         return self._token_request(
             {
                 "grant_type": "authorization_code",
                 "code": code,
-                "code_verifier": pending["verifier"],
+                "code_verifier": verifier,
                 "redirect_uri": self.redirect_uri,
             }
         )
@@ -121,13 +136,17 @@ class GarminOAuth:
             with contextlib.suppress(ValueError):
                 detail = response.json().get("error", detail)
             raise GarminAuthError(f"Token request failed ({response.status_code}): {detail}")
-        body = response.json()
-        tokens = TokenSet(
-            access_token=body["access_token"],
-            refresh_token=body.get("refresh_token", params.get("refresh_token", "")),
-            expires_at=self._clock() + float(body.get("expires_in", 3600)),
-            token_type=body.get("token_type", "Bearer"),
-        )
+        try:
+            body = response.json()
+            tokens = TokenSet(
+                access_token=str(body["access_token"]),
+                refresh_token=body.get("refresh_token", params.get("refresh_token", "")),
+                expires_at=self._clock() + float(body.get("expires_in", 3600)),
+                token_type=body.get("token_type", "Bearer"),
+            )
+        except (ValueError, TypeError, KeyError, AttributeError) as exc:
+            # a 200 that is not Garmin's JSON (a captive portal page) is a refusal, not a crash
+            raise GarminAuthError("Garmin's token answer could not be read") from exc
         self.repo.save_tokens(PROVIDER, asdict(tokens))
         return tokens
 

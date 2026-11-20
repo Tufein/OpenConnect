@@ -198,7 +198,23 @@ class OuraController(
         if (!auth.connected || !due(gap)) return false
         if (!running.compareAndSet(false, true)) return false
         _state.update { it.copy(busy = true, problem = null) }
-        return withContext(io) { execute(autoDays()) }
+        var started = false
+        try {
+            return withContext(io) {
+                started = true
+                execute(autoDays())
+            }
+        } catch (e: CancellationException) {
+            // Cancelled before execute() took over (it frees the flag itself once it runs): do not stay "running" for good.
+            if (!started) stopped()
+            throw e
+        }
+    }
+
+    /** A sync that was stopped from outside (the background job was cancelled): back to idle, so the next sync can start. */
+    private fun stopped() {
+        running.set(false)
+        _state.update { it.copy(busy = false) }
     }
 
     private fun due(gap: Duration): Boolean {
@@ -237,7 +253,7 @@ class OuraController(
                 OuraException.Kind.SERVER -> OuraProblem.SERVER
             }
         } catch (e: CancellationException) {
-            running.set(false)
+            stopped()
             throw e
         } catch (e: Exception) {
             OuraProblem.SERVER

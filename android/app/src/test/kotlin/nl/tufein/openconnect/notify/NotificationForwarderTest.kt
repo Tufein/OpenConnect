@@ -112,6 +112,31 @@ class NotificationForwarderTest {
     }
 
     @Test
+    fun `a watch forgotten while it refreshes is a missing watch, not a crash`() {
+        // the watch is there at the first look and gone at the second (the person forgot it on the Watch screen)
+        val vanishing = object : nl.tufein.openconnect.watch.GarminWatchMemory {
+            var looks = 0
+
+            override fun load(): GarminBleWatch? = if (++looks <= 2) fenix else null
+
+            override fun save(watch: GarminBleWatch?) {}
+        }
+        val f = NotificationForwarder(
+            store = store, memory = vanishing, link = link, scope = scope, io = Dispatchers.Unconfined,
+            ownPackage = "nl.tufein.openconnect",
+            accessGranted = { true }, screenOn = { false }, bluetoothAllowed = { true },
+        )
+        f.refresh() // used to throw a NullPointerException on the second read
+        assertTrue(f.state.value.phase == ForwardPhase.CONNECTING || f.state.value.phase == ForwardPhase.CONNECTED)
+    }
+
+    @Test
+    fun `the wait between connection attempts doubles from 10 seconds up to 5 minutes`() {
+        assertEquals(listOf(10_000L, 20_000L, 40_000L, 80_000L, 160_000L, 300_000L, 300_000L), (1..7).map(::retryWaitMs))
+        assertEquals(10_000L, retryWaitMs(0), "never shorter than the first wait")
+    }
+
+    @Test
     fun `without a remembered watch it asks for a sync first`() {
         memory.save(null)
         val f = forwarder()

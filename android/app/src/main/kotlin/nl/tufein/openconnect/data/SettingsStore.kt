@@ -41,16 +41,31 @@ class SettingsStore(
 
     override val canStoreKeys: Boolean get() = securePrefs != null
 
-    override fun key(vendor: AiVendor): String? = try {
-        securePrefs?.getString(keyName(vendor), null)
+    /** A secret from the encrypted preferences: null when there is none, or when the phone's key store will not open it. */
+    private fun secret(name: String): String? = try {
+        securePrefs?.getString(name, null)
     } catch (_: Exception) {
         null
     }
 
-    override fun setKey(vendor: AiVendor, key: String?) {
+    /**
+     * Stores a secret in the encrypted preferences (a blank or null [value] removes it). Encrypting happens right here,
+     * so a key store that has gone bad (after a restore from another phone, say) throws now: the secret is then simply
+     * not stored, exactly as when the phone has no encrypted storage at all. It is never written in plain text, and it
+     * never takes the screen down with it.
+     */
+    private fun putSecret(name: String, value: String?, trim: Boolean = false) {
         val store = securePrefs ?: return
-        store.edit().apply { if (key.isNullOrBlank()) remove(keyName(vendor)) else putString(keyName(vendor), key.trim()) }.apply()
+        try {
+            store.edit().apply { if (value.isNullOrBlank()) remove(name) else putString(name, if (trim) value.trim() else value) }.apply()
+        } catch (_: Exception) {
+            // not stored
+        }
     }
+
+    override fun key(vendor: AiVendor): String? = secret(keyName(vendor))
+
+    override fun setKey(vendor: AiVendor, key: String?) = putSecret(keyName(vendor), key, trim = true)
 
     override fun model(vendor: AiVendor): String? = prefs.getString(modelName(vendor), null)?.takeIf { it.isNotBlank() }
 
@@ -174,15 +189,8 @@ class SettingsStore(
         override val canStoreKey: Boolean get() = securePrefs != null
 
         override var key: String?
-            get() = try {
-                securePrefs?.getString(KEY_GARMIN, null)
-            } catch (_: Exception) {
-                null
-            }
-            set(value) {
-                val store = securePrefs ?: return
-                store.edit().apply { if (value.isNullOrBlank()) remove(KEY_GARMIN) else putString(KEY_GARMIN, value.trim()) }.apply()
-            }
+            get() = secret(KEY_GARMIN)
+            set(value) = putSecret(KEY_GARMIN, value, trim = true)
 
         override var days: Int
             get() = prefs.getInt(KEY_GARMIN_DAYS, 30)
@@ -203,17 +211,6 @@ class SettingsStore(
      * other keys and never written in plain text; the client id and the redirect address are not secret.
      */
     val oura: nl.tufein.openconnect.oura.OuraSettings = object : nl.tufein.openconnect.oura.OuraSettings {
-        private fun secret(name: String): String? = try {
-            securePrefs?.getString(name, null)
-        } catch (_: Exception) {
-            null
-        }
-
-        private fun putSecret(name: String, value: String?) {
-            val store = securePrefs ?: return
-            store.edit().apply { if (value.isNullOrBlank()) remove(name) else putString(name, value) }.apply()
-        }
-
         override val canStoreSecrets: Boolean get() = securePrefs != null
 
         override var clientId: String?
@@ -254,17 +251,6 @@ class SettingsStore(
      * other keys and never written in plain text; the client id and the redirect address are not secret.
      */
     val whoop: nl.tufein.openconnect.whoop.WhoopSettings = object : nl.tufein.openconnect.whoop.WhoopSettings {
-        private fun secret(name: String): String? = try {
-            securePrefs?.getString(name, null)
-        } catch (_: Exception) {
-            null
-        }
-
-        private fun putSecret(name: String, value: String?) {
-            val store = securePrefs ?: return
-            store.edit().apply { if (value.isNullOrBlank()) remove(name) else putString(name, value) }.apply()
-        }
-
         override val canStoreSecrets: Boolean get() = securePrefs != null
 
         override var clientId: String?
