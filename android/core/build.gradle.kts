@@ -22,7 +22,7 @@ dependencies {
 }
 
 tasks.test {
-    useJUnitPlatform()
+    useJUnit()
     testLogging {
         events("failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
