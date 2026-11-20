@@ -90,8 +90,8 @@ class OuraAndTouchScreenTest : AppTestBase() {
         rule.onNode(hasText("Address after the login") and hasSetTextAction()).performTextInput("openconnect://oura?code=abc&state=${p["state"]}")
         clickText("Finish the login")
         // The ring's own dashboard on top of the tab, the link and what the sync brought below it.
-        waitForText("Readiness")
-        waitForText("7:13 asleep", substring = true)
+        scrollToText("Readiness")
+        scrollToText("7:13 asleep", substring = true)
         shot("39-oura-tab")
         scrollToText("1 days, 1 nights and 1 workouts updated")
         assertTrue(oura.forms.first()!!.contains("code_verifier="), "PKCE verifier sent with the code")

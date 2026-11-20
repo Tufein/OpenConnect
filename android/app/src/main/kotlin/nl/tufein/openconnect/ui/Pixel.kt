@@ -254,7 +254,7 @@ fun PixelChip(
     val line = if (selected) fill else if (retro) inkColor().copy(alpha = 0.5f) else colors.outline
     Row(
         modifier
-            .heightIn(min = if (retro) 36.dp else 40.dp)
+            .heightIn(min = 48.dp)
             .background(fill, shape)
             .border(lineWidth(), line, shape)
             .clip(shape)

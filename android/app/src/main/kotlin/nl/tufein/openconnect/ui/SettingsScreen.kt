@@ -14,6 +14,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.size
@@ -322,7 +323,10 @@ fun SettingsScreen(
                     AiVendor.GEMINI.id to R.string.provider_gemini,
                 )) {
                     Row(
-                        Modifier.fillMaxWidth().selectable(selected = ui.ai.choice == value, role = Role.RadioButton, onClick = { onChoice(value) }),
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 48.dp)
+                            .selectable(selected = ui.ai.choice == value, role = Role.RadioButton, onClick = { onChoice(value) }),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         RadioButton(selected = ui.ai.choice == value, onClick = null)

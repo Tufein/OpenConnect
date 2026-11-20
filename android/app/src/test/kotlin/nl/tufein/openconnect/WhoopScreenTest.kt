@@ -105,7 +105,7 @@ class WhoopScreenTest : AppTestBase() {
         rule.onNode(hasText("Address after the login") and hasSetTextAction()).performTextInput("openconnect://whoop?code=abc&state=${p["state"]}")
         clickText("Finish the login")
         // The band's own dashboard on top of the tab, the link and what the sync brought below it.
-        waitForText("7:30 asleep", substring = true)
+        scrollToText("7:30 asleep", substring = true)
         scrollToText("Latest day:", substring = true) // the tiles at the top of the tab
         assertTrue(hasText("Recovery", substring = false))
         assertTrue(hasText("81", substring = false), "recovery 81 in its tile")
