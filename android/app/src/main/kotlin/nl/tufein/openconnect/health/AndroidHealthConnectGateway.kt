@@ -1,5 +1,6 @@
 package nl.tufein.openconnect.health
 
+import nl.tufein.openconnect.core.runCatchingUnlessCancelled
 import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.aggregate.AggregateMetric
@@ -57,7 +58,8 @@ class AndroidHealthConnectGateway(private val context: Context, private val zone
     private val client: HealthConnectClient by lazy { HealthConnectClient.getOrCreate(context) }
 
     override suspend fun access(): HealthAccess {
-        if (HealthConnectClient.getSdkStatus(context) != HealthConnectClient.SDK_AVAILABLE) return HealthAccess.UNAVAILABLE
+        val status = runCatchingUnlessCancelled { HealthConnectClient.getSdkStatus(context) }.getOrDefault(HealthConnectClient.SDK_UNAVAILABLE)
+        if (status != HealthConnectClient.SDK_AVAILABLE) return HealthAccess.UNAVAILABLE
         return try {
             if (client.permissionController.getGrantedPermissions().containsAll(PERMISSIONS)) HealthAccess.READY else HealthAccess.NEEDS_PERMISSION
         } catch (e: CancellationException) {
