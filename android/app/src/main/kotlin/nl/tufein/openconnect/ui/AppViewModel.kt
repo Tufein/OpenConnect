@@ -456,9 +456,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         container.garmin.autoSyncIfDue()
     }
 
-    /** The app came to the front: sync if the last sync is old enough, like Garmin Connect does. */
-    /** The app came to the front: sync every connected account (unless that happened in the last minute) and keep
-     *  doing so every ten minutes while it stays open. */
+    /**
+     * The app came to the front: sync every connected account (unless that happened in the last minute) and keep
+     * doing so every ten minutes while it stays open, like Garmin Connect does.
+     */
     fun onResume() {
         _now.value = Instant.now()
         syncAccounts(OPEN_GAP)

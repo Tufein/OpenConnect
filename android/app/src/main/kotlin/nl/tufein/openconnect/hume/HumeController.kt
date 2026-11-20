@@ -18,6 +18,7 @@ import nl.tufein.openconnect.core.hume.HumeException
 import nl.tufein.openconnect.core.hume.HumeGateway
 import nl.tufein.openconnect.core.hume.HumeSync
 import nl.tufein.openconnect.core.hume.HumeSyncReport
+import nl.tufein.openconnect.core.runCatchingUnlessCancelled
 import java.io.IOException
 import java.time.Duration
 import java.time.Instant
@@ -105,10 +106,12 @@ class HumeController(
         scope.launch(io) {
             val access = try {
                 gateway.access()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 HealthAccess.UNAVAILABLE
             }
-            val permissions = if (access == HealthAccess.UNAVAILABLE) emptySet() else runCatching { gateway.permissionsToAsk() }.getOrDefault(emptySet())
+            val permissions = if (access == HealthAccess.UNAVAILABLE) emptySet() else runCatchingUnlessCancelled { gateway.permissionsToAsk() }.getOrDefault(emptySet())
             _state.update { it.copy(access = access, permissions = permissions, problem = if (access == HealthAccess.READY && it.problem == HumeProblem.NEEDS_PERMISSION) null else it.problem) }
             onBackgroundWanted(access == HealthAccess.READY)
         }
@@ -155,19 +158,32 @@ class HumeController(
     suspend fun syncInBackground(gap: Duration): Boolean {
         if (!due(gap)) return false
         if (!running.compareAndSet(false, true)) return false
-        return withContext(io) {
-            val ready = try {
-                gateway.access() == HealthAccess.READY
-            } catch (e: Exception) {
-                false
+        var settled = false // true once the flag is freed, or execute() has taken over freeing it
+        try {
+            return withContext(io) {
+                val ready = try {
+                    gateway.access() == HealthAccess.READY
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    false
+                }
+                settled = true
+                if (!ready) {
+                    running.set(false)
+                    false
+                } else {
+                    _state.update { it.copy(busy = true, problem = null) }
+                    execute(autoDays())
+                }
             }
-            if (!ready) {
+        } catch (e: CancellationException) {
+            // Cancelled on the way in or while asking Health Connect, before anything freed the flag.
+            if (!settled) {
                 running.set(false)
-                false
-            } else {
-                _state.update { it.copy(busy = true, problem = null) }
-                execute(autoDays())
+                _state.update { it.copy(busy = false) }
             }
+            throw e
         }
     }
 
@@ -185,7 +201,7 @@ class HumeController(
         if (!running.compareAndSet(false, true)) return
         _state.update { it.copy(busy = true, problem = null) }
         scope.launch(io) {
-            if (quietUnlessReady && runCatching { gateway.access() }.getOrNull() != HealthAccess.READY) {
+            if (quietUnlessReady && runCatchingUnlessCancelled { gateway.access() }.getOrNull() != HealthAccess.READY) {
                 running.set(false)
                 _state.update { it.copy(busy = false) }
                 return@launch
@@ -211,6 +227,7 @@ class HumeController(
             }
         } catch (e: CancellationException) {
             running.set(false)
+            _state.update { it.copy(busy = false) }
             throw e
         } catch (e: SecurityException) {
             HumeProblem.NEEDS_PERMISSION
@@ -224,7 +241,7 @@ class HumeController(
         running.set(false)
         val today = LocalDate.now(zone())
         this.days = repo.listHumeDays(today.minusDays(DAYS_SHOWN - 1), today)
-        val access = runCatching { gateway.access() }.getOrDefault(HealthAccess.UNAVAILABLE)
+        val access = runCatchingUnlessCancelled { gateway.access() }.getOrDefault(HealthAccess.UNAVAILABLE)
         _state.value = snapshot(problem = problem, last = report, found = found, using = report?.origins.orEmpty()).copy(access = access)
         onBackgroundWanted(access == HealthAccess.READY)
         return problem == null

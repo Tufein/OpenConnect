@@ -57,26 +57,13 @@ def create_app(
         anthropic_client=anthropic_client,
     )
 
-    @app.middleware("http")
-    async def guard_and_harden(request: Request, call_next):
-        # Browsers send Origin (and Sec-Fetch-Site) on cross-site POSTs; scripts, curl and Garmin's
-        # push do not. A foreign page must not be able to trigger syncs or (billed) AI reports.
-        origin = request.headers.get("origin")
-        cross_origin = (
-            origin is not None and urlparse(origin).netloc != request.headers.get("host", "")
-        ) or request.headers.get("sec-fetch-site") in {"cross-site", "same-site"}
-        if request.method not in SAFE_METHODS and cross_origin:
-            return JSONResponse({"detail": "Cross-origin request refused"}, status_code=403)
-        response = await call_next(request)
-        response.headers["Content-Security-Policy"] = CSP
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        # same-origin (not no-referrer): with no-referrer browsers send "Origin: null" on form posts
-        response.headers["Referrer-Policy"] = "same-origin"
-        response.headers["X-Frame-Options"] = "DENY"
-        return response
-
+    # Middleware wraps in reverse order of adding: what is added first sits innermost. The login
+    # check goes first so that the guard below wraps it, which means a 401 or a redirect to the
+    # login page carries the security headers as well, and a cross-site request is refused before
+    # the login check sees it.
+    #
     # When a password is configured, everything except the login page and static files needs a
-    # signed cookie. Health checks stay public so a Reverse proxy can still poll /healthz.
+    # signed cookie. Health checks stay public so a reverse proxy can still poll /healthz.
     if settings.password:
 
         @app.middleware("http")
@@ -92,6 +79,25 @@ def create_app(
                     return JSONResponse({"detail": "Not authenticated"}, status_code=401)
                 return RedirectResponse("/login", status_code=303)
             return await call_next(request)
+
+    @app.middleware("http")
+    async def guard_and_harden(request: Request, call_next):
+        # Browsers send Origin (and Sec-Fetch-Site) on cross-site POSTs; scripts, curl and Garmin's
+        # push do not. A foreign page must not be able to trigger syncs or (billed) AI reports.
+        origin = request.headers.get("origin")
+        cross_origin = (
+            origin is not None and urlparse(origin).netloc != request.headers.get("host", "")
+        ) or request.headers.get("sec-fetch-site") in {"cross-site", "same-site"}
+        if request.method not in SAFE_METHODS and cross_origin:
+            response = JSONResponse({"detail": "Cross-origin request refused"}, status_code=403)
+        else:
+            response = await call_next(request)
+        response.headers["Content-Security-Policy"] = CSP
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        # same-origin (not no-referrer): with no-referrer browsers send "Origin: null" on form posts
+        response.headers["Referrer-Policy"] = "same-origin"
+        response.headers["X-Frame-Options"] = "DENY"
+        return response
 
     # Added last so it runs first: reject unknown Host headers before anything else (DNS rebinding).
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.allowed_hosts)

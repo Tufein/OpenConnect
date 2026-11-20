@@ -2,6 +2,10 @@ package nl.tufein.openconnect.whoop
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import nl.tufein.openconnect.core.InMemoryRepository
 import nl.tufein.openconnect.core.oura.OuraResponse
 import nl.tufein.openconnect.core.whoop.WhoopAuth
@@ -122,5 +126,22 @@ class WhoopControllerTest {
         assertNull(settings.tokens, "tokens of another application are of no use")
         c.saveClient("", "", "")
         assertEquals(WhoopProblem.MISSING_FIELDS, c.state.value.problem)
+    }
+
+    @Test
+    fun `a background sync that is cancelled before it starts does not leave the controller stuck`() {
+        val http = FakeHttp(200)
+        val c = controller(http)
+        runBlocking {
+            val job = launch {
+                currentCoroutineContext().job.cancel() // the job scheduler stops the worker right here
+                c.syncInBackground(Duration.ZERO)
+            }
+            job.join()
+            assertTrue(job.isCancelled)
+        }
+        assertEquals(0, http.calls, "WHOOP was never asked")
+        assertEquals(false, c.state.value.busy, "no spinner left behind")
+        assertTrue(runBlocking { c.syncInBackground(Duration.ZERO) }, "the next background sync is not blocked for good")
     }
 }

@@ -7,6 +7,7 @@ import nl.tufein.openconnect.core.DayFreshness
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.clickable
@@ -280,7 +281,7 @@ private fun LevelChip(level: PlayerLevel, onClick: () -> Unit) {
             .background(colors.secondary, shape)
             .border(lineWidth(), inkColor(), shape)
             .clip(shape)
-            .clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onClick)
+            .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -384,7 +385,7 @@ private fun readinessPartLabel(part: ReadinessPart): Int = when (part) {
 
 @Composable
 fun ActivityRow(activity: Activity, onOpen: (String) -> Unit, modifier: Modifier = Modifier) {
-    SurfaceCard(modifier.clickable { onOpen(activity.id) }) {
+    SurfaceCard(modifier.clickable(role = Role.Button) { onOpen(activity.id) }) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             SportBadge(activity.sport)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {

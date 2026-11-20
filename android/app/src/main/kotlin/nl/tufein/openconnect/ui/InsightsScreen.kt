@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.Role
 import nl.tufein.openconnect.R
 import nl.tufein.openconnect.ai.ActiveAi
 import nl.tufein.openconnect.ai.CoachUi
@@ -175,7 +176,7 @@ private fun WeekContent(
                 SurfaceCard {
                     for (e in state.efforts) {
                         Row(
-                            Modifier.fillMaxWidth().clickable { e.activityId?.let(onOpenActivity) },
+                            Modifier.fillMaxWidth().clickable(enabled = e.activityId != null, role = Role.Button) { e.activityId?.let(onOpenActivity) },
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
                             Text(effortLabel(e.distanceM) + (e.date?.let { " · " + Fmt.date(it) } ?: ""), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -209,7 +210,7 @@ private fun RecordsCard(sport: Sport, entries: Map<String, RecordEntry>, onOpenA
                 else -> R.string.record_fastest_pace to Fmt.pace(entry.value) + " /km"
             }
             Row(
-                Modifier.fillMaxWidth().clickable { onOpenActivity(entry.activityId) },
+                Modifier.fillMaxWidth().clickable(role = Role.Button) { onOpenActivity(entry.activityId) },
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(stringResource(label) + " · " + Fmt.date(entry.date), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

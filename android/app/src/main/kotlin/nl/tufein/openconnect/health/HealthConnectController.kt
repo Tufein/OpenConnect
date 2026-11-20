@@ -1,5 +1,6 @@
 package nl.tufein.openconnect.health
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -8,6 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import nl.tufein.openconnect.core.Repository
+import nl.tufein.openconnect.core.runCatchingUnlessCancelled
 import nl.tufein.openconnect.core.health.HealthAccess
 import nl.tufein.openconnect.core.health.HealthConnectGateway
 import nl.tufein.openconnect.core.health.ExportLedger
@@ -58,6 +60,8 @@ class HealthConnectController(
         scope.launch(io) {
             val access = try {
                 gateway.access()
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 HealthAccess.UNAVAILABLE
             }
@@ -83,7 +87,7 @@ class HealthConnectController(
         if (!settings.auto) return
         scope.launch(io) {
             if (gateway.access() != HealthAccess.READY) return@launch
-            runCatching { sync.export(onlyNew = true) }
+            runCatchingUnlessCancelled { sync.export(onlyNew = true) }
         }
     }
 
@@ -99,7 +103,7 @@ class HealthConnectController(
                 }
             } catch (e: IOException) {
                 HealthMessage.Failed(e.message)
-            } catch (e: kotlinx.coroutines.CancellationException) {
+            } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 HealthMessage.Failed(e.message)

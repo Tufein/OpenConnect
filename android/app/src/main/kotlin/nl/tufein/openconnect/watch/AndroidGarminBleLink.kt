@@ -303,6 +303,10 @@ class AndroidGarminBleLink(
                 }
             }
         }
+        // Exported on purpose, although it is a system broadcast: before Android 13 the not-exported flag makes
+        // ContextCompat guard the receiver with a permission that only this app holds, and the Bluetooth process that
+        // sends the bond changes does not, so pairing would never be seen to finish. The receiver only looks at the
+        // address of the watch it is pairing with.
         ContextCompat.registerReceiver(context, receiver, IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED), ContextCompat.RECEIVER_EXPORTED)
         try {
             if (!device.createBond() && device.bondState != BluetoothDevice.BOND_BONDING) {

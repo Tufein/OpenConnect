@@ -255,7 +255,17 @@ class GarminController(
         if (!running.compareAndSet(false, true)) return BackgroundOutcome.SKIPPED
         cancelRequested.set(false)
         _state.update { it.copy(sync = GarminSyncUi.Running(0, 1, "")) }
-        val outcome = withContext(io) { execute(AUTO_SYNC_DAYS) }
+        var started = false
+        val outcome = try {
+            withContext(io) {
+                started = true
+                execute(AUTO_SYNC_DAYS)
+            }
+        } catch (e: CancellationException) {
+            // Cancelled before execute() took over (it frees the flag itself once it runs): do not stay "running" for good.
+            if (!started) stopped()
+            throw e
+        }
         val result = when (outcome) {
             is GarminSyncUi.Done -> when (outcome.report.stopped?.kind) {
                 null -> if (outcome.report.cancelled) BackgroundOutcome.SKIPPED else BackgroundOutcome.SYNCED
@@ -267,6 +277,12 @@ class GarminController(
         // A key Garmin refuses is no use to a job that runs on its own: it stops until a new key is saved.
         if (result == BackgroundOutcome.KEY_REJECTED) onBackgroundWanted(false)
         return result
+    }
+
+    /** A sync that was stopped from outside (the background job was cancelled): back to idle, so the next sync can start. */
+    private fun stopped() {
+        running.set(false)
+        _state.update { it.copy(sync = GarminSyncUi.Idle) }
     }
 
     private fun start(days: Int) {
@@ -290,7 +306,7 @@ class GarminController(
             finish(report)
             GarminSyncUi.Done(report)
         } catch (e: CancellationException) {
-            running.set(false)
+            stopped()
             throw e
         } catch (e: Exception) {
             GarminSyncUi.Failed(e.message)

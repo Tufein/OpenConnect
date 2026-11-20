@@ -310,3 +310,15 @@ class Repository:
                 "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
                 (key, value),
             )
+
+    def delete_state(self, key: str) -> None:
+        with self.db.transaction() as conn:
+            conn.execute("DELETE FROM state WHERE key = ?", (key,))
+
+    def state_with_prefix(self, prefix: str) -> dict[str, str]:
+        """Every state entry whose key starts with [prefix] (a literal text, not a LIKE pattern)."""
+        with self.db.transaction() as conn:
+            rows = conn.execute(
+                "SELECT key, value FROM state WHERE substr(key, 1, ?) = ?", (len(prefix), prefix)
+            ).fetchall()
+        return {row["key"]: row["value"] for row in rows}

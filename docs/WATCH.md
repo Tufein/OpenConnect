@@ -132,7 +132,7 @@ forwarded and what is not, the one-phone limit and what was not tried: [NOTIFICA
 
 ## Honest limits: what is and is not tested
 
-**Tested automatically (175 core tests, 72 app tests, the Garmin account and the folder and reconnect logic included):**
+**Tested automatically (the core and app tests, the Garmin account and the folder and reconnect logic included):**
 
 - Decoding of monitoring, sleep and all-day-health FIT files, including 16-bit time rollover, midnight
   boundaries, invalid values and corrupt files. The fixtures were **written by Garmin's own FIT SDK encoder**,

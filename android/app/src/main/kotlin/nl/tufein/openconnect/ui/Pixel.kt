@@ -132,7 +132,7 @@ fun Panel(
 
 /** Makes a panel react to a tap when [onClick] is given; leaves it as it is otherwise. */
 fun Modifier.tappable(onClick: (() -> Unit)?): Modifier =
-    if (onClick == null) this else this.clickable(onClick = onClick)
+    if (onClick == null) this else this.clickable(role = Role.Button, onClick = onClick)
 
 /** The label style of every button: Jersey, so a button reads like a menu entry in a game. */
 private val ButtonText: androidx.compose.ui.text.TextStyle

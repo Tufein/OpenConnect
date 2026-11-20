@@ -100,6 +100,15 @@ class RetryTest {
     }
 
     @Test
+    fun `a ridiculous Retry-After is not waited for and does not wrap around into a short wait`() {
+        val huge = Long.MAX_VALUE.toString() // times 1000 would overflow to a negative number
+        val (answer, attempts) = play(policy, Answer(503, mapOf("retry-after" to huge)), Answer(200))
+        assertEquals(503, answer.status)
+        assertEquals(1, attempts)
+        assertEquals(emptyList(), waits)
+    }
+
+    @Test
     fun `answers that asking again cannot change are returned at once`() {
         for (status in listOf(200, 204, 400, 401, 403, 404)) {
             waits.clear()

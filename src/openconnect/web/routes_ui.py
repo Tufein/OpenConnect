@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-import hmac
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
 from typing import Annotated
 
@@ -17,7 +16,7 @@ from openconnect.services.achievements import compute_achievements
 from openconnect.services.dashboard import week_start
 from openconnect.services.records import activity_splits, best_efforts, personal_records
 from openconnect.web import charts, formatting
-from openconnect.web.auth import SESSION_COOKIE, make_session
+from openconnect.web.auth import SESSION_COOKIE, SESSION_MAX_AGE_S, make_session, same_text
 from openconnect.web.context import AppContext
 from openconnect.web.markup import render_markdown
 from openconnect.web.routes_api import garmin_backfill, get_ctx, run_sync, store_upload
@@ -178,9 +177,7 @@ def weekly(request: Request, week: date | None = None, ctx: AppContext = Ctx):
     )
 
 
-def _midnight(day: date):
-    from datetime import UTC, datetime, time
-
+def _midnight(day: date) -> datetime:
     return datetime.combine(day, time.min, UTC)
 
 
@@ -228,15 +225,17 @@ def ui_login(
     password: Annotated[str, Form()],
     ctx: AppContext = Ctx,
 ):
-    if not ctx.settings.password or not hmac.compare_digest(password, ctx.settings.password):
+    if not ctx.settings.password or not same_text(password, ctx.settings.password):
         return RedirectResponse("/login?error=1", status_code=303)
     response = RedirectResponse("/", status_code=303)
     response.set_cookie(
         SESSION_COOKIE,
         make_session(ctx.settings.password),
         httponly=True,
+        # behind HTTPS (the usual reverse proxy) the browser must never send the cookie in the clear
+        secure=ctx.settings.base_url.lower().startswith("https://"),
         samesite="lax",
-        max_age=7 * 24 * 60 * 60,
+        max_age=SESSION_MAX_AGE_S,
     )
     return response
 

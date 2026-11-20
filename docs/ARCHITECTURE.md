@@ -82,10 +82,12 @@ Repository ─▶ DashboardService / facts ─▶ UI, API, ReportProvider ─▶
   report is HTML-escaped by the Markdown renderer.
 * Privacy: only the facts for the chosen activity or week are sent, and only when the user asks.
 
-## Security model (v0.1.0)
+## Security model
 
-OpenConnect has **no login**. It is meant for `localhost` or a trusted network, behind a reverse
-proxy with authentication if exposed. What it does enforce:
+OpenConnect has **no login by default**: it is meant for `localhost` or a trusted network. Set
+`OPENCONNECT_PASSWORD` to require a single-password sign-in (a signed, HttpOnly seven-day cookie that is also
+`Secure` behind an `https://` base URL), and put a reverse proxy with HTTPS in front if it is exposed; the limits
+are in [SECURITY.md](../SECURITY.md). What it does enforce:
 
 * binds to `127.0.0.1` by default; `Host` header allow-list (DNS-rebinding defence);
 * rejects cross-origin state-changing requests (an `Origin` that differs from `Host`), so another

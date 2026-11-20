@@ -15,6 +15,7 @@ import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.units.Energy
 import androidx.health.connect.client.units.Length
+import kotlinx.coroutines.CancellationException
 import nl.tufein.openconnect.core.health.HealthAccess
 import nl.tufein.openconnect.core.health.HealthConnectGateway
 import nl.tufein.openconnect.core.health.HealthSession
@@ -59,6 +60,8 @@ class AndroidHealthConnectGateway(private val context: Context, private val zone
         if (HealthConnectClient.getSdkStatus(context) != HealthConnectClient.SDK_AVAILABLE) return HealthAccess.UNAVAILABLE
         return try {
             if (client.permissionController.getGrantedPermissions().containsAll(PERMISSIONS)) HealthAccess.READY else HealthAccess.NEEDS_PERMISSION
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             HealthAccess.UNAVAILABLE
         }
@@ -68,6 +71,8 @@ class AndroidHealthConnectGateway(private val context: Context, private val zone
         block()
     } catch (e: IOException) {
         throw e
+    } catch (e: CancellationException) {
+        throw e // a cancelled coroutine is not a Health Connect failure
     } catch (e: Exception) {
         throw IOException(e.message ?: "Health Connect refused", e)
     }

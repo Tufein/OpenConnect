@@ -5,6 +5,7 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
@@ -61,11 +62,11 @@ object Backup {
             put("sleep", JsonArray(repo.listSleep(FAR_PAST, FAR_FUTURE).map(::sleepJson)))
             put("samples", buildJsonArray { repo.listSamples(FAR_PAST, FAR_FUTURE).forEach { add(sampleJson(it)) } })
             // v0.17.0: the Oura Ring's days, in their own list. Older app versions simply skip it.
-            put("oura", JsonArray(repo.listOuraDays(FAR_PAST, FAR_FUTURE).map { kotlinx.serialization.json.Json.parseToJsonElement(it.toJson()) }))
+            put("oura", JsonArray(repo.listOuraDays(FAR_PAST, FAR_FUTURE).map { Json.parseToJsonElement(it.toJson()) }))
             // v0.49.0: the WHOOP band's days, the same way.
-            put("whoop", JsonArray(repo.listWhoopDays(FAR_PAST, FAR_FUTURE).map { kotlinx.serialization.json.Json.parseToJsonElement(it.toJson()) }))
+            put("whoop", JsonArray(repo.listWhoopDays(FAR_PAST, FAR_FUTURE).map { Json.parseToJsonElement(it.toJson()) }))
             // v0.50.0: the Hume Band's days, the same way.
-            put("hume", JsonArray(repo.listHumeDays(FAR_PAST, FAR_FUTURE).map { kotlinx.serialization.json.Json.parseToJsonElement(it.toJson()) }))
+            put("hume", JsonArray(repo.listHumeDays(FAR_PAST, FAR_FUTURE).map { Json.parseToJsonElement(it.toJson()) }))
             // v0.56.0: what the person wrote or chose, which lives outside the database.
             put("userData", userDataJson(userData))
         }
@@ -139,7 +140,8 @@ object Backup {
 
     // ------------------------------------------------------------------------------------------------ writing
 
-    private fun JsonObjectBuilderPut(b: kotlinx.serialization.json.JsonObjectBuilder, key: String, value: Any?) {
+    /** Writes [value] under [key], or nothing at all when it is null (a missing field reads back as null). */
+    private fun putOptional(b: JsonObjectBuilder, key: String, value: Any?) {
         when (value) {
             null -> {}
             is String -> b.put(key, value)
@@ -174,17 +176,17 @@ object Backup {
     private fun activityJson(a: Activity) = buildJsonObject {
         put("id", a.id)
         put("source", a.source)
-        JsonObjectBuilderPut(this, "externalId", a.externalId)
+        putOptional(this, "externalId", a.externalId)
         put("name", a.name)
         put("sport", a.sport.key)
         put("startTime", a.startTime.toString())
         put("durationS", a.durationS)
         put("distanceM", a.distanceM)
         put("elevationGainM", a.elevationGainM)
-        JsonObjectBuilderPut(this, "avgHr", a.avgHr)
-        JsonObjectBuilderPut(this, "maxHr", a.maxHr)
-        JsonObjectBuilderPut(this, "calories", a.calories)
-        JsonObjectBuilderPut(this, "deviceName", a.deviceName)
+        putOptional(this, "avgHr", a.avgHr)
+        putOptional(this, "maxHr", a.maxHr)
+        putOptional(this, "calories", a.calories)
+        putOptional(this, "deviceName", a.deviceName)
         // a track point is [time, lat, lon, ele, hr, cadence, power, distance] with null for what is missing
         put("track", buildJsonArray {
             a.track.forEach { p ->
@@ -208,23 +210,23 @@ object Backup {
     private fun dailyJson(d: DailySummary) = buildJsonObject {
         put("date", d.date.toString())
         put("steps", d.steps)
-        JsonObjectBuilderPut(this, "stepsGoal", d.stepsGoal)
+        putOptional(this, "stepsGoal", d.stepsGoal)
         put("distanceM", d.distanceM)
         put("activeKcal", d.activeKcal)
         put("floorsClimbed", d.floorsClimbed)
         put("moderateIntensityMin", d.moderateIntensityMin)
         put("vigorousIntensityMin", d.vigorousIntensityMin)
-        JsonObjectBuilderPut(this, "restingHr", d.restingHr)
-        JsonObjectBuilderPut(this, "minHr", d.minHr)
-        JsonObjectBuilderPut(this, "maxHr", d.maxHr)
-        JsonObjectBuilderPut(this, "avgStress", d.avgStress)
-        JsonObjectBuilderPut(this, "maxStress", d.maxStress)
-        JsonObjectBuilderPut(this, "bodyBatteryHigh", d.bodyBatteryHigh)
-        JsonObjectBuilderPut(this, "bodyBatteryLow", d.bodyBatteryLow)
-        JsonObjectBuilderPut(this, "hrvMs", d.hrvMs)
-        JsonObjectBuilderPut(this, "spo2Avg", d.spo2Avg)
-        JsonObjectBuilderPut(this, "spo2Min", d.spo2Min)
-        JsonObjectBuilderPut(this, "respirationAvg", d.respirationAvg)
+        putOptional(this, "restingHr", d.restingHr)
+        putOptional(this, "minHr", d.minHr)
+        putOptional(this, "maxHr", d.maxHr)
+        putOptional(this, "avgStress", d.avgStress)
+        putOptional(this, "maxStress", d.maxStress)
+        putOptional(this, "bodyBatteryHigh", d.bodyBatteryHigh)
+        putOptional(this, "bodyBatteryLow", d.bodyBatteryLow)
+        putOptional(this, "hrvMs", d.hrvMs)
+        putOptional(this, "spo2Avg", d.spo2Avg)
+        putOptional(this, "spo2Min", d.spo2Min)
+        putOptional(this, "respirationAvg", d.respirationAvg)
     }
 
     private fun sleepJson(s: SleepSummary) = buildJsonObject {
@@ -234,7 +236,7 @@ object Backup {
         put("lightS", s.lightS)
         put("remS", s.remS)
         put("awakeS", s.awakeS)
-        JsonObjectBuilderPut(this, "score", s.score)
+        putOptional(this, "score", s.score)
     }
 
     /** [metric code, time, day, value] keeps the many readings small. */

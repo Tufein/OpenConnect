@@ -130,7 +130,7 @@ in the app.
 | `app/.../garmin/GarminController.kt` | Key handling and checking, sync state, cancel, the 30-minute auto sync and the background run |
 | `app/.../ui/GarminScreen.kt` | The screen |
 
-The core has 175 tests and the app 72. The Garmin parts use fixtures with the **real layouts** (names and nesting seen
+Both the core and the app have tests for it. The Garmin parts use fixtures with the **real layouts** (names and nesting seen
 live) and invented values, and some tests feed layouts that differ to check the mapping then gives less instead of
 failing. A few of the tests were checked by breaking the code on purpose to see that they notice.
 
