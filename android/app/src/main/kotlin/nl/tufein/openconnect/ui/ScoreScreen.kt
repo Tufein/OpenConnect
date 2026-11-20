@@ -50,7 +50,7 @@ internal fun ScoreCard(score: YearScore) {
         score.longestRun?.let { ScoreRow(stringResource(R.string.score_longest_run), record(it)) }
         score.longestRide?.let { ScoreRow(stringResource(R.string.score_longest_ride), record(it)) }
         score.biggestClimb?.let { ScoreRow(stringResource(R.string.score_climb), stringResource(R.string.score_climb_record_value, it.value.roundToInt(), Fmt.date(it.date))) }
-        score.busiestMonth?.let { ScoreRow(stringResource(R.string.score_busiest), it.getDisplayName(TextStyle.FULL, Locale.getDefault()).replaceFirstChar { c -> c.uppercase() }) }
+        score.busiestMonth?.let { ScoreRow(stringResource(R.string.score_busiest), it.getDisplayName(TextStyle.FULL, currentLocale()).replaceFirstChar { c -> c.uppercase() }) }
         if (score.steps > 0) ScoreRow(stringResource(R.string.score_steps), Fmt.thousands(score.steps.toInt()))
         score.bestStepsDay?.let { (date, steps) -> ScoreRow(stringResource(R.string.score_best_steps), stringResource(R.string.score_best_steps_value, Fmt.thousands(steps), Fmt.date(date))) }
         val shareText = stringResource(

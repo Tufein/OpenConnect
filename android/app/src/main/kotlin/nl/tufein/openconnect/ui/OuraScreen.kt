@@ -189,7 +189,7 @@ private fun LazyListScope.ouraDashboard(
             val extras = listOfNotNull(
                 last.lowestHr?.let { stringResource(R.string.oura_lowest_hr, it) },
                 last.averageHrv?.let { stringResource(R.string.oura_hrv_ms, it) },
-                last.temperatureDeviation?.let { stringResource(R.string.oura_temp, String.format(java.util.Locale.getDefault(), "%+.1f", it)) },
+                last.temperatureDeviation?.let { stringResource(R.string.oura_temp, String.format(currentLocale(), "%+.1f", it)) },
             )
             if (extras.isNotEmpty()) Text(extras.joinToString("  ·  "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }

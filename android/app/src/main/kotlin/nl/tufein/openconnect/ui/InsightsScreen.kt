@@ -243,7 +243,7 @@ private fun RecordsCard(sport: Sport, entries: Map<String, RecordEntry>, onOpenA
 @Composable
 private fun periodTitle(state: ReportsState): String = when (state.period) {
     ReportPeriod.WEEK -> stringResource(R.string.week_of, Fmt.date(state.weekStart))
-    ReportPeriod.MONTH -> state.weekStart.format(java.time.format.DateTimeFormatter.ofPattern("LLLL yyyy", java.util.Locale.getDefault())).replaceFirstChar { it.uppercase() }
+    ReportPeriod.MONTH -> state.weekStart.format(java.time.format.DateTimeFormatter.ofPattern("LLLL yyyy", currentLocale())).replaceFirstChar { it.uppercase() }
     ReportPeriod.YEAR -> state.weekStart.year.toString()
 }
 

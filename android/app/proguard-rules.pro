@@ -2,7 +2,7 @@
 # behind androidx.security, Compose); these are the project's own, and the choices that keep a shrunk app readable.
 
 # Shrink only: no renaming (a stack trace in Settings, Share diagnostics or an issue stays readable, the source is open
-# anyway) and no optimisation (the default proguard-android.txt already says -dontoptimize, repeated here so it stays so).
+# anyway) and no optimisation (proguard-android-optimize.txt would optimise, so -dontoptimize is set explicitly here).
 -dontobfuscate
 -dontoptimize
 

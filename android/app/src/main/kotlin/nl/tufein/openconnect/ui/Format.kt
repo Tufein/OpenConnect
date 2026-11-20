@@ -1,11 +1,17 @@
 package nl.tufein.openconnect.ui
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalConfiguration
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
+
+/** The phone's locale as an observable read: a composable that formats with it redraws when the user changes it. */
+@Composable
+fun currentLocale(): Locale = LocalConfiguration.current.locales[0]
 
 /** Display formatting. Pure functions so they can be tested without Android. */
 object Fmt {

@@ -127,7 +127,7 @@ private fun MonthGrid(view: MonthView, selected: LocalDate?, onSelect: (LocalDat
     Row(Modifier.fillMaxWidth()) {
         for (d in DayOfWeek.values()) {
             Text(
-                d.getDisplayName(TextStyle.NARROW, Locale.getDefault()),
+                d.getDisplayName(TextStyle.NARROW, currentLocale()),
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.labelMedium,

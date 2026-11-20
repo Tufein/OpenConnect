@@ -78,7 +78,7 @@ private fun RingBlock(ring: RingAround) {
     ring.sleepS?.let { AroundRow(stringResource(R.string.around_ring_sleep), Fmt.hours(it)) }
     ring.lowestHr?.let { AroundRow(stringResource(R.string.around_ring_lowest), "$it bpm") }
     ring.averageHrv?.let { AroundRow(stringResource(R.string.around_ring_hrv), "$it ms") }
-    ring.temperatureDeviation?.let { AroundRow(stringResource(R.string.around_ring_temp), String.format(Locale.getDefault(), "%+.1f °C", it)) }
+    ring.temperatureDeviation?.let { AroundRow(stringResource(R.string.around_ring_temp), String.format(currentLocale(), "%+.1f °C", it)) }
     ring.workout?.let { w ->
         val parts = listOfNotNull(
             w.name,
