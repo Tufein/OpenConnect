@@ -410,6 +410,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (e: Exception) {
+                println("OCDEBUG io failed: " + e + " at " + e.stackTrace.take(6).joinToString(" | "))
                 tell(e.message ?: text(R.string.error_generic))
             }
         }
