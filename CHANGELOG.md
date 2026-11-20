@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.0.1: elk nieuw bericht trilt weer, en het thema beweegt mee
+
+De eerste update na 1.0. Op het horloge trilt nu **elk nieuw bericht**, ook als het in een melding staat die er al was, en meldingen die tijdens het opnieuw verbinden binnenkomen gaan niet meer verloren. De app start op Android 12 en nieuwer met de **kleuren van je achtergrond**, met een **live voorbeeld** en een keuze bij de eerste start.
+
+[Release notes](docs/releases/v1.0.1.md)
+
 ## v1.0.1-rc.1: elk nieuw bericht laat het horloge trillen, en het horloge krijgt antwoord op zijn agendavraag
 
 De **eerste release candidate na 1.0**, een **GitHub-pre-release** (niet "nieuwste", de updater biedt haar niemand aan). Stefan stuurde op 20 november een logboek van v1.0.0 op zijn fenix 8: **de meeste meldingen komen aan, maar niet allemaal.** Deze versie repareert wat de code daarover liet zien. **De oorzaak is niet bewezen op een horloge:** er is geen horloge in deze omgeving, en de meldingen …

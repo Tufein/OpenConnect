@@ -7,11 +7,10 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.0.0, the first full release.** The last candidate was `v1.0.0-rc.7`; this one adds the modern look —
-> rounded cards, clear type, pill controls and a floating tab bar — on top of everything repaired in the candidates.
-> The original "Handheld" console look is still one tap away in Settings → Appearance. [Release notes](docs/releases/v1.0.0.md).
-> **Candidate `v1.0.1-rc.1`** (pre-release): every new message buzzes the watch again, not only the first of a chat, and
-> notifications that come while the watch reconnects are kept. [Release notes](docs/releases/v1.0.1-rc.1.md).
+> **Status: v1.0.1.** Every new message buzzes the watch again, not only the first of a chat, and notifications that
+> come while the watch reconnects are kept. A fresh install on Android 12+ starts on the phone's wallpaper colours,
+> with a live preview in Settings → Appearance and a first-start choice of style and theme; the modern look and the
+> original "Handheld" console style both remain. [Release notes](docs/releases/v1.0.1.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).
