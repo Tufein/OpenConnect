@@ -39,7 +39,8 @@ class ScoreAndSeasonScreenTest : AppTestBase() {
     @Test
     fun aRaceGoalGetsASeasonPlanWithThePhaseYouAreIn() {
         loadDemo()
-        rule.onNodeWithText("Plan").performClick()
+        clickChip("More")
+        clickChip("Plan")
         waitForText("Race goal")
         clickText("Set race goal")
         waitForText("in 84 days (12 weeks)")

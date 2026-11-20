@@ -45,7 +45,8 @@ class WorkoutsScreenTest : AppTestBase() {
         rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
         tab("Insights").performClick()
         waitForText("Week of", substring = true)
-        rule.onNodeWithText("Plan").performClick()
+        clickChip("More")
+        clickChip("Plan")
         waitForText("Create plan")
         clickText("10K")
         clickText("Create plan")

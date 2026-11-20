@@ -35,8 +35,8 @@ class CalendarScreenTest : AppTestBase() {
         rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
         tab("Insights").performClick()
         waitForText("Week of", substring = true)
-        clickText("More")
-        rule.onNodeWithText("Calendar").performClick()
+        clickChip("More")
+        clickChip("Calendar")
         waitForText(monthTitle(now))
     }
 

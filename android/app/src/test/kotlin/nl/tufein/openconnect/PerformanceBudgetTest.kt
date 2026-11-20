@@ -70,7 +70,8 @@ class PerformanceBudgetTest : AppTestBase() {
         tabOpens("Activities", "Easy Run")
         tabOpens("Health", "Scores")
         tabOpens("Insights", "Week of", substring = true)
-        rule.onNodeWithText("Map").performClick()
+        clickChip("More")
+        clickChip("Map")
         val map = timed("map of the newest 300 routes") { waitForText("routes with a position", substring = true) }
         if (map > budgetMs) slow += "the map took $map ms"
         tabOpens("Settings", "Appearance")

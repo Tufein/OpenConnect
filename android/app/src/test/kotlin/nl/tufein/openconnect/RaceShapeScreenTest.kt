@@ -20,7 +20,8 @@ class RaceShapeScreenTest : AppTestBase() {
         rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
         tab("Insights").performClick()
         waitForText("Week of", substring = true)
-        rule.onNodeWithText("Plan").performClick()
+        clickChip("More")
+        clickChip("Plan")
         scrollToText("Shape for each distance")
         scrollToText("Rules of thumb", substring = true)
         shot("62-race-shape")

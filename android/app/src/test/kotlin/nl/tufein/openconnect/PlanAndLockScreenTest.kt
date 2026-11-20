@@ -39,7 +39,8 @@ class PlanAndLockScreenTest : AppTestBase() {
         rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
         tab("Insights").performClick()
         waitForText("Week of", substring = true)
-        rule.onNodeWithText("Plan").performClick()
+        clickChip("More")
+        clickChip("Plan")
         waitForText("Create plan")
         shot("33-plan-setup")
         clickText("10K")
@@ -62,7 +63,8 @@ class PlanAndLockScreenTest : AppTestBase() {
         rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
         tab("Insights").performClick()
         waitForText("Week of", substring = true)
-        rule.onNodeWithText("Plan").performClick()
+        clickChip("More")
+        clickChip("Plan")
         waitForText("Race goal")
         shot("48-race-setup")
         clickText("Set race goal")

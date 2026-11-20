@@ -123,6 +123,11 @@ abstract class AppTestBase {
         rule.onAllNodes(hasScrollAction())[0].performScrollToIndex(0)
     }
 
+    /** A chip in a fixed header has no scroll parent; click its semantics instead of trying to scroll to it. */
+    protected fun clickChip(text: String) {
+        rule.onNodeWithText(text).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
+    }
+
     /** Scroll the first scrollable list until [text] has been composed. */
     protected fun scrollToText(text: String, substring: Boolean = false) {
         if (!hasText(text, substring)) {
