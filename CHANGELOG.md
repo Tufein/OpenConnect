@@ -8,12 +8,6 @@ Geen nieuwe functies. Op een telefoon **zonder de Health Connect-dienst** crasht
 
 [Release notes](docs/releases/v1.0.5.md)
 
-## v1.0.5: de Health Connect-poort dicht
-
-Geen nieuwe functies: dit is een reparatie- en voorzorgsrelease. Op een telefoon **zonder de Health Connect-dienst** (of met een kapotte) crashte de opstart-coroutine van de Health Connect- en Hume-bronnen; die vragen nu netjes "niet beschikbaar" en de app gaat door. Verder is een poging om de bouwtags (AGP 9, Kotlin 2.4, Compose 2026.11) te verhogen **voor de release teruggedraaid** — de bestaande bouw blijft, en de poging is in de [roadmap](https://github.com/Tufein/OpenConnect/blob/main/docs/ROADMAP.md) vastgelegd met wat er misging.
-
-[Release notes](docs/releases/v1.0.5.md)
-
 ## v1.0.4: één grafiek tegelijk, in tabs
 
 Op Health stonden tien grafieken onder elkaar; dat was één lange muur. De scores blijven bovenaan staan, daaronder kies je met tabs welke grafiek je ziet. Tik je op een score, dan opent de bijbehorende grafiek. De ingeklapte secties van Home en Insights blijven zoals ze zijn.
