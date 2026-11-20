@@ -318,13 +318,86 @@ class NotificationForwarderTest {
     }
 
     @Test
-    fun `without a connection a notification is skipped, not kept for later`() {
+    fun `a notification that comes while the connection is made again is sent once it is back`() {
         val f = forwarder()
         f.refresh()
         listeners.single().onLost(null)
         f.onPosted(message())
-        assertEquals(SkipReason.NOT_CONNECTED, f.state.value.lastSkipped)
         assertTrue(connections.single().posted.isEmpty())
+        assertTrue(inTrail("com.whatsapp: not connected right now; kept to send when the watch is back"), trail.flow.value.toString())
+        retryGate.trySend(Unit)
+        assertEquals(ForwardPhase.CONNECTED, f.state.value.phase)
+        assertEquals(listOf("Zie je morgen?"), connections[1].posted.map { it.body })
+        assertTrue(inTrail("com.whatsapp: sent now that the watch is back: SENT"), trail.flow.value.toString())
+        // it is known like any other: the same words again are a duplicate, dismissing it on the watch swipes it on the phone
+        f.onPosted(message())
+        assertEquals(1, connections[1].posted.size)
+        listeners[1].onDismissedOnWatch(connections[1].posted.single().id)
+        assertEquals(listOf(message().key), cancelled.toList())
+    }
+
+    @Test
+    fun `while the connection is made again only the newest words of a notification are kept, and only for a while`() {
+        val f = forwarder()
+        f.refresh()
+        listeners.single().onLost(null)
+        f.onPosted(message("Eerste"))
+        f.onPosted(message("Tweede"))
+        f.onPosted(message("Tweede"))
+        assertEquals(SkipReason.DUPLICATE, f.state.value.lastSkipped, "the app posting the same words again is no news")
+        f.onPosted(message("Weg", key = "0|com.whatsapp|3|null|10001"))
+        f.onRemoved("0|com.whatsapp|3|null|10001") // swiped away on the phone before the watch was back
+        retryGate.trySend(Unit)
+        assertEquals(listOf("Tweede"), connections[1].posted.map { it.body })
+
+        listeners[1].onLost(null)
+        f.onPosted(message("Te laat", key = "0|com.whatsapp|4|null|10001"))
+        now = now.plus(NotificationForwarder.SEND_AGAIN_WITHIN).plusSeconds(1)
+        retryGate.trySend(Unit)
+        assertTrue(connections[2].posted.isEmpty(), "older than two minutes is not worth a buzz any more")
+    }
+
+    @Test
+    fun `when the watch cannot be reached at all, a notification is skipped, not kept`() {
+        val failing = FakeGarminBle(openNotifications = { _, _ -> throw WatchLinkException(WatchLinkException.Reason.NOT_PAIRED, "not paired") })
+        val f = forwarder(failing)
+        f.refresh()
+        assertEquals(ForwardPhase.PROBLEM, f.state.value.phase)
+        f.onPosted(message())
+        assertEquals(SkipReason.NOT_CONNECTED, f.state.value.lastSkipped)
+    }
+
+    @Test
+    fun `new words in a notification already on the watch arrive as a new notification, so the watch buzzes again`() {
+        val f = forwarder()
+        f.refresh()
+        val first = NotificationRules.idOf(message().key)
+        f.onPosted(message())
+        f.onPosted(message("Toch niet"))
+        val connection = connections.single()
+        assertEquals(listOf("Zie je morgen?", "Toch niet"), connection.posted.map { it.body })
+        val second = connection.posted[1].id
+        assertTrue(second != first, "a new id: the watch treats a known id as a quiet change, Gadgetbridge sends every change as new")
+        assertEquals(listOf(first), connection.removed.toList(), "the old one is taken off the watch first, so it does not hold both")
+        assertTrue(inTrail("com.whatsapp: new words in a notification the watch has; sent as a new one so the watch buzzes"), trail.flow.value.toString())
+        // the new id is the one that counts from now on
+        listeners.single().onDismissedOnWatch(second)
+        assertEquals(listOf(message().key), cancelled.toList())
+        f.onPosted(message("Nog eentje"))
+        f.onRemoved(message().key)
+        assertEquals(connection.posted.last().id, connection.removed.last(), "removing it on the phone removes the newest one on the watch")
+    }
+
+    @Test
+    fun `an app that asks to alert only once changes its notification on the watch quietly`() {
+        val f = forwarder()
+        f.refresh()
+        f.onPosted(message("Downloaden 10%").copy(onlyAlertOnce = true))
+        f.onPosted(message("Downloaden 60%").copy(onlyAlertOnce = true))
+        val connection = connections.single()
+        assertEquals(List(2) { NotificationRules.idOf(message().key) }, connection.posted.map { it.id }, "the same id: a change, no buzz")
+        assertTrue(connection.removed.isEmpty())
+        assertTrue(inTrail("com.whatsapp: changed on the watch without a buzz (the app asks to alert only once)"), trail.flow.value.toString())
     }
 
     @Test

@@ -40,6 +40,7 @@ object StatusBarMapper {
             lowImportance = ranking != null && ranking.importance != NotificationManager.IMPORTANCE_UNSPECIFIED &&
                 ranking.importance < NotificationManager.IMPORTANCE_DEFAULT,
             silencedByDoNotDisturb = ranking != null && !ranking.matchesInterruptionFilter(),
+            onlyAlertOnce = flags and Notification.FLAG_ONLY_ALERT_ONCE != 0,
         )
     }
 

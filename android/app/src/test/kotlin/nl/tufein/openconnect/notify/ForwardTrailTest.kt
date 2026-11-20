@@ -71,4 +71,24 @@ class ForwardTrailTest {
         t.add("start")
         assertEquals(listOf(1, 11, 1, 2), t.flow.value.map { it.repeat })
     }
+
+    @Test
+    fun `the watch's questions that come back every half minute keep one line each, so the notifications stay`() {
+        val t = trail(capacity = 6)
+        t.add("com.whatsapp: announced to the watch")
+        repeat(40) {
+            clock = clock.plusSeconds(30)
+            t.add("watch asked over protobuf: calendar_events_service, calendar_events_request; answered: no calendar events")
+            if (it % 4 == 0) t.add("watch asked over protobuf: connect_iq_http_service, raw_resource_request; answered: no network")
+        }
+        t.add("com.whatsapp: announced to the watch")
+        val lines = t.flow.value
+        assertEquals(4, lines.size, lines.toString())
+        assertEquals("com.whatsapp: announced to the watch", lines.first().text, "twenty minutes of questions did not push it out")
+        assertEquals(40, lines.single { "calendar" in it.text }.repeat)
+        assertEquals(10, lines.single { "raw_resource" in it.text }.repeat)
+        val text = t.asText("header", ZoneId.of("Europe/Amsterdam"))
+        // the line stands where the question came last, and says since when it comes
+        assertTrue("15:20:00  watch asked over protobuf: calendar_events_service, calendar_events_request; answered: no calendar events (x40 since 15:00:30)" in text, text)
+    }
 }

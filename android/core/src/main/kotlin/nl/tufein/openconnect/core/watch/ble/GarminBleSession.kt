@@ -279,8 +279,10 @@ class GarminBleSession(
 
     private fun handle(message: GfdiMessage) {
         if (message.type == GfdiType.RESPONSE) {
-            log("watch answered ${answerText(message)}")
-        } else if (message.type != GfdiType.FILE_TRANSFER_DATA) {
+            // the watch confirming our protobuf answers is not worth a line each (every 30 s); onResponse logs a refusal
+            if (!isProtobufConfirmation(message)) log("watch answered ${answerText(message)}")
+        } else if (message.type != GfdiType.FILE_TRANSFER_DATA && message.type != GfdiType.PROTOBUF_REQUEST) {
+            // a protobuf question gets a line of its own that names it, below
             log("watch sent ${GfdiType.describe(message.type)}")
         }
         when (message.type) {
@@ -327,19 +329,36 @@ class GarminBleSession(
     }
 
     /**
-     * We do not speak protobuf (location, calendars, Connect IQ web requests and the like). A plain ACK made the watch wait
+     * We hardly speak protobuf (location, calendars, Connect IQ web requests and the like). A plain ACK made the watch wait
      * for an answer that never came and ask again a minute later; on a fenix 8 it stopped answering anything after the second
-     * round. So every chunk is answered as Gadgetbridge answers a request it does not handle: kept while more is coming,
-     * "discarded, unknown request" on the last one, and the log names the service (never the content).
+     * round. So a whole question this app can answer with "nothing" ([GarminProtobuf.replyTo]: the calendar, Connect IQ web
+     * requests) gets a plain ACK and then that answer, as Gadgetbridge does. Every other chunk is answered as Gadgetbridge
+     * answers a request it does not handle: kept while more is coming, "discarded, unknown request" on the last one. The log
+     * names the service, never the content.
      */
     private fun onProtobuf(message: GfdiMessage) {
         val chunk = GarminProtobuf.parse(message)
+        val reply = if (message.type == GfdiType.PROTOBUF_REQUEST && chunk.offset == 0 && chunk.last) GarminProtobuf.replyTo(chunk.data) else null
+        if (reply != null) {
+            log("${GarminProtobuf.LOG_PREFIX}${GarminProtobuf.describe(chunk.data)}; ${reply.said}")
+            send(GfdiMessage.response(message.type))
+            send(GarminProtobuf.response(chunk.requestId, reply.smart))
+            return
+        }
         if (chunk.offset == 0) {
             val what = GarminProtobuf.describe(chunk.data)
             val more = if (chunk.last) "" else " (in parts)"
-            log("watch asked over protobuf: $what$more; not handled, the watch is told so")
+            log("${GarminProtobuf.LOG_PREFIX}$what$more; not handled, the watch is told so")
         }
         send(GarminProtobuf.answer(message.type, chunk))
+    }
+
+    /** True for the watch's ACK to one of our protobuf answers. */
+    private fun isProtobufConfirmation(message: GfdiMessage): Boolean = try {
+        val r = message.reader()
+        r.short() == GfdiType.PROTOBUF_RESPONSE && r.byte() == GfdiStatus.ACK
+    } catch (e: GfdiFormatException) {
+        false
     }
 
     /** What a RESPONSE from the watch says, for the log: which message it answers and with what status. */

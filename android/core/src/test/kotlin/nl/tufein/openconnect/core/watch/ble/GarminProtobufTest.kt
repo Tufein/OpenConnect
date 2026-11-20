@@ -4,6 +4,8 @@ package nl.tufein.openconnect.core.watch.ble
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /** The watch's protobuf questions: answered the way Gadgetbridge answers what it does not handle, and named for the log. */
@@ -60,5 +62,58 @@ class GarminProtobufTest {
         val chunk = GarminProtobuf.parse(lying)
         assertEquals(2, chunk.data.size)
         assertFalse(chunk.last)
+    }
+
+    private fun hex(bytes: ByteArray) = bytes.joinToString(" ") { "%02x".format(it.toInt() and 0xFF) }
+
+    @Test
+    fun `the calendar question gets an empty calendar, as Gadgetbridge answers with calendar sync off`() {
+        // Smart { calendar_events_service (1) { calendar_events_request (1) { start_date (1) = 5 } } }
+        val reply = GarminProtobuf.replyTo(byteArrayOf(0x0a, 4, 0x0a, 2, 0x08, 5))
+        assertNotNull(reply)
+        // Smart { calendar_events_service (1) { calendar_events_response (2) { status (1) = OK (1) } } }
+        assertEquals("0a 04 12 02 08 01", hex(reply.smart))
+        assertEquals("answered: no calendar events", reply.said)
+    }
+
+    @Test
+    fun `a Connect IQ web question is told the network timed out, so the widget stops waiting`() {
+        // connect_iq_http_service (2) { raw_resource_request (5) { url (1) = "a" } }
+        val raw = GarminProtobuf.replyTo(byteArrayOf(0x12, 5, 0x2a, 3, 0x0a, 1, 0x61))
+        assertNotNull(raw)
+        // raw_resource_response (6) { status (1) = NETWORK_REQUEST_TIMED_OUT (200) }
+        assertEquals("12 05 32 03 08 c8 01", hex(raw.smart))
+        // connect_iq_http_service (2) { connect_iq_http_request (1) { url (1) = "a" } }
+        val web = GarminProtobuf.replyTo(byteArrayOf(0x12, 5, 0x0a, 3, 0x0a, 1, 0x61))
+        assertNotNull(web)
+        // connect_iq_http_response (2) { status (1) = NETWORK_REQUEST_TIMED_OUT (300) }
+        assertEquals("12 05 12 03 08 ac 02", hex(web.smart))
+        assertEquals("answered: no network (this app does not fetch web pages for Connect IQ)", web.said)
+    }
+
+    @Test
+    fun `everything else is not answered here`() {
+        assertNull(GarminProtobuf.replyTo(byteArrayOf(0x6a, 2, 0x1a, 0)), "core_service, get_location_request")
+        assertNull(GarminProtobuf.replyTo(byteArrayOf(0x0a, 2, 0x1a, 0)), "calendar_request, the newer kind, is not answered")
+        assertNull(GarminProtobuf.replyTo(byteArrayOf(0x12, 2, 0x1a, 0)), "a Connect IQ image request")
+        assertNull(GarminProtobuf.replyTo(byteArrayOf(8, 1)), "a service that is not a message")
+        assertNull(GarminProtobuf.replyTo(ByteArray(0)))
+        assertNull(GarminProtobuf.replyTo(byteArrayOf(0x0a)), "cut off")
+    }
+
+    @Test
+    fun `an answer is a protobuf response with the request's number, in one piece`() {
+        val smart = byteArrayOf(0x0a, 4, 0x12, 2, 0x08, 1)
+        val message = GarminProtobuf.response(77, smart)
+        assertEquals(GfdiType.PROTOBUF_RESPONSE, message.type)
+        val r = message.reader()
+        assertEquals(listOf(77, 0, 6, 6), listOf(r.short(), r.int(), r.int(), r.int()))
+        assertEquals(hex(smart), hex(r.rest()))
+    }
+
+    @Test
+    fun `the watch telling of a new file is named`() {
+        // file_access_service (43): tag 43<<3|2 = 346 = varint 0xda 0x02; item_added_notification (12): 0x62
+        assertEquals("file_access_service, item_added_notification", GarminProtobuf.describe(byteArrayOf(0xda.toByte(), 2, 2, 0x62, 0)))
     }
 }

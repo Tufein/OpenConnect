@@ -2,9 +2,11 @@
 package nl.tufein.openconnect.core.watch.ble
 
 /**
- * The watch's protobuf questions (GFDI 5043, Garmin's "Smart" message), as far as this app deals with them: it does not
- * answer any of them, but it must say so the way Gadgetbridge does, or the watch waits for an answer, asks again a minute
- * later, and (seen on a fenix 8) stops answering anything else after the second round.
+ * The watch's protobuf questions (GFDI 5043, Garmin's "Smart" message), as far as this app deals with them. Most it does
+ * not answer, but it must say so the way Gadgetbridge does, or the watch waits for an answer, asks again a minute later,
+ * and (seen on a fenix 8) stops answering anything else after the second round. A few it answers with "nothing", as
+ * Gadgetbridge does when it has nothing to give ([replyTo]): the calendar, which the watch otherwise asks for every 30
+ * seconds, and the web requests of Connect IQ widgets, which otherwise wait half a minute and give up.
  *
  * The names come from Gadgetbridge's `gdi_smart_proto.proto` and the service files next to it; only the first field of
  * the message is read, for the log. No content is ever logged.
@@ -49,6 +51,80 @@ object GarminProtobuf {
             byte(CHUNK_KEPT)
             byte(NO_ERROR)
         }
+    }
+
+    /** How every log line about a protobuf question starts; the log keeps one line per question that comes back. */
+    const val LOG_PREFIX = "watch asked over protobuf: "
+
+    /** An answer this app gives: the bytes of the Smart message to send back, and what it says, for the log. */
+    class Reply(val smart: ByteArray, val said: String)
+
+    private const val CALENDAR_SERVICE = 1
+    private const val CALENDAR_EVENTS_REQUEST = 1
+    private const val CALENDAR_EVENTS_RESPONSE = 2
+    private const val CALENDAR_OK = 1
+
+    private const val CONNECT_IQ_HTTP_SERVICE = 2
+    private const val CONNECT_IQ_HTTP_REQUEST = 1
+    private const val CONNECT_IQ_HTTP_RESPONSE = 2
+    private const val HTTP_TIMED_OUT = 300
+    private const val RAW_RESOURCE_REQUEST = 5
+    private const val RAW_RESOURCE_RESPONSE = 6
+    private const val RAW_TIMED_OUT = 200
+
+    private const val NO_NETWORK = "answered: no network (this app does not fetch web pages for Connect IQ)"
+
+    /**
+     * The answer to a whole question [message], or null when this app does not answer it (it is then told "unknown request").
+     *
+     * - calendar_events_request: "OK, no events", what Gadgetbridge sends with calendar sync off (gdi_calendar.proto).
+     *   Told "unknown request" instead, a fenix 8 asked again every 30 seconds.
+     * - raw_resource_request and connect_iq_http_request: "the network request timed out", what Gadgetbridge sends for an
+     *   address it cannot fetch (gdi_http.proto). The widget gives up at once instead of after half a minute.
+     */
+    fun replyTo(message: ByteArray): Reply? {
+        val reader = Varints(message)
+        val tag = reader.varint() ?: return null
+        if ((tag and 0x07L) != 2L) return null
+        reader.varint() ?: return null // the length of the service message
+        val inner = reader.varint() ?: return null
+        val service = (tag ushr 3).toInt()
+        val request = (inner ushr 3).toInt()
+        return when {
+            service == CALENDAR_SERVICE && request == CALENDAR_EVENTS_REQUEST ->
+                Reply(field(CALENDAR_SERVICE, field(CALENDAR_EVENTS_RESPONSE, number(1, CALENDAR_OK))), "answered: no calendar events")
+            service == CONNECT_IQ_HTTP_SERVICE && request == RAW_RESOURCE_REQUEST ->
+                Reply(field(CONNECT_IQ_HTTP_SERVICE, field(RAW_RESOURCE_RESPONSE, number(1, RAW_TIMED_OUT))), NO_NETWORK)
+            service == CONNECT_IQ_HTTP_SERVICE && request == CONNECT_IQ_HTTP_REQUEST ->
+                Reply(field(CONNECT_IQ_HTTP_SERVICE, field(CONNECT_IQ_HTTP_RESPONSE, number(1, HTTP_TIMED_OUT))), NO_NETWORK)
+            else -> null
+        }
+    }
+
+    /** The answer [smart] to request [requestId], in one piece (they are all far below Gadgetbridge's 375-byte chunks). */
+    fun response(requestId: Int, smart: ByteArray): GfdiMessage = GfdiMessage.build(GfdiType.PROTOBUF_RESPONSE) {
+        short(requestId)
+        int(0)
+        int(smart.size)
+        int(smart.size)
+        bytes(smart)
+    }
+
+    /** Field [number] holding the message [inner] (wire type 2). */
+    private fun field(number: Int, inner: ByteArray): ByteArray = varint((number.toLong() shl 3) or 2) + varint(inner.size.toLong()) + inner
+
+    /** Field [number] holding the whole number [value] (wire type 0). */
+    private fun number(number: Int, value: Int): ByteArray = varint(number.toLong() shl 3) + varint(value.toLong())
+
+    private fun varint(value: Long): ByteArray {
+        val out = ArrayList<Byte>()
+        var v = value
+        while (v >= 0x80) {
+            out += ((v and 0x7F) or 0x80).toByte()
+            v = v ushr 7
+        }
+        out += v.toByte()
+        return out.toByteArray()
     }
 
     /** What a message is about, for the log: `core_service, get_location_request`, or field numbers for unknown ones. */
@@ -112,6 +188,11 @@ object GarminProtobuf {
         ),
         49 to mapOf(
             1 to "media_request", 3 to "blocked_app_hash_notification", 4 to "app_status_request",
+        ),
+        43 to mapOf(
+            1 to "pull_item_request", 3 to "push_item_request", 5 to "transfer_status_request", 9 to "item_list_request",
+            12 to "item_added_notification", 17 to "item_updated_notification", 20 to "resource_update_notification",
+            22 to "sync_button_notification",
         ),
     )
 }
