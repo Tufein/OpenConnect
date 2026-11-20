@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.0.4: één grafiek tegelijk, in tabs
+
+Op Health stonden tien grafieken onder elkaar; dat was één lange muur. De scores blijven bovenaan staan, daaronder kies je met tabs welke grafiek je ziet. Tik je op een score, dan opent de bijbehorende grafiek. De ingeklapte secties van Home en Insights blijven zoals ze zijn.
+
+[Release notes](docs/releases/v1.0.4.md)
+
 ## v1.0.3: alleen scores open, grafieken op aanvraag
 
 De cijfers blijven open, de grafieken niet. De vier signaaltegels op Home tonen alleen hun score; de lijnen van zeven dagen zitten in een ingeklapte sectie. De maandgrafiek en de recente activiteiten deden dat al, Insights houdt zes dagelijkse tabs en zet de rest achter *Meer*. Widget en startscherm volgen nu het gekozen thema.

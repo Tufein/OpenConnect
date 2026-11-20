@@ -7,10 +7,10 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.0.3.** On Home the score tiles stay open while the 7-day lines, the 30-day chart and the recent-activity
-> list fold away; Insights keeps six everyday tabs and puts the other six behind *More*. The sporty Graphite look from
-> v1.0.2 remains, the widget and start-up background follow the chosen palette, and the notification fixes from v1.0.1
-> are included. [Release notes](docs/releases/v1.0.3.md).
+> **Status: v1.0.4.** Health now shows one chart at a time in tabs under the scores, instead of a long scroll; tapping a
+> score opens its chart. Home keeps its folded trends, Insights its six everyday tabs with the rest behind *More*, the
+> sporty Graphite look from v1.0.2, the themed widget from v1.0.3 and the notification fixes from v1.0.1.
+> [Release notes](docs/releases/v1.0.4.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

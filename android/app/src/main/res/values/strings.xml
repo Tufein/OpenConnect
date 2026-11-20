@@ -413,6 +413,8 @@
     <string name="score_sleep">Sleep score</string>
     <string name="score_readiness_30">Readiness, 30 days</string>
     <string name="score_sleep_30">Sleep score, 30 days</string>
+    <string name="health_charts">Charts</string>
+    <string name="health_chart">%1$s chart</string>
     <string name="scores_note">Readiness is OpenConnect\'s own estimate. Sleep score, Body Battery and stress are the watch\'s numbers. No reading yet shows a dash.</string>
     <string name="insight_explain_readiness">OpenConnect\'s own 0 to 100 estimate from sleep, Body Battery, HRV, resting heart rate and stress, against your own normal. 70 or more means ready for a hard day, under 40 means take it easy.</string>
     <string name="insight_explain_sleep_score">The sleep score your watch gives each night, 0 to 100: 80 or more is good, 60 to 79 fair, below 60 poor. It weighs duration, deep and REM sleep and restlessness.</string>

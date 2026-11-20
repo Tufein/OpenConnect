@@ -239,6 +239,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.0.1 | De meldingenreparaties van rc.1 als volledige release, plus thema: een live voorbeeld bovenin Uiterlijk en een keuze van stijl en thema bij de eerste start (op Android 12+ toen nog wallpaper als standaard) |
 | v1.0.2 | Sportieve pas: Graphite (koel neutraal, één blauw accent) en Track (oranje) als nieuwe thema's, Graphite als standaard, hoeken 8–20 dp, vlakke panelen met haarlijn, rechte knoppen en een platte tabbalk, compactere typografie; op Home klappen de maandgrafiek en de activiteitenlijst in met hun waarde in de kop |
 | v1.0.3 | Alleen scores open: de vier signaaltegels tonen geen lijntjes meer, die zitten met de maandgrafiek en de activiteiten in ingeklapte secties; Insights houdt zes dagelijkse tabs en zet de rest achter *Meer*; widget en startachtergrond volgen het palet |
+| v1.0.4 | Op Health één grafiek tegelijk in tabs onder de scores (alleen grafieken met metingen); tikken op een score opent de bijbehorende grafiek, en een "open Health"-tegel komt op de gevraagde grafiek uit |
 
 ## 9. Hoe releases werken
 

@@ -413,6 +413,8 @@
     <string name="score_sleep">Slaapscore</string>
     <string name="score_readiness_30">Gereedheid, 30 dagen</string>
     <string name="score_sleep_30">Slaapscore, 30 dagen</string>
+    <string name="health_charts">Grafieken</string>
+    <string name="health_chart">%1$s-grafiek</string>
     <string name="scores_note">Gereedheid is de eigen schatting van OpenConnect. Slaapscore, Body Battery en stress zijn de cijfers van het horloge. Nog geen meting? Dan staat er een streepje.</string>
     <string name="insight_explain_readiness">De eigen schatting van OpenConnect van 0 tot 100, uit slaap, Body Battery, HRV, rusthartslag en stress, ten opzichte van jouw eigen normaal. 70 of meer is klaar voor een zware dag, onder 40 neem je het rustig aan.</string>
     <string name="insight_explain_sleep_score">De slaapscore die je horloge elke nacht geeft, van 0 tot 100: 80 of meer is goed, 60 tot 79 redelijk, onder 60 slecht. Hij weegt duur, diepe en REM-slaap en onrust mee.</string>
