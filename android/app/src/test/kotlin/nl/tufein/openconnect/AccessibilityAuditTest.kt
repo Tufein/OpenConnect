@@ -193,6 +193,7 @@ class AccessibilityAuditTest : AppTestBase() {
         rule.waitUntil(45_000) { !hasText("Load demo data", substring = false) }
         tab("Health").performClick()
         rule.waitForIdle()
+        clickChip("Steps chart")
         scrollToText("Steps counted by your watch each day", substring = true)
         val charts = rule.onAllNodes(androidx.compose.ui.test.hasContentDescription(", lowest ", substring = true)).fetchSemanticsNodes()
         kotlin.test.assertTrue(charts.isNotEmpty(), "the charts on Health say their numbers in words")

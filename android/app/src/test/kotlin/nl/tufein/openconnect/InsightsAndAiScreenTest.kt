@@ -196,7 +196,7 @@ class InsightsAndAiScreenTest : AppTestBase() {
         shot("28-insights-week")
         tab("Health").performClick()
         waitForText("Scores")
-        scrollToText("Steps")
+        clickChip("Steps chart")
         shot("29-health")
     }
 

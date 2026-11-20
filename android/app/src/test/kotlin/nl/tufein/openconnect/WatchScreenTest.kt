@@ -236,14 +236,15 @@ class WatchScreenTest : AppTestBase() {
         }
         waitForText("Health")
         tab("Health").performClick()
+        clickChip("Steps chart")
         waitForText("Steps counted by your watch each day", substring = true)
-        scrollToText("HRV (last night)")
+        clickChip("HRV (last night) chart")
         scrollToText("Heart rate variability overnight", substring = true)
         assertTrue(hasText("Heart rate variability overnight", substring = true))
         shot("15-health-watch-values")
-        scrollToText("Blood oxygen (SpO2)")
+        clickChip("Blood oxygen (SpO2) chart")
         assertTrue(hasText("Blood oxygen (SpO2)", substring = false))
-        scrollToText("Respiration")
+        clickChip("Respiration chart")
         assertTrue(hasText("Respiration", substring = false))
     }
 }
