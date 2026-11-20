@@ -204,8 +204,9 @@ fun OpenConnectRoot(
     onAppLock: (Boolean) -> Unit = {},
 ) {
     val sources by vm.sources.collectAsState()
+    val look by vm.look.collectAsState()
     if (!sources.onboarded) {
-        OnboardingScreen(sources, vm::setSources)
+        OnboardingScreen(sources, look.style, look.palette, vm::setStyle, vm::setLook, vm::setSources)
         return
     }
     val nav = rememberNavController()
@@ -248,7 +249,6 @@ fun OpenConnectRoot(
     val hume by vm.hume.collectAsState()
     val days by vm.days.collectAsState()
     val theme by vm.theme.collectAsState()
-    val look by vm.look.collectAsState()
     val appIcon by vm.appIcon.collectAsState()
     val goals by vm.goals.collectAsState()
     val now by vm.now.collectAsState()

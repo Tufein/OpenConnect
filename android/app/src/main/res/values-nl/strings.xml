@@ -281,6 +281,7 @@
     <string name="sort_distance">Langste afstand</string>
     <string name="sort_duration">Langste tijd</string>
     <string name="settings_appearance">Uiterlijk</string>
+    <string name="settings_look_preview">Voorbeeld</string>
     <string name="theme_system">Volg telefoon</string>
     <string name="theme_dark">Donker</string>
     <string name="theme_light">Licht</string>
@@ -617,6 +618,8 @@
     <string name="onboarding_title">Welkom bij OpenConnect</string>
     <string name="onboarding_body">Welke toestellen gebruik je? De app toont alleen wat bij jou past. Je gegevens blijven op deze telefoon.</string>
     <string name="onboarding_devices">Je toestellen</string>
+    <string name="onboarding_look">Kies je look</string>
+    <string name="onboarding_look_body">De moderne stijl is de standaard. Retro geeft de pixel-consolelook terug en Deftig is formeler; je kunt dit later wijzigen bij Instellingen, Uiterlijk.</string>
     <string name="onboarding_later">Je kunt dit later wijzigen in Instellingen, onder Je toestellen.</string>
     <string name="onboarding_none">Geen toestel? Ook goed: importeer FIT-, GPX- of TCX-bestanden, of kijk rond met demodata. Je kunt later een toestel toevoegen in Instellingen.</string>
     <string name="onboarding_start">Starten</string>

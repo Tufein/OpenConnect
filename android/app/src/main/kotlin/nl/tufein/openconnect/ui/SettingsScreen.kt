@@ -157,6 +157,8 @@ fun SettingsScreen(
                 onToggle = { lookOpen = !lookOpen },
                 modifier = Modifier.testTag("appearance-fold"),
             ) {
+                Text(stringResource(R.string.settings_look_preview), style = MaterialTheme.typography.titleMedium)
+                LookPreview()
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     for ((mode, label) in listOf("system" to R.string.theme_system, "dark" to R.string.theme_dark, "light" to R.string.theme_light)) {
                         PixelChip(selected = ui.theme == mode, onClick = { onTheme(mode) }, label = { Text(stringResource(label)) })

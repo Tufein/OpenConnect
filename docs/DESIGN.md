@@ -1,9 +1,10 @@
 # The OpenConnect look
 
 From v1.0.0 a fresh install opens in a **modern** style: readable Plex Sans type, generous rounded cards that sit softly
-on the background, pill-shaped controls and a floating bottom bar. The original **Handheld** console look (v0.31.0) is
-still here as the *Retro* style, and all colour themes work in every style, so nobody loses a look they chose in an older
-version. Everything below lives in `android/app/src/main/kotlin/nl/tufein/openconnect/ui/`.
+on the background, pill-shaped controls and a floating bottom bar. On Android 12 and newer it also starts on the phone's
+**wallpaper colours**; older phones start on Handheld. The original **Handheld** console look (v0.31.0) is still here as
+the *Retro* style, and all colour themes work in every style, so nobody loses a look they chose in an older version.
+Everything below lives in `android/app/src/main/kotlin/nl/tufein/openconnect/ui/`.
 
 ## The rules
 
@@ -54,7 +55,9 @@ first icon is hand-made). The launcher may take a moment to show the new icon, a
 
 Since v0.43.0 the whole look is one section of Settings (*Appearance*) that is folded away until its header is tapped
 (`FoldSection` in `Components.kt`): dark or light, style, letters (Retro only), colour themes and the launcher icon. The
-header shows what is chosen now (for example "Handheld · Sleek").
+header shows what is chosen now (for example "Wallpaper · Sleek"). At the top sits a live **preview** (`LookPreview`):
+a small dashboard drawn in the chosen theme, so a colour or style can be judged before it is kept instead of from two
+little squares. The first start shows the same preview with a choice of style and theme (`OnboardingScreen`).
 
 The watch faces (Clean, Dashboard, Retro, see [WATCH_FACES.md](WATCH_FACES.md)) are not part of the app since v0.43.0: they are Connect IQ code
 for the watch and keep their own three designs.

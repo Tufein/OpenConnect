@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
+import nl.tufein.openconnect.data.defaultPaletteKey
 import nl.tufein.openconnect.ui.ModernShapes
 import nl.tufein.openconnect.ui.Style
 import org.junit.Assert.assertEquals
@@ -17,6 +18,14 @@ class ModernLookTest {
         assertEquals(Style.CLEAN, Style.of(null))
         assertEquals(Style.CLEAN, Style.of("unknown"))
         assertEquals("clean", Style.CLEAN.key)
+    }
+
+    @Test
+    fun `a fresh install follows the wallpaper on android 12 and newer`() {
+        assertEquals("handheld", defaultPaletteKey(28))
+        assertEquals("handheld", defaultPaletteKey(30))
+        assertEquals("dynamic", defaultPaletteKey(31))
+        assertEquals("dynamic", defaultPaletteKey(34))
     }
 
     @Test

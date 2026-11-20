@@ -435,7 +435,12 @@ fun OpenConnectTheme(mode: String = "system", palette: String = "handheld", lett
     val context = androidx.compose.ui.platform.LocalContext.current
     val colors = when {
         chosen == Palette.DYNAMIC && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S ->
-            if (dark) androidx.compose.material3.dynamicDarkColorScheme(context) else androidx.compose.material3.dynamicLightColorScheme(context)
+            // A phone that cannot give its wallpaper colours (an odd build, a test runner) falls back to Handheld rather
+            // than taking the screen down.
+            runCatching {
+                if (dark) androidx.compose.material3.dynamicDarkColorScheme(context)
+                else androidx.compose.material3.dynamicLightColorScheme(context)
+            }.getOrElse { colorSchemeFor(Palette.HANDHELD, dark) }
         else -> colorSchemeFor(chosen, dark)
     }
     CompositionLocalProvider(LocalMetricColors provides metricsFor(chosen, colors, dark), LocalLetters provides chosenLetters, LocalStyle provides chosenStyle) {

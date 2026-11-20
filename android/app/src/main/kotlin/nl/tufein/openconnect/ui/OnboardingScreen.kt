@@ -1,7 +1,10 @@
 package nl.tufein.openconnect.ui
 
+import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,8 +30,16 @@ import nl.tufein.openconnect.core.DataSourceKind
  * The first start (v0.17.0): which devices do you use? Only what is chosen shows up in the app, so someone without a
  * Garmin or without an Oura Ring is never bothered by it. It can be changed later under Settings, "Your devices".
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun OnboardingScreen(initial: SourcesUi, onDone: (garmin: Boolean, oura: Boolean, whoop: Boolean, hume: Boolean) -> Unit) {
+fun OnboardingScreen(
+    initial: SourcesUi,
+    style: String,
+    palette: String,
+    onStyle: (String) -> Unit,
+    onPalette: (String) -> Unit,
+    onDone: (garmin: Boolean, oura: Boolean, whoop: Boolean, hume: Boolean) -> Unit,
+) {
     var garmin by rememberSaveable { mutableStateOf(initial.garmin) }
     var oura by rememberSaveable { mutableStateOf(initial.oura) }
     var whoop by rememberSaveable { mutableStateOf(initial.whoop) }
@@ -49,6 +60,24 @@ fun OnboardingScreen(initial: SourcesUi, onDone: (garmin: Boolean, oura: Boolean
                 DeviceSwitch(stringResource(R.string.device_hume), stringResource(R.string.device_hume_body), hume, deviceStatus(DataSourceKind.HUME)) { hume = it }
             }
             Text(stringResource(R.string.onboarding_experimental_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            SectionTitle(stringResource(R.string.onboarding_look))
+            Text(stringResource(R.string.onboarding_look_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                for ((key, label) in listOf("clean" to R.string.style_clean, "retro" to R.string.style_retro, "classic" to R.string.style_classic)) {
+                    PixelChip(selected = style == key, onClick = { onStyle(key) }, label = { Text(stringResource(label)) })
+                }
+            }
+            FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val palettes = buildList {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) add("dynamic" to R.string.palette_dynamic)
+                    add("handheld" to R.string.palette_handheld)
+                    add("contrast" to R.string.palette_contrast)
+                }
+                for ((key, label) in palettes) {
+                    PixelChip(selected = palette == key, onClick = { onPalette(key) }, label = { Text(stringResource(label)) })
+                }
+            }
+            LookPreview()
             SurfaceCard {
                 Text(stringResource(R.string.onboarding_privacy_title), style = MaterialTheme.typography.titleMedium)
                 Text(stringResource(R.string.onboarding_privacy_body), style = MaterialTheme.typography.bodyMedium)

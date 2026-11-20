@@ -88,4 +88,17 @@ class LookTest : AppTestBase() {
         assertEquals(false, hasText("Pick a design", substring = false))
         shot("61-onboarding-handheld")
     }
+
+    @Test
+    fun theFirstStartLetsYouPickALookAndKeepsIt() {
+        launchFresh(onboarded = false) { app -> app.containerOverride = container(app) }
+        waitForText("Choose your look")
+        // Android 13 and newer: the wallpaper colours are the fresh-install theme. Robolectric runs this at API 34.
+        assertEquals("dynamic", settings().palette)
+        assertEquals("clean", settings().style)
+        clickText("Retro")
+        rule.waitUntil(5_000) { settings().style == "retro" }
+        scenario.onActivity { assertEquals("retro", it.viewModel.look.value.style) }
+        shot("61b-onboarding-look")
+    }
 }

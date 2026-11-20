@@ -281,6 +281,7 @@
     <string name="sort_distance">Longest distance</string>
     <string name="sort_duration">Longest time</string>
     <string name="settings_appearance">Appearance</string>
+    <string name="settings_look_preview">Preview</string>
     <string name="theme_system">Follow phone</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_light">Light</string>
@@ -617,6 +618,8 @@
     <string name="onboarding_title">Welcome to OpenConnect</string>
     <string name="onboarding_body">Which devices do you use? The app only shows what fits you. Your data stays on this phone.</string>
     <string name="onboarding_devices">Your devices</string>
+    <string name="onboarding_look">Choose your look</string>
+    <string name="onboarding_look_body">The modern style is the default. Retro brings back the pixel console look and Classic is more formal; you can change this later under Settings, Appearance.</string>
     <string name="onboarding_later">You can change this later in Settings, under Your devices.</string>
     <string name="onboarding_none">No device? That works too: import FIT, GPX or TCX files, or look around with demo data. You can add a device later in Settings.</string>
     <string name="onboarding_start">Start</string>
