@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.0.3: alleen scores open, grafieken op aanvraag
+
+De cijfers blijven open, de grafieken niet. De vier signaaltegels op Home tonen alleen hun score; de lijnen van zeven dagen zitten in een ingeklapte sectie. De maandgrafiek en de recente activiteiten deden dat al, Insights houdt zes dagelijkse tabs en zet de rest achter *Meer*. Widget en startscherm volgen nu het gekozen thema.
+
+[Release notes](docs/releases/v1.0.3.md)
+
 ## v1.0.2: sportiever, rustiger en minder vol
 
 Een sportieve pas over het hele uiterlijk: koel **Graphite** met één blauw accent, strakke panelen met een haarlijn, compactere letters en rechte knoppen in plaats van pillen. Op Home blijven de cijfers van vandaag staan; de maandgrafiek en de activiteitenlijst klappen weg. Alles blijft kiesbaar, Retro inclusief.

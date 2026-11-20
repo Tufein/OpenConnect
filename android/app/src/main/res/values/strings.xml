@@ -236,6 +236,8 @@
     <string name="garmin_terms">Garmin allows the personal key for your own data in tools you run yourself. Do not share it and do not put it in other people\'s apps.</string>
     <string name="tab_insights">Insights</string>
     <string name="insights_week">Week</string>
+    <string name="insights_more">More</string>
+    <string name="trends_7_days">7-day trends</string>
     <string name="insights_trophies">Trophies</string>
     <string name="insights_coach">Coach</string>
     <string name="greeting_morning">Good morning</string>

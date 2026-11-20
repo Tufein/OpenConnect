@@ -59,6 +59,7 @@ class JournalScreenTest : AppTestBase() {
 
         tab("Insights").performClick()
         waitForText("Week of", substring = true)
+        clickText("More")
         rule.onNodeWithText("Journal").performClick()
         waitForText("What the journal says")
         waitForText("Days with something marked: 1")
@@ -81,6 +82,7 @@ class JournalScreenTest : AppTestBase() {
         waitForText("Readiness")
         tab("Insights").performClick()
         waitForText("Week of", substring = true)
+        clickText("More")
         rule.onNodeWithText("Journal").performClick()
         waitForText("What the journal says")
         waitForText("Alcohol")

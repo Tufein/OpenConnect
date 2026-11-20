@@ -238,6 +238,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.0.1-rc.1 | Niet elke melding trilde op de fenix 8: nieuwe woorden in een melding die het horloge al heeft gaan als nieuwe melding (nieuw nummer, zoals Gadgetbridge) in plaats van een stille wijziging, meldingen tijdens het opnieuw verbinden worden 2 minuten bewaard, de agendavraag krijgt "geen afspraken" en Connect IQ-webvragen "geen netwerk", het logboek vat herhaalde vragen samen |
 | v1.0.1 | De meldingenreparaties van rc.1 als volledige release, plus thema: een live voorbeeld bovenin Uiterlijk en een keuze van stijl en thema bij de eerste start (op Android 12+ toen nog wallpaper als standaard) |
 | v1.0.2 | Sportieve pas: Graphite (koel neutraal, één blauw accent) en Track (oranje) als nieuwe thema's, Graphite als standaard, hoeken 8–20 dp, vlakke panelen met haarlijn, rechte knoppen en een platte tabbalk, compactere typografie; op Home klappen de maandgrafiek en de activiteitenlijst in met hun waarde in de kop |
+| v1.0.3 | Alleen scores open: de vier signaaltegels tonen geen lijntjes meer, die zitten met de maandgrafiek en de activiteiten in ingeklapte secties; Insights houdt zes dagelijkse tabs en zet de rest achter *Meer*; widget en startachtergrond volgen het palet |
 
 ## 9. Hoe releases werken
 

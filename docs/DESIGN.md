@@ -19,7 +19,7 @@ older version. Everything below lives in `android/app/src/main/kotlin/nl/tufein/
 | **Controls** | `PrimaryButton`, `SecondaryButton` and `QuietButton` are compact rectangles with a 10 dp radius and a hairline outline; a chosen `PixelChip` is filled with the accent colour. `PixelSwitch` has a round knob, `PixelProgress` still uses 24 blocks for progress. | A pressed button sinks onto its hard shadow and the chosen chip is filled with ink, like a highlighted menu entry. |
 | **Charts** | `SegmentBar` draws one rounded bar and `RingGauge` one smooth arc with rounded ends. Date axes and chart content descriptions are unchanged. | Block bars, a square-capped line and a dial of 40 ticks. |
 | **Tab bar** | A flat strip with a hairline above it and a short accent line under the open tab (`ModernBar` in `Navigation.kt`); every tab is at least 56 dp high. | A flat strip under an ink line, the open tab a block filled with ink. |
-| **Hierarchy** | The day stays open; the month chart and the recent-activity list are folded away with their headline value in the header (`FoldSection`). Folds are for secondary information only. | The same hierarchy. |
+| **Hierarchy** | Score tiles show numbers only; the 7-day lines sit in a folded *Trends* section, and the month chart and recent activities fold away with their headline value in the header (`FoldSection`). Insights keeps six everyday tabs and puts the other six behind *More*. Folds are for secondary information only. | The same structure, with the console look. |
 
 No gradients and no blur are used in either style; emphasis comes from colour, a tint or a shadow. A `tint` washes a
 little of a signal colour into a panel.
@@ -54,6 +54,11 @@ switched on at a time; `AppIcons.select` turns the new one on before the old one
 is on from the system, so it also survives clearing the app's data. The picture of each icon is made from the same pixel
 grids as the app by `android/tools/launcher_icons.py` (the colours in that script and in `AppIcon.kt` must match; the
 first icon is hand-made). The launcher may take a moment to show the new icon, and on some phones the app closes once.
+
+The home-screen widget and the short start-up background follow the chosen palette too. `HomeWidgetViews` paints its
+`RemoteViews` from `colorSchemeFor` (it cannot read the Compose theme), and `HomeWidget.refresh` is called when a palette,
+style or dark mode is picked. The window background in `values/colors.xml` and `values-night/colors.xml` uses the two
+Graphite background colours so a start-up in another theme does not flash cream.
 
 Since v0.43.0 the whole look is one section of Settings (*Appearance*) that is folded away until its header is tapped
 (`FoldSection` in `Components.kt`): dark or light, style, letters (Retro only), colour themes and the launcher icon. The

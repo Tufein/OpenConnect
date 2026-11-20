@@ -256,7 +256,8 @@ fun StatTile(label: String, value: String, modifier: Modifier = Modifier, unit: 
     }
 }
 
-/** A signal's tile: its colour, the latest value, and the last days as a small line. */
+/** A signal's tile: its colour, the latest value, and optionally the last days as a small line. On Home only the score
+ * is shown; the lines live in the folded trends section. */
 @Composable
 fun MetricTile(
     label: String,
@@ -266,6 +267,7 @@ fun MetricTile(
     unit: String? = null,
     series: List<Double?> = emptyList(),
     onClick: (() -> Unit)? = null,
+    showSeries: Boolean = true,
 ) {
     Panel(modifier.heightIn(min = 48.dp).tappable(onClick), tint = color, padding = 14.dp, spacing = 2.dp) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -285,7 +287,7 @@ fun MetricTile(
                 )
             }
         }
-        Sparkline(series, color, Modifier.fillMaxWidth().height(26.dp))
+        if (showSeries) Sparkline(series, color, Modifier.fillMaxWidth().height(26.dp))
     }
 }
 

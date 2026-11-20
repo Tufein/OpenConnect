@@ -94,6 +94,7 @@ fun HomeScreen(
     // The day itself stays open; the month chart and the activity list are one tap away, which keeps the first screen calm.
     var showMonth by rememberSaveable { mutableStateOf(false) }
     var showRecent by rememberSaveable { mutableStateOf(false) }
+    var showTrends by rememberSaveable { mutableStateOf(false) }
     // Pulling down syncs the Garmin account, like in Garmin Connect; without one there is nothing to fetch.
     PullToRefreshBox(
         isRefreshing = useGarmin && garmin.sync is GarminSyncUi.Running,
@@ -161,10 +162,10 @@ fun HomeScreen(
             val last7 = overview.trend.takeLast(7)
             // The four signals as tiles: today's value and a line of the last seven days.
             val signals = listOf<@Composable (Modifier) -> Unit>(
-                { MetricTile(stringResource(R.string.resting_hr), today?.restingHr?.takeIf { it > 0 }?.toString() ?: "–", metrics.heart, it, "bpm", last7.map { r -> r.restingHr?.toDouble() }, onClick = { onOpenHealth(ChartMetric.RESTING_HR) }) },
-                { MetricTile(stringResource(R.string.body_battery), today?.bodyBatteryHigh?.toString() ?: "–", metrics.battery, it, unit = today?.bodyBatteryHigh?.let { stringResource(R.string.unit_highest_of_day) }, series = last7.map { r -> r.bodyBatteryHigh?.toDouble() }, onClick = { onOpenHealth(ChartMetric.BODY_BATTERY) }) },
-                { MetricTile(stringResource(R.string.stress), today?.avgStress?.toString() ?: "–", metrics.stress, it, series = last7.map { r -> r.avgStress?.toDouble() }, onClick = { onOpenHealth(ChartMetric.STRESS) }) },
-                { MetricTile(stringResource(R.string.sleep), state.sleep?.takeIf { it.durationS > 0 }?.let { s -> Fmt.hours(s.durationS) } ?: "–", metrics.sleep, it, "h", last7.map { r -> r.sleepHours }, onClick = { onOpenHealth(ChartMetric.SLEEP) }) },
+                { MetricTile(stringResource(R.string.resting_hr), today?.restingHr?.takeIf { it > 0 }?.toString() ?: "–", metrics.heart, it, "bpm", last7.map { r -> r.restingHr?.toDouble() }, onClick = { onOpenHealth(ChartMetric.RESTING_HR) }, showSeries = false) },
+                { MetricTile(stringResource(R.string.body_battery), today?.bodyBatteryHigh?.toString() ?: "–", metrics.battery, it, unit = today?.bodyBatteryHigh?.let { stringResource(R.string.unit_highest_of_day) }, series = last7.map { r -> r.bodyBatteryHigh?.toDouble() }, onClick = { onOpenHealth(ChartMetric.BODY_BATTERY) }, showSeries = false) },
+                { MetricTile(stringResource(R.string.stress), today?.avgStress?.toString() ?: "–", metrics.stress, it, series = last7.map { r -> r.avgStress?.toDouble() }, onClick = { onOpenHealth(ChartMetric.STRESS) }, showSeries = false) },
+                { MetricTile(stringResource(R.string.sleep), state.sleep?.takeIf { it.durationS > 0 }?.let { s -> Fmt.hours(s.durationS) } ?: "–", metrics.sleep, it, "h", last7.map { r -> r.sleepHours }, onClick = { onOpenHealth(ChartMetric.SLEEP) }, showSeries = false) },
             )
             fun signalGrid() {
                 item { TileRow(signals[0], signals[1]) }
@@ -178,6 +179,25 @@ fun HomeScreen(
             state.warning?.let { warning -> item { WarningCard(warning) } }
             state.restingHrTrend?.let { t -> item { RestingHrTrendCard(t) } }
             signalGrid()
+            item {
+                val trendRows = listOf(
+                    stringResource(R.string.resting_hr) to (last7.map { r -> r.restingHr?.toDouble() } to metrics.heart),
+                    stringResource(R.string.body_battery) to (last7.map { r -> r.bodyBatteryHigh?.toDouble() } to metrics.battery),
+                    stringResource(R.string.stress) to (last7.map { r -> r.avgStress?.toDouble() } to metrics.stress),
+                    stringResource(R.string.sleep) to (last7.map { r -> r.sleepHours } to metrics.sleep),
+                )
+                FoldSection(
+                    title = stringResource(R.string.trends_7_days),
+                    summary = "",
+                    open = showTrends,
+                    onToggle = { showTrends = !showTrends },
+                ) {
+                    for ((label, row) in trendRows) {
+                        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Sparkline(row.first, row.second, Modifier.fillMaxWidth().height(40.dp))
+                    }
+                }
+            }
             stepsCard()
             state.stepGoalWeek?.let { w -> item { StepGoalWeekCard(w) } }
             goalsAndLoad()

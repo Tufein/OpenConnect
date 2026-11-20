@@ -35,6 +35,7 @@ class GearScreenTest : AppTestBase() {
         rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
         tab("Insights").performClick()
         waitForText("Week of", substring = true)
+        clickText("More")
         rule.onNodeWithText("Shoes").performClick()
         waitForText("Your shoes")
     }

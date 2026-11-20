@@ -26,6 +26,7 @@ class ZonesScreenTest : AppTestBase() {
         rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
         tab("Insights").performClick()
         waitForText("Week of", substring = true)
+        clickText("More")
         rule.onNodeWithText("Zones").performClick()
         waitForText("Maximum heart rate")
     }

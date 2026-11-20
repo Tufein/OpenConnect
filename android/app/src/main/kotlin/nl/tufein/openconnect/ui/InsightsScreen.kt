@@ -15,6 +15,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -88,10 +92,22 @@ fun InsightsScreen(
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
         Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(stringResource(R.string.tab_insights), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
-            // Five chips do not fit on one line of a narrow phone, so they wrap; a scrolling row would also hide them from lists' scroll lookups.
+            // The daily reports stay one tap away; the planning and deep-dive reports sit behind "More" so the screen
+            // does not open with three rows of chips. A tab that is already open keeps its section visible.
+            val primary = listOf(InsightsTab.Week, InsightsTab.Day, InsightsTab.Trophies, InsightsTab.Coach, InsightsTab.Form, InsightsTab.Score)
+            val secondary = listOf(InsightsTab.Plan, InsightsTab.Zones, InsightsTab.Shoes, InsightsTab.Calendar, InsightsTab.Journal, InsightsTab.HeatMap)
+            var moreOpen by rememberSaveable(tab) { mutableStateOf(tab in secondary) }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                for (entry in InsightsTab.entries) {
+                for (entry in primary) {
                     PixelChip(selected = tab == entry, onClick = { onTab(entry) }, label = { Text(stringResource(entry.label)) })
+                }
+                PixelChip(selected = moreOpen, onClick = { moreOpen = !moreOpen }, label = { Text(stringResource(R.string.insights_more)) })
+            }
+            if (moreOpen) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    for (entry in secondary) {
+                        PixelChip(selected = tab == entry, onClick = { onTab(entry) }, label = { Text(stringResource(entry.label)) })
+                    }
                 }
             }
         }

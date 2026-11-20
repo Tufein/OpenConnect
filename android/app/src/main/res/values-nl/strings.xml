@@ -236,6 +236,8 @@
     <string name="garmin_terms">Garmin staat de persoonlijke key toe voor je eigen gegevens in hulpmiddelen die je zelf draait. Deel hem niet en zet hem niet in apps van anderen.</string>
     <string name="tab_insights">Inzichten</string>
     <string name="insights_week">Week</string>
+    <string name="insights_more">Meer</string>
+    <string name="trends_7_days">Trends van 7 dagen</string>
     <string name="insights_trophies">Trofeeën</string>
     <string name="insights_coach">Coach</string>
     <string name="greeting_morning">Goedemorgen</string>

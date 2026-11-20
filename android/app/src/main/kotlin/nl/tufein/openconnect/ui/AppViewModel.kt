@@ -331,6 +331,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun setLook(palette: String) {
         container.settings.palette = Palette.of(palette).key
         _look.value = lookNow()
+        redrawWidget()
     }
 
     fun setLetters(letters: String) {
@@ -341,6 +342,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun setStyle(style: String) {
         container.settings.style = Style.of(style).key
         _look.value = lookNow()
+        redrawWidget()
+    }
+
+    /** The widget has no Compose theme; repaint it with the new palette as soon as one is picked. */
+    private fun redrawWidget() {
+        nl.tufein.openconnect.widget.HomeWidget.refresh(getApplication()) { container.widgetSummary(LocalDate.now()) }
     }
 
     private val _appIcon = MutableStateFlow(AppIcons.current(application))
@@ -529,6 +536,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun setTheme(mode: String) {
         container.settings.themeMode = mode
         _theme.value = container.settings.themeMode
+        redrawWidget()
     }
 
     // ---------------------------------------------------------------------------------- watch

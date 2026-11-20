@@ -6,7 +6,12 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.widget.RemoteViews
+import androidx.compose.material3.ColorScheme
+import androidx.compose.ui.graphics.toArgb
+import nl.tufein.openconnect.ui.Palette
+import nl.tufein.openconnect.ui.colorSchemeFor
 import nl.tufein.openconnect.MainActivity
 import nl.tufein.openconnect.OpenConnectApp
 import nl.tufein.openconnect.R
@@ -34,8 +39,25 @@ class HomeWidget : AppWidgetProvider() {
 }
 
 object HomeWidgetViews {
+    /** The widget is a RemoteViews, so it cannot read the Compose theme: paint it from the saved palette instead. */
+    private fun schemeFor(context: Context): ColorScheme {
+        val settings = (context.applicationContext as? OpenConnectApp)?.container?.settings
+        val dark = when (settings?.themeMode) {
+            "dark" -> true
+            "light" -> false
+            else -> context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+        }
+        return colorSchemeFor(Palette.of(settings?.palette ?: "graphite"), dark)
+    }
+
     fun build(context: Context, summary: WidgetSummary?): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_home)
+        val colors = schemeFor(context)
+        views.setInt(R.id.widget_root, "setBackgroundColor", colors.background.toArgb())
+        views.setInt(R.id.widget_readiness_label, "setTextColor", colors.onSurfaceVariant.toArgb())
+        views.setInt(R.id.widget_readiness, "setTextColor", colors.primary.toArgb())
+        views.setInt(R.id.widget_steps, "setTextColor", colors.onBackground.toArgb())
+        views.setInt(R.id.widget_week, "setTextColor", colors.onSurfaceVariant.toArgb())
         val dash = context.getString(R.string.widget_none)
         views.setTextViewText(R.id.widget_readiness, summary?.readiness?.toString() ?: dash)
         views.setTextViewText(
