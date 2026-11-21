@@ -8,7 +8,6 @@ Op Health staan nu twee dingen die er nog niet waren. De **nachtkaart** toont di
 
 [Release notes](docs/releases/v1.0.7.md)
 
-
 ## v1.0.6: je HRV tegen je eigen normaal
 
 Op Health staat nu een **HRV-status**: je laatste zeven nachten tegen je eigen vierweekse basis, met *onder je normaal*, *in balans* of *boven je normaal* en het verschil in procenten. Tik op de kaart en de HRV-grafiek opent. In de roadmap staat vanaf nu het volledige **1.1-programma**: trainingsanalyse, work-outs en routes, lichaam en voeding, sync en invoer, en UX en bereik.
