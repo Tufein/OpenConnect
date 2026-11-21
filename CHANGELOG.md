@@ -2,9 +2,16 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
-## v1.0.6: HRV, slaapfases en gewicht
+## v1.0.7: slaapfases en gewicht op Health
 
-Op Health staan nu drie dingen die er nog niet waren: een **HRV-status** (je laatste zeven nachten tegen je eigen vierweekse basis), een **nachtkaart** met diep/licht/REM en wakker, en een **Body-kaart** waar je je gewicht (en optioneel vetpercentage) invult. Het gewicht wordt bewaard, geback-upt en als lijn van de laatste maand getoond. Het volledige **1.1-programma** staat in de roadmap.
+Op Health staan nu twee dingen die er nog niet waren. De **nachtkaart** toont diep, licht, REM en wakker in uren en als balk — die gegevens kwamen al binnen van horloge, ring of band, maar werden niet getoond. De **Body-kaart** laat je je gewicht en optioneel vetpercentage invullen; dat wordt bewaard, geback-upt en als lijn van de laatste 30 dagen getoond.
+
+[Release notes](docs/releases/v1.0.7.md)
+
+
+## v1.0.6: je HRV tegen je eigen normaal
+
+Op Health staat nu een **HRV-status**: je laatste zeven nachten tegen je eigen vierweekse basis, met *onder je normaal*, *in balans* of *boven je normaal* en het verschil in procenten. Tik op de kaart en de HRV-grafiek opent. In de roadmap staat vanaf nu het volledige **1.1-programma**: trainingsanalyse, work-outs en routes, lichaam en voeding, sync en invoer, en UX en bereik.
 
 [Release notes](docs/releases/v1.0.6.md)
 

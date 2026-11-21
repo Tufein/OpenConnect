@@ -7,10 +7,9 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.0.6.** Health now has an HRV status (last seven nights against your own four-week baseline), a night card
-> with deep/light/REM/awake, and a Body card for weight and optional body fat, kept in the backup with a 30-day line.
-> The roadmap carries the full 1.1 programme (training analysis, workouts and routes, body and nutrition, sync and
-> input, UX and reach). [Release notes](docs/releases/v1.0.6.md).
+> **Status: v1.0.7.** Health shows the night's sleep stages (deep/light/REM/awake) and a Body card for weight and
+> optional body fat, stored with a tested migration, included in backups and drawn as a 30-day line. The HRV status from
+> v1.0.6 remains. The roadmap carries the full 1.1 programme. [Release notes](docs/releases/v1.0.7.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).
