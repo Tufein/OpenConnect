@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.0.6: je HRV tegen je eigen normaal
+
+Op Health staat nu een **HRV-status**: je laatste zeven nachten tegen je eigen vierweekse basis, met *onder je normaal*, *in balans* of *boven je normaal* en het verschil in procenten. Tik op de kaart en de HRV-grafiek opent. In de roadmap staat vanaf nu het volledige **1.1-programma**: trainingsanalyse, work-outs en routes, lichaam en voeding, sync en invoer, en UX en bereik.
+
+[Release notes](docs/releases/v1.0.6.md)
+
 ## v1.0.5: de Health Connect-poort dicht
 
 Geen nieuwe functies. Op een telefoon **zonder de Health Connect-dienst** crashte de opstart-coroutine van de Health Connect- en Hume-bronnen; die vragen nu netjes "niet beschikbaar" en de app gaat door. Een poging om de bouw naar AGP 9 en Compose 2026.11 te verhogen is **voor de release teruggedraaid** en in de roadmap vastgelegd.

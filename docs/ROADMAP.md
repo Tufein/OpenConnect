@@ -194,6 +194,21 @@ De vier sporen staan als **M9 tot en met M12** bij de mijlpalen (paragraaf 4); d
 M9 proeft alles op echte apparaten, M10 brengt winkelversies, M11 voegt inhoud toe (dagboekvakjes, actieve tijd, nieuwere
 protobuf-sync, watchface) en M12 ruimt op (afhankelijkheden, talen, gegevenspagina, naam).
 
+### 1.1-programma: de vijf sporen die Stefan miste (2026-11-21)
+
+Op Stefans verzoek ("we missen nog een hoop zaken") zijn de gaten in vijf sporen gezet. Per spoor eerst de dunne,
+testbare slice; daarna de zwaardere delen. Een ✅ betekent uitgebracht.
+
+| Spoor | Eerste slices | Zwaarder werk |
+|-------|----------------|----------------|
+| **Trainings- en herstelanalyse** | ✅ HRV-status (v1.0.6, eigen 7-vs-28-dagenvergelijking) | Slaapfases van Garmin; Training Effect, Recovery Time en Performance Condition uit FIT lezen en tonen |
+| **Work-outs en routes** | Vrije work-outbouwer bovenop de bestaande FIT-work-outs | Courses/routes naar het horloge; wat Garmin's API niet toestaat blijft lokale export |
+| **Lichaam en voeding** | Gewicht en vetpercentage met de hand invoeren en als trend tonen | Lichaamssamenstelling uit de Garmin-account; water/droge stof lokaal loggen (de API biedt het niet) |
+| **Sync en invoer** | Handmatige activiteit invoeren | Garmin's nieuwere protobuf-synchronisatie; watchface terug (vraagt een Garmin-ontwikkelaarsaccount) |
+| **UX en bereik** | "Wat gaat er naar buiten"-pagina in de app | Meerdere widgetformaten; Duits en Frans |
+
+Bewust buiten scope, zoals eerder: segmenten en sociaal, LiveTrack, upload naar Strava of Intervals.icu, Wear OS.
+
 **Bewust niet:** vermogensanalyse, een horlogecompanion, upload naar Intervals.icu of Strava (hun voorwaarden), segmenten en sociaal, labuitslagen, biologische leeftijd, Wear OS.
 
 ## 7. Wat nog niet is gecontroleerd (register)
@@ -269,6 +284,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.0.3 | Alleen scores open: de vier signaaltegels tonen geen lijntjes meer, die zitten met de maandgrafiek en de activiteiten in ingeklapte secties; Insights houdt zes dagelijkse tabs en zet de rest achter *Meer*; widget en startachtergrond volgen het palet |
 | v1.0.4 | Op Health één grafiek tegelijk in tabs onder de scores (alleen grafieken met metingen); tikken op een score opent de bijbehorende grafiek, en een "open Health"-tegel komt op de gevraagde grafiek uit |
 | v1.0.5 | Zonder Health Connect geen crash: de gatewaystatus wordt via `runCatchingUnlessCancelled` gelezen, een telefoon zonder de dienst rapporteert "niet beschikbaar" (getest). De sprong naar AGP 9/Kotlin 2.4/Compose 2026.11 kompilde en haalde alle tests lokaal, maar bleef op de CI-runner soms in een ongeladen Home hangen (13 timeouts) en is voor de release teruggedraaid; de bevindingen staan bij M12 |
+| v1.0.6 | Eerste slice van het 1.1-programma: HRV-status op Health (eigen 7-vs-28-dagenvergelijking, 90/110%-grenzen, minima van 4 en 10 nachten), tikbaar naar de HRV-grafiek; het volledige 1.1-programma staat in de roadmap |
 
 ## 9. Hoe releases werken
 

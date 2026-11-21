@@ -414,6 +414,12 @@
     <string name="score_readiness_30">Readiness, 30 days</string>
     <string name="score_sleep_30">Sleep score, 30 days</string>
     <string name="health_charts">Charts</string>
+    <string name="hrv_status">HRV status</string>
+    <string name="hrv_status_low">Below your normal</string>
+    <string name="hrv_status_balanced">Balanced</string>
+    <string name="hrv_status_high">Above your normal</string>
+    <string name="hrv_status_line">%1$s ms this week · %2$s ms your normal (%3$s%%)</string>
+    <string name="hrv_status_note">OpenConnect compares your last seven nights with your own four-week baseline; this is not the HRV Status of Garmin.</string>
     <string name="health_chart">%1$s chart</string>
     <string name="scores_note">Readiness is OpenConnect\'s own estimate. Sleep score, Body Battery and stress are the watch\'s numbers. No reading yet shows a dash.</string>
     <string name="insight_explain_readiness">OpenConnect\'s own 0 to 100 estimate from sleep, Body Battery, HRV, resting heart rate and stress, against your own normal. 70 or more means ready for a hard day, under 40 means take it easy.</string>

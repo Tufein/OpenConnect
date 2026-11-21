@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -111,6 +112,27 @@ fun HealthScreen(
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     ScoreTile(stringResource(R.string.body_battery), battery, metrics.battery, Modifier.weight(1f), onClick = { selected = ChartMetric.BODY_BATTERY })
                     ScoreTile(stringResource(R.string.stress), stress, metrics.stress, Modifier.weight(1f), onClick = { selected = ChartMetric.STRESS })
+                }
+                val hrv = nl.tufein.openconnect.core.HrvStatusCalculator.compute(state.dailies, LocalDate.now())
+                if (hrv != null) {
+                    val (label, tint) = when (hrv.level) {
+                        nl.tufein.openconnect.core.HrvStatusLevel.LOW -> R.string.hrv_status_low to MaterialTheme.colorScheme.error
+                        nl.tufein.openconnect.core.HrvStatusLevel.HIGH -> R.string.hrv_status_high to MaterialTheme.colorScheme.tertiary
+                        nl.tufein.openconnect.core.HrvStatusLevel.BALANCED -> R.string.hrv_status_balanced to MaterialTheme.colorScheme.primary
+                    }
+                    val change = (if (hrv.changePct >= 0) "+" else "") + Fmt.oneDecimal(hrv.changePct)
+                    SurfaceCard(Modifier.tappable { selected = ChartMetric.HRV }) {
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(R.string.hrv_status), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                            Text(stringResource(label), style = MaterialTheme.typography.titleSmall, color = tint)
+                        }
+                        Text(
+                            stringResource(R.string.hrv_status_line, Fmt.oneDecimal(hrv.recentMs), Fmt.oneDecimal(hrv.normalMs), change),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(stringResource(R.string.hrv_status_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
                 Text(stringResource(R.string.scores_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

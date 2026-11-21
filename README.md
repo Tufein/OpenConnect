@@ -7,10 +7,10 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.0.5.** A phone without the Health Connect service no longer crashes the startup coroutines — the
-> gateways report "unavailable" instead. An attempt to jump the build tooling (AGP 9, Kotlin 2.4, Compose 2026.11) was
-> reverted before release and is recorded in the roadmap; the proven build and all v1.0.4 behaviour remain.
-> [Release notes](docs/releases/v1.0.5.md).
+> **Status: v1.0.6.** Health has an HRV status of its own: your last seven nights against your four-week baseline,
+> labelled and with the difference in percent; tapping it opens the HRV chart. The roadmap now carries the full 1.1
+> programme (training analysis, workouts and routes, body and nutrition, sync and input, UX and reach).
+> [Release notes](docs/releases/v1.0.6.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

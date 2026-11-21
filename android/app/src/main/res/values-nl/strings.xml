@@ -414,6 +414,12 @@
     <string name="score_readiness_30">Gereedheid, 30 dagen</string>
     <string name="score_sleep_30">Slaapscore, 30 dagen</string>
     <string name="health_charts">Grafieken</string>
+    <string name="hrv_status">HRV-status</string>
+    <string name="hrv_status_low">Onder je normaal</string>
+    <string name="hrv_status_balanced">In balans</string>
+    <string name="hrv_status_high">Boven je normaal</string>
+    <string name="hrv_status_line">%1$s ms deze week · %2$s ms je normaal (%3$s%%)</string>
+    <string name="hrv_status_note">OpenConnect vergelijkt je laatste zeven nachten met je eigen vierweekse basis; dit is niet de HRV Status van Garmin.</string>
     <string name="health_chart">%1$s-grafiek</string>
     <string name="scores_note">Gereedheid is de eigen schatting van OpenConnect. Slaapscore, Body Battery en stress zijn de cijfers van het horloge. Nog geen meting? Dan staat er een streepje.</string>
     <string name="insight_explain_readiness">De eigen schatting van OpenConnect van 0 tot 100, uit slaap, Body Battery, HRV, rusthartslag en stress, ten opzichte van jouw eigen normaal. 70 of meer is klaar voor een zware dag, onder 40 neem je het rustig aan.</string>
