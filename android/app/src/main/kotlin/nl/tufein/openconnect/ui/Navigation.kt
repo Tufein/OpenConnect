@@ -336,7 +336,7 @@ fun OpenConnectRoot(
             composable(Tab.Activities.route) {
                 ActivitiesScreen(activities, vm::loadActivities, ::openActivity, vm::loadDemo, onImport, padding)
             }
-            composable(Tab.Health.route) { HealthScreen(health, vm::loadDemo, onImport, padding, focus = healthFocus, onFocusDone = { healthFocus = null }, onSaveBody = vm::saveBody) }
+            composable(Tab.Health.route) { HealthScreen(health, vm::loadDemo, onImport, padding, focus = healthFocus, onFocusDone = { healthFocus = null }, onSaveBody = vm::saveBody, onAddWater = vm::addWater) }
             composable(Tab.Insights.route) {
                 InsightsScreen(
                     tab = insightsTab,

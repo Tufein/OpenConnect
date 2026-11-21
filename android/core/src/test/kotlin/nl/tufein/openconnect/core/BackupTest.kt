@@ -41,6 +41,8 @@ class BackupTest {
         repo.upsertSleep(SleepSummary(date = day.plusDays(1), durationS = 3600))
         repo.upsertBody(BodyEntry(date = day, grams = 81500, bodyFatPct = 17.0))
         repo.upsertBody(BodyEntry(date = day.plusDays(1), grams = 81400))
+        repo.upsertWater(WaterEntry(date = day, millilitres = 1750))
+        repo.upsertWater(WaterEntry(date = day.plusDays(1), millilitres = 500))
         repo.upsertSamples(
             listOf(
                 MetricSample(Metric.HEART_RATE, Instant.parse("2026-06-10T08:00:00Z"), day, 61.0),
@@ -61,6 +63,7 @@ class BackupTest {
         repo.listDaily(LocalDate.of(2000, 1, 1), LocalDate.of(2100, 1, 1)),
         repo.listSleep(LocalDate.of(2000, 1, 1), LocalDate.of(2100, 1, 1)),
         repo.listBody(LocalDate.of(2000, 1, 1), LocalDate.of(2100, 1, 1)),
+        repo.listWater(LocalDate.of(2000, 1, 1), LocalDate.of(2100, 1, 1)),
         repo.listSamples(LocalDate.of(2000, 1, 1), LocalDate.of(2100, 1, 1)),
         repo.listOuraDays(LocalDate.of(2000, 1, 1), LocalDate.of(2100, 1, 1)),
     )

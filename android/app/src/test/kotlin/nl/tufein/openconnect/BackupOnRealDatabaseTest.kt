@@ -123,6 +123,7 @@ class BackupOnRealDatabaseTest {
     )
     private val inBackup = mapOf(
         "activities" to "activities", "daily" to "daily", "sleep" to "sleep", "body_weight" to "body",
+        "water_log" to "water",
         "samples" to "samples", "oura_days" to "oura", "whoop_days" to "whoop", "hume_days" to "hume",
     )
 

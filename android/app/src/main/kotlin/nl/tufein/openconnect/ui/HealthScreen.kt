@@ -46,6 +46,8 @@ fun HealthScreen(
     onFocusDone: () -> Unit = {},
     /** A weight (kg) and optional body fat were typed on the Body card. */
     onSaveBody: (Double, Double?) -> Unit = { _, _ -> },
+    /** Water was added (+250 or +500 ml) on the Water card; the day's total is kept in the database. */
+    onAddWater: (Int) -> Unit = {},
 ) {
     // One chart at a time: the scores stay on screen and a chip row picks the trend to draw.
     val trend = state.trend
@@ -238,6 +240,22 @@ fun HealthScreen(
                         PrimaryButton(onClick = { onSaveBody(kg!!, fat); weightText = ""; fatText = "" }, enabled = kg != null && kg > 0) {
                             Text(stringResource(R.string.body_save))
                         }
+                    }
+                }
+                // Water: Garmin's API has no water, so the person logs a running total here (v1.1.0).
+                val todayWater = state.water.lastOrNull { it.date == LocalDate.now() }?.millilitres ?: 0
+                SurfaceCard {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.water_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                        Text(
+                            if (todayWater > 0) stringResource(R.string.water_today, Fmt.oneDecimal(todayWater / 1000.0))
+                            else stringResource(R.string.water_none),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                    }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        PrimaryButton(onClick = { onAddWater(250) }) { Text(stringResource(R.string.water_add, 250)) }
+                        PrimaryButton(onClick = { onAddWater(500) }) { Text(stringResource(R.string.water_add, 500)) }
                     }
                 }
                 Text(stringResource(R.string.scores_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

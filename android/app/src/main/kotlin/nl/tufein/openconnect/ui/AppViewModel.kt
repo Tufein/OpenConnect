@@ -21,6 +21,7 @@ import nl.tufein.openconnect.core.ActivityAround
 import nl.tufein.openconnect.core.ActivityAroundCalculator
 import nl.tufein.openconnect.core.BandSource
 import nl.tufein.openconnect.core.BodyEntry
+import nl.tufein.openconnect.core.WaterEntry
 import nl.tufein.openconnect.core.BandWorkout
 import nl.tufein.openconnect.core.BandWorkouts
 import nl.tufein.openconnect.core.RingWorkouts
@@ -203,6 +204,8 @@ data class HealthState(
     val dailies: List<DailySummary> = emptyList(),
     /** The weight the person entered by hand, oldest first, at most the last 30 days. */
     val body: List<BodyEntry> = emptyList(),
+    /** The water the person logged by hand, oldest first, at most the last 30 days. */
+    val water: List<WaterEntry> = emptyList(),
     /** Readiness per day (OpenConnect's estimate) and the watch's sleep score per night, for the score charts. */
     val readiness: List<Pair<LocalDate, Int?>> = emptyList(),
     val sleepScores: List<Pair<LocalDate, Double?>> = emptyList(),
@@ -848,6 +851,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             readiness = container.stats.readinessSeries(start, today),
             sleepScores = container.stats.sleepScoreSeries(start, today),
             body = repo.listBody(start, today),
+            water = repo.listWater(start, today),
         )
     }
 
@@ -1131,6 +1135,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     /** The weight the person typed on Health; storing it reloads the screens (the card and the trend). */
     fun saveBody(kg: Double, fatPct: Double?) = io {
         repo.upsertBody(BodyEntry(LocalDate.now(), Math.round(kg * 1000).toInt(), fatPct))
+        container.dataChanged.tryEmit(Unit)
+    }
+
+    /** Adds to today's water total (v1.1.0); the card reads it back from the database, so taps add up. */
+    fun addWater(millilitres: Int) = io {
+        val today = LocalDate.now()
+        val already = repo.listWater(today, today).firstOrNull()?.millilitres ?: 0
+        repo.upsertWater(WaterEntry(today, (already + millilitres).coerceAtLeast(0)))
         container.dataChanged.tryEmit(Unit)
     }
 

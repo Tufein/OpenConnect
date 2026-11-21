@@ -175,6 +175,7 @@ class OuraAndTouchScreenTest : AppTestBase() {
         rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
         scrollToText("Resting heart rate") // a tile further down Home
         rule.onNodeWithText("Resting heart rate").performClick()
+        scrollToText("Latest:", substring = true) // the card now sits further down, so scroll to it
         waitForText("Latest:", substring = true) // the resting heart rate chart on the Health screen
         val hints = rule.onAllNodesWithText("Tap or slide along the chart to read a day.").fetchSemanticsNodes().size
         assertTrue(hints >= 1)

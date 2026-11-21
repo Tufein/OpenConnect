@@ -13,6 +13,7 @@ import nl.tufein.openconnect.core.SleepSummary
 import nl.tufein.openconnect.core.Sport
 import nl.tufein.openconnect.core.StoredReport
 import nl.tufein.openconnect.core.TrackCodec
+import nl.tufein.openconnect.core.WaterEntry
 import nl.tufein.openconnect.core.watch.Metric
 import nl.tufein.openconnect.core.watch.MetricSample
 import java.time.Instant
@@ -46,6 +47,7 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
                 light_s INTEGER NOT NULL, rem_s INTEGER NOT NULL, awake_s INTEGER NOT NULL, score INTEGER)""",
         )
         db.execSQL("CREATE TABLE body_weight (date TEXT PRIMARY KEY, grams INTEGER NOT NULL, body_fat REAL)")
+        db.execSQL("CREATE TABLE water_log (date TEXT PRIMARY KEY, ml INTEGER NOT NULL)")
         db.execSQL(
             """CREATE TABLE reports (
                 kind TEXT NOT NULL, subject TEXT NOT NULL, text TEXT NOT NULL, provider TEXT NOT NULL,
@@ -71,6 +73,11 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
     /** v1.0.6: the weight the person entered by hand, one row per day, body fat optional. */
     private fun createBodyTable(db: SQLiteDatabase) {
         db.execSQL("CREATE TABLE IF NOT EXISTS body_weight (date TEXT PRIMARY KEY, grams INTEGER NOT NULL, body_fat REAL)")
+    }
+
+    /** v1.1.0: the water the person logged, a running total per day. Garmin's API has no water, so it stays local. */
+    private fun createWaterTable(db: SQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS water_log (date TEXT PRIMARY KEY, ml INTEGER NOT NULL)")
     }
 
     /** v0.17.0: the Oura Ring's days, one JSON row per day, kept apart from the watch's tables. */
@@ -108,6 +115,10 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
         if (oldVersion < 6) {
             // v1.0.6: the weight the person entered by hand, one row per day, body fat optional.
             createBodyTable(db)
+        }
+        if (oldVersion < 7) {
+            // v1.1.0: the water the person logged, a running total per day.
+            createWaterTable(db)
         }
     }
 
@@ -317,6 +328,31 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
                 out
             }
 
+    // ------------------------------------------------------------------------- water (logged by hand)
+
+    override fun upsertWater(entry: WaterEntry) {
+        val values = ContentValues().apply {
+            put("date", entry.date.toString())
+            put("ml", entry.millilitres)
+        }
+        writableDatabase.insertWithOnConflict("water_log", null, values, SQLiteDatabase.CONFLICT_REPLACE)
+    }
+
+    override fun listWater(start: LocalDate, end: LocalDate): List<WaterEntry> =
+        readableDatabase.query("water_log", null, "date >= ? AND date <= ?", arrayOf(start.toString(), end.toString()), null, null, "date ASC")
+            .use { c ->
+                val out = ArrayList<WaterEntry>(c.count)
+                while (c.moveToNext()) {
+                    out.add(
+                        WaterEntry(
+                            date = LocalDate.parse(c.getString(c.getColumnIndexOrThrow("date"))),
+                            millilitres = c.getInt(c.getColumnIndexOrThrow("ml")),
+                        ),
+                    )
+                }
+                out
+            }
+
     // ------------------------------------------------------------------------- watch samples
 
     override fun upsertSamples(samples: List<MetricSample>) {
@@ -480,7 +516,7 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
 
     companion object {
         /** The schema version. Raise it with a migration in [onUpgrade] and a fixture in SchemaMigrationTest. */
-        const val VERSION = 6
+        const val VERSION = 7
     }
 }
 

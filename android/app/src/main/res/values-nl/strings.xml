@@ -422,6 +422,10 @@
     <string name="body_save">Opslaan</string>
     <string name="body_none">Voer je gewicht van vandaag in om de trend te starten.</string>
     <string name="body_trend_desc">Gewicht, %1$d dagen, laagste %2$s kg, hoogste %3$s kg, laatste %4$s kg.</string>
+    <string name="water_title">Water</string>
+    <string name="water_none">Nog niets gelogd vandaag.</string>
+    <string name="water_today">%1$s L vandaag</string>
+    <string name="water_add">+%1$d ml</string>
     <string name="night_line">%1$s diep · %2$s licht · %3$s REM</string>
     <string name="night_awake">%1$s wakker</string>
     <string name="night_no_stages">Geen fasegegevens in deze nacht.</string>

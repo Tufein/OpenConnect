@@ -122,6 +122,17 @@ data class BodyEntry(
     val kg: Double get() = grams / 1000.0
 }
 
+/**
+ * Water the person logged for one day (v1.1.0). Garmin does not offer water in the API, so this stays a local figure:
+ * a running total per day, not a list of drinks. Storing the same day again replaces the total.
+ */
+data class WaterEntry(
+    val date: LocalDate,
+    val millilitres: Int,
+) {
+    val litres: Double get() = millilitres / 1000.0
+}
+
 /** An AI report kept so unchanged input is not regenerated (and re-billed). */
 data class StoredReport(
     val kind: String,

@@ -203,7 +203,7 @@ testbare slice; daarna de zwaardere delen. Een ✅ betekent uitgebracht.
 |-------|----------------|----------------|
 | **Trainings- en herstelanalyse** | ✅ HRV-status (v1.0.6, eigen 7-vs-28-dagenvergelijking); ✅ slaapfases op Health (v1.0.7, data kwam al binnen) | Training Effect, Recovery Time en Performance Condition uit FIT lezen en tonen (vraagt een echte activiteit van een fenix 8 om de velden te bevestigen) |
 | **Work-outs en routes** | Vrije work-outbouwer bovenop de bestaande FIT-work-outs | Courses/routes naar het horloge; wat Garmin's API niet toestaat blijft lokale export |
-| **Lichaam en voeding** | ✅ Gewicht en vetpercentage met de hand invoeren, met 30-daagse lijn en back-up (v1.0.7) | Lichaamssamenstelling uit de Garmin-account; water/droge stof lokaal loggen (de API biedt het niet) |
+| **Lichaam en voeding** | ✅ Gewicht en vetpercentage met de hand invoeren, met 30-daagse lijn en back-up (v1.0.7); ✅ water loggen met een dagtotaal, lokaal en in de back-up (v1.1.0) | Lichaamssamenstelling uit de Garmin-account |
 | **Sync en invoer** | Handmatige activiteit invoeren | Garmin's nieuwere protobuf-synchronisatie; watchface terug (vraagt een Garmin-ontwikkelaarsaccount) |
 | **UX en bereik** | "Wat gaat er naar buiten"-pagina in de app | Meerdere widgetformaten; Duits en Frans |
 
@@ -286,6 +286,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.0.5 | Zonder Health Connect geen crash: de gatewaystatus wordt via `runCatchingUnlessCancelled` gelezen, een telefoon zonder de dienst rapporteert "niet beschikbaar" (getest). De sprong naar AGP 9/Kotlin 2.4/Compose 2026.11 kompilde en haalde alle tests lokaal, maar bleef op de CI-runner soms in een ongeladen Home hangen (13 timeouts) en is voor de release teruggedraaid; de bevindingen staan bij M12 |
 | v1.0.6 | Eerste slice van het 1.1-programma: HRV-status op Health (eigen 7-vs-28-dagenvergelijking, 90/110%-grenzen, minima van 4 en 10 nachten), tikbaar naar de HRV-grafiek; het volledige 1.1-programma staat in de roadmap |
 | v1.0.7 | Nachtkaart met diep/licht/REM/wakker (data die al werd ingelezen) en Body-kaart voor gewicht en vetpercentage: schema 6 met migratie vanaf elke versie, back-up, 30-daagse lijn; tweetalige teksten |
+| v1.1.0 | Eerste 1.1-release: het HRV- en Body-werk van v1.0.6/v1.0.7 gebundeld plus een Water-kaart op Health (+250/+500 ml, dagtotaal lokaal omdat Garmin geen water levert), schema 7 met migratie vanaf elke versie en het water in de back-up |
 
 ## 9. Hoe releases werken
 

@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.1.0: het 1.1-programma landt
+
+De eerste slices van het 1.1-programma zijn klaar en in één versie gebundeld: HRV-status, slaapfases en gewicht met vetpercentage op Health. Nieuw is **water loggen**: Garmin's API geeft geen water, dus de app houdt zelf een dagtotaal bij.
+
+[Release notes](docs/releases/v1.1.0.md)
+
 ## v1.0.7: slaapfases en gewicht op Health
 
 Op Health staan nu twee dingen die er nog niet waren. De **nachtkaart** toont diep, licht, REM en wakker in uren en als balk — die gegevens kwamen al binnen van horloge, ring of band, maar werden niet getoond. De **Body-kaart** laat je je gewicht en optioneel vetpercentage invullen; dat wordt bewaard, geback-upt en als lijn van de laatste 30 dagen getoond.

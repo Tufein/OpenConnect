@@ -117,7 +117,7 @@ class UserDataBackupTest {
         val repo = InMemoryRepository()
         repo.upsertDaily(DailySummary(date = day))
         val text = GZIPInputStream(ByteArrayInputStream(Backup.write(repo, now, everything))).readBytes().toString(Charsets.UTF_8)
-        val allowed = setOf("format", "version", "createdAt", "activities", "daily", "sleep", "body", "samples", "oura", "whoop", "hume", "userData")
+        val allowed = setOf("format", "version", "createdAt", "activities", "daily", "sleep", "body", "water", "samples", "oura", "whoop", "hume", "userData")
         val root = kotlinx.serialization.json.Json.parseToJsonElement(text) as kotlinx.serialization.json.JsonObject
         assertEquals(allowed, root.keys, "a new top-level part needs a decision: is it a secret?")
         for (word in listOf("token", "secret", "password", "apikey", "api_key", "client")) {

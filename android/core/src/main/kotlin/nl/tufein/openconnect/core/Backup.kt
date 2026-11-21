@@ -61,6 +61,8 @@ object Backup {
             put("daily", JsonArray(repo.listDaily(FAR_PAST, FAR_FUTURE).map(::dailyJson)))
             put("sleep", JsonArray(repo.listSleep(FAR_PAST, FAR_FUTURE).map(::sleepJson)))
             put("body", JsonArray(repo.listBody(FAR_PAST, FAR_FUTURE).map(::bodyJson)))
+            // v1.1.0: the water the person logged, one row per day. Older app versions simply skip it.
+            put("water", JsonArray(repo.listWater(FAR_PAST, FAR_FUTURE).map(::waterJson)))
             put("samples", buildJsonArray { repo.listSamples(FAR_PAST, FAR_FUTURE).forEach { add(sampleJson(it)) } })
             // v0.17.0: the Oura Ring's days, in their own list. Older app versions simply skip it.
             put("oura", JsonArray(repo.listOuraDays(FAR_PAST, FAR_FUTURE).map { Json.parseToJsonElement(it.toJson()) }))
@@ -88,6 +90,7 @@ object Backup {
         val daily: List<DailySummary>
         val sleep: List<SleepSummary>
         val body: List<BodyEntry>
+        val water: List<WaterEntry>
         val samples: List<MetricSample>
         val oura: List<nl.tufein.openconnect.core.oura.OuraDay>
         val whoop: List<nl.tufein.openconnect.core.whoop.WhoopDay>
@@ -98,6 +101,7 @@ object Backup {
             daily = root.list("daily").map { dailyOf(it.jsonObject) }
             sleep = root.list("sleep").map { sleepOf(it.jsonObject) }
             body = root.list("body").map { bodyOf(it.jsonObject) }
+            water = root.list("water").map { waterOf(it.jsonObject) }
             samples = root.list("samples").map { sampleOf(it.jsonArray) }
             oura = root.list("oura").map { nl.tufein.openconnect.core.oura.OuraDay.fromJson(it.toString()) }
             whoop = root.list("whoop").map { nl.tufein.openconnect.core.whoop.WhoopDay.fromJson(it.toString()) }
@@ -112,6 +116,7 @@ object Backup {
         daily.forEach(repo::upsertDaily)
         sleep.forEach(repo::upsertSleep)
         body.forEach(repo::upsertBody)
+        water.forEach(repo::upsertWater)
         repo.upsertSamples(samples)
         oura.forEach(repo::upsertOuraDay)
         whoop.forEach(repo::upsertWhoopDay)
@@ -254,6 +259,16 @@ object Backup {
         put("date", b.date.toString())
         put("grams", b.grams)
         putOptional(this, "bodyFat", b.bodyFatPct)
+    }
+
+    private fun waterOf(o: JsonObject) = WaterEntry(
+        date = date(o.need("date")),
+        millilitres = o.int("ml") ?: throw BackupException("a water entry without an amount"),
+    )
+
+    private fun waterJson(w: WaterEntry) = buildJsonObject {
+        put("date", w.date.toString())
+        put("ml", w.millilitres)
     }
 
     /** [metric code, time, day, value] keeps the many readings small. */

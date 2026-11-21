@@ -48,6 +48,12 @@ interface Repository {
     /** Oldest first, both ends inclusive. */
     fun listBody(start: LocalDate, end: LocalDate): List<BodyEntry>
 
+    /** One row per day: storing the same day again replaces the total. */
+    fun upsertWater(entry: WaterEntry)
+
+    /** Oldest first, both ends inclusive. */
+    fun listWater(start: LocalDate, end: LocalDate): List<WaterEntry>
+
     /** Readings from a watch, identified by metric and time: storing the same reading again changes nothing. */
     fun upsertSamples(samples: List<MetricSample>)
 
@@ -86,6 +92,7 @@ class InMemoryRepository : Repository {
     private val dailies = HashMap<LocalDate, DailySummary>()
     private val sleeps = HashMap<LocalDate, SleepSummary>()
     private val body = HashMap<LocalDate, BodyEntry>()
+    private val water = HashMap<LocalDate, WaterEntry>()
     private val reports = HashMap<Pair<String, String>, StoredReport>()
     private val samples = HashMap<Pair<Metric, Instant>, MetricSample>()
     private val watchFiles = HashMap<String, Long>()
@@ -133,6 +140,13 @@ class InMemoryRepository : Repository {
 
     override fun listBody(start: LocalDate, end: LocalDate): List<BodyEntry> =
         body.values.filter { it.date in start..end }.sortedBy { it.date }
+
+    override fun upsertWater(entry: WaterEntry) {
+        water[entry.date] = entry
+    }
+
+    override fun listWater(start: LocalDate, end: LocalDate): List<WaterEntry> =
+        water.values.filter { it.date in start..end }.sortedBy { it.date }
 
     override fun upsertSamples(samples: List<MetricSample>) {
         for (sample in samples) this.samples[sample.metric to sample.time] = sample

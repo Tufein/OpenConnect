@@ -152,6 +152,7 @@ class DayInsightsScreenTest : AppTestBase() {
         loadDemo()
         tab("Health").performClick()
         val today = LocalDate.now(ZoneOffset.UTC)
+        scrollToText(Fmt.shortDate(today.minusDays(29)))
         waitForText(Fmt.shortDate(today.minusDays(29)))
         assertTrue(hasText(Fmt.shortDate(today), substring = false))
         shot("49-health-dates")
