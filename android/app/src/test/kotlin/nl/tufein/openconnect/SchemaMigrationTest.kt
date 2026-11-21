@@ -70,13 +70,16 @@ class SchemaMigrationTest {
     private val whoop = "CREATE TABLE whoop_days (date TEXT PRIMARY KEY, json TEXT NOT NULL)"
     private val hume = "CREATE TABLE hume_days (date TEXT PRIMARY KEY, json TEXT NOT NULL)"
 
+    /** v1.0.6: the weight entered by hand, one row per day, body fat optional. */
+    private val bodyWeight = "CREATE TABLE body_weight (date TEXT PRIMARY KEY, grams INTEGER NOT NULL, body_fat REAL)"
+
     /** A track of two points as `TrackCodec` wrote it in v0.2.0, frozen as bytes (gzip). */
     private val frozenTrack = (
         "1f8b08000000000000ff63646060606260609cfb483e9ec15e9ef78a033397d101470da070054300c3090638607ea12e2f2bd6c02c59cae06801e4573af0402400fcef0f4c43000000"
         ).chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 
     /** Schema versions: 1 = v0.2.0, 2 = v0.3.0 (watch), 3 = v0.17.0 (Oura), 4 = v0.49.0 (WHOOP), 5 = v0.50.0 (Hume). */
-    private val versions = listOf(1, 2, 3, 4, 5)
+    private val versions = listOf(1, 2, 3, 4, 5, 6)
 
     /** The database as that release created it, with a little of everything in it. */
     private fun build(version: Int) {
@@ -95,6 +98,7 @@ class SchemaMigrationTest {
             if (version >= 3) db.execSQL(oura)
             if (version >= 4) db.execSQL(whoop)
             if (version >= 5) db.execSQL(hume)
+            if (version >= 6) db.execSQL(bodyWeight)
 
             db.execSQL("INSERT INTO daily (date, steps, steps_goal, distance_m, active_kcal, floors, moderate_min, vigorous_min, resting_hr, min_hr, max_hr, avg_stress, max_stress, bb_high, bb_low) VALUES ('2026-05-01', 8000, 10000, 6000.0, 300, 5, 20, 5, 52, 48, 150, 30, 80, 90, 20)")
             db.execSQL("INSERT INTO sleep VALUES ('2026-05-01', 27000, 5000, 14000, 6000, 2000, 84)")
@@ -116,6 +120,7 @@ class SchemaMigrationTest {
             if (version >= 3) db.execSQL("""INSERT INTO oura_days VALUES ('2026-05-01', '{"day":"2026-05-01","readiness":81}')""")
             if (version >= 4) db.execSQL("""INSERT INTO whoop_days VALUES ('2026-05-01', '{"day":"2026-05-01","recovery":70}')""")
             if (version >= 5) db.execSQL("""INSERT INTO hume_days VALUES ('2026-05-01', '{"day":"2026-05-01","steps":4000}')""")
+            if (version >= 6) db.execSQL("INSERT INTO body_weight VALUES ('2026-05-03', 81500, 17.0)")
             db.version = version
         }
     }

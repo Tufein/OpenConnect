@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import nl.tufein.openconnect.core.Activity
+import nl.tufein.openconnect.core.BodyEntry
 import nl.tufein.openconnect.core.DailySummary
 import nl.tufein.openconnect.core.Repository
 import nl.tufein.openconnect.core.SleepSummary
@@ -44,6 +45,7 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
                 date TEXT PRIMARY KEY, duration_s INTEGER NOT NULL, deep_s INTEGER NOT NULL,
                 light_s INTEGER NOT NULL, rem_s INTEGER NOT NULL, awake_s INTEGER NOT NULL, score INTEGER)""",
         )
+        db.execSQL("CREATE TABLE body_weight (date TEXT PRIMARY KEY, grams INTEGER NOT NULL, body_fat REAL)")
         db.execSQL(
             """CREATE TABLE reports (
                 kind TEXT NOT NULL, subject TEXT NOT NULL, text TEXT NOT NULL, provider TEXT NOT NULL,
@@ -64,6 +66,11 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
     /** v0.49.0: the WHOOP band's days, one JSON row per day, kept apart from the watch's and the ring's tables. */
     private fun createWhoopTable(db: SQLiteDatabase) {
         db.execSQL("CREATE TABLE whoop_days (date TEXT PRIMARY KEY, json TEXT NOT NULL)")
+    }
+
+    /** v1.0.6: the weight the person entered by hand, one row per day, body fat optional. */
+    private fun createBodyTable(db: SQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS body_weight (date TEXT PRIMARY KEY, grams INTEGER NOT NULL, body_fat REAL)")
     }
 
     /** v0.17.0: the Oura Ring's days, one JSON row per day, kept apart from the watch's tables. */
@@ -98,6 +105,10 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
         }
         if (oldVersion < 4) createWhoopTable(db)
         if (oldVersion < 5) createHumeTable(db)
+        if (oldVersion < 6) {
+            // v1.0.6: the weight the person entered by hand, one row per day, body fat optional.
+            createBodyTable(db)
+        }
     }
 
     override fun onConfigure(db: SQLiteDatabase) {
@@ -279,6 +290,35 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
 
     // ---------------------------------------------------------------------------- watch data
 
+    // ------------------------------------------------------------------------- body (weight entered by hand)
+
+    override fun upsertBody(entry: BodyEntry) {
+        val values = ContentValues().apply {
+            put("date", entry.date.toString())
+            put("grams", entry.grams)
+            put("body_fat", entry.bodyFatPct)
+        }
+        writableDatabase.insertWithOnConflict("body_weight", null, values, SQLiteDatabase.CONFLICT_REPLACE)
+    }
+
+    override fun listBody(start: LocalDate, end: LocalDate): List<BodyEntry> =
+        readableDatabase.query("body_weight", null, "date >= ? AND date <= ?", arrayOf(start.toString(), end.toString()), null, null, "date ASC")
+            .use { c ->
+                val out = ArrayList<BodyEntry>(c.count)
+                while (c.moveToNext()) {
+                    out.add(
+                        BodyEntry(
+                            date = LocalDate.parse(c.getString(c.getColumnIndexOrThrow("date"))),
+                            grams = c.getInt(c.getColumnIndexOrThrow("grams")),
+                            bodyFatPct = c.getDouble(c.getColumnIndexOrThrow("body_fat")).takeIf { !c.isNull(c.getColumnIndexOrThrow("body_fat")) },
+                        ),
+                    )
+                }
+                out
+            }
+
+    // ------------------------------------------------------------------------- watch samples
+
     override fun upsertSamples(samples: List<MetricSample>) {
         if (samples.isEmpty()) return
         inTransaction {
@@ -440,7 +480,7 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
 
     companion object {
         /** The schema version. Raise it with a migration in [onUpgrade] and a fixture in SchemaMigrationTest. */
-        const val VERSION = 5
+        const val VERSION = 6
     }
 }
 

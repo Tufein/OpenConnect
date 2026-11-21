@@ -1,6 +1,9 @@
 package nl.tufein.openconnect.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.padding
@@ -16,9 +19,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -37,6 +44,8 @@ fun HealthScreen(
     /** The chart to open on arrival (a tile on Home or Insights was tapped), then [onFocusDone] is called. */
     focus: ChartMetric? = null,
     onFocusDone: () -> Unit = {},
+    /** A weight (kg) and optional body fat were typed on the Body card. */
+    onSaveBody: (Double, Double?) -> Unit = { _, _ -> },
 ) {
     // One chart at a time: the scores stay on screen and a chip row picks the trend to draw.
     val trend = state.trend
@@ -132,6 +141,103 @@ fun HealthScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(stringResource(R.string.hrv_status_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                val night = state.sleeps.lastOrNull { it.durationS > 0 }
+                if (night != null && night.durationS > 0) {
+                    SurfaceCard(Modifier.tappable { selected = ChartMetric.SLEEP }) {
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(R.string.sleep), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                            if (night.score != null) {
+                                Text(stringResource(R.string.score_sleep) + " " + night.score, style = MaterialTheme.typography.titleSmall, color = metrics.sleep)
+                            }
+                        }
+                        val stages = night.deepS > 0 || night.lightS > 0 || night.remS > 0
+                        val stageLine = stringResource(R.string.night_line, Fmt.hours(night.deepS), Fmt.hours(night.lightS), Fmt.hours(night.remS)) +
+                            if (night.awakeS > 0) " · " + stringResource(R.string.night_awake, Fmt.hours(night.awakeS)) else ""
+                        if (stages) {
+                            Text(stageLine, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        } else {
+                            Text(stringResource(R.string.night_no_stages), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        // One bar, four segments: deep, light, REM and awake, in the sleep colour with falling weight.
+                        val total = (night.deepS + night.lightS + night.remS + night.awakeS).coerceAtLeast(1)
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .height(10.dp)
+                                .clip(MaterialTheme.shapes.extraSmall)
+                                .semantics { contentDescription = stageLine },
+                            horizontalArrangement = Arrangement.spacedBy(2.dp),
+                        ) {
+                            for ((seconds, weight) in listOf(
+                                night.deepS to 1f,
+                                night.lightS to 0.7f,
+                                night.remS to 0.5f,
+                                night.awakeS to 0.3f,
+                            )) {
+                                if (seconds > 0) Box(
+                                    Modifier
+                                        .weight(seconds.toFloat() / total)
+                                        .background(metrics.sleep.copy(alpha = weight)),
+                                )
+                            }
+                        }
+                    }
+                }
+                // Body: the weight entered by hand, with the last month as a small line, and today's entry under it.
+                val body = state.body
+                val lastWeight = body.lastOrNull()
+                var weightText by rememberSaveable { mutableStateOf("") }
+                var fatText by rememberSaveable { mutableStateOf("") }
+                SurfaceCard {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.body_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                        if (lastWeight != null) {
+                            val fat = lastWeight.bodyFatPct?.let { " · " + stringResource(R.string.body_fat_line, Fmt.oneDecimal(it)) }.orEmpty()
+                            Text(stringResource(R.string.body_last, Fmt.oneDecimal(lastWeight.kg)) + fat, style = MaterialTheme.typography.titleSmall)
+                        }
+                    }
+                    if (body.isEmpty()) {
+                        Text(stringResource(R.string.body_none), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else if (body.size >= 2) {
+                        val values = body.map { it.grams / 1000.0 }
+                        val trendWords = stringResource(
+                            R.string.body_trend_desc,
+                            values.size,
+                            Fmt.oneDecimal(values.min()),
+                            Fmt.oneDecimal(values.max()),
+                            Fmt.oneDecimal(values.last()),
+                        )
+                        Sparkline(
+                            values,
+                            MaterialTheme.colorScheme.secondary,
+                            Modifier
+                                .fillMaxWidth()
+                                .height(26.dp)
+                                .semantics { contentDescription = trendWords },
+                        )
+                    }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(
+                            weightText,
+                            { weightText = it },
+                            label = { Text(stringResource(R.string.body_weight)) },
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                        )
+                        OutlinedTextField(
+                            fatText,
+                            { fatText = it },
+                            label = { Text(stringResource(R.string.body_fat)) },
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                        )
+                        val kg = weightText.replace(',', '.').toDoubleOrNull()
+                        val fat = fatText.replace(',', '.').toDoubleOrNull()
+                        PrimaryButton(onClick = { onSaveBody(kg!!, fat); weightText = ""; fatText = "" }, enabled = kg != null && kg > 0) {
+                            Text(stringResource(R.string.body_save))
+                        }
                     }
                 }
                 Text(stringResource(R.string.scores_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

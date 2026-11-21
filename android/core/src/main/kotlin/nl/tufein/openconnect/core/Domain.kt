@@ -113,6 +113,15 @@ data class SleepSummary(
     val hours: Double get() = durationS / 3600.0
 }
 
+/** One day's weight (and optionally body fat), entered by hand; [grams] is the weight in grams. */
+data class BodyEntry(
+    val date: LocalDate,
+    val grams: Int,
+    val bodyFatPct: Double? = null,
+) {
+    val kg: Double get() = grams / 1000.0
+}
+
 /** An AI report kept so unchanged input is not regenerated (and re-billed). */
 data class StoredReport(
     val kind: String,

@@ -60,6 +60,7 @@ object Backup {
             put("activities", JsonArray(activities.map(::activityJson)))
             put("daily", JsonArray(repo.listDaily(FAR_PAST, FAR_FUTURE).map(::dailyJson)))
             put("sleep", JsonArray(repo.listSleep(FAR_PAST, FAR_FUTURE).map(::sleepJson)))
+            put("body", JsonArray(repo.listBody(FAR_PAST, FAR_FUTURE).map(::bodyJson)))
             put("samples", buildJsonArray { repo.listSamples(FAR_PAST, FAR_FUTURE).forEach { add(sampleJson(it)) } })
             // v0.17.0: the Oura Ring's days, in their own list. Older app versions simply skip it.
             put("oura", JsonArray(repo.listOuraDays(FAR_PAST, FAR_FUTURE).map { Json.parseToJsonElement(it.toJson()) }))
@@ -86,6 +87,7 @@ object Backup {
         val activities: List<Activity>
         val daily: List<DailySummary>
         val sleep: List<SleepSummary>
+        val body: List<BodyEntry>
         val samples: List<MetricSample>
         val oura: List<nl.tufein.openconnect.core.oura.OuraDay>
         val whoop: List<nl.tufein.openconnect.core.whoop.WhoopDay>
@@ -95,6 +97,7 @@ object Backup {
             activities = root.list("activities").map { activityOf(it.jsonObject) }
             daily = root.list("daily").map { dailyOf(it.jsonObject) }
             sleep = root.list("sleep").map { sleepOf(it.jsonObject) }
+            body = root.list("body").map { bodyOf(it.jsonObject) }
             samples = root.list("samples").map { sampleOf(it.jsonArray) }
             oura = root.list("oura").map { nl.tufein.openconnect.core.oura.OuraDay.fromJson(it.toString()) }
             whoop = root.list("whoop").map { nl.tufein.openconnect.core.whoop.WhoopDay.fromJson(it.toString()) }
@@ -108,6 +111,7 @@ object Backup {
         activities.forEach(repo::upsertActivity)
         daily.forEach(repo::upsertDaily)
         sleep.forEach(repo::upsertSleep)
+        body.forEach(repo::upsertBody)
         repo.upsertSamples(samples)
         oura.forEach(repo::upsertOuraDay)
         whoop.forEach(repo::upsertWhoopDay)
@@ -237,6 +241,19 @@ object Backup {
         put("remS", s.remS)
         put("awakeS", s.awakeS)
         putOptional(this, "score", s.score)
+    }
+
+    /** [grams] is what the person entered; body fat is optional and missing in older backups. */
+    private fun bodyOf(o: JsonObject) = BodyEntry(
+        date = date(o.need("date")),
+        grams = o.int("grams") ?: throw BackupException("a body entry without a weight"),
+        bodyFatPct = o.dbl("bodyFat"),
+    )
+
+    private fun bodyJson(b: BodyEntry) = buildJsonObject {
+        put("date", b.date.toString())
+        put("grams", b.grams)
+        putOptional(this, "bodyFat", b.bodyFatPct)
     }
 
     /** [metric code, time, day, value] keeps the many readings small. */

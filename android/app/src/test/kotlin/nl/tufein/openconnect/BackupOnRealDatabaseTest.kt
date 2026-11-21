@@ -122,8 +122,8 @@ class BackupOnRealDatabaseTest {
         "watch_files" to "only remembers which watch files were already read; the next sync reads them again",
     )
     private val inBackup = mapOf(
-        "activities" to "activities", "daily" to "daily", "sleep" to "sleep", "samples" to "samples",
-        "oura_days" to "oura", "whoop_days" to "whoop", "hume_days" to "hume",
+        "activities" to "activities", "daily" to "daily", "sleep" to "sleep", "body_weight" to "body",
+        "samples" to "samples", "oura_days" to "oura", "whoop_days" to "whoop", "hume_days" to "hume",
     )
 
     @Test

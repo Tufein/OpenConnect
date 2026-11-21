@@ -7,10 +7,13 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.printToString
 import androidx.test.core.app.ApplicationProvider
 import nl.tufein.openconnect.core.oura.OuraAuth
 import nl.tufein.openconnect.core.oura.OuraHttp
@@ -175,6 +178,8 @@ class OuraAndTouchScreenTest : AppTestBase() {
         waitForText("Latest:", substring = true) // the resting heart rate chart on the Health screen
         val hints = rule.onAllNodesWithText("Tap or slide along the chart to read a day.").fetchSemanticsNodes().size
         assertTrue(hints >= 1)
+        // The chart is composed a little beyond the viewport; scroll the chart node itself into view, then tap it.
+        rule.onNode(hasContentDescription("Resting heart rate", substring = true)).performScrollTo()
         rule.onNode(hasContentDescription("Resting heart rate", substring = true)).performTouchInput { click(center) }
         rule.waitUntil(5_000) { rule.onAllNodesWithText(" bpm", substring = true).fetchSemanticsNodes().size >= 2 }
         assertEquals(hints - 1, rule.onAllNodesWithText("Tap or slide along the chart to read a day.").fetchSemanticsNodes().size)

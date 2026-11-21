@@ -414,6 +414,17 @@
     <string name="score_readiness_30">Gereedheid, 30 dagen</string>
     <string name="score_sleep_30">Slaapscore, 30 dagen</string>
     <string name="health_charts">Grafieken</string>
+    <string name="body_title">Lichaam</string>
+    <string name="body_last">%1$s kg</string>
+    <string name="body_fat_line">%1$s%% vet</string>
+    <string name="body_weight">Gewicht (kg)</string>
+    <string name="body_fat">Vet % (optioneel)</string>
+    <string name="body_save">Opslaan</string>
+    <string name="body_none">Voer je gewicht van vandaag in om de trend te starten.</string>
+    <string name="body_trend_desc">Gewicht, %1$d dagen, laagste %2$s kg, hoogste %3$s kg, laatste %4$s kg.</string>
+    <string name="night_line">%1$s diep · %2$s licht · %3$s REM</string>
+    <string name="night_awake">%1$s wakker</string>
+    <string name="night_no_stages">Geen fasegegevens in deze nacht.</string>
     <string name="hrv_status">HRV-status</string>
     <string name="hrv_status_low">Onder je normaal</string>
     <string name="hrv_status_balanced">In balans</string>

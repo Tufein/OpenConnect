@@ -414,6 +414,17 @@
     <string name="score_readiness_30">Readiness, 30 days</string>
     <string name="score_sleep_30">Sleep score, 30 days</string>
     <string name="health_charts">Charts</string>
+    <string name="body_title">Body</string>
+    <string name="body_last">%1$s kg</string>
+    <string name="body_fat_line">%1$s%% fat</string>
+    <string name="body_weight">Weight (kg)</string>
+    <string name="body_fat">Fat % (optional)</string>
+    <string name="body_save">Save</string>
+    <string name="body_none">Enter today\'s weight to start the trend.</string>
+    <string name="body_trend_desc">Weight, %1$d days, lowest %2$s kg, highest %3$s kg, latest %4$s kg.</string>
+    <string name="night_line">%1$s deep · %2$s light · %3$s REM</string>
+    <string name="night_awake">%1$s awake</string>
+    <string name="night_no_stages">No stage information in this night\'s data.</string>
     <string name="hrv_status">HRV status</string>
     <string name="hrv_status_low">Below your normal</string>
     <string name="hrv_status_balanced">Balanced</string>
