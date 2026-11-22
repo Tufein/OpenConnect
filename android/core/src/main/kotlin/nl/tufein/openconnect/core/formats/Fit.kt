@@ -286,7 +286,7 @@ internal object Fit {
         }
 
         val s = session
-        if (s == null && track.isEmpty()) throw FormatError("FIT file contains no activity data")
+        if (s == null && track.isEmpty()) throw NoActivityData("FIT file contains no activity data")
 
         val start = s?.get(2)?.let { Instant.ofEpochSecond(it + FIT_EPOCH_OFFSET) } ?: track.first().time
         var activity = Activity(id = "pending", source = "import", startTime = start, track = track, deviceName = device)

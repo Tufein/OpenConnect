@@ -7,10 +7,11 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.2.0.** The app now keeps Health Connect up to date by itself: one switch fills missing steps, sleep and
-> weights in the background (every fifteen minutes and when the app opens, only where something is missing), weight
-> from the phone fills the Body card behind an optional permission, and background fills land in the sync log. The
-> Water card from v1.1.0 stays. [Release notes](docs/releases/v1.2.0.md).
+> **Status: v1.3.0.** A new theme: *your history is yours*. One import button now takes a whole archive, so Garmin
+> Connect's export, Strava's archive and OpenConnect's own *Export everything* go in as they are (ZIP in ZIP, gzip, streamed,
+> nothing overwritten or doubled), with a report of what came in, what was already there and what was skipped. How to
+> move over: [docs/MIGRATING.md](docs/MIGRATING.md). Health Connect fill-in (v1.2.0) and the Water card (v1.1.0) stay.
+> [Release notes](docs/releases/v1.3.0.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

@@ -12,7 +12,7 @@
     <string name="empty_title">Nog geen gegevens</string>
     <string name="empty_body">Laad demodata om rond te kijken, of importeer een FIT-, GPX- of TCX-bestand van je telefoon.</string>
     <string name="action_demo">Demodata laden</string>
-    <string name="action_import">Bestanden importeren</string>
+    <string name="action_import">Bestanden of een archief importeren</string>
     <string name="action_import_short">Importeren</string>
     <string name="action_clear">Alle gegevens wissen</string>
     <string name="clear_body">Dit verwijdert alle activiteiten, gezondheidswaarden en verslagen in de app. Dit kan niet ongedaan worden gemaakt.</string>
@@ -115,7 +115,7 @@
     <string name="report_writing">Verslag wordt geschreven…</string>
     <string name="report_language">Taal van verslagen</string>
     <string name="settings_data">Jouw gegevens</string>
-    <string name="settings_data_body">Alles staat alleen op deze telefoon. Importeer FIT-, GPX- of TCX-bestanden van je horloge of een andere app, of laad demodata.</string>
+    <string name="settings_data_body">Alles staat alleen op deze telefoon. Importeer FIT-, GPX- of TCX-bestanden, of een heel ZIP-archief: de exports van Garmin Connect en Strava werken zoals ze zijn. Of laad demodata.</string>
     <string name="settings_ai">AI: verslagen en coach</string>
     <string name="settings_ai_body">Verslagen en de coach worden offline geschreven, of door Claude of door Gemini met je eigen key. Kies er één: alleen die wordt getoond en gebruikt.</string>
     <string name="provider_template">Alleen offline</string>
@@ -1292,4 +1292,19 @@
     <string name="forward_open_notification_settings">Open de meldingsinstellingen</string>
     <string name="forward_hint_own_notification">Android laat OpenConnect geen meldingen tonen, dus de vaste melding (Meldingen naar het horloge) blijft verborgen. Zonder die melding stopt Android de app sneller en valt de verbinding met het horloge weg. Sta meldingen voor OpenConnect toe.</string>
     <string name="forward_test_not_asking">Het horloge heeft nog niet om meldingen gevraagd. De test blijft een minuut bewaard en verschijnt zodra het dat doet.</string>
+
+    <!-- v1.3.0: een heel archief importeren (ZIP, gzip, Strava- en Garmin-exports) -->
+    <string name="import_running">Bezig met importeren… %1$d bestanden bekeken, %2$d nieuw</string>
+    <string name="import_cancel">Stop met importeren</string>
+    <string name="import_busy">Er loopt nog een import</string>
+    <string name="import_summary">%1$d nieuw, %2$d al aanwezig, %3$d bestanden overgeslagen (geen activiteit), %4$d mislukt</string>
+    <string name="import_period">Activiteiten van %1$s tot %2$s</string>
+    <string name="import_backup_inside">Dit archief bevat een OpenConnect-back-up. Gebruik Terugzetten uit back-up om ook het dagboek, de schoenen en de doelen terug te halen.</string>
+    <string name="import_stopped_cancelled">Eerder gestopt, zoals je vroeg. Wat al binnen was blijft staan.</string>
+    <string name="import_stopped_files">Gestopt: het archief bevat te veel bestanden. Wat al binnen was blijft staan.</string>
+    <string name="import_stopped_large">Gestopt: het archief pakt uit tot te veel gegevens. Wat al binnen was blijft staan.</string>
+    <string name="import_failure_line">%1$s: %2$s</string>
+    <string name="import_more_failures">…en nog %1$d die mislukten</string>
+    <string name="import_unreadable">kon niet worden geopend</string>
+    <string name="synclog_archive">Archief importeren</string>
 </resources>

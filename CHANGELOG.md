@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.3.0: de verhuisdoos
+
+Eén importknop die een heel archief aankan: de export van Garmin Connect, het archief van Strava of OpenConnect's eigen *Alles exporteren* gaat er in één keer in, zonder uitpakken. Dit is het begin van een nieuw thema, **je geschiedenis is van jou** (roadmap, paragraaf 4b): eerst binnenhalen (v1.3.0 en v1.4.0), daarna terugkijken en vrij gebruiken.
+
+[Release notes](docs/releases/v1.3.0.md)
+
 ## v1.2.0: de app haalt het zelf op
 
 Health Connect is nu ook een bron die de app zelf bijhoudt: één schakelaar laat ontbrekende dagen, nachten en gewichten op de achtergrond aanvullen, en gewicht landt in de Body-kaart. De lees-knop haalt dat gewicht er meteen bij, met een aparte toestemming die je mag weigeren.

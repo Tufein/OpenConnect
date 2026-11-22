@@ -62,7 +62,7 @@ internal object Gpx {
                 )
             }
         }
-        if (track.isEmpty()) throw FormatError("GPX file contains no timestamped track points")
+        if (track.isEmpty()) throw NoActivityData("GPX file contains no timestamped track points")
 
         val metaName = root.elements().filter { it.local == "metadata" }.lastOrNull()?.childText("name")
         var activity = Activity(

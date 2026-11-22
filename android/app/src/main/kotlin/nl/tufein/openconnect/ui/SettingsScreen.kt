@@ -84,6 +84,8 @@ data class SettingsUi(
     val look: Look = Look(),
     /** The icon on the launcher. */
     val appIcon: AppIcon = AppIcon.HANDHELD,
+    /** The file import: its progress while it runs and the report of the last one (v1.3.0). */
+    val fileImport: ImportUi = ImportUi(),
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -100,6 +102,7 @@ fun SettingsScreen(
     onModel: (AiVendor, String) -> Unit,
     onDemo: () -> Unit,
     onImport: () -> Unit,
+    onCancelImport: () -> Unit = {},
     onExportDaily: () -> Unit,
     onExportActivities: () -> Unit,
     onClear: () -> Unit,
@@ -247,6 +250,7 @@ fun SettingsScreen(
             SurfaceCard {
                 Text(stringResource(R.string.settings_data_body), style = MaterialTheme.typography.bodyMedium)
                 SecondaryButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_import)) }
+                ImportStatus(ui.fileImport, onCancelImport)
                 SecondaryButton(onClick = onDemo, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_demo)) }
                 QuietButton(onClick = { confirmClear = true }) {
                     Text(stringResource(R.string.action_clear), color = MaterialTheme.colorScheme.error)
@@ -566,6 +570,7 @@ private fun SyncLogBody(log: List<SyncLogEntry>, onClear: () -> Unit) {
                 SyncLog.SOURCE_WHOOP -> R.string.synclog_whoop
                 SyncLog.SOURCE_HUME -> R.string.synclog_hume
                 SyncLog.SOURCE_HEALTH -> R.string.synclog_health
+                SyncLog.SOURCE_ARCHIVE -> R.string.synclog_archive
                 else -> R.string.synclog_account
             },
         )

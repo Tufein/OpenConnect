@@ -12,7 +12,7 @@
     <string name="empty_title">No data yet</string>
     <string name="empty_body">Load demo data to look around, or import a FIT, GPX or TCX file from your phone.</string>
     <string name="action_demo">Load demo data</string>
-    <string name="action_import">Import files</string>
+    <string name="action_import">Import files or an archive</string>
     <string name="action_import_short">Import</string>
     <string name="action_clear">Delete all data</string>
     <string name="clear_body">This removes every activity, health value and report stored in the app. It cannot be undone.</string>
@@ -115,7 +115,7 @@
     <string name="report_writing">Writing the report…</string>
     <string name="report_language">Report language</string>
     <string name="settings_data">Your data</string>
-    <string name="settings_data_body">Everything is stored on this phone only. Import FIT, GPX or TCX files from your watch or another app, or load demo data.</string>
+    <string name="settings_data_body">Everything is stored on this phone only. Import FIT, GPX or TCX files, or a whole ZIP archive: the exports of Garmin Connect and Strava work as they are. Or load demo data.</string>
     <string name="settings_ai">AI: reports and coach</string>
     <string name="settings_ai_body">Reports and the coach are written offline, or by Claude or by Gemini with your own key. Pick one: only that one is shown and used.</string>
     <string name="provider_template">Offline only</string>
@@ -1292,4 +1292,19 @@
     <string name="forward_open_notification_settings">Open notification settings</string>
     <string name="forward_hint_own_notification">Android does not let OpenConnect show notifications, so the persistent notification (Notifications to the watch) is hidden. Without it Android ends the app sooner and the connection to the watch drops. Allow notifications for OpenConnect.</string>
     <string name="forward_test_not_asking">The watch has not asked for notifications yet. The test is kept for a minute and shown when it does.</string>
+
+    <!-- v1.3.0: importing a whole archive (ZIP, gzip, Strava and Garmin exports) -->
+    <string name="import_running">Importing… %1$d files looked at, %2$d new</string>
+    <string name="import_cancel">Stop importing</string>
+    <string name="import_busy">An import is still running</string>
+    <string name="import_summary">%1$d new, %2$d already there, %3$d files skipped (not activities), %4$d failed</string>
+    <string name="import_period">Activities from %1$s to %2$s</string>
+    <string name="import_backup_inside">This archive holds an OpenConnect backup. Use Restore from backup to bring back the journal, shoes and goals too.</string>
+    <string name="import_stopped_cancelled">Stopped before the end, as you asked. What came in so far is kept.</string>
+    <string name="import_stopped_files">Stopped: the archive holds too many files. What came in so far is kept.</string>
+    <string name="import_stopped_large">Stopped: the archive unpacks to too much data. What came in so far is kept.</string>
+    <string name="import_failure_line">%1$s: %2$s</string>
+    <string name="import_more_failures">…and %1$d more that failed</string>
+    <string name="import_unreadable">could not be opened</string>
+    <string name="synclog_archive">Archive import</string>
 </resources>
