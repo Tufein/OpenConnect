@@ -32,6 +32,8 @@ English and Dutch. The look is sporty by default (see [DESIGN.md](DESIGN.md)): c
    export, Strava's archive and OpenConnect's own *Export everything* go in as they are. The archive is streamed
    (`core/ArchiveImport.kt`), an activity that is already there (same id, or another activity starting within 90
    seconds) is never overwritten, files that are not activities are skipped and counted, and Settings shows the report.
+   Since v1.4.0 the names in Strava's `activities.csv` and Garmin's `summarizedActivities.json` are applied, and the report can be
+   copied (counts, file name patterns and key names of the JSON files that are not read; never values or addresses).
    Steps, limits and what is not verified: **[MIGRATING.md](MIGRATING.md)**.
 3. **A Garmin watch, directly** (new in v0.3.0): USB cable for everything the watch stores, Bluetooth for live
    heart rate. No server and no Garmin account. How it works and what is not tested yet: **[WATCH.md](WATCH.md)**.

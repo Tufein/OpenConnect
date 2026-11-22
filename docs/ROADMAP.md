@@ -185,7 +185,7 @@ Geen belofte, wel de volgorde zoals die in paragraaf 6 stond:
 De app kan nu één FIT-, GPX- of TCX-bestand tegelijk importeren; Garmin's en Strava's eigen exporten zijn één groot ZIP-bestand en blijven dus
 onbruikbaar. Alle inzichten die er al zijn (vorm en vermoeidheid, VO2max, racevoorspelling, seizoensplan, heatmap, dezelfde route, hi-scores)
 worden pas goed met een lange geschiedenis. En er is geen enkel overzicht van het ene jaar naast het andere. Dit thema heeft drie delen:
-**binnenhalen** (M13, M14), **terugkijken** (M15) en **vrij gebruiken** (M16). Het past ook bij wat er nog moet voor een vreemde (G5 en G7):
+**binnenhalen** (M13, M14, M14b), **terugkijken** (M15) en **vrij gebruiken** (M16). Het past ook bij wat er nog moet voor een vreemde (G5 en G7):
 een nieuwe gebruiker verhuist, anders begint hij met een lege app.
 
 **Waarom nu en zo.** Bijna alles hieraan loopt via bestanden, dus het is van begin tot eind met tests in CI te controleren, ook zonder horloge
@@ -205,16 +205,18 @@ Eén importknop die ook een heel archief aankan, zodat Garmin's en Strava's expo
 
 Klaar als: een gemaakt archief met N activiteiten in drie formaten, deels geneste ZIP's en deels `.gz`, N activiteiten in de app oplevert, en dezelfde ZIP nog eens niets verandert. ✅ Zo getest in `ArchiveImportTest` (23 tests) en `ArchiveImportScreenTest`; **nooit met een echte export** (register, paragraaf 7).
 
-### M14: "Namen en dagen" 🔜 v1.4.0 (M)
+### M14: "Namen" ✅ v1.4.0 (M)
 
-De bestanden in een export hebben geen namen; die staan ernaast. En een export bevat ook dagen, niet alleen trainingen.
+De bestanden in een export hebben geen namen; die staan ernaast.
 
-- **Namen en soorten mee:** Strava's `activities.csv` (kolommen *Activity Name*, *Activity Type*, *Filename*) en Garmin's `summarizedActivities.json` geven de activiteit haar eigen naam, in plaats van "Running 2026-05-02".
-- **Dagen uit Garmin's export:** stappen, rusthartslag en slaap uit de JSON-bestanden naast de trainingen, gevuld waar de app nog niets heeft (nooit over iets heen dat horloge, ring of band gaf).
-- **Eigen export terug:** het `daily.csv` uit *Alles exporteren* leest de app weer in.
-- **Eerlijk:** Garmin beschrijft de velden van zijn export nergens openbaar, dus die lezer is 🧪 *Experimenteel* tot een echte export hem heeft doorstaan; wat hij niet kent, toont het rapport als lijst van onbekende bestanden en sleutels (zonder waarden).
+- **Namen mee:** Strava's `activities.csv` (kolommen *Activity Name* en *Filename*) en Garmin's `summarizedActivities.json` (op starttijd, binnen 90 seconden) geven de activiteit haar eigen naam in plaats van "Running 2026-05-02", in welke volgorde de bestanden ook staan. Wat in v1.3.0 al binnenkwam krijgt zijn naam bij een tweede import, mits het nog de bedachte naam draagt; een naam van jou of van een andere bron blijft.
+- **Eerlijk over wat niet wordt gelezen:** de dagbestanden van Garmin (`UDSFile_*.json`, `*_sleepData.json`) zijn nergens openbaar beschreven. Ze worden niet geïmporteerd (gokken in je gezondheidsgeschiedenis); het rapport schrijft per soort het patroon van de bestandsnaam en de sleutelnamen op (nooit waarden of e-mailadressen) en heeft een knop *Rapport kopiëren*.
 
-Klaar als: een Strava-archief met CSV namen geeft, en een nagemaakte Garmin-export dagen vult zonder iets te overschrijven.
+Klaar als: een Strava-archief met CSV namen geeft, een nagemaakte Garmin-export namen geeft op starttijd, en het rapport sleutelnamen toont zonder één waarde. ✅ `ArchiveNamesTest` (14 tests); **nooit met een echte export**.
+
+### M14b: "Dagen" 🔜 (M, ❓ wacht op een echt rapport van Stefan)
+
+Stappen, rusthartslag en slaap uit Garmin's dagbestanden, gevuld waar de app nog niets heeft (nooit over iets heen dat horloge, ring of band gaf), en het `daily.csv` uit *Alles exporteren* weer inlezen. De lezer wordt pas gebouwd als een echte export de sleutelnamen heeft laten zien; het rapport uit v1.4.0 is daar de ingang voor. Tot dan blijft het 🧪 en staat er niets in je gezondheidsgeschiedenis dat ergens op gegokt is.
 
 ### M15: "Terugblik" 🔜 v1.5.0 (M)
 
@@ -244,7 +246,7 @@ Lange geschiedenis moet je ook kunnen zien. Er is nu geen jaar-op-jaar.
 | ✅ 2026-11-18 | Minimum Android van 8.0 naar 9 | Gedaan in v0.52.0; telefoons met Android 8 blijven op v0.51.0 |
 | **Open**, vóór M12 af is | Beslissen over de naam: houden of veranderen (de pakketnaam `nl.tufein.openconnect` verandert in elk geval niet). Voorlopig blijft het OpenConnect | Het is jouw project en jouw merk |
 | Bij M9 | Schermafbeeldingen van je eigen telefoon aanleveren | Mijn plaatjes komen uit een test, niet van een toestel |
-| Bij M13 en M14 | Je export bij Garmin Connect (Account, Gegevensbeheer, *Je gegevens exporteren*) en eventueel Strava aanvragen en een keer in OpenConnect importeren; daarna het eindrapport (aantallen, overgeslagen bestanden, onbekende sleutels, geen waarden) terugsturen | De veldnamen van Garmin's export staan nergens beschreven; alleen een echte export kan bevestigen dat de lezer klopt |
+| Bij M13, M14 en M14b | Je export bij Garmin Connect (Account, Gegevensbeheer, *Je gegevens exporteren*) en eventueel Strava aanvragen en een keer in OpenConnect importeren; daarna in Instellingen op *Rapport kopiëren* drukken en dat in een melding op GitHub plakken (aantallen, bestandsnamen zonder e-mailadres, sleutelnamen, geen waarden) | De veldnamen van Garmin's export staan nergens beschreven; alleen een echte export kan bevestigen dat de lezer klopt |
 
 ## 6. Na 1.0
 
@@ -347,6 +349,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.0.7 | Nachtkaart met diep/licht/REM/wakker (data die al werd ingelezen) en Body-kaart voor gewicht en vetpercentage: schema 6 met migratie vanaf elke versie, back-up, 30-daagse lijn; tweetalige teksten |
 | v1.2.0 | De app haalt zelf op: een schakelaar vult ontbrekende stappen, slaap en gewicht uit Health Connect aan (elke vijftien minuten en bij openen), gewicht uit de telefoon vult de Body-kaart achter een optionele leesrecht, en aanvullingen staan in het synchronisatieoverzicht |
 | v1.3.0 | M13, begin van het nieuwe thema *je geschiedenis is van jou*: één importknop voor een heel archief (ZIP, ZIP in ZIP, gzip; Garmin- en Strava-export, eigen export), stromend met grenzen tegen een ZIP-bom, nooit overschrijven of verdubbelen (zelfde id of start binnen 90 s), overgeslagen bestanden geteld, rapport in Instellingen en het synchronisatieoverzicht |
+| v1.4.0 | M14: namen uit het archief (Strava `activities.csv`, Garmin `summarizedActivities.json` op starttijd), een tweede import geeft eerder binnengehaalde activiteiten hun naam zolang die nog bedacht is, de vorm van niet-gelezen JSON (alleen sleutelnamen) in het rapport met *Rapport kopiëren* |
 | v1.1.0 | Eerste 1.1-release: het HRV- en Body-werk van v1.0.6/v1.0.7 gebundeld plus een Water-kaart op Health (+250/+500 ml, dagtotaal lokaal omdat Garmin geen water levert), schema 7 met migratie vanaf elke versie en het water in de back-up |
 
 ## 9. Hoe releases werken

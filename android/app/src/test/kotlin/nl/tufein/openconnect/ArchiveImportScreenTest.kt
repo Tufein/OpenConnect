@@ -58,6 +58,21 @@ class ArchiveImportScreenTest : AppTestBase() {
         return file
     }
 
+    private fun archiveWithNames(): File {
+        val file = File.createTempFile("strava", ".zip")
+        ZipOutputStream(file.outputStream()).use { z ->
+            fun put(name: String, bytes: ByteArray) {
+                z.putNextEntry(ZipEntry(name))
+                z.write(bytes)
+                z.closeEntry()
+            }
+            put("activities.csv", "Activity Name,Filename\r\nLunch run,activities/1.fit\r\n".toByteArray())
+            put("activities/1.fit", Formats.export(run(1), "fit").bytes)
+            put("DI_CONNECT/DI-Connect-Aggregator/UDSFile_2020-01-01_2020-04-10.json", """[{"calendarDate": "2020-01-01", "totalSteps": 8123}]""".toByteArray())
+        }
+        return file
+    }
+
     private fun importFile(file: File) {
         scenario.onActivity { activity ->
             ViewModelProvider(activity)[AppViewModel::class.java].importUris(listOf(Uri.fromFile(file)))
@@ -95,5 +110,22 @@ class ArchiveImportScreenTest : AppTestBase() {
         val junk = File.createTempFile("notes", ".txt").also { it.writeText("hello") }
         importFile(junk)
         waitForText("0 new, 0 already there, 1 files skipped", substring = true)
+    }
+
+    @Test
+    fun `names from the archive and the shape of unread JSON files show up and the report can be copied`() {
+        launchFresh()
+        waitForText("Load demo data")
+        tab("Settings").performClick()
+        rule.waitForIdle()
+        scrollToText("Import files or an archive")
+
+        importFile(archiveWithNames())
+        waitForText("files skipped", substring = true)
+        assertTrue(hasText("1 activities got the name they have in the archive", substring = true))
+        assertTrue(hasText("1 kind(s) of JSON file were not read", substring = true))
+        scrollToText("Copy report")
+        clickText("Copy report")
+        waitForText("Report copied")
     }
 }

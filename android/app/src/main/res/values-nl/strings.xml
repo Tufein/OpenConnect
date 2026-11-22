@@ -1306,5 +1306,9 @@
     <string name="import_failure_line">%1$s: %2$s</string>
     <string name="import_more_failures">…en nog %1$d die mislukten</string>
     <string name="import_unreadable">kon niet worden geopend</string>
+    <string name="import_named">%1$d activiteiten kregen de naam die ze in het archief hebben</string>
+    <string name="import_shapes">%1$d soort(en) JSON-bestand zijn niet gelezen (hun indeling is niet beschreven). Het rapport noemt alleen de patronen van de bestandsnamen en de sleutelnamen, nooit waarden of adressen.</string>
+    <string name="import_copy">Rapport kopiëren</string>
+    <string name="import_copied">Rapport gekopieerd</string>
     <string name="synclog_archive">Archief importeren</string>
 </resources>

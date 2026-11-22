@@ -16,15 +16,17 @@ export in één keer inlezen, zonder dat je iets hoeft uit te pakken.
 4. Laat OpenConnect open tot het klaar is. De voortgang staat in Instellingen onder de knop; je kunt stoppen, wat al binnen is blijft staan.
 
 Wat erin zit: de FIT-bestanden van je horloge staan in een ZIP in de export (`UploadedFiles_*.zip`); OpenConnect opent die zelf.
-De rest van de export (profiel, JSON-bestanden met samenvattingen en dagen) wordt in v1.3.0 overgeslagen en geteld; v1.4.0 leest
-daar namen en dagen uit.
+`summarizedActivities.json` geeft sinds v1.4.0 de namen (gekoppeld op starttijd). De dagbestanden (stappen, slaap, rusthartslag) worden nog **niet**
+gelezen, want Garmin beschrijft die nergens; ze worden overgeslagen en geteld, en het rapport schrijft de vorm op (patroon van de bestandsnaam en
+sleutelnamen, geen waarden, geen e-mailadres). Met **Rapport kopiëren** zet je dat op het klembord om in een melding op GitHub te plakken.
 
 ### Strava
 
 1. Strava, *Instellingen*, *Mijn account*, *Je account downloaden of verwijderen*, *Aan de slag*, **Archief aanvragen**. Strava mailt een link.
 2. Download het ZIP-bestand en importeer het zoals hierboven. Strava bewaart je activiteiten in `activities/` als `.fit.gz`, `.gpx` of
    `.tcx.gz`; OpenConnect leest ze alle drie.
-3. De namen die je in Strava gaf staan in `activities.csv` en komen met v1.4.0 mee; nu krijgt elke activiteit een naam als *Running 2026-05-02*.
+3. De namen die je in Strava gaf staan in `activities.csv`. Sinds v1.4.0 krijgt elke activiteit die naam; met v1.3.0 stond er *Running 2026-05-02*. Importeer
+   het archief nog eens als je in v1.3.0 al iets hebt binnengehaald: dan krijgt wat nog de bedachte naam draagt zijn echte naam (een naam die jij gaf blijft).
 
 ### Eigen export
 
@@ -56,12 +58,13 @@ without unpacking.
 **Garmin Connect.** On a computer open your Garmin account (garmin.com, *Account*, *Data Management*), choose **Export Your Data** and request
 the export; Garmin emails a link when it is ready (hours to days). Download the ZIP on your phone and do **not** unpack it. In OpenConnect:
 *Settings*, *Your data*, **Import files or an archive**, pick the ZIP. Keep the app open until it finishes. The watch's FIT files sit in a ZIP
-inside the export (`UploadedFiles_*.zip`); OpenConnect opens that itself. The JSON files with summaries and days are skipped and counted in
-v1.3.0; v1.4.0 reads names and days from them.
+inside the export (`UploadedFiles_*.zip`); OpenConnect opens that itself. Since v1.4.0 `summarizedActivities.json` gives the names (matched on start time). The daily files (steps, sleep, resting heart rate) are **not**
+read yet because Garmin does not document them; they are skipped and counted, and the report writes down their shape (file name pattern and key names,
+no values, no addresses). **Copy report** puts it on the clipboard to paste into a GitHub issue.
 
 **Strava.** *Settings*, *My Account*, *Download or Delete Your Account*, *Get Started*, **Request Your Archive**. Import the ZIP the same
 way. Strava keeps activities in `activities/` as `.fit.gz`, `.gpx` or `.tcx.gz`; all three are read. The names you gave them are in
-`activities.csv` and come with v1.4.0.
+`activities.csv` and, since v1.4.0, the activities get them (import the archive again if you imported it with v1.3.0; a name you gave stays).
 
 **Your own export.** *Export everything* from OpenConnect is a ZIP too: the activities come back, and the journal, shoes, plan and goals come
 back with **Restore from backup** (the report says when a backup is inside).
