@@ -393,6 +393,7 @@ fun OpenConnectRoot(
                     onHealthExport = vm::exportHealth,
                     onHealthImport = vm::importHealth,
                     onHealthAuto = vm::setHealthAuto,
+                    onHealthAutoImport = vm::setHealthAutoImport,
                     onBackup = onBackup,
                     onRestore = onRestore,
                     onExportAll = onExportAll,

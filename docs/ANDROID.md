@@ -19,7 +19,7 @@ phone, so fonts and spacing on a real device can differ slightly.*
 | **Insights** | **Week** (totals, AI report, personal records), **Day** (one day against your own last four weeks, from the watch or the ring, chosen in dropdowns), **Trophies** (17 trophies and a level) and **Coach** (chat about your numbers). See [INSIGHTS.md](INSIGHTS.md) and [AI.md](AI.md) |
 | **Watch** | Read a Garmin watch over a USB cable or a folder of watch files (activities, steps, sleep, heart rate, stress, Body Battery, SpO2, HRV, ...) and follow live heart rate over Bluetooth, which reconnects by itself. See [WATCH.md](WATCH.md) |
 | **Garmin account** | Paste your personal Garmin key and pull steps, heart rate, stress, Body Battery, sleep, HRV and activities (with their original FIT files) from your Garmin account; syncs by itself too. See [GARMIN.md](GARMIN.md) |
-| **Settings** | Theme (follow phone, dark, light), import files, load or delete all data, **CSV export**, who writes the reports and the coach (automatic, offline, Claude, Gemini), report language, a key and model per provider, and an **updater** that checks GitHub, verifies the APK's SHA-256 and installs it |
+| **Settings** | Theme (follow phone, dark, light), import files, load or delete all data, **CSV export**, who writes the reports and the coach (automatic, offline, Claude, Gemini), report language, a key and model per provider, **Health Connect** (send, read, and since v1.2.0 fill missing days in the background), and an **updater** that checks GitHub, verifies the APK's SHA-256 and installs it |
 
 English and Dutch. The look is sporty by default (see [DESIGN.md](DESIGN.md)): compact IBM Plex Sans type, flat panels with a hairline border, restrained corners, rectangular controls, smooth charts and a plain bottom bar. Graphite gives cool neutrals with one blue accent; Track is the same idea in orange. The original "Handheld" console look — pixel type, pixel-cut corners, flat panels with a hard shadow, block charts and a 25-block readiness bar — is still available as the Retro style, as is a formal Classic style. All 26 colour themes (sport, retro screens, easy-on-the-eyes ones such as High contrast, colourful ones and the phone's Wallpaper) work in every style; a fresh install starts on Graphite. The first start offers a choice of style and theme with a live preview, and *Settings → Appearance* shows that same preview above the choices. The day's key numbers stay open; the 7-day lines, the month chart and the recent-activity list fold away on Home, Health shows one chart at a time in tabs under the scores, and Insights keeps six everyday tabs with the rest behind *More*. The home-screen widget and the start-up background follow the chosen palette. Retro also has a choice of letters, and the launcher icon is one of eight. The launcher icon is the pixel heart of the logo with a pulse through it, and it has a themed (single-colour) version for Android 13 and later.
 
@@ -31,6 +31,9 @@ English and Dutch. The look is sporty by default (see [DESIGN.md](DESIGN.md)): c
 3. **A Garmin watch, directly** (new in v0.3.0): USB cable for everything the watch stores, Bluetooth for live
    heart rate. No server and no Garmin account. How it works and what is not tested yet: **[WATCH.md](WATCH.md)**.
 4. **Your Garmin account** (new in v0.4.0): with a personal key that you make yourself, no server in between. **[GARMIN.md](GARMIN.md)**.
+5. **Health Connect**: steps, sleep and (since v1.2.0) weight from the phone, filled by Garmin Connect, Oura, WHOOP or
+   another app. The app can also send activities back, and since v1.2.0 fill missing days, nights and weights itself in
+   the background. Card under *Settings → Health Connect*.
 
 ### AI reports, the coach and privacy
 
@@ -45,6 +48,10 @@ English and Dutch. The look is sporty by default (see [DESIGN.md](DESIGN.md)): c
   `ACCESS_NETWORK_STATE` and `WAKE_LOCK` (to run when there is a connection), `RECEIVE_BOOT_COMPLETED` (to schedule
   again after a restart) and `FOREGROUND_SERVICE` (declared by the library, not used by the app). Backups and device
   transfer are off (`allowBackup=false` plus data-extraction rules that exclude everything).
+- Health Connect is reached through the system service, never over the network: reading needs `health.READ_STEPS` and
+  `health.READ_SLEEP`, weight is the optional `health.READ_WEIGHT` (refuse it and everything else still works), and
+  sending activities needs the three write permissions. Since v1.2.0 a WorkManager job tops up missing days when you
+  turn that on; it asks for no network and waits until the battery is not low.
 - Text from imported files (activity names) only travels inside the data block of the prompt.
 
 ### About, source labels and diagnostics (v0.55.0)
@@ -174,8 +181,9 @@ endpoint and use a client secret, which cannot live inside an APK. What fits a s
 **Garmin account** screen uses since v0.4.0. The key is entered by the person using the app and kept encrypted on the
 phone; it is never part of the APK. Besides that there is the **Watch screen** (USB cable, a folder of watch files,
 live heart rate over Bluetooth), file import, Garmin Connect's own export, or any app that writes FIT, GPX or TCX.
-Garmin's Health SDK would read the watch over Bluetooth but is limited to approved enterprise partners. Reading from
-Android Health Connect is a candidate extra source (it needs Garmin Connect on the phone to fill it). All of it, with
+Garmin's Health SDK would read the watch over Bluetooth but is limited to approved enterprise partners. Android
+Health Connect is a source as well (steps, sleep and weight; another app such as Garmin Connect has to fill it), and
+since v1.2.0 the app tops up missing days from it in the background. All of it, with
 what is verified, is in [GARMIN.md](GARMIN.md) and [WATCH.md](WATCH.md).
 
 ## What has and has not been verified
@@ -194,4 +202,4 @@ what is verified, is in [GARMIN.md](GARMIN.md) and [WATCH.md](WATCH.md).
 
 Trying the watch routes and the background job on real devices and fixing what that turns up, a live Claude and Gemini
 check with real keys, the watch's `Metrics` folder (VO2 max, training status),
-Health Connect as a source, a home-screen widget, laps and zoomable charts, and a signed Play Store build.
+Health Connect on a real phone, a home-screen widget, laps and zoomable charts, and a signed Play Store build.

@@ -19,6 +19,8 @@
     <uses-permission android:name="android.permission.health.WRITE_TOTAL_CALORIES_BURNED" />
     <uses-permission android:name="android.permission.health.READ_STEPS" />
     <uses-permission android:name="android.permission.health.READ_SLEEP" />
+    <!-- Optional since v1.2.0: only fills the Body card where the app has no weight yet; the rest works without it. -->
+    <uses-permission android:name="android.permission.health.READ_WEIGHT" />
     <!-- v0.50.0, the Hume Band: its app writes these to Health Connect and OpenConnect reads only what that app wrote. -->
     <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
     <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE" />

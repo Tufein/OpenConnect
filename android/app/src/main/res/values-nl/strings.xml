@@ -517,11 +517,12 @@
     <string name="health_unavailable">Health Connect is niet beschikbaar op deze telefoon. Het zit in Android 14 en nieuwer; op oudere versies installeer je het via Google Play.</string>
     <string name="health_allow">Toegang toestaan in Health Connect</string>
     <string name="health_send">Activiteiten nu versturen</string>
-    <string name="health_read">Stappen en slaap lezen</string>
+    <string name="health_read">Stappen, slaap en gewicht lezen</string>
     <string name="health_auto">Nieuwe activiteiten na elke sync versturen</string>
+    <string name="health_auto_import">Ontbrekende dagen op de achtergrond aanvullen</string>
     <string name="health_busy">Bezig…</string>
     <string name="health_sent">%1$d activiteiten verstuurd (%2$d overgeslagen omdat ze geen duur hebben)</string>
-    <string name="health_read_done">%1$d dagen stappen en %2$d nachten slaap aangevuld</string>
+    <string name="health_read_done">%1$d dagen stappen, %2$d nachten slaap en %3$d gewichten aangevuld</string>
     <string name="health_failed">Health Connect nam het niet aan: %1$s</string>
     <string name="period_week">Week</string>
     <string name="period_month">Maand</string>
@@ -1134,6 +1135,7 @@
     <!-- Hume Band (v0.50.0), gelezen uit Health Connect. De teksten voor laatste sync, rapport, gemiddelde en "nu synchroniseren" delen we met het Oura-scherm (oura_*). -->
     <string name="action_hume">Open de Hume-tab</string>
     <string name="synclog_hume">Hume Band</string>
+    <string name="synclog_health">Health Connect</string>
     <string name="source_hume">Hume Band</string>
     <string name="tab_hume">Hume</string>
     <string name="device_hume">Hume Band</string>

@@ -10,6 +10,7 @@ import androidx.health.connect.client.records.ExerciseSessionRecord
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
+import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
@@ -27,6 +28,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.Period
 import java.time.ZoneId
+import kotlin.math.roundToInt
 
 /**
  * The phone's Health Connect. Like the Bluetooth and USB links it can only really be tried on a phone that has Health
@@ -34,7 +36,7 @@ import java.time.ZoneId
  */
 class AndroidHealthConnectGateway(private val context: Context, private val zone: () -> ZoneId = { ZoneId.systemDefault() }) : HealthConnectGateway {
     companion object {
-        /** What the person is asked to allow: write sessions, distance and calories; read steps and sleep. */
+        /** What the card needs to be ready: write sessions, distance and calories; read steps and sleep. */
         val PERMISSIONS: Set<String> = setOf(
             HealthPermission.getWritePermission(ExerciseSessionRecord::class),
             HealthPermission.getWritePermission(DistanceRecord::class),
@@ -42,6 +44,15 @@ class AndroidHealthConnectGateway(private val context: Context, private val zone
             HealthPermission.getReadPermission(StepsRecord::class),
             HealthPermission.getReadPermission(SleepSessionRecord::class),
         )
+
+        /**
+         * Asked together with [PERMISSIONS], but not needed for the card to work: weight only fills the Body card where
+         * OpenConnect has no weight yet. Someone who declines it keeps steps, sleep and the export.
+         */
+        val OPTIONAL_PERMISSIONS: Set<String> = setOf(HealthPermission.getReadPermission(WeightRecord::class))
+
+        /** Everything the permission screen asks for. */
+        val ASKED_PERMISSIONS: Set<String> = PERMISSIONS + OPTIONAL_PERMISSIONS
 
         fun exerciseType(sportKey: String): Int = when (sportKey) {
             "running" -> ExerciseSessionRecord.EXERCISE_TYPE_RUNNING
@@ -139,5 +150,24 @@ class AndroidHealthConnectGateway(private val context: Context, private val zone
             token = page.pageToken
         } while (token != null)
         byNight.mapValues { it.value.toInt() }
+    }
+
+    override suspend fun weight(from: LocalDate, to: LocalDate): Map<LocalDate, Int> = guarded {
+        // Weight is the optional permission: without it the Body card simply stays empty instead of the import failing.
+        if (!client.permissionController.getGrantedPermissions().containsAll(OPTIONAL_PERMISSIONS)) return@guarded emptyMap()
+        val z = zone()
+        val filter = TimeRangeFilter.between(from.atStartOfDay(z).toInstant(), to.plusDays(1).atStartOfDay(z).toInstant())
+        val byDay = HashMap<LocalDate, Int>()
+        var token: String? = null
+        do {
+            val page = client.readRecords(ReadRecordsRequest(WeightRecord::class, filter, pageToken = token))
+            for (r in page.records) {
+                val day = r.time.atZone(z).toLocalDate()
+                // A smart scale can write more than one reading a day; the last one is the weight that counts.
+                if (day in from..to) byDay[day] = r.weight.inGrams.roundToInt()
+            }
+            token = page.pageToken
+        } while (token != null)
+        byDay
     }
 }

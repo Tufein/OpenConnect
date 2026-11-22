@@ -1,6 +1,7 @@
 package nl.tufein.openconnect.core.health
 
 import nl.tufein.openconnect.core.Activity
+import nl.tufein.openconnect.core.BodyEntry
 import nl.tufein.openconnect.core.DailySummary
 import nl.tufein.openconnect.core.Repository
 import nl.tufein.openconnect.core.SleepSummary
@@ -42,19 +43,25 @@ interface HealthConnectGateway {
 
     /** Seconds slept per night from [from] to [to] inclusive, by the day the person woke up. */
     suspend fun sleep(from: LocalDate, to: LocalDate): Map<LocalDate, Int>
+
+    /**
+     * Body weight in grams per day from [from] to [to] inclusive, for days that have one: the last measurement of the day
+     * (a smart scale may write more than one). Empty when the phone does not allow reading weight, which is not an error.
+     */
+    suspend fun weight(from: LocalDate, to: LocalDate): Map<LocalDate, Int>
 }
 
 /** [skipped] could not be sent at all (no duration); [unchanged] were left out of an automatic export because Health Connect already has them. */
 data class HealthExportReport(val sent: Int, val skipped: Int, val unchanged: Int = 0)
 
-data class HealthImportReport(val daysFilled: Int, val nightsFilled: Int)
+data class HealthImportReport(val daysFilled: Int, val nightsFilled: Int, val weightsFilled: Int = 0)
 
 /**
  * Moves data between OpenConnect and Health Connect, in a way that cannot make a mess:
  *  - **Out:** every activity that did not itself come from Health Connect, under a stable id, so repeating it is harmless.
  *    The button sends all of them; the automatic export after a sync sends only those that are new or edited since the
  *    last time (the [ledger] remembers what went out), so a long history is not resent after every sync.
- *  - **In:** only steps and sleep, and only where OpenConnect has nothing yet. What your watch gave stays; Health Connect
+ *  - **In:** only steps, sleep and weight, and only where OpenConnect has nothing yet. What your watch gave stays; Health Connect
  *    fills the gaps. Activities are not read back, because the same run could then exist twice.
  */
 class HealthConnectSync(
@@ -123,7 +130,16 @@ class HealthConnectSync(
                 nightsFilled++
             }
         }
-        return HealthImportReport(daysFilled, nightsFilled)
+        var weightsFilled = 0
+        for ((date, grams) in gateway.weight(from, today)) {
+            if (grams <= 0) continue
+            // Only where there is no weight yet: a number the person typed themselves stays.
+            if (repo.listBody(date, date).isEmpty()) {
+                repo.upsertBody(BodyEntry(date = date, grams = grams))
+                weightsFilled++
+            }
+        }
+        return HealthImportReport(daysFilled, nightsFilled, weightsFilled)
     }
 }
 
@@ -136,4 +152,6 @@ object NoHealthConnect : HealthConnectGateway {
     override suspend fun steps(from: LocalDate, to: LocalDate) = emptyMap<LocalDate, Int>()
 
     override suspend fun sleep(from: LocalDate, to: LocalDate) = emptyMap<LocalDate, Int>()
+
+    override suspend fun weight(from: LocalDate, to: LocalDate) = emptyMap<LocalDate, Int>()
 }

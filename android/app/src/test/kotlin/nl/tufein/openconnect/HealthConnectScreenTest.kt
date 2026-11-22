@@ -25,11 +25,15 @@ class HealthConnectScreenTest : AppTestBase() {
         override suspend fun write(sessions: List<HealthSession>): Int = sessions.size.also { sent += it }
         override suspend fun steps(from: LocalDate, to: LocalDate) = emptyMap<LocalDate, Int>()
         override suspend fun sleep(from: LocalDate, to: LocalDate) = emptyMap<LocalDate, Int>()
+        override suspend fun weight(from: LocalDate, to: LocalDate) = emptyMap<LocalDate, Int>()
     }
 
+    private lateinit var settings: SettingsStore
+
     private fun launch(access: HealthAccess) = launchFresh { app ->
+        settings = SettingsStore(app)
         app.containerOverride = AppContainer(
-            SqliteRepository(app), SettingsStore(app), FakeUsb { error("no usb") }, FakeBle(), healthConnect = Fake(access),
+            SqliteRepository(app), settings, FakeUsb { error("no usb") }, FakeBle(), healthConnect = Fake(access),
         )
     }
 
@@ -63,10 +67,24 @@ class HealthConnectScreenTest : AppTestBase() {
         launch(HealthAccess.READY)
         openSettingsWithDemo()
         scrollToText("Send activities now")
-        assertTrue(hasText("Read steps and sleep", substring = false))
+        assertTrue(hasText("Read steps, sleep and weight", substring = false))
         // The "Demo data loaded" message sits over the lower part of the screen and would take the click.
         rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
         clickText("Send activities now")
         waitForText("Sent ", substring = true)
+    }
+
+    @Test
+    fun `filling gaps in the background is off until it is switched on`() {
+        launch(HealthAccess.READY)
+        openSettingsWithDemo()
+        scrollToText("Fill missing days in the background")
+        assertTrue(!settings.health.autoImport, "off by default")
+        clickText("Fill missing days in the background")
+        rule.waitForIdle()
+        assertTrue(settings.health.autoImport, "the switch is kept")
+        clickText("Fill missing days in the background")
+        rule.waitForIdle()
+        assertTrue(!settings.health.autoImport, "and can be turned off again")
     }
 }

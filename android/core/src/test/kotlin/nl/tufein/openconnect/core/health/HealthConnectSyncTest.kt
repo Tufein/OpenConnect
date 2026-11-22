@@ -2,6 +2,7 @@ package nl.tufein.openconnect.core.health
 
 import kotlinx.coroutines.runBlocking
 import nl.tufein.openconnect.core.Activity
+import nl.tufein.openconnect.core.BodyEntry
 import nl.tufein.openconnect.core.DailySummary
 import nl.tufein.openconnect.core.InMemoryRepository
 import nl.tufein.openconnect.core.SleepSummary
@@ -17,6 +18,7 @@ class HealthConnectSyncTest {
     private class Fake(
         val stepsByDay: Map<LocalDate, Int> = emptyMap(),
         val sleepByDay: Map<LocalDate, Int> = emptyMap(),
+        val weightByDay: Map<LocalDate, Int> = emptyMap(),
     ) : HealthConnectGateway {
         val written = ArrayList<HealthSession>()
         var batches = 0
@@ -28,6 +30,7 @@ class HealthConnectSyncTest {
         }
         override suspend fun steps(from: LocalDate, to: LocalDate) = stepsByDay.filterKeys { it in from..to }
         override suspend fun sleep(from: LocalDate, to: LocalDate) = sleepByDay.filterKeys { it in from..to }
+        override suspend fun weight(from: LocalDate, to: LocalDate) = weightByDay.filterKeys { it in from..to }
     }
 
     private val repo = InMemoryRepository()
@@ -96,8 +99,23 @@ class HealthConnectSyncTest {
     }
 
     @Test
-    fun `importing twice changes nothing the second time`() = runBlocking {
-        val fake = Fake(stepsByDay = mapOf(today to 3000), sleepByDay = mapOf(today to 20_000))
+    fun `weight fills the body card only where there is none yet`() = runBlocking {
+        val d1 = today.minusDays(1)
+        val d2 = today.minusDays(2)
+        repo.upsertBody(BodyEntry(date = d1, grams = 81_000, bodyFatPct = 18.0)) // typed in by hand: kept
+        val fake = Fake(weightByDay = mapOf(d1 to 90_000, d2 to 82_400, today to 0, today.minusDays(40) to 70_000))
+        val report = sync(fake).import(days = 30, today = today)
+
+        assertEquals(HealthImportReport(daysFilled = 0, nightsFilled = 0, weightsFilled = 1), report)
+        assertEquals(81_000, repo.listBody(d1, d1).single().grams)
+        assertEquals(18.0, repo.listBody(d1, d1).single().bodyFatPct, "the fat percentage of a hand-typed row stays too")
+        assertEquals(82_400, repo.listBody(d2, d2).single().grams)
+        assertTrue(repo.listBody(today, today).isEmpty(), "a zero reading is not weight")
+        assertTrue(repo.listBody(today.minusDays(40), today.minusDays(40)).isEmpty(), "outside the 30 days asked for")
+    }
+
+    @Test
+    fun `importing twice changes nothing the second time`() = runBlocking {        val fake = Fake(stepsByDay = mapOf(today to 3000), sleepByDay = mapOf(today to 20_000))
         assertEquals(HealthImportReport(1, 1), sync(fake).import(today = today))
         assertEquals(HealthImportReport(0, 0), sync(fake).import(today = today))
     }

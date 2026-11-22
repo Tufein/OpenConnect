@@ -501,6 +501,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         if (container.settings.useOura) container.oura.syncIfDue(gap)
         if (container.settings.useWhoop) container.whoop.syncIfDue(gap)
         if (container.settings.useHume) container.hume.syncIfDue(gap)
+        // Health Connect is on the phone itself; the switch inside the controller decides whether it is filled.
+        container.health.autoImportIfDue(gap)
     }
 
     private companion object {
@@ -577,6 +579,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun importHealth() = container.health.importNow()
 
     fun setHealthAuto(on: Boolean) = container.health.setAuto(on)
+
+    fun setHealthAutoImport(on: Boolean) = container.health.setAutoImport(on)
 
     private val _nudges = MutableStateFlow(container.settings.nudges.enabled)
     val nudges: StateFlow<Boolean> = _nudges.asStateFlow()

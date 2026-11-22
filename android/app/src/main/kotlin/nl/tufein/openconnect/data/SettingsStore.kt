@@ -361,11 +361,15 @@ class SettingsStore(
             set(value) = prefs.edit().putBoolean(KEY_FORWARD_SCREEN_OFF, value).apply()
     }
 
-    /** The Health Connect switch: send activities after every sync. Off by default. */
+    /** The Health Connect switches: send activities after every sync, and fill missing days from the phone. Both off by default. */
     val health: HealthSettings = object : HealthSettings {
         override var auto: Boolean
             get() = prefs.getBoolean(KEY_HEALTH_AUTO, false)
             set(value) = prefs.edit().putBoolean(KEY_HEALTH_AUTO, value).apply()
+
+        override var autoImport: Boolean
+            get() = prefs.getBoolean(KEY_HEALTH_AUTO_IMPORT, false)
+            set(value) = prefs.edit().putBoolean(KEY_HEALTH_AUTO_IMPORT, value).apply()
     }
 
     /** What was already sent to Health Connect (client id and a fingerprint per activity), so the automatic export sends only what is new. */
@@ -429,6 +433,7 @@ class SettingsStore(
         private const val KEY_APP_LOCK = "app_lock"
         private const val KEY_SYNC_LOG = "sync_log"
         private const val KEY_HEALTH_AUTO = "health_connect_auto"
+        private const val KEY_HEALTH_AUTO_IMPORT = "health_connect_auto_import"
         private const val KEY_HEALTH_LEDGER = "health_connect_ledger"
         private const val KEY_FORWARD = "forward_enabled"
         private const val KEY_FORWARD_APPS = "forward_apps"

@@ -115,6 +115,8 @@ class AppContainer(
     humeSettings: nl.tufein.openconnect.hume.HumeSettings = settings.hume,
     /** Starts and stops the Hume job. Tests pass a fake; the app passes WorkManager. */
     humeSync: BackgroundSync = BackgroundSync { },
+    /** Starts and stops the Health Connect fill job. Tests pass a fake; the app passes WorkManager. */
+    healthSync: BackgroundSync = BackgroundSync { },
     /** Keeps a live heart-rate recording alive with the screen off. Tests pass a fake; the app posts a notification. */
     keeper: LiveRecordingKeeper = NoLiveRecordingKeeper,
     /** What the person chose for notifications on the watch. */
@@ -189,6 +191,8 @@ class AppContainer(
         io = Dispatchers.IO,
         onDataChanged = { dataChanged.tryEmit(Unit) },
         ledger = settings.healthLedger,
+        onSynced = syncLog::record,
+        onBackgroundWanted = healthSync::set,
     )
 
     init {
@@ -374,6 +378,7 @@ class OpenConnectApp : Application() {
             whoopSync = nl.tufein.openconnect.sync.WorkManagerWhoopSync(this),
             humeGateway = nl.tufein.openconnect.health.AndroidHumeGateway(this),
             humeSync = nl.tufein.openconnect.sync.WorkManagerHumeSync(this),
+            healthSync = nl.tufein.openconnect.sync.WorkManagerHealthSync(this),
             keeper = ForegroundLiveRecording(this),
             forwardKeeper = ForegroundForwarding(this, trail::add),
             forwardAccess = { ForwardAccess.hasNotificationAccess(this) },

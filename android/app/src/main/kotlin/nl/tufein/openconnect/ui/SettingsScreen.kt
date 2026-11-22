@@ -130,6 +130,7 @@ fun SettingsScreen(
     onHealthExport: () -> Unit = {},
     onHealthImport: () -> Unit = {},
     onHealthAuto: (Boolean) -> Unit = {},
+    onHealthAutoImport: (Boolean) -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     var confirmClear by remember { mutableStateOf(false) }
@@ -294,7 +295,7 @@ fun SettingsScreen(
         }
         item {
             SectionTitle(stringResource(R.string.settings_health))
-            SurfaceCard { HealthConnectBody(health, onHealthChecked, onHealthExport, onHealthImport, onHealthAuto) }
+            SurfaceCard { HealthConnectBody(health, onHealthChecked, onHealthExport, onHealthImport, onHealthAuto, onHealthAutoImport) }
         }
         item {
             SectionTitle(stringResource(R.string.settings_backup))
@@ -564,6 +565,7 @@ private fun SyncLogBody(log: List<SyncLogEntry>, onClear: () -> Unit) {
                 SyncLog.SOURCE_OURA -> R.string.synclog_oura
                 SyncLog.SOURCE_WHOOP -> R.string.synclog_whoop
                 SyncLog.SOURCE_HUME -> R.string.synclog_hume
+                SyncLog.SOURCE_HEALTH -> R.string.synclog_health
                 else -> R.string.synclog_account
             },
         )
@@ -587,13 +589,14 @@ private fun HealthConnectBody(
     onExport: () -> Unit,
     onImport: () -> Unit,
     onAuto: (Boolean) -> Unit,
+    onAutoImport: (Boolean) -> Unit,
 ) {
     val permission = rememberLauncherForActivityResult(PermissionController.createRequestPermissionResultContract()) { onChecked() }
     Text(stringResource(R.string.settings_health_body), style = MaterialTheme.typography.bodyMedium)
     when (health.access) {
         HealthAccess.UNAVAILABLE -> Text(stringResource(R.string.health_unavailable), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         HealthAccess.NEEDS_PERMISSION -> PrimaryButton(
-            onClick = { permission.launch(AndroidHealthConnectGateway.PERMISSIONS) },
+            onClick = { permission.launch(AndroidHealthConnectGateway.ASKED_PERMISSIONS) },
             modifier = Modifier.fillMaxWidth(),
         ) { Text(stringResource(R.string.health_allow)) }
         HealthAccess.READY -> {
@@ -604,12 +607,15 @@ private fun HealthConnectBody(
             SwitchRow(checked = health.auto, onCheckedChange = onAuto) {
                 Text(stringResource(R.string.health_auto), style = MaterialTheme.typography.bodyMedium)
             }
+            SwitchRow(checked = health.autoImport, onCheckedChange = onAutoImport) {
+                Text(stringResource(R.string.health_auto_import), style = MaterialTheme.typography.bodyMedium)
+            }
         }
     }
     if (health.busy) Text(stringResource(R.string.health_busy), style = MaterialTheme.typography.bodySmall)
     when (val m = health.message) {
         is HealthMessage.Exported -> Text(stringResource(R.string.health_sent, m.sent, m.skipped), style = MaterialTheme.typography.bodySmall)
-        is HealthMessage.Imported -> Text(stringResource(R.string.health_read_done, m.days, m.nights), style = MaterialTheme.typography.bodySmall)
+        is HealthMessage.Imported -> Text(stringResource(R.string.health_read_done, m.days, m.nights, m.weights), style = MaterialTheme.typography.bodySmall)
         is HealthMessage.Failed -> Text(stringResource(R.string.health_failed, m.detail ?: "?"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
         null -> Unit
     }

@@ -223,3 +223,38 @@ class HumeSyncWorker(context: Context, params: WorkerParameters) : CoroutineWork
         return Result.success() // the next run is a quarter of an hour away; no need to retry sooner
     }
 }
+
+/**
+ * Health Connect's job: about every 15 minutes it fills the days, nights and weights OpenConnect is still missing, while
+ * the person has that switch on. No network is needed (Health Connect is on the phone), only the battery may not be low.
+ */
+class WorkManagerHealthSync(private val context: Context) : BackgroundSync {
+    override fun set(enabled: Boolean) {
+        val manager = try {
+            WorkManager.getInstance(context)
+        } catch (_: IllegalStateException) {
+            return
+        }
+        if (!enabled) {
+            manager.cancelUniqueWork(NAME)
+            return
+        }
+        val request = PeriodicWorkRequestBuilder<HealthImportWorker>(15, TimeUnit.MINUTES)
+            .setConstraints(Constraints.Builder().setRequiresBatteryNotLow(true).build())
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 10, TimeUnit.MINUTES)
+            .build()
+        manager.enqueueUniquePeriodicWork(NAME, ExistingPeriodicWorkPolicy.KEEP, request)
+    }
+
+    companion object {
+        const val NAME = "health-import"
+    }
+}
+
+class HealthImportWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+    override suspend fun doWork(): Result {
+        // The controller checks the switch itself; a run that fills nothing writes nothing to the log.
+        (applicationContext as OpenConnectApp).container.health.importInBackground()
+        return Result.success() // the next run is a quarter of an hour away
+    }
+}

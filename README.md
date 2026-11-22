@@ -7,10 +7,10 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.1.0.** The first slices of the 1.1 programme are bundled in one release: the HRV status, the
-> sleep-stage night card and the Body card for weight and body fat are joined by a **Water card** on Health
-> (+250 ml / +500 ml, a daily total kept on the phone because Garmin's API has none, included in backups and
-> migrated from every earlier schema). [Release notes](docs/releases/v1.1.0.md).
+> **Status: v1.2.0.** The app now keeps Health Connect up to date by itself: one switch fills missing steps, sleep and
+> weights in the background (every fifteen minutes and when the app opens, only where something is missing), weight
+> from the phone fills the Body card behind an optional permission, and background fills land in the sync log. The
+> Water card from v1.1.0 stays. [Release notes](docs/releases/v1.2.0.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

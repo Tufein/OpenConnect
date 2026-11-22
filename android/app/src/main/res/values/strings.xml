@@ -517,11 +517,12 @@
     <string name="health_unavailable">Health Connect is not available on this phone. It is part of Android 14 and newer; on older versions install it from Google Play.</string>
     <string name="health_allow">Allow access in Health Connect</string>
     <string name="health_send">Send activities now</string>
-    <string name="health_read">Read steps and sleep</string>
+    <string name="health_read">Read steps, sleep and weight</string>
     <string name="health_auto">Send new activities after every sync</string>
+    <string name="health_auto_import">Fill missing days in the background</string>
     <string name="health_busy">Working…</string>
     <string name="health_sent">Sent %1$d activities (%2$d skipped because they have no duration)</string>
-    <string name="health_read_done">Filled %1$d days of steps and %2$d nights of sleep</string>
+    <string name="health_read_done">Filled %1$d days of steps, %2$d nights of sleep and %3$d weights</string>
     <string name="health_failed">Health Connect did not accept it: %1$s</string>
     <string name="period_week">Week</string>
     <string name="period_month">Month</string>
@@ -1134,6 +1135,7 @@
     <!-- Hume Band (v0.50.0), read from Health Connect. The texts for the last sync, the report, the average and "sync now" are the Oura screen's (oura_*). -->
     <string name="action_hume">Open the Hume tab</string>
     <string name="synclog_hume">Hume Band</string>
+    <string name="synclog_health">Health Connect</string>
     <string name="source_hume">Hume Band</string>
     <string name="tab_hume">Hume</string>
     <string name="device_hume">Hume Band</string>

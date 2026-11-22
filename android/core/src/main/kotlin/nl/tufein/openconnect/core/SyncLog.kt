@@ -19,6 +19,7 @@ object SyncLog {
     const val SOURCE_OURA = "oura"
     const val SOURCE_WHOOP = "whoop"
     const val SOURCE_HUME = "hume"
+    const val SOURCE_HEALTH = "healthconnect"
     private const val MAX_DETAIL = 200
 
     fun add(log: List<SyncLogEntry>, entry: SyncLogEntry): List<SyncLogEntry> = (listOf(entry) + log).take(MAX)
