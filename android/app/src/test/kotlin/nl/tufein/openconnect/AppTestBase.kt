@@ -88,6 +88,8 @@ abstract class AppTestBase {
      */
     protected fun tab(label: String): SemanticsNodeInteraction {
         val tappable = hasText(label) and hasClickAction()
+        // The navigation bar is composed a moment after the app opens; waiting here keeps a slow start from failing a test.
+        rule.waitUntil(15_000) { rule.onAllNodes(tappable).fetchSemanticsNodes().isNotEmpty() }
         if (rule.onAllNodes(tappable).fetchSemanticsNodes().size <= 1) return rule.onNode(tappable)
         return rule.onNode(tappable and androidx.compose.ui.test.SemanticsMatcher.expectValue(androidx.compose.ui.semantics.SemanticsProperties.Role, androidx.compose.ui.semantics.Role.Tab))
     }
