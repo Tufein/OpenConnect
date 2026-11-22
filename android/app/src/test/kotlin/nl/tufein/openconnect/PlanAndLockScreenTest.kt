@@ -46,6 +46,8 @@ class PlanAndLockScreenTest : AppTestBase() {
         clickText("10K")
         clickText("Create plan")
         waitForText("10K plan")
+        // Since v1.6.0 the own-workout builder sits above the plan, so the next run can start below the fold.
+        scrollToText("Next run")
         waitForText("Next run")
         shot("34-plan")
         scrollToText("All weeks")

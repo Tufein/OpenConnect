@@ -29,6 +29,8 @@ import nl.tufein.openconnect.core.Backup
 import nl.tufein.openconnect.core.BestEfforts
 import nl.tufein.openconnect.core.Effort
 import nl.tufein.openconnect.core.Lap
+import nl.tufein.openconnect.core.OwnWorkout
+import nl.tufein.openconnect.core.fitFile
 import nl.tufein.openconnect.core.PlanConfig
 import nl.tufein.openconnect.core.PlanGoal
 import nl.tufein.openconnect.core.PlanProgress
@@ -38,6 +40,7 @@ import nl.tufein.openconnect.core.Races
 import nl.tufein.openconnect.core.TrainingPlan
 import nl.tufein.openconnect.core.TrainingPaces
 import nl.tufein.openconnect.core.TrainingPlans
+import nl.tufein.openconnect.core.WorkoutBook
 import nl.tufein.openconnect.core.Workouts
 import nl.tufein.openconnect.core.BackupException
 import nl.tufein.openconnect.core.ExportAll
@@ -1067,6 +1070,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             shapes = RaceDistance.entries.mapNotNull { RaceShapeCalculator.compute(runs, it, today) },
             vo2 = Vo2Max.summary(runs, maxHr, today),
             season = seasonFor(today),
+            ownWorkouts = WorkoutBook.decode(container.settings.workouts).workouts,
         )
     }
 
@@ -1314,18 +1318,20 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Copies the workouts of the next seven days of the training plan to a Garmin on the USB cable, into
-     * GARMIN/NewFiles. Tempo and interval steps get a pace window from the predicted 10 km pace when there is one.
+     * Copies the workouts of the next seven days of the training plan, and the work-outs made in the app, to a Garmin on
+     * the USB cable, into GARMIN/NewFiles. Tempo and interval steps get a pace window from the predicted 10 km pace when
+     * there is one.
      */
     fun sendPlanToWatch() = io {
         val state = _plan.value
-        val plan = state.plan ?: return@io
-        val sessions = Workouts.upcoming(plan, LocalDate.now(ZoneOffset.UTC))
-        val message = if (sessions.isEmpty()) {
+        val sessions = state.plan?.let { Workouts.upcoming(it, LocalDate.now(ZoneOffset.UTC)) } ?: emptyList()
+        val message = if (sessions.isEmpty() && state.ownWorkouts.isEmpty()) {
             text(R.string.workouts_none)
         } else {
             try {
-                val files = Workouts.files(sessions, TrainingPaces.from(state.race.predictions), java.time.Instant.now())
+                val created = java.time.Instant.now()
+                val files = Workouts.files(sessions, TrainingPaces.from(state.race.predictions), created) +
+                    state.ownWorkouts.map { it.fitFile(created) }
                 val watch = container.usb.attached().firstOrNull()
                     ?: throw nl.tufein.openconnect.core.watch.WatchWriteException(nl.tufein.openconnect.core.watch.WatchWriteException.Kind.NO_USB_WATCH)
                 val result = container.usb.open(watch).use { Workouts.send(it.source, files) }
@@ -1337,6 +1343,19 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
         tell(message)
+    }
+
+    /** Adds a work-out made in the app to the ones that go to the watch with [sendPlanToWatch]; it replaces one with the same id. */
+    fun saveOwnWorkout(workout: OwnWorkout) = io {
+        val book = WorkoutBook.decode(container.settings.workouts).plus(workout)
+        container.settings.workouts = book.encode()
+        loadPlan()
+    }
+
+    /** Removes a work-out made in the app; one that was already sent to the watch stays there. */
+    fun deleteOwnWorkout(id: String) = io {
+        container.settings.workouts = WorkoutBook.decode(container.settings.workouts).without(id).encode()
+        loadPlan()
     }
 
     fun backupFileName(): String = "openconnect-backup-" + LocalDate.now() + ".ocbak"
@@ -1443,6 +1462,8 @@ data class PlanState(
     val vo2: Vo2Summary? = null,
     /** The phases from now to the race goal; null without a goal or when the race is not in the future. */
     val season: SeasonPlan? = null,
+    /** Work-outs made in the app; they go to the watch together with the plan. */
+    val ownWorkouts: List<OwnWorkout> = emptyList(),
 )
 
 /** Whether the app is locked right now (and whether the lock is on at all). */

@@ -14,6 +14,8 @@ data class UserData(
     val raceGoal: String = "",
     val maxHr: Int = 0,
     val weeklyGoals: WeeklyGoals = WeeklyGoals(),
+    /** Work-outs made in the app, as [WorkoutBook] writes them. Added in v1.6.0. */
+    val workouts: String = "",
 ) {
     /**
      * This phone's data with a backup's added to it, and nothing of this phone's overwritten:
@@ -28,6 +30,7 @@ data class UserData(
         raceGoal = raceGoal.ifBlank { backup.raceGoal },
         maxHr = if (maxHr > 0) maxHr else backup.maxHr,
         weeklyGoals = if (weeklyGoals == WeeklyGoals()) backup.weeklyGoals else weeklyGoals,
+        workouts = mergeWorkouts(workouts, backup.workouts),
     )
 
     private companion object {
@@ -45,6 +48,14 @@ data class UserData(
             val b = GearBook.decode(theirs)
             val known = a.shoes.map { it.id }.toSet()
             return GearBook(a.shoes + b.shoes.filter { it.id !in known }, b.overrides + a.overrides).encode()
+        }
+
+        fun mergeWorkouts(mine: String, theirs: String): String {
+            if (theirs.isBlank()) return mine
+            val a = WorkoutBook.decode(mine)
+            val b = WorkoutBook.decode(theirs)
+            val known = a.workouts.map { it.id }.toSet()
+            return WorkoutBook(a.workouts + b.workouts.filter { it.id !in known }).encode()
         }
     }
 }

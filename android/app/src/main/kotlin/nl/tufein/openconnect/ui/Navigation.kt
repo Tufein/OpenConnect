@@ -352,6 +352,8 @@ fun OpenConnectRoot(
                     onDeletePlan = vm::deletePlan,
                     onRace = vm::raceAction,
                     onSendWorkouts = vm::sendPlanToWatch,
+                    onSaveWorkout = vm::saveOwnWorkout,
+                    onDeleteWorkout = vm::deleteOwnWorkout,
                     zones = zones,
                     onZones = vm::zonesAction,
                     gear = gear,

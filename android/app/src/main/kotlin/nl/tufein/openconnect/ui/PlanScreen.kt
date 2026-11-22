@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,10 +22,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import nl.tufein.openconnect.R
+import nl.tufein.openconnect.core.OwnWorkout
 import nl.tufein.openconnect.core.PlanGoal
 import nl.tufein.openconnect.core.PlannedSession
 import nl.tufein.openconnect.core.RaceDistance
@@ -47,6 +50,8 @@ fun PlanContent(
     onDelete: () -> Unit,
     onRace: (RaceAction) -> Unit,
     onSendWorkouts: () -> Unit,
+    onSaveWorkout: (OwnWorkout) -> Unit,
+    onDeleteWorkout: (String) -> Unit,
     contentPadding: PaddingValues,
 ) {
     // Creating or deleting the plan changes the list a lot: start from the top again instead of landing somewhere in the middle.
@@ -58,6 +63,7 @@ fun PlanContent(
     ) {
         if (!state.loaded) return@LazyColumn
         item { RaceCard(state.race, onRace) }
+        item { OwnWorkoutsCard(state.ownWorkouts, onSaveWorkout, onDeleteWorkout) }
         val plan = state.plan
         val progress = state.progress
         if (plan == null || progress == null) {
@@ -112,6 +118,132 @@ fun PlanContent(
             SecondaryButton(onClick = onDelete, modifier = Modifier.padding(top = 8.dp)) { Text(stringResource(R.string.plan_delete)) }
         }
         analysisItems(state)
+    }
+}
+
+/** Work-outs made in the app: a warm-up, a number of fast repeats with rest, and a cool-down. They go to the watch with the plan. */
+@Composable
+private fun OwnWorkoutsCard(workouts: List<OwnWorkout>, onSave: (OwnWorkout) -> Unit, onDelete: (String) -> Unit) {
+    var adding by rememberSaveable { mutableStateOf(false) }
+    var name by rememberSaveable { mutableStateOf("") }
+    var repeatsText by rememberSaveable { mutableStateOf("4") }
+    var fastText by rememberSaveable { mutableStateOf("4") }
+    var recoveryText by rememberSaveable { mutableStateOf("90") }
+    var warmupText by rememberSaveable { mutableStateOf("10") }
+    var cooldownText by rememberSaveable { mutableStateOf("5") }
+    var tried by rememberSaveable { mutableStateOf(false) }
+
+    val repeats = repeatsText.trim().toIntOrNull()
+    val fastMin = fastText.trim().replace(',', '.').toDoubleOrNull()
+    val recoveryS = recoveryText.trim().toIntOrNull()
+    val warmupMin = warmupText.trim().replace(',', '.').toDoubleOrNull()
+    val cooldownMin = cooldownText.trim().replace(',', '.').toDoubleOrNull()
+    val draft = if (repeats != null && fastMin != null && recoveryS != null && warmupMin != null && cooldownMin != null) {
+        OwnWorkout(
+            id = "",
+            name = name,
+            warmupS = (warmupMin * 60).toInt(),
+            fastS = (fastMin * 60).toInt(),
+            recoveryS = recoveryS,
+            repeats = repeats,
+            cooldownS = (cooldownMin * 60).toInt(),
+        )
+    } else {
+        null
+    }
+    val problem: Int? = when {
+        draft == null -> R.string.own_error_range
+        draft.problem == OwnWorkout.Problem.NAME -> R.string.own_error_name
+        draft.problem != null -> R.string.own_error_range
+        else -> null
+    }
+
+    SectionTitle(stringResource(R.string.own_title))
+    SurfaceCard {
+        Text(stringResource(R.string.own_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        workouts.forEach { workout ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column {
+                    Text(workout.name, style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        stringResource(R.string.own_summary, workout.repeats, workout.fastS / 60, workout.totalS / 60),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                SecondaryButton(onClick = { onDelete(workout.id) }) { Text(stringResource(R.string.own_delete)) }
+            }
+        }
+        if (!adding) {
+            SecondaryButton(onClick = { adding = true }) { Text(stringResource(R.string.own_add)) }
+        } else {
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                label = { Text(stringResource(R.string.own_name)) },
+            )
+            OutlinedTextField(
+                value = repeatsText,
+                onValueChange = { repeatsText = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                label = { Text(stringResource(R.string.own_repeats)) },
+            )
+            OutlinedTextField(
+                value = fastText,
+                onValueChange = { fastText = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                label = { Text(stringResource(R.string.own_fast)) },
+            )
+            OutlinedTextField(
+                value = recoveryText,
+                onValueChange = { recoveryText = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                label = { Text(stringResource(R.string.own_recovery)) },
+            )
+            OutlinedTextField(
+                value = warmupText,
+                onValueChange = { warmupText = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                label = { Text(stringResource(R.string.own_warmup)) },
+            )
+            OutlinedTextField(
+                value = cooldownText,
+                onValueChange = { cooldownText = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                label = { Text(stringResource(R.string.own_cooldown)) },
+            )
+            if (tried && problem != null) {
+                Text(stringResource(problem), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                PrimaryButton(
+                    onClick = {
+                        if (draft != null && problem == null) {
+                            onSave(draft.copy(id = OwnWorkout.id(java.time.Instant.now())))
+                            adding = false
+                            name = ""
+                            tried = false
+                        } else {
+                            tried = true
+                        }
+                    },
+                ) {
+                    Text(stringResource(R.string.own_save))
+                }
+                SecondaryButton(onClick = { adding = false; tried = false }) { Text(stringResource(R.string.own_cancel)) }
+            }
+        }
     }
 }
 

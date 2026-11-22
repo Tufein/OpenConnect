@@ -262,7 +262,7 @@ testbare slice; daarna de zwaardere delen. Een ✅ betekent uitgebracht.
 | Spoor | Eerste slices | Zwaarder werk |
 |-------|----------------|----------------|
 | **Trainings- en herstelanalyse** | ✅ HRV-status (v1.0.6, eigen 7-vs-28-dagenvergelijking); ✅ slaapfases op Health (v1.0.7, data kwam al binnen) | Training Effect, Recovery Time en Performance Condition uit FIT lezen en tonen (vraagt een echte activiteit van een fenix 8 om de velden te bevestigen) |
-| **Work-outs en routes** | Vrije work-outbouwer bovenop de bestaande FIT-work-outs | Courses/routes naar het horloge; wat Garmin's API niet toestaat blijft lokale export |
+| **Work-outs en routes** | ✅ Vrije work-outbouwer bovenop de bestaande FIT-work-outs: naam, herhalingen, snel/rust, warming-up en cooldown, bewaard en met de verzendknop naar het horloge (v1.6.0) | Courses/routes naar het horloge; wat Garmin's API niet toestaat blijft lokale export |
 | **Lichaam en voeding** | ✅ Gewicht en vetpercentage met de hand invoeren, met 30-daagse lijn en back-up (v1.0.7); ✅ water loggen met een dagtotaal, lokaal en in de back-up (v1.1.0) | Lichaamssamenstelling uit de Garmin-account |
 | **Sync en invoer** | ✅ Ontbrekende stappen, slaap en gewicht automatisch uit Health Connect aanvullen, ook als de app dicht is (v1.2.0); ✅ een training met de hand invoeren, met eigen bron en in de back-up (v1.5.0) | Garmin's nieuwere protobuf-synchronisatie; watchface terug (vraagt een Garmin-ontwikkelaarsaccount) |
 | **UX en bereik** | "Wat gaat er naar buiten"-pagina in de app | Meerdere widgetformaten; Duits en Frans |
@@ -358,6 +358,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.3.0 | M13, begin van het nieuwe thema *je geschiedenis is van jou*: één importknop voor een heel archief (ZIP, ZIP in ZIP, gzip; Garmin- en Strava-export, eigen export), stromend met grenzen tegen een ZIP-bom, nooit overschrijven of verdubbelen (zelfde id of start binnen 90 s), overgeslagen bestanden geteld, rapport in Instellingen en het synchronisatieoverzicht |
 | v1.4.0 | M14: namen uit het archief (Strava `activities.csv`, Garmin `summarizedActivities.json` op starttijd), een tweede import geeft eerder binnengehaalde activiteiten hun naam zolang die nog bedacht is, de vorm van niet-gelezen JSON (alleen sleutelnamen) in het rapport met *Rapport kopiëren* |
 | v1.5.0 | Trainingen met de hand invoeren: op Activities opent *Toevoegen* een formulier met sport, datum, minuten, kilometers en gemiddelde hartslag; wat je typt wordt je eigen activiteit (bron `manual`), telt mee in de lijst, gaat in de back-up en er is geen schemawijziging nodig |
+| v1.6.0 | Work-outbouwer: op Plan staat *Je eigen work-outs* met naam, herhalingen, snelle minuten, rust, warming-up en cooldown; de FIT-work-outs gaan met dezelfde knop naar het horloge, staan in de back-up en er is geen schemawijziging |
 
 ## 9. Hoe releases werken
 

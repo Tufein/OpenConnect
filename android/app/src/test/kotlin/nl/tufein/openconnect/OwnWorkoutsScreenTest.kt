@@ -1,0 +1,66 @@
+package nl.tufein.openconnect
+
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
+import androidx.test.core.app.ApplicationProvider
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import nl.tufein.openconnect.core.WorkoutBook
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
+
+/** v1.6.0: a workout made on the Plan tab is saved with the app and can be deleted again. */
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34], qualifiers = "w411dp-h891dp-night-xxhdpi", application = OpenConnectApp::class)
+class OwnWorkoutsScreenTest : AppTestBase() {
+    private fun openPlan() {
+        launchFresh()
+        waitForText("Load demo data")
+        tab("Insights").performClick()
+        waitForText("Week of", substring = true)
+        clickChip("More")
+        clickChip("Plan")
+        waitForText("Your own workouts")
+    }
+
+    private fun typeInto(label: String, text: String) {
+        val fields = rule.onAllNodes(hasText(label) and hasSetTextAction()).fetchSemanticsNodes()
+        assertTrue(fields.isNotEmpty(), "no field labelled $label")
+        rule.onAllNodes(hasText(label) and hasSetTextAction())[0].performTextInput(text)
+    }
+
+    @Test
+    fun aWorkoutIsSavedAndDeletedAgain() {
+        openPlan()
+        clickText("New workout")
+        typeInto("Name", "Hill repeats")
+        clickText("Save workout")
+        waitForText("Hill repeats")
+        waitForText("4 × 4 min", substring = true)
+
+        val settings = ApplicationProvider.getApplicationContext<OpenConnectApp>().container.settings
+        val stored = WorkoutBook.decode(settings.workouts).workouts
+        assertEquals(1, stored.size)
+        assertEquals("Hill repeats", stored[0].name)
+        assertEquals(4, stored[0].repeats)
+        assertEquals(2220, stored[0].totalS)
+
+        clickText("Delete")
+        rule.waitUntil(15_000) { !hasText("Hill repeats", substring = true) }
+        assertTrue(WorkoutBook.decode(settings.workouts).workouts.isEmpty())
+    }
+
+    @Test
+    fun withoutANameItRefusesToSave() {
+        openPlan()
+        clickText("New workout")
+        clickText("Save workout")
+        waitForText("Give the workout a name.")
+        val settings = ApplicationProvider.getApplicationContext<OpenConnectApp>().container.settings
+        assertTrue(settings.workouts.isBlank(), "nothing is stored without a name")
+    }
+}

@@ -132,8 +132,13 @@ class SettingsStore(
         get() = prefs.getString(KEY_GEAR, "") ?: ""
         set(value) = prefs.edit().putString(KEY_GEAR, value).apply()
 
+    /** Work-outs made in the app, as [nl.tufein.openconnect.core.WorkoutBook] writes them. */
+    var workouts: String
+        get() = prefs.getString(KEY_WORKOUTS, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_WORKOUTS, value).apply()
+
     /** What the person wrote or chose (journal, shoes, plan, race, max heart rate, goals) for the backup. No keys. */
-    fun userData() = nl.tufein.openconnect.core.UserData(journal, gear, trainingPlan, raceGoal, maxHr, weeklyGoals)
+    fun userData() = nl.tufein.openconnect.core.UserData(journal, gear, trainingPlan, raceGoal, maxHr, weeklyGoals, workouts)
 
     /** Stores what a restore merged ([nl.tufein.openconnect.core.UserData.mergedWith]); each field only changes if it differs. */
     fun applyUserData(data: nl.tufein.openconnect.core.UserData) {
@@ -143,6 +148,7 @@ class SettingsStore(
         if (data.raceGoal != raceGoal) raceGoal = data.raceGoal
         if (data.maxHr != maxHr) maxHr = data.maxHr
         if (data.weeklyGoals != weeklyGoals) weeklyGoals = data.weeklyGoals
+        if (data.workouts != workouts) workouts = data.workouts
     }
 
     /** Whether the first-start questions (which devices do you use) were answered. */
@@ -429,6 +435,7 @@ class SettingsStore(
         private const val KEY_RACE = "race_goal"
         private const val KEY_MAX_HR = "max_hr"
         private const val KEY_GEAR = "gear"
+        private const val KEY_WORKOUTS = "workouts"
         private const val KEY_JOURNAL = "journal"
         private const val KEY_APP_LOCK = "app_lock"
         private const val KEY_SYNC_LOG = "sync_log"

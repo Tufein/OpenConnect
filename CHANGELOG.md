@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.6.0: je eigen work-out bouwen
+
+Op het Plan-tab staat nu een kaart **Je eigen work-outs**: geef een training een naam, kies hoeveel herhalingen, hoe lang snel en rust, en hoeveel warming-up en cooldown — de app maakt er een FIT-work-out van die met dezelfde knop naar je horloge gaat.
+
+[Release notes](docs/releases/v1.6.0.md)
+
 ## v1.5.0: zelf een training toevoegen
 
 Wat geen horloge, ring of band heeft vastgelegd, kun je nu zelf invoeren: op Activities opent *Toevoegen* een kort formulier met sport, datum, minuten, kilometers en gemiddelde hartslag. Het resultaat is een gewone activiteit in je eigen lijst, met bron `manual`, en het gaat mee in de back-up.

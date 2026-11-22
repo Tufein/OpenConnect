@@ -7,10 +7,11 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.5.0.** Anything no watch, ring or band recorded can now be typed in yourself: on Activities *Add* opens
-> a short form (sport, date, minutes, kilometres, average heart rate) and what you type becomes an ordinary activity in
-> your own list with source `manual`, included in the backup and with no schema change. The archive import of v1.3.0
-> and the names from your export in v1.4.0 stay. [Release notes](docs/releases/v1.5.0.md).
+> **Status: v1.6.0.** You can now build your own workout: the Plan tab has **Your own workouts** with a name, repeats,
+> fast minutes, rest, warm-up and cool-down, turned into a FIT workout that goes to your watch with the same button as
+> the plan's workouts — saved locally, included in the backup and with no schema change. The manual activity of v1.5.0,
+> the archive import of v1.3.0 and the names from your export in v1.4.0 stay.
+> [Release notes](docs/releases/v1.6.0.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).
