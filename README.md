@@ -7,11 +7,10 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.4.0.** Theme: *your history is yours*. One import button takes a whole archive (Garmin Connect's export,
-> Strava's archive, OpenConnect's own *Export everything*; ZIP in ZIP, gzip, streamed, nothing overwritten or doubled), and
-> since v1.4.0 the activities get the names they have in Strava or Garmin Connect. The report says what came in, what was
-> already there and what was skipped, and a *Copy report* button shows the shape of the files that are not read yet. How to
-> move over: [docs/MIGRATING.md](docs/MIGRATING.md). [Release notes](docs/releases/v1.4.0.md).
+> **Status: v1.5.0.** Anything no watch, ring or band recorded can now be typed in yourself: on Activities *Add* opens
+> a short form (sport, date, minutes, kilometres, average heart rate) and what you type becomes an ordinary activity in
+> your own list with source `manual`, included in the backup and with no schema change. The archive import of v1.3.0
+> and the names from your export in v1.4.0 stay. [Release notes](docs/releases/v1.5.0.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

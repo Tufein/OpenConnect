@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.5.0: zelf een training toevoegen
+
+Wat geen horloge, ring of band heeft vastgelegd, kun je nu zelf invoeren: op Activities opent *Toevoegen* een kort formulier met sport, datum, minuten, kilometers en gemiddelde hartslag. Het resultaat is een gewone activiteit in je eigen lijst, met bron `manual`, en het gaat mee in de back-up.
+
+[Release notes](docs/releases/v1.5.0.md)
+
 ## v1.4.0: namen uit je export
 
 Een geïmporteerde activiteit heet niet meer "Running 2026-05-02": de naam die je in Strava of Garmin Connect gaf, komt mee uit het archief. En van de bestanden die deze versie nog niet kan lezen schrijft het rapport op hoe ze eruitzien (alleen sleutelnamen), zodat een echte Garmin-export kan laten zien wat er in de dagbestanden staat. Tweede stap van het thema **je geschiedenis is van jou**.

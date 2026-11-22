@@ -264,10 +264,16 @@ testbare slice; daarna de zwaardere delen. Een ✅ betekent uitgebracht.
 | **Trainings- en herstelanalyse** | ✅ HRV-status (v1.0.6, eigen 7-vs-28-dagenvergelijking); ✅ slaapfases op Health (v1.0.7, data kwam al binnen) | Training Effect, Recovery Time en Performance Condition uit FIT lezen en tonen (vraagt een echte activiteit van een fenix 8 om de velden te bevestigen) |
 | **Work-outs en routes** | Vrije work-outbouwer bovenop de bestaande FIT-work-outs | Courses/routes naar het horloge; wat Garmin's API niet toestaat blijft lokale export |
 | **Lichaam en voeding** | ✅ Gewicht en vetpercentage met de hand invoeren, met 30-daagse lijn en back-up (v1.0.7); ✅ water loggen met een dagtotaal, lokaal en in de back-up (v1.1.0) | Lichaamssamenstelling uit de Garmin-account |
-| **Sync en invoer** | ✅ Ontbrekende stappen, slaap en gewicht automatisch uit Health Connect aanvullen, ook als de app dicht is (v1.2.0); handmatige activiteit invoeren | Garmin's nieuwere protobuf-synchronisatie; watchface terug (vraagt een Garmin-ontwikkelaarsaccount) |
+| **Sync en invoer** | ✅ Ontbrekende stappen, slaap en gewicht automatisch uit Health Connect aanvullen, ook als de app dicht is (v1.2.0); ✅ een training met de hand invoeren, met eigen bron en in de back-up (v1.5.0) | Garmin's nieuwere protobuf-synchronisatie; watchface terug (vraagt een Garmin-ontwikkelaarsaccount) |
 | **UX en bereik** | "Wat gaat er naar buiten"-pagina in de app | Meerdere widgetformaten; Duits en Frans |
 
 Bewust buiten scope, zoals eerder: segmenten en sociaal, LiveTrack, upload naar Strava of Intervals.icu, Wear OS.
+
+De volgende slices, in deze orde: de **vrije work-outbouwer** (de FIT-work-outexport bestaat al, dus dit is vooral
+een formulier en een preview), **meerdere widgetformaten** naast de huidige gethemde widget, **Duits en Frans** als
+volgende talen, en de **"wat verlaat je telefoon"-pagina** die de losse privacynoot in About bundelt en per bron laat
+zien wat er wel en niet weggaat. Zwaarder, en pas zinvol met een echte fenix 8-opname: Training Effect, Recovery Time
+en Performance Condition uit FIT.
 
 **Bewust niet:** vermogensanalyse, een horlogecompanion, upload naar Intervals.icu of Strava (hun voorwaarden), segmenten en sociaal, labuitslagen, biologische leeftijd, Wear OS.
 
@@ -347,10 +353,11 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.0.5 | Zonder Health Connect geen crash: de gatewaystatus wordt via `runCatchingUnlessCancelled` gelezen, een telefoon zonder de dienst rapporteert "niet beschikbaar" (getest). De sprong naar AGP 9/Kotlin 2.4/Compose 2026.11 kompilde en haalde alle tests lokaal, maar bleef op de CI-runner soms in een ongeladen Home hangen (13 timeouts) en is voor de release teruggedraaid; de bevindingen staan bij M12 |
 | v1.0.6 | Eerste slice van het 1.1-programma: HRV-status op Health (eigen 7-vs-28-dagenvergelijking, 90/110%-grenzen, minima van 4 en 10 nachten), tikbaar naar de HRV-grafiek; het volledige 1.1-programma staat in de roadmap |
 | v1.0.7 | Nachtkaart met diep/licht/REM/wakker (data die al werd ingelezen) en Body-kaart voor gewicht en vetpercentage: schema 6 met migratie vanaf elke versie, back-up, 30-daagse lijn; tweetalige teksten |
+| v1.1.0 | Eerste 1.1-release: het HRV- en Body-werk van v1.0.6/v1.0.7 gebundeld plus een Water-kaart op Health (+250/+500 ml, dagtotaal lokaal omdat Garmin geen water levert), schema 7 met migratie vanaf elke versie en het water in de back-up |
 | v1.2.0 | De app haalt zelf op: een schakelaar vult ontbrekende stappen, slaap en gewicht uit Health Connect aan (elke vijftien minuten en bij openen), gewicht uit de telefoon vult de Body-kaart achter een optionele leesrecht, en aanvullingen staan in het synchronisatieoverzicht |
 | v1.3.0 | M13, begin van het nieuwe thema *je geschiedenis is van jou*: één importknop voor een heel archief (ZIP, ZIP in ZIP, gzip; Garmin- en Strava-export, eigen export), stromend met grenzen tegen een ZIP-bom, nooit overschrijven of verdubbelen (zelfde id of start binnen 90 s), overgeslagen bestanden geteld, rapport in Instellingen en het synchronisatieoverzicht |
 | v1.4.0 | M14: namen uit het archief (Strava `activities.csv`, Garmin `summarizedActivities.json` op starttijd), een tweede import geeft eerder binnengehaalde activiteiten hun naam zolang die nog bedacht is, de vorm van niet-gelezen JSON (alleen sleutelnamen) in het rapport met *Rapport kopiëren* |
-| v1.1.0 | Eerste 1.1-release: het HRV- en Body-werk van v1.0.6/v1.0.7 gebundeld plus een Water-kaart op Health (+250/+500 ml, dagtotaal lokaal omdat Garmin geen water levert), schema 7 met migratie vanaf elke versie en het water in de back-up |
+| v1.5.0 | Trainingen met de hand invoeren: op Activities opent *Toevoegen* een formulier met sport, datum, minuten, kilometers en gemiddelde hartslag; wat je typt wordt je eigen activiteit (bron `manual`), telt mee in de lijst, gaat in de back-up en er is geen schemawijziging nodig |
 
 ## 9. Hoe releases werken
 

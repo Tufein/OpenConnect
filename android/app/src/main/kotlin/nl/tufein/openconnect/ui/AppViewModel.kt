@@ -59,6 +59,7 @@ import nl.tufein.openconnect.core.Readiness
 import nl.tufein.openconnect.core.TrainingLoadCalculator
 import nl.tufein.openconnect.core.Gear
 import nl.tufein.openconnect.core.MonthView
+import nl.tufein.openconnect.core.ManualActivity
 import nl.tufein.openconnect.core.StreakSummary
 import nl.tufein.openconnect.core.Streaks
 import nl.tufein.openconnect.core.GearBook
@@ -1155,6 +1156,13 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         val today = LocalDate.now()
         val already = repo.listWater(today, today).firstOrNull()?.millilitres ?: 0
         repo.upsertWater(WaterEntry(today, (already + millilitres).coerceAtLeast(0)))
+        container.dataChanged.tryEmit(Unit)
+    }
+
+    /** v1.3.0: a workout the person typed in. It is stored like any other activity, with its own source. */
+    fun addManualActivity(manual: ManualActivity) = io {
+        val now = Instant.now()
+        repo.upsertActivity(manual.toActivity(ZoneId.systemDefault(), ManualActivity.id(now)))
         container.dataChanged.tryEmit(Unit)
     }
 
