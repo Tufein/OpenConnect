@@ -12,8 +12,8 @@ android {
         applicationId = "nl.tufein.openconnect"
         minSdk = 28
         targetSdk = 35
-        versionCode = 76
-        versionName = "1.2.0"
+        versionCode = 77
+        versionName = "1.3.0"
     }
 
     // Release signing. The key is never stored in this repository: a release build reads it from

@@ -28,6 +28,11 @@ English and Dutch. The look is sporty by default (see [DESIGN.md](DESIGN.md)): c
 1. **Demo data**: about 45 days of Garmin-like activities, sleep and daily health, generated on the phone.
 2. **File import**: pick FIT, GPX or TCX files from the phone, or share or open a file with OpenConnect.
    Importing the same file again does not create a duplicate (the activity id is derived from the content).
+   **Archives (v1.3.0):** the same button takes a whole ZIP (also a ZIP inside a ZIP) or a gzip file, so Garmin Connect's
+   export, Strava's archive and OpenConnect's own *Export everything* go in as they are. The archive is streamed
+   (`core/ArchiveImport.kt`), an activity that is already there (same id, or another activity starting within 90
+   seconds) is never overwritten, files that are not activities are skipped and counted, and Settings shows the report.
+   Steps, limits and what is not verified: **[MIGRATING.md](MIGRATING.md)**.
 3. **A Garmin watch, directly** (new in v0.3.0): USB cable for everything the watch stores, Bluetooth for live
    heart rate. No server and no Garmin account. How it works and what is not tested yet: **[WATCH.md](WATCH.md)**.
 4. **Your Garmin account** (new in v0.4.0): with a personal key that you make yourself, no server in between. **[GARMIN.md](GARMIN.md)**.

@@ -12,7 +12,13 @@ import java.time.format.DateTimeParseException
 import java.util.Locale
 
 /** Raised when a file cannot be parsed or an activity cannot be exported in a format. */
-class FormatError(message: String, cause: Throwable? = null) : Exception(message, cause)
+open class FormatError(message: String, cause: Throwable? = null) : Exception(message, cause)
+
+/**
+ * A file of a known kind that is not an activity: a route or a course (no timestamps), a workout, a settings or
+ * monitoring file. An archive import skips those quietly instead of reporting a broken file.
+ */
+class NoActivityData(message: String) : FormatError(message)
 
 private val SPORT_ALIASES = mapOf(
     "running" to Sport.RUNNING,

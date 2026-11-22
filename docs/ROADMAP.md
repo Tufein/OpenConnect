@@ -1,32 +1,33 @@
 # OpenConnect: roadmap naar 1.0 en verder
 
-Waar OpenConnect staat en hoe het verder groeit. Opnieuw geschreven op 2026-11-20, na v1.0.4. 1.0 is uitgebracht en er
-komen reparaties en verbeteringen in de reeksen 1.0.x en 1.1; dit plan zegt wat de volgorde is. Alles is **test-first**
-gebouwd: eerst de test, dan de code, en niets gaat uit zonder dat CI groen is. Wat zonder horloge, ring of telefoon
-niet te controleren is, staat er eerlijk bij.
+Waar OpenConnect staat en hoe het verder groeit. Opnieuw geschreven op 2026-11-20, na v1.0.4, en op 2026-11-22 (na
+v1.2.0) met een **thematische koerswissel**: paragraaf 4b, "Je geschiedenis is van jou". 1.0 is uitgebracht; dit plan zegt
+wat de volgorde is. Alles is **test-first** gebouwd: eerst de test, dan de code, en niets gaat uit zonder dat CI groen is.
+Wat zonder horloge, ring of telefoon niet te controleren is, staat er eerlijk bij.
 
 De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparaten en het terugdraaiplan staan in
 **[PUBLIC_RELEASE.md](PUBLIC_RELEASE.md)**. Dit bestand is het plan; dat bestand is de lijst die je afvinkt.
 
 **Legenda:** ✅ klaar · 🔜 volgende · 🧪 gebouwd en getest met nepgegevens, nog nooit op echte hardware of tegen de echte dienst · ❓ heeft iets nodig dat alleen de eigenaar kan geven · **S/M/L** = klein (een sessie), middel, groot (meerdere releases)
 
-## 1. Waar we staan (v1.0.4, 2026-11-20)
+## 1. Waar we staan (v1.2.0, 2026-11-22)
 
-- **71 releases en kandidaten**, ruim 1.300 tests (Python, `core` en de app), AGPL-3.0, openbare repository, een Android-app die zonder server werkt en een
+- **Ruim 80 releases en kandidaten**, ruim 1.300 tests (Python, `core` en de app), AGPL-3.0, openbare repository, een Android-app die zonder server werkt en een
   Python-server voor wie die liever zelf draait. Nederlands en Engels.
 - **Bronnen:** Garmin-horloge (USB, Bluetooth, map met bestanden), Garmin-account met een eigen sleutel, Oura Ring, WHOOP, Hume Band
-  (via Health Connect), bestanden (FIT, GPX, TCX), Claude en Gemini voor de coach.
+  (via Health Connect, sinds v1.2.0 ook op de achtergrond aangevuld), bestanden (FIT, GPX, TCX), Claude en Gemini voor de coach.
 - **Sterk:** alles is test-first, gegevens blijven op de telefoon, horloge, ring en banden worden nooit door elkaar gemengd, elke release zegt eerlijk
   wat niet is gecontroleerd, en de app is met een in-app-updater te bijwerken met SHA-256-controle.
-- **Het uiterlijk is sportief en rustig** (v1.0.2 tot en met v1.0.4, op verzoek van Stefan): Graphite met één accent, strakke panelen, scores open en
-  grafieken in tabs of ingeklapte secties, zes Insights-tabs met de rest achter *Meer*, widget en startscherm in het gekozen palet, en een live
-  voorbeeld met keuze bij de eerste start.
+- **De laatste negen dagen** (v1.0.0-rc.2 tot en met v1.2.0, ruim twintig uitgaven) gingen over drie dingen: meldingen op het horloge, het
+  uiterlijk (Graphite, tabs, ingeklapte grafieken) en kleine slices op Health (HRV-status, slaapfases, gewicht, water, Health Connect op de
+  achtergrond). Daar is de grond uit: elke volgende slice van dezelfde soort levert minder op en kan grotendeels alleen op echte hardware worden gecontroleerd.
 - **Zwak voor het verdere verhaal:**
   1. Op één bron na (de Garmin-account, die live is geprobeerd) is **niets op een echte telefoon, horloge, ring of band geproefd**. Zie het register in paragraaf 7; M9 is dat spoor.
   2. Of de meldingen op de fenix 8 nu bij elk bericht trillen, wacht op een nieuw logboek; v1.0.1 pakte de meest waarschijnlijke oorzaak aan.
   3. De naam: er bestaat al een bekende VPN-client die OpenConnect heet; het besluit staat nog open (G6).
-  4. Dertien Dependabot-voorstellen (#43 tot en met #55) liggen open, met grote sprongen (Compose-BOM 2024.10 naar 2026.09). M12 pakt ze op.
-  5. De in-app-updater past niet in Google Play of F-Droid; winkels komen als `store`-variant in M10.
+  4. **De geschiedenis zit nog in Garmin Connect en Strava.** De app importeert één bestand tegelijk en haalt via de eigen sleutel een beperkt stuk terug, terwijl elk inzicht (vorm, VO2max, racevoorspelling, heatmap, seizoen) zo goed is als de geschiedenis eronder. Dat is het thema van 4b.
+  5. Vijf Dependabot-voorstellen (#85 tot en met #89) liggen open; de grote gereedschapssprong (M12) wacht op een CI-only debugronde.
+  6. De in-app-updater past niet in Google Play of F-Droid; winkels komen als `store`-variant in M10.
 
 ## 2. Wat "1.0" betekent
 
@@ -176,6 +177,62 @@ Geen belofte, wel de volgorde zoals die in paragraaf 6 stond:
 - **Een eerlijke "wat gebeurt er met mijn gegevens"-pagina** in de app met een overzicht van elk verzoek dat naar buiten gaat.
 - **De naam beslissen** (houden of veranderen; de pakketnaam `nl.tufein.openconnect` verandert in elk geval niet) — dit is een vakje van Stefan, maar de voorbereiding kan hier.
 
+## 4b. Nieuw thema: je geschiedenis is van jou (2026-11-22)
+
+**De koerswissel in één zin:** van *meer meten en melden* naar *meenemen wat je al hebt, er jaren in terugkijken en het vrij kunnen gebruiken*.
+
+**Waarom dit thema.** OpenConnect wil een Garmin Connect-vervanger zijn, maar wie overstapt laat jaren aan activiteiten, slaap en vorm achter.
+De app kan nu één FIT-, GPX- of TCX-bestand tegelijk importeren; Garmin's en Strava's eigen exporten zijn één groot ZIP-bestand en blijven dus
+onbruikbaar. Alle inzichten die er al zijn (vorm en vermoeidheid, VO2max, racevoorspelling, seizoensplan, heatmap, dezelfde route, hi-scores)
+worden pas goed met een lange geschiedenis. En er is geen enkel overzicht van het ene jaar naast het andere. Dit thema heeft drie delen:
+**binnenhalen** (M13, M14), **terugkijken** (M15) en **vrij gebruiken** (M16). Het past ook bij wat er nog moet voor een vreemde (G5 en G7):
+een nieuwe gebruiker verhuist, anders begint hij met een lege app.
+
+**Waarom nu en zo.** Bijna alles hieraan loopt via bestanden, dus het is van begin tot eind met tests in CI te controleren, ook zonder horloge
+(waar de vorige reeks op vastliep). De 1.1-sporen hierboven blijven staan; de zwaardere delen daarvan (Training Effect en Recovery Time uit FIT,
+routes naar het horloge, protobuf-sync, watchface) wachten op een echt horloge en lopen niet voor op dit thema.
+
+### M13: "Verhuisdoos" ✅ v1.3.0 (M)
+
+Eén importknop die ook een heel archief aankan, zodat Garmin's en Strava's export in één keer binnenkomt.
+
+- **Wat erin mag:** een ZIP (ook een ZIP in een ZIP, zoals Garmin's `UploadedFiles_*.zip` in de export), een `.gz`, en losse FIT-, GPX- en TCX-bestanden; Strava's `activities/*.fit.gz`, `*.gpx` en `*.tcx.gz` horen erbij, net als OpenConnect's eigen *Alles exporteren*.
+- **Stromend, zonder het archief in het geheugen te zetten**, met grenzen tegen een ZIP-bom: 25 MB per bestand (ook na uitpakken), een totaal, een aantal bestanden en een diepte van drie ZIP's.
+- **Wat er al is blijft staan:** een activiteit met dezelfde id of die binnen 90 seconden na een bestaande begint (dezelfde training uit het horloge, de Garmin-account of een eerdere import) wordt niet overschreven en niet verdubbeld; een tweede keer dezelfde ZIP voegt niets toe.
+- **Eerlijk over wat niet telde:** routes, trainingen, foto's en CSV's worden overgeslagen en genoemd (geen foutmelding), één kapot bestand houdt de rest niet tegen, en het eindrapport (toegevoegd, al aanwezig, overgeslagen, mislukt met reden, periode) komt in het synchronisatieoverzicht.
+- **Voortgang** terwijl het loopt, en annuleren laat af wat al binnen is.
+- **Uitleg:** [MIGRATING.md](MIGRATING.md) met de stappen om je export bij Garmin en Strava aan te vragen en hier binnen te halen.
+
+Klaar als: een gemaakt archief met N activiteiten in drie formaten, deels geneste ZIP's en deels `.gz`, N activiteiten in de app oplevert, en dezelfde ZIP nog eens niets verandert. ✅ Zo getest in `ArchiveImportTest` (23 tests) en `ArchiveImportScreenTest`; **nooit met een echte export** (register, paragraaf 7).
+
+### M14: "Namen en dagen" 🔜 v1.4.0 (M)
+
+De bestanden in een export hebben geen namen; die staan ernaast. En een export bevat ook dagen, niet alleen trainingen.
+
+- **Namen en soorten mee:** Strava's `activities.csv` (kolommen *Activity Name*, *Activity Type*, *Filename*) en Garmin's `summarizedActivities.json` geven de activiteit haar eigen naam, in plaats van "Running 2026-05-02".
+- **Dagen uit Garmin's export:** stappen, rusthartslag en slaap uit de JSON-bestanden naast de trainingen, gevuld waar de app nog niets heeft (nooit over iets heen dat horloge, ring of band gaf).
+- **Eigen export terug:** het `daily.csv` uit *Alles exporteren* leest de app weer in.
+- **Eerlijk:** Garmin beschrijft de velden van zijn export nergens openbaar, dus die lezer is 🧪 *Experimenteel* tot een echte export hem heeft doorstaan; wat hij niet kent, toont het rapport als lijst van onbekende bestanden en sleutels (zonder waarden).
+
+Klaar als: een Strava-archief met CSV namen geeft, en een nagemaakte Garmin-export dagen vult zonder iets te overschrijven.
+
+### M15: "Terugblik" 🔜 v1.5.0 (M)
+
+Lange geschiedenis moet je ook kunnen zien. Er is nu geen jaar-op-jaar.
+
+- **Dit jaar tegenover vorig jaar:** de lopende afstand en tijd als twee lijnen op dezelfde tijdas, met het verschil tot nu toe.
+- **Maandentabel over alle jaren** (afstand, tijd, aantal) als raster, de zwaarste maand gemarkeerd.
+- **Alle jaren per sport** op één regel, en per jaar de rustige en de drukke weken.
+- **Tijdlijn van hi-scores:** wanneer is welk record gevestigd, over alle jaren, niet alleen de huidige stand.
+- Alles getest op het vijfjarige demo-archief (en een gegenereerd archief van tien jaar); een prestatiebudget zoals bij M5.
+
+### M16: "Open en koppelbaar" 🔜 (L, in stukken)
+
+- **Eigen open formaat:** een gedocumenteerd, versiebeheerd JSON-exportformaat naast CSV, dat de app ook weer inleest (met een test per schemaversie).
+- **Koppelen:** een alleen-lezen koppeling voor Tasker, Home Assistant en scripts (Android-intents of een ContentProvider), standaard uit, met de bijbehorende regel in de privacyverklaring.
+- **Server:** `openconnect import archief.zip` voor de Python-server, met dezelfde regels als M13, en een manier om de telefoon naar de eigen server te laten schrijven.
+- Elke schakelaar die gegevens buiten de app brengt krijgt een regel op de gegevenspagina uit M12.
+
 ## 5. Wat alleen Stefan kan
 
 | Wanneer | Wat | Waarom het niet zonder jou kan |
@@ -187,6 +244,7 @@ Geen belofte, wel de volgorde zoals die in paragraaf 6 stond:
 | ✅ 2026-11-18 | Minimum Android van 8.0 naar 9 | Gedaan in v0.52.0; telefoons met Android 8 blijven op v0.51.0 |
 | **Open**, vóór M12 af is | Beslissen over de naam: houden of veranderen (de pakketnaam `nl.tufein.openconnect` verandert in elk geval niet). Voorlopig blijft het OpenConnect | Het is jouw project en jouw merk |
 | Bij M9 | Schermafbeeldingen van je eigen telefoon aanleveren | Mijn plaatjes komen uit een test, niet van een toestel |
+| Bij M13 en M14 | Je export bij Garmin Connect (Account, Gegevensbeheer, *Je gegevens exporteren*) en eventueel Strava aanvragen en een keer in OpenConnect importeren; daarna het eindrapport (aantallen, overgeslagen bestanden, onbekende sleutels, geen waarden) terugsturen | De veldnamen van Garmin's export staan nergens beschreven; alleen een echte export kan bevestigen dat de lezer klopt |
 
 ## 6. Na 1.0
 
@@ -229,6 +287,7 @@ De bron van waarheid voor poort G1. Een regel gaat pas naar ✅ als er een echte
 | WHOOP | 🧪 nooit met een echte band of account, scopenamen zijn aannames | [WHOOP.md](WHOOP.md) |
 | Hume Band | 🧪 nooit met een echte band, pakketnaam van de Hume-app is een aanname | [HUME.md](HUME.md) |
 | Claude en Gemini voor rapporten en coach | 🧪 geen live aanroepen met eigen sleutels | [AI.md](AI.md) |
+| Archief-import (Strava- en Garmin-export, ZIP en `.gz`) | 🧪 gebouwd met zelf gemaakte archieven in de indeling die de bronnen beschrijven; nooit met een echte export | [MIGRATING.md](MIGRATING.md) |
 | In-app-updater | 🧪 niet op een echte telefoon | [ANDROID.md](ANDROID.md) |
 | Sleutelkluis, appvergrendeling, iconen en thema's | 🧪 niet op een echte telefoon | [ANDROID.md](ANDROID.md) |
 
@@ -287,6 +346,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.0.6 | Eerste slice van het 1.1-programma: HRV-status op Health (eigen 7-vs-28-dagenvergelijking, 90/110%-grenzen, minima van 4 en 10 nachten), tikbaar naar de HRV-grafiek; het volledige 1.1-programma staat in de roadmap |
 | v1.0.7 | Nachtkaart met diep/licht/REM/wakker (data die al werd ingelezen) en Body-kaart voor gewicht en vetpercentage: schema 6 met migratie vanaf elke versie, back-up, 30-daagse lijn; tweetalige teksten |
 | v1.2.0 | De app haalt zelf op: een schakelaar vult ontbrekende stappen, slaap en gewicht uit Health Connect aan (elke vijftien minuten en bij openen), gewicht uit de telefoon vult de Body-kaart achter een optionele leesrecht, en aanvullingen staan in het synchronisatieoverzicht |
+| v1.3.0 | M13, begin van het nieuwe thema *je geschiedenis is van jou*: één importknop voor een heel archief (ZIP, ZIP in ZIP, gzip; Garmin- en Strava-export, eigen export), stromend met grenzen tegen een ZIP-bom, nooit overschrijven of verdubbelen (zelfde id of start binnen 90 s), overgeslagen bestanden geteld, rapport in Instellingen en het synchronisatieoverzicht |
 | v1.1.0 | Eerste 1.1-release: het HRV- en Body-werk van v1.0.6/v1.0.7 gebundeld plus een Water-kaart op Health (+250/+500 ml, dagtotaal lokaal omdat Garmin geen water levert), schema 7 met migratie vanaf elke versie en het water in de back-up |
 
 ## 9. Hoe releases werken

@@ -43,7 +43,9 @@ import nl.tufein.openconnect.core.BackupException
 import nl.tufein.openconnect.core.ExportAll
 import nl.tufein.openconnect.core.Csv
 import nl.tufein.openconnect.core.DataOverview
+import nl.tufein.openconnect.core.SyncLog
 import nl.tufein.openconnect.core.SyncLogEntry
+import nl.tufein.openconnect.core.ArchiveImport
 import nl.tufein.openconnect.health.HealthUi
 import nl.tufein.openconnect.core.DailySummary
 import nl.tufein.openconnect.core.DayInsights
@@ -270,6 +272,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _detail = MutableStateFlow(DetailState())
     val detail: StateFlow<DetailState> = _detail.asStateFlow()
+
+    private val _import = MutableStateFlow(ImportUi())
+
+    /** What the file import is doing, and what the last one did (v1.3.0). */
+    val importState: StateFlow<ImportUi> = _import.asStateFlow()
+    private val importCancelled = java.util.concurrent.atomic.AtomicBoolean(false)
 
     private val _health = MutableStateFlow(HealthState())
     val health: StateFlow<HealthState> = _health.asStateFlow()
@@ -1171,26 +1179,77 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         refreshAll()
     }
 
-    fun importUris(uris: List<Uri>) = io {
-        val resolver = getApplication<Application>().contentResolver
-        var imported = 0
-        val failures = ArrayList<String>()
-        for (uri in uris) {
-            val name = uri.lastPathSegment.orEmpty()
-            try {
-                val bytes = resolver.openInputStream(uri)?.use { readLimited(it) } ?: throw IOException("unreadable")
-                val activity = Formats.import(bytes, name)
-                repo.upsertActivity(activity)
-                imported++
-            } catch (e: FormatError) {
-                failures.add("$name: ${e.message}")
-            } catch (e: IOException) {
-                failures.add("$name: ${text(R.string.error_io)}")
-            }
+    /** Stops a running import after the file it is on. What came in so far stays. */
+    fun cancelImport() = importCancelled.set(true)
+
+    /**
+     * Imports what the person picked or shared: FIT, GPX and TCX files, gzip files and whole ZIP archives (the exports
+     * of Garmin Connect and Strava, also a ZIP inside a ZIP), see [ArchiveImport]. It runs in the background with a
+     * progress line and a report in Settings, and one line in the sync log.
+     */
+    fun importUris(uris: List<Uri>) {
+        if (uris.isEmpty()) return
+        if (_import.value.running) {
+            tell(text(R.string.import_busy))
+            return
         }
-        if (imported > 0) tell(text(R.string.imported_n, imported))
-        failures.forEach(::tell)
-        if (imported > 0) refreshAll()
+        importCancelled.set(false)
+        _import.value = ImportUi(running = true)
+        io {
+            val resolver = getApplication<Application>().contentResolver
+            var total: ArchiveImport.Report? = null
+            try {
+                for (uri in uris) {
+                    if (importCancelled.get()) break
+                    val name = displayName(uri)
+                    val done = total
+                    val report = try {
+                        val stream = resolver.openInputStream(uri) ?: throw IOException("unreadable")
+                        stream.use {
+                            ArchiveImport.import(
+                                it, name, repo,
+                                transaction = { block -> repo.inTransaction(block) },
+                                shouldStop = importCancelled::get,
+                                onProgress = { p ->
+                                    _import.value = ImportUi(
+                                        running = true,
+                                        entries = (done?.entries ?: 0) + p.entries,
+                                        imported = (done?.imported ?: 0) + p.imported,
+                                        alreadyThere = (done?.alreadyThere ?: 0) + p.alreadyThere,
+                                    )
+                                },
+                            )
+                        }
+                    } catch (e: IOException) {
+                        ArchiveImport.Report(0, 0, 0, 0, listOf(ArchiveImport.Failure(name, text(R.string.import_unreadable))), 1, null, null, false, null)
+                    }
+                    total = if (total == null) report else total + report
+                    if (report.stopped != null) break
+                }
+            } finally {
+                _import.value = ImportUi(report = total)
+            }
+            val report = total ?: return@io
+            val failedOnly = report.imported == 0 && report.failureCount > 0
+            container.syncLog.record(
+                SyncLogEntry(
+                    Instant.now(), SyncLog.SOURCE_ARCHIVE, ok = !failedOnly, added = report.imported,
+                    detail = report.failures.firstOrNull()?.let { "${it.name}: ${it.reason}" }.orEmpty(),
+                ),
+            )
+            tell(text(R.string.import_summary, report.imported, report.alreadyThere, report.skipped, report.failureCount))
+            if (report.imported > 0) refreshAll()
+        }
+    }
+
+    /** The name the file has in the file manager; the last part of the address is only a fallback ("msf:1234"). */
+    private fun displayName(uri: Uri): String {
+        val fromProvider = runCatching {
+            getApplication<Application>().contentResolver
+                .query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)
+                ?.use { c -> if (c.moveToFirst()) c.getString(0) else null }
+        }.getOrNull()
+        return fromProvider ?: uri.lastPathSegment.orEmpty()
     }
 
     fun exportActivity(id: String, format: String, target: Uri) = io {
@@ -1326,6 +1385,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         return out.toByteArray()
     }
 }
+
+/** The file import: [running] with how far it is, or the [report] of the last one. */
+data class ImportUi(
+    val running: Boolean = false,
+    val entries: Int = 0,
+    val imported: Int = 0,
+    val alreadyThere: Int = 0,
+    val report: ArchiveImport.Report? = null,
+)
 
 /** The Calendar tab: a month with its activities, and the streaks. [view] is null until loaded. */
 data class CalendarState(

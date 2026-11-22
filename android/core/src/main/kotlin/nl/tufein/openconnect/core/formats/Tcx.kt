@@ -70,7 +70,9 @@ internal object Tcx {
     fun parse(data: ByteArray): Activity {
         val root = parseXml(data, "TCX")
         val actEl = root.path("Activities", "Activity")
-        if (root.local != "TrainingCenterDatabase" || actEl == null) throw FormatError("Not a TCX activity file")
+        if (root.local != "TrainingCenterDatabase") throw FormatError("Not a TCX activity file")
+        // A TCX with courses or workouts but no activity is a real TCX file, just not a training to import.
+        if (actEl == null) throw NoActivityData("Not a TCX activity file")
 
         val track = ArrayList<TrackPoint>()
         var duration = 0.0
