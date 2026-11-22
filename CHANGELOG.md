@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.4.0: namen uit je export
+
+Een geïmporteerde activiteit heet niet meer "Running 2026-05-02": de naam die je in Strava of Garmin Connect gaf, komt mee uit het archief. En van de bestanden die deze versie nog niet kan lezen schrijft het rapport op hoe ze eruitzien (alleen sleutelnamen), zodat een echte Garmin-export kan laten zien wat er in de dagbestanden staat. Tweede stap van het thema **je geschiedenis is van jou**.
+
+[Release notes](docs/releases/v1.4.0.md)
+
 ## v1.3.0: de verhuisdoos
 
 Eén importknop die een heel archief aankan: de export van Garmin Connect, het archief van Strava of OpenConnect's eigen *Alles exporteren* gaat er in één keer in, zonder uitpakken. Dit is het begin van een nieuw thema, **je geschiedenis is van jou** (roadmap, paragraaf 4b): eerst binnenhalen (v1.3.0 en v1.4.0), daarna terugkijken en vrij gebruiken.

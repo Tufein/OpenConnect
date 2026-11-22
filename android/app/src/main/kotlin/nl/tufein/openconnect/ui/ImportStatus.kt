@@ -1,8 +1,16 @@
 package nl.tufein.openconnect.ui
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import nl.tufein.openconnect.R
 import nl.tufein.openconnect.core.ArchiveImport
@@ -42,6 +50,7 @@ fun ImportStatus(state: ImportUi, onCancel: () -> Unit) {
         }
         Text(stringResource(message), style = MaterialTheme.typography.bodySmall)
     }
+    if (report.named > 0) Text(stringResource(R.string.import_named, report.named), style = MaterialTheme.typography.bodySmall)
     if (report.backupInside) Text(stringResource(R.string.import_backup_inside), style = MaterialTheme.typography.bodySmall)
     for (failure in report.failures.take(NAMED_FAILURES)) {
         Text(
@@ -57,6 +66,20 @@ fun ImportStatus(state: ImportUi, onCancel: () -> Unit) {
             color = MaterialTheme.colorScheme.error,
         )
     }
+    if (report.shapes.isNotEmpty()) Text(stringResource(R.string.import_shapes, report.shapes.size), style = MaterialTheme.typography.bodySmall)
+    if (report.shapes.isNotEmpty() || report.failureCount > 0) CopyReport(report)
+}
+
+/** Puts the report (counts, file name patterns and key names; no values, no addresses) on the clipboard, to paste into a GitHub issue. */
+@Composable
+private fun CopyReport(report: ArchiveImport.Report) {
+    val context = LocalContext.current
+    var copied by remember(report) { mutableStateOf(false) }
+    QuietButton(onClick = {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText("OpenConnect import report", report.diagnostics()))
+        copied = true
+    }) { Text(stringResource(if (copied) R.string.import_copied else R.string.import_copy)) }
 }
 
 private fun day(instant: Instant): String = Fmt.date(instant.atZone(ZoneId.systemDefault()).toLocalDate())

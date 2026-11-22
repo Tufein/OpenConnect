@@ -1306,5 +1306,9 @@
     <string name="import_failure_line">%1$s: %2$s</string>
     <string name="import_more_failures">…and %1$d more that failed</string>
     <string name="import_unreadable">could not be opened</string>
+    <string name="import_named">%1$d activities got the name they have in the archive</string>
+    <string name="import_shapes">%1$d kind(s) of JSON file were not read (their layout is not documented). The report lists their file name patterns and key names, never values or addresses.</string>
+    <string name="import_copy">Copy report</string>
+    <string name="import_copied">Report copied</string>
     <string name="synclog_archive">Archive import</string>
 </resources>

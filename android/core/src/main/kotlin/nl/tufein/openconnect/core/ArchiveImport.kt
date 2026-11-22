@@ -2,6 +2,7 @@ package nl.tufein.openconnect.core
 
 import nl.tufein.openconnect.core.formats.FormatError
 import nl.tufein.openconnect.core.formats.Formats
+import nl.tufein.openconnect.core.formats.defaultName
 import nl.tufein.openconnect.core.formats.NoActivityData
 import java.io.BufferedInputStream
 import java.io.ByteArrayOutputStream
@@ -9,6 +10,7 @@ import java.io.FilterInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.time.Instant
+import java.time.ZoneOffset
 import java.util.TreeSet
 import java.util.zip.GZIPInputStream
 import java.util.zip.ZipInputStream
@@ -38,6 +40,12 @@ import java.util.zip.ZipInputStream
  *
  * What is not an activity (routes, workouts, photos, CSV and JSON files) is skipped and counted, not reported as a
  * failure. A broken file is a failure with its name and a reason, and the rest carries on.
+ *
+ * **Names (v1.4.0).** Strava's `activities.csv` and Garmin's `summarizedActivities.json` carry the names people gave their
+ * activities (see [ArchiveMeta]). They are collected while the archive is read, in whatever order the files come, and
+ * applied at the end to the activities this import brought in, and to activities that are already there under the same id
+ * and still carry the name the app made up ("Running 2026-05-02"). A name the person or another source gave is never changed.
+ * The JSON files that are not read have their file name pattern and key names written down in [Report.shapes].
  */
 object ArchiveImport {
     /** Two activities that start this close together are taken to be the same training. */
@@ -45,6 +53,11 @@ object ArchiveImport {
 
     private const val MAX_FAILURES_KEPT = 20
     private const val HEAD = 2048
+    private const val MAX_SHAPES = 25
+    private const val SHAPE_HEAD = 64 * 1024
+
+    /** A names file (CSV or JSON) larger than this is not read; the activities still come in. */
+    private const val META_LIMIT = 32 * 1024 * 1024
 
     data class Limits(
         /** One activity file, before and after unpacking. */
@@ -63,6 +76,9 @@ object ArchiveImport {
 
     data class Failure(val name: String, val reason: String)
 
+    /** What a JSON file this version does not read looks like: its name pattern, how many there were, and its key names. */
+    data class JsonShape(val pattern: String, val files: Int, val keys: List<String>)
+
     data class Report(
         val entries: Int,
         val imported: Int,
@@ -78,6 +94,9 @@ object ArchiveImport {
         /** An OpenConnect backup (`.ocbak`) was inside. */
         val backupInside: Boolean,
         val stopped: Stop?,
+        /** Activities that got their own name from the archive's CSV or JSON. */
+        val named: Int = 0,
+        val shapes: List<JsonShape> = emptyList(),
     ) {
         /** Two imports in a row (several files were picked) as one report. */
         operator fun plus(other: Report) = Report(
@@ -85,7 +104,46 @@ object ArchiveImport {
             (failures + other.failures).take(MAX_FAILURES_KEPT), failureCount + other.failureCount,
             listOfNotNull(first, other.first).minOrNull(), listOfNotNull(last, other.last).maxOrNull(),
             backupInside || other.backupInside, stopped ?: other.stopped,
+            named + other.named, mergeShapes(shapes + other.shapes),
         )
+
+        /**
+         * A report to paste into a GitHub issue: counts, the period, the names of the files that failed and the shape of the
+         * JSON files that were not read. No activity names, no values and no e-mail addresses (those are blanked).
+         */
+        fun diagnostics(): String = buildString {
+            appendLine("OpenConnect archive import report")
+            appendLine("files looked at: $entries")
+            appendLine("new: $imported")
+            appendLine("already there: $alreadyThere")
+            appendLine("skipped (not activities): $skipped")
+            appendLine("failed: $failureCount")
+            appendLine("named: $named")
+            if (first != null && last != null) appendLine("period: ${first.atZone(ZoneOffset.UTC).toLocalDate()} to ${last.atZone(ZoneOffset.UTC).toLocalDate()}")
+            if (stopped != null) appendLine("stopped: $stopped")
+            if (backupInside) appendLine("an OpenConnect backup was inside")
+            if (failures.isNotEmpty()) {
+                appendLine("failures:")
+                failures.forEach { appendLine("- ${ArchiveMeta.redact(it.name)}: ${ArchiveMeta.redact(it.reason)}") }
+            }
+            if (shapes.isNotEmpty()) {
+                appendLine("json files not read (name pattern and key names only, no values):")
+                shapes.forEach { appendLine("- ${it.pattern} (${it.files} file(s)): ${it.keys.joinToString(", ")}") }
+            }
+        }
+    }
+
+    private fun mergeShapes(all: List<JsonShape>): List<JsonShape> {
+        val merged = LinkedHashMap<String, JsonShape>()
+        for (shape in all) {
+            val known = merged[shape.pattern]
+            if (known != null) {
+                merged[shape.pattern] = JsonShape(shape.pattern, known.files + shape.files, (known.keys + shape.keys).distinct().take(ArchiveMeta.MAX_KEYS))
+            } else if (merged.size < MAX_SHAPES) {
+                merged[shape.pattern] = shape
+            }
+        }
+        return merged.values.toList()
     }
 
     private enum class Kind { ZIP, GZIP, ACTIVITY, OTHER }
@@ -103,6 +161,9 @@ object ArchiveImport {
         override fun read(b: ByteArray, off: Int, len: Int): Int = super.read(b, off, len).also { if (it > 0) onBytes(it) }
         override fun close() = Unit
     }
+
+    /** An activity this import may give a name to: [originBase] is the last part of its path in the archive, lower case. */
+    private class Candidate(val id: String, val startSec: Long, val originBase: String)
 
     private class Run(
         val repo: Repository,
@@ -125,6 +186,11 @@ object ArchiveImport {
         val pending = ArrayList<Activity>()
         val pendingIds = HashSet<String>()
         val pendingStarts = TreeSet<Long>()
+        val candidates = ArrayList<Candidate>()
+        val stravaNames = HashMap<String, String>()
+        val garminNames = ArrayList<ArchiveMeta.GarminName>()
+        val shapes = LinkedHashMap<String, JsonShape>()
+        var named = 0
 
         fun fail(name: String, reason: String) {
             failureCount++
@@ -138,9 +204,8 @@ object ArchiveImport {
             pending.clear()
         }
 
-        /** The same id, or another activity that starts within [NEAR_SECONDS]: in the app, or waiting in this batch. */
-        fun isThere(a: Activity): Boolean {
-            if (a.id in pendingIds || repo.getActivity(a.id) != null) return true
+        /** Another activity that starts within [NEAR_SECONDS]: in the app, or waiting in this batch. */
+        fun nearOneThere(a: Activity): Boolean {
             val sec = a.startTime.epochSecond
             val near = pendingStarts.ceiling(sec - NEAR_SECONDS)
             if (near != null && near <= sec + NEAR_SECONDS) return true
@@ -189,16 +254,17 @@ object ArchiveImport {
         val run = Run(repo, limits, transaction, batch.coerceAtLeast(1), shouldStop, onProgress)
         var stopped: Stop? = null
         try {
-            attempt(run, name) { dispatch(run, BufferedInputStream(Keep(input), 8192), name, depth = 0) }
+            attempt(run, name) { dispatch(run, BufferedInputStream(Keep(input), 8192), name, name, depth = 0) }
         } catch (e: StopWalking) {
             stopped = e.why
         } finally {
             run.flush()
         }
+        applyNames(run)
         run.progress()
         return Report(
             run.entries, run.imported, run.alreadyThere, run.skipped, run.failures, run.failureCount,
-            run.first, run.last, run.backupInside, stopped,
+            run.first, run.last, run.backupInside, stopped, run.named, run.shapes.values.toList(),
         )
     }
 
@@ -213,25 +279,77 @@ object ArchiveImport {
         }
     }
 
-    /** One stream: work out what it is and deal with it. [depth] is how many ZIPs we are inside. */
-    private fun dispatch(run: Run, stream: BufferedInputStream, name: String, depth: Int) {
+    /**
+     * One stream: work out what it is and deal with it. [name] is what the file is called now (a gzip file without its
+     * `.gz`), [origin] the path it has in the archive, and [depth] how many ZIPs we are inside.
+     */
+    private fun dispatch(run: Run, stream: BufferedInputStream, name: String, origin: String, depth: Int) {
         when (peek(stream, name)) {
             Kind.ZIP -> walkZip(run, stream, name, depth)
             Kind.GZIP -> {
                 val inner = if (name.endsWith(".gz", ignoreCase = true)) name.dropLast(3) else name
-                dispatch(run, BufferedInputStream(GZIPInputStream(Keep(stream)), 8192), inner, depth)
+                dispatch(run, BufferedInputStream(GZIPInputStream(Keep(stream)), 8192), inner, origin, depth)
             }
             Kind.ACTIVITY -> {
                 run.leaf()
-                activity(run, stream, name)
+                activity(run, stream, name, origin)
                 run.progress()
             }
             Kind.OTHER -> {
                 run.leaf()
-                if (name.endsWith(".ocbak", ignoreCase = true)) run.backupInside = true else run.skipped++
+                other(run, stream, name)
                 run.progress()
             }
         }
+    }
+
+    /** A file that is not an activity: a backup, the names files, a JSON file to learn the shape of, or just something else. */
+    private fun other(run: Run, stream: InputStream, name: String) {
+        val base = name.lowercase().substringAfterLast('/')
+        when {
+            base.endsWith(".ocbak") -> run.backupInside = true
+            base == "activities.csv" -> readNames(run, stream, name) { text ->
+                ArchiveMeta.stravaNames(text).also { run.stravaNames.putAll(it) }.size
+            }
+            base.endsWith(".json") && "summarizedactivities" in base -> readNames(run, stream, name) { text ->
+                ArchiveMeta.garminNames(text).also { run.garminNames.addAll(it) }.size
+            }
+            base.endsWith(".json") -> {
+                run.skipped++
+                shape(run, stream, name)
+            }
+            else -> run.skipped++
+        }
+    }
+
+    /** Reads a names file and hands its text to [use], which returns how many names it found; none means it was no use, so it counts as skipped. */
+    private fun readNames(run: Run, stream: InputStream, name: String, use: (String) -> Int) {
+        val bytes = readLimited(stream, META_LIMIT)
+        if (bytes == null) {
+            run.fail(name, "too large to read the names from (more than ${META_LIMIT / (1024 * 1024)} MB)")
+            return
+        }
+        try {
+            if (use(String(bytes, Charsets.UTF_8)) == 0) run.skipped++
+        } catch (e: IllegalArgumentException) {
+            run.fail(name, "not valid JSON, so no names were read from it")
+        }
+    }
+
+    /** Writes down what a JSON file we do not read looks like: the pattern of its name and its key names, nothing else. */
+    private fun shape(run: Run, stream: InputStream, name: String) {
+        val pattern = ArchiveMeta.shapePattern(name)
+        val known = run.shapes[pattern]
+        if (known == null && run.shapes.size >= MAX_SHAPES) return
+        val head = ByteArray(SHAPE_HEAD)
+        var n = 0
+        while (n < head.size) {
+            val r = stream.read(head, n, head.size - n)
+            if (r < 0) break
+            n += r
+        }
+        val keys = ArchiveMeta.shapeKeys(head.copyOf(n))
+        run.shapes[pattern] = JsonShape(pattern, (known?.files ?: 0) + 1, ((known?.keys ?: emptyList()) + keys).distinct().take(ArchiveMeta.MAX_KEYS))
     }
 
     private fun walkZip(run: Run, stream: InputStream, name: String, depth: Int) {
@@ -259,7 +377,7 @@ object ArchiveImport {
                 run.bytes += n
                 if (run.bytes > run.limits.maxTotalBytes) throw StopWalking(Stop.TOO_LARGE)
             }
-            attempt(run, entry.name) { dispatch(run, BufferedInputStream(counted, 8192), entry.name, depth + 1) }
+            attempt(run, entry.name) { dispatch(run, BufferedInputStream(counted, 8192), entry.name, entry.name, depth + 1) }
         }
     }
 
@@ -291,7 +409,7 @@ object ArchiveImport {
         return if (sniffed != null) Kind.ACTIVITY else Kind.OTHER
     }
 
-    private fun activity(run: Run, stream: InputStream, name: String) {
+    private fun activity(run: Run, stream: InputStream, name: String, origin: String) {
         val bytes = readLimited(stream, run.limits.maxFileBytes)
         if (bytes == null) {
             run.fail(name, "larger than ${run.limits.maxFileBytes / (1024 * 1024)} MB")
@@ -309,7 +427,53 @@ object ArchiveImport {
             run.fail(name, "could not be read (${e.javaClass.simpleName})")
             return
         }
-        if (run.isThere(a)) run.alreadyThere++ else run.add(a)
+        val originBase = origin.substringAfterLast('/').lowercase()
+        val sameRun = a.id in run.pendingIds
+        val existing = if (sameRun) null else run.repo.getActivity(a.id)
+        when {
+            sameRun -> run.alreadyThere++
+            existing != null -> {
+                run.alreadyThere++
+                // Still named by the app itself, so nobody chose that name: an archive that brings a real one may replace it.
+                if (existing.name == defaultName(existing)) run.candidates.add(Candidate(existing.id, existing.startTime.epochSecond, originBase))
+            }
+            run.nearOneThere(a) -> run.alreadyThere++
+            else -> {
+                run.add(a)
+                run.candidates.add(Candidate(a.id, a.startTime.epochSecond, originBase))
+            }
+        }
+    }
+
+    /** Gives the candidates the names the archive carried, once everything has been read (the CSV may come last). */
+    private fun applyNames(run: Run) {
+        if (run.candidates.isEmpty() || (run.stravaNames.isEmpty() && run.garminNames.isEmpty())) return
+        val garmin = run.garminNames.sortedBy { it.epochSec }
+        val starts = garmin.map { it.epochSec }
+        val updates = ArrayList<Activity>()
+        fun write() {
+            if (updates.isEmpty()) return
+            val batch = ArrayList(updates)
+            run.transaction { batch.forEach(run.repo::upsertActivity) }
+            run.named += batch.size
+            updates.clear()
+        }
+        for (c in run.candidates) {
+            val name = run.stravaNames[c.originBase] ?: garminNameAt(garmin, starts, c.startSec) ?: continue
+            val current = run.repo.getActivity(c.id) ?: continue
+            if (current.name == name) continue
+            updates.add(current.copy(name = name))
+            if (updates.size >= run.batch) write()
+        }
+        write()
+    }
+
+    /** The Garmin name whose start is nearest to [sec], within [NEAR_SECONDS]. */
+    private fun garminNameAt(garmin: List<ArchiveMeta.GarminName>, starts: List<Long>, sec: Long): String? {
+        var i = starts.binarySearch(sec)
+        if (i < 0) i = -i - 1
+        val best = listOfNotNull(garmin.getOrNull(i - 1), garmin.getOrNull(i)).minByOrNull { kotlin.math.abs(it.epochSec - sec) } ?: return null
+        return if (kotlin.math.abs(best.epochSec - sec) <= NEAR_SECONDS) best.name else null
     }
 
     /** All bytes of [stream], or null as soon as there are more than [limit]. */
