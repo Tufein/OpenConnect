@@ -62,6 +62,8 @@ fun HomeScreen(
     state: HomeState,
     garmin: GarminUi,
     now: Instant,
+    /** The charge the watch and the ring last reported; both sit on the front page too. */
+    battery: BatteriesUi = BatteriesUi(),
     onOpenActivity: (String) -> Unit,
     onDemo: () -> Unit,
     onImport: () -> Unit,
@@ -114,6 +116,10 @@ fun HomeScreen(
                     onPill = { if (badge is SyncBadge.NoAccount || badge is SyncBadge.KeyRejected || badge is SyncBadge.Syncing) onGarmin() else onSync() },
                     onLevel = onTrophies,
                 )
+            }
+            // The charge of the devices themselves, high on the front page: a dead watch or ring is worth noticing early.
+            if (useGarmin || onOura != null) item {
+                BatteryCard(battery, showWatch = useGarmin, showRing = onOura != null)
             }
             if (!state.loaded) return@LazyColumn
             val overview = state.overview

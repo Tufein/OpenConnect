@@ -7,12 +7,12 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.8.0.** The Watch screen now shows the **charge of the watch and the Oura Ring** with when each last
-> reported, and the workout builder takes a **distance with a pace** (for example 6 × 1 km at 5:00–5:30 per km) and can
-> **edit** a workout afterwards instead of only adding and deleting. The three widget sizes of v1.7.0, the workout
-> builder of v1.6.0, the manual activity of v1.5.0, the archive import of v1.3.0 and the names from your export in
-> v1.4.0 stay.
-> [Release notes](docs/releases/v1.8.0.md).
+> **Status: v1.8.1.** The **charge of the watch and the Oura Ring** now sits high on the **front page** as well as on
+> the Watch screen, with when each last reported; a device you do not own gets no row. v1.8.0 brought that battery
+> card, the workout builder's **distance with a pace** (for example 6 × 1 km at 5:00–5:30 per km) and **editing** a
+> workout afterwards. The three widget sizes of v1.7.0, the workout builder of v1.6.0, the manual activity of v1.5.0,
+> the archive import of v1.3.0 and the names from your export in v1.4.0 stay.
+> [Release notes](docs/releases/v1.8.1.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

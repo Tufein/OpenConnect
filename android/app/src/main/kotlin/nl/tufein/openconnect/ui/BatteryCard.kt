@@ -19,7 +19,7 @@ import java.time.Instant
 /** What one thing this app talks to last said about its charge; [level] null means it never said. */
 data class BatteryReading(val level: Int? = null, val at: Long = 0L)
 
-/** The watch and the ring side by side, for the card on the Watch screen. */
+/** The watch and the ring side by side, for the card on the front page and on the Watch screen. */
 data class BatteriesUi(val watch: BatteryReading = BatteryReading(), val ring: BatteryReading = BatteryReading())
 
 /** Reads what was kept in the settings; -1 and 0 mean "never reported", which is shown as a dash. */
@@ -33,12 +33,20 @@ fun SettingsStore.batteries(): BatteriesUi = BatteriesUi(
  * the watch does it over Bluetooth when it connects. WHOOP and Hume do not report one, which is why only these two do.
  */
 @Composable
-fun BatteryCard(ui: BatteriesUi = BatteriesUi(), now: Instant = Instant.now(), modifier: Modifier = Modifier) {
+fun BatteryCard(
+    ui: BatteriesUi = BatteriesUi(),
+    now: Instant = Instant.now(),
+    modifier: Modifier = Modifier,
+    /** False for someone without a Garmin watch: no row for a device they do not own. */
+    showWatch: Boolean = true,
+    /** False for someone without an Oura ring. */
+    showRing: Boolean = true,
+) {
     SectionTitle(stringResource(R.string.battery_title))
     SurfaceCard(modifier) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Reading(stringResource(R.string.battery_watch), ui.watch, now)
-            Reading(stringResource(R.string.battery_ring), ui.ring, now)
+            if (showWatch) Reading(stringResource(R.string.battery_watch), ui.watch, now)
+            if (showRing) Reading(stringResource(R.string.battery_ring), ui.ring, now)
         }
     }
 }

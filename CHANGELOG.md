@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.8.1: de lading van je horloge en je ring op het voorblad
+
+De batterijkaart van het horloge en de Oura Ring stond alleen op het Watch-tabblad. Hij staat nu ook bovenaan het voorblad, zodat je ziet of een van je devices bijna leeg is voordat je gaat trainen.
+
+[Release notes](docs/releases/v1.8.1.md)
+
 ## v1.8.0: de lading van je horloge en je ring, en work-outs op afstand
 
 Twee dingen die in de dagelijkse ronde ontbraken: je kon niet zien hoe vol je horloge of je ring was, en de work-outbouwer telde alleen minuten. Allebei is dat nu anders.

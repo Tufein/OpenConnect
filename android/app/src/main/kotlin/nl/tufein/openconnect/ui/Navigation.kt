@@ -253,6 +253,8 @@ fun OpenConnectRoot(
     val busy by vm.busy.collectAsState()
     val watch by vm.watch.collectAsState()
     val battery by vm.battery.collectAsState()
+    // The front page and the Watch screen both show the stored charge; re-read it when a watch or Oura sync finishes.
+    LaunchedEffect(watch, oura.lastSync) { vm.refreshBattery() }
     val forward by vm.forward.collectAsState()
     val forwardLog by vm.forwardLog.collectAsState()
     val forwardApps by vm.forwardApps.collectAsState()
@@ -315,6 +317,7 @@ fun OpenConnectRoot(
                     state = home,
                     garmin = garmin,
                     now = now,
+                    battery = battery,
                     onOpenActivity = ::openActivity,
                     onDemo = vm::loadDemo,
                     onImport = onImport,
@@ -482,8 +485,6 @@ fun OpenConnectRoot(
             composable(WATCH_ROUTE) {
                 // The list of watches goes stale when the cable moves, so look again whenever the screen opens.
                 LaunchedEffect(Unit) { vm.refreshWatches() }
-                // Re-read the stored charge when the screen opens and whenever a watch or Oura sync finishes.
-                LaunchedEffect(watch, oura.lastSync) { vm.refreshBattery() }
                 // Leaving the screen, by the back button or the arrow, ends a live heart-rate connection.
                 androidx.compose.runtime.DisposableEffect(Unit) { onDispose { vm.stopLive() } }
                 WatchScreen(

@@ -29,7 +29,7 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   2. Of de meldingen op de fenix 8 nu bij elk bericht trillen, wacht op een nieuw logboek; v1.0.1 pakte de meest waarschijnlijke oorzaak aan.
   3. De naam: er bestaat al een bekende VPN-client die OpenConnect heet; het besluit staat nog open (G6).
   4. **De geschiedenis zit nog in Garmin Connect en Strava.** De app importeert één bestand tegelijk en haalt via de eigen sleutel een beperkt stuk terug, terwijl elk inzicht (vorm, VO2max, racevoorspelling, heatmap, seizoen) zo goed is als de geschiedenis eronder. Dat is het thema van 4b.
-  5. Vijf Dependabot-voorstellen (#85 tot en met #89) liggen open; de grote gereedschapssprong (M12) wacht op een CI-only debugronde.
+  5. Twee Dependabot-voorstellen (#86 en #89) liggen open; ze wachten op één bewuste compileSdk-37/AGP-9-stap, en de grote gereedschapssprong (M12) op een CI-only debugronde.
   6. De in-app-updater past niet in Google Play of F-Droid; winkels komen als `store`-variant in M10.
 
 ## 2. Wat "1.0" betekent
@@ -421,6 +421,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.6.0 | Work-outbouwer: op Plan staat *Je eigen work-outs* met naam, herhalingen, snelle minuten, rust, warming-up en cooldown; de FIT-work-outs gaan met dezelfde knop naar het horloge, staan in de back-up en er is geen schemawijziging |
 | v1.7.0 | Drie widgetformaten: klein toont readiness en stappen, de gewone kaart je weekdoel, groot ook de slaap van de laatste nacht en de rusthartslag; de widget hertekent zich bij het slepen en de minimale maat ging naar 110 × 70 dp |
 | v1.8.0 | Batterij van horloge en ring: het Watch-tabblad toont de lading en wanneer die voor het laatst gemeld is (het horloge via een protobuf-vraag bij het verbinden, de ring uit Oura `ring_battery_level`); de work-outbouwer kent afstand en tempo per herhaling (bijv. 6 × 1 km in 5:00–5:30) en je kunt een work-out achteraf bewerken |
+| v1.8.1 | De batterijkaart van horloge en ring staat nu ook bovenaan het voorblad (Home), met per device alleen een rij als je dat device hebt; de waarden verversen zodra een horloge- of Oura-sync klaar is, zonder het Watch-tabblad te openen |
 
 ## 9. Hoe releases werken
 

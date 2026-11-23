@@ -37,7 +37,7 @@ keys, and are only sent to `api.ouraring.com`. Oura's refresh tokens work once: 
 | `sleep` (the longest `long_sleep`/`sleep` of each day) | last night (asleep, deep, light, REM, awake), lowest heart rate, HRV, breathing |
 | `daily_spo2` | average blood oxygen |
 | `workout` | the ring's workouts |
-| `ring_battery_level?latest=true` | the charge on the Watch tab's battery card (with when it was reported) |
+| `ring_battery_level?latest=true` | the charge on the front page's and Watch tab's battery card (with when it was reported) |
 
 Everything goes into its own table (`oura_days`, one row per day) and is **never mixed** into the watch's days, nights
 or activities, so nothing is counted twice and the Health, Home and Insights screens stay the watch's. The tab shows the
