@@ -310,7 +310,7 @@ echte hardware daarom vraagt. **S/M/L/XL** zoals in de legenda.
 
 | Versie | Spoor | Wat erin zit | Maat |
 |--------|-------|--------------|------|
-| **v1.7.0** | Bereik | Drie widgetformaten: klein (alleen readiness en stappen), middel (ook de week) en groot (ook slaap en rusthartslag), passend bij elke celmaat op het startscherm; de widget hertekent zichzelf als je hem groter of kleiner sleept | S |
+| **v1.7.0** ✅ | Bereik | Drie widgetformaten: klein (alleen readiness en stappen), middel (ook de week) en groot (ook slaap en rusthartslag), passend bij elke celmaat op het startscherm; de widget hertekent zichzelf als je hem groter of kleiner sleept | S |
 | **v1.8.0** | Training | Work-outs met afstandsstappen, tempo-doelen en bewerken; dezelfde builder, dezelfde verzendknop | M |
 | **v1.9.0** | Analyse | Jaaroverzicht: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar, met dezelfde eerlijke "geen data"-regels | M |
 | **v1.10.0** | Training | Het schema past zich aan: een gemiste week schuift niet stil door, maar vraagt en stelt voor; de coach gebruikt die cijfers | L |
