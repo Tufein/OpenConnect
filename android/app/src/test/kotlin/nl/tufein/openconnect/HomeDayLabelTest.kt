@@ -1,10 +1,7 @@
 package nl.tufein.openconnect
 
 import androidx.compose.ui.test.assertTextEquals
-import androidx.compose.ui.test.hasScrollAction
-import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performScrollToNode
 import nl.tufein.openconnect.core.DailySummary
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,11 +28,12 @@ class HomeDayLabelTest : AppTestBase() {
     }
 
     /**
-     * The day title of the steps card, by its own tag: after the battery card landed on Home the steps card can sit
-     * just outside the viewport, and "Today" also names today's row in the journal further down.
+     * The day title of the steps card, by its own tag. After the battery card landed on Home the steps card can sit
+     * just outside the viewport, and "Today" also names today's row in the journal further down; scroll to a fact that
+     * is inside the same card, then read the title.
      */
     private fun assertDayTitle(expected: String) {
-        rule.onAllNodes(hasScrollAction())[0].performScrollToNode(hasTestTag("home-day"))
+        scrollToText("Intensity minutes")
         rule.onNodeWithTag("home-day").assertTextEquals(expected)
     }
 
@@ -44,7 +42,6 @@ class HomeDayLabelTest : AppTestBase() {
         launchFresh(prepare = seed(0))
         waitForText(" highest")
         assertDayTitle("Today")
-        scrollToText("Intensity minutes")
         assertFalse(hasText("No data for today yet", substring = true), "today's numbers need no warning")
         shot("home-day-today")
     }
