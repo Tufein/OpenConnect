@@ -137,6 +137,23 @@ class SettingsStore(
         get() = prefs.getString(KEY_WORKOUTS, "") ?: ""
         set(value) = prefs.edit().putString(KEY_WORKOUTS, value).apply()
 
+    /** The charge of the things this app talks to; -1 or 0 time means it was never reported. */
+    var watchBattery: Int
+        get() = prefs.getInt(KEY_WATCH_BATTERY, -1)
+        set(value) = prefs.edit().putInt(KEY_WATCH_BATTERY, value).apply()
+
+    var watchBatteryAt: Long
+        get() = prefs.getLong(KEY_WATCH_BATTERY_AT, 0L)
+        set(value) = prefs.edit().putLong(KEY_WATCH_BATTERY_AT, value).apply()
+
+    var ringBattery: Int
+        get() = prefs.getInt(KEY_RING_BATTERY, -1)
+        set(value) = prefs.edit().putInt(KEY_RING_BATTERY, value).apply()
+
+    var ringBatteryAt: Long
+        get() = prefs.getLong(KEY_RING_BATTERY_AT, 0L)
+        set(value) = prefs.edit().putLong(KEY_RING_BATTERY_AT, value).apply()
+
     /** What the person wrote or chose (journal, shoes, plan, race, max heart rate, goals) for the backup. No keys. */
     fun userData() = nl.tufein.openconnect.core.UserData(journal, gear, trainingPlan, raceGoal, maxHr, weeklyGoals, workouts)
 
@@ -256,6 +273,17 @@ class SettingsStore(
             get() = prefs.getLong(KEY_OURA_LAST, 0L)
             set(value) = prefs.edit().putLong(KEY_OURA_LAST, value).apply()
 
+        override var ringBattery: Int
+            get() = this@SettingsStore.ringBattery
+            set(value) {
+                this@SettingsStore.ringBattery = value
+            }
+
+        override var ringBatteryAt: Long
+            get() = this@SettingsStore.ringBatteryAt
+            set(value) {
+                this@SettingsStore.ringBatteryAt = value
+            }
     }
 
     /**
@@ -436,6 +464,10 @@ class SettingsStore(
         private const val KEY_MAX_HR = "max_hr"
         private const val KEY_GEAR = "gear"
         private const val KEY_WORKOUTS = "workouts"
+        private const val KEY_WATCH_BATTERY = "watch_battery"
+        private const val KEY_WATCH_BATTERY_AT = "watch_battery_at"
+        private const val KEY_RING_BATTERY = "ring_battery"
+        private const val KEY_RING_BATTERY_AT = "ring_battery_at"
         private const val KEY_JOURNAL = "journal"
         private const val KEY_APP_LOCK = "app_lock"
         private const val KEY_SYNC_LOG = "sync_log"

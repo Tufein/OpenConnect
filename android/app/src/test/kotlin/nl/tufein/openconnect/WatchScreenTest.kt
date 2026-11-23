@@ -247,4 +247,23 @@ class WatchScreenTest : AppTestBase() {
         clickChip("Respiration chart")
         assertTrue(hasText("Respiration", substring = false))
     }
+
+    @Test
+    fun theWatchTabShowsTheChargeOfTheWatchAndTheRing() {
+        launchWithFakes()
+        val app = ApplicationProvider.getApplicationContext<OpenConnectApp>()
+        app.container.settings.watchBattery = 87
+        app.container.settings.watchBatteryAt = System.currentTimeMillis() - 5 * 60_000
+        app.container.settings.ringBattery = 64
+        app.container.settings.ringBatteryAt = System.currentTimeMillis() - 120 * 60_000
+        waitForText("Connect watch")
+        rule.onNodeWithText("Connect watch").performClick()
+
+        waitForText("Battery")
+        waitForText("87%")
+        waitForText("64%")
+        // the ring last reported two hours ago; the watch five minutes ago
+        assertTrue(hasText("updated", substring = true))
+        shot("16-watch-batteries")
+    }
 }

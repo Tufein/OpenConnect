@@ -53,6 +53,8 @@ import nl.tufein.openconnect.watch.hasBluetoothPermissions
 @Composable
 fun WatchScreen(
     ui: WatchUi,
+    /** The charge of the watch and the ring, shown at the top. */
+    battery: BatteriesUi = BatteriesUi(),
     onBack: () -> Unit,
     onSearchUsb: () -> Unit,
     onRead: (WatchInfo) -> Unit,
@@ -119,6 +121,9 @@ fun WatchScreen(
                 PixelIcon(PixelIcons.ArrowLeft, contentDescription = stringResource(R.string.back))
             }
             Text(stringResource(R.string.watch_title), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
+        }
+        item {
+            BatteryCard(battery)
         }
         item {
             SectionTitle(stringResource(R.string.watch_ble_title))

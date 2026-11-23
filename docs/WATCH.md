@@ -43,6 +43,12 @@ From the FIT files in the watch's `GARMIN` folder:
 Not read yet: the `Metrics` folder (VO2 max, training status, recovery time), `Settings`, `Workouts` and
 `Courses`. Achievements and badges are not stored on the watch in a form we can use.
 
+Since v1.8.0 the Watch tab also shows the watch's **charge**: right after the Bluetooth handshake the app sends Garmin's
+battery question once (the same protobuf request Gadgetbridge sends on the device-status service) and keeps the answer
+with the time it arrived. A watch that does not answer within two seconds is not asked again for that connection and
+simply shows a dash; nothing else waits on it. **This has not been seen on a real watch yet** — the protobuf request
+and the parsing of the answer are covered by tests with hand-built bytes.
+
 ## How it works in the code
 
 ```

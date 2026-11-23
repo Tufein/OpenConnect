@@ -3,6 +3,7 @@ package nl.tufein.openconnect
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextClearance
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
 import kotlin.test.assertEquals
@@ -31,6 +32,15 @@ class OwnWorkoutsScreenTest : AppTestBase() {
         val fields = rule.onAllNodes(hasText(label) and hasSetTextAction()).fetchSemanticsNodes()
         assertTrue(fields.isNotEmpty(), "no field labelled $label")
         rule.onAllNodes(hasText(label) and hasSetTextAction())[0].performTextInput(text)
+    }
+
+    private fun replaceIn(label: String, text: String) {
+        val fields = rule.onAllNodes(hasText(label) and hasSetTextAction()).fetchSemanticsNodes()
+        assertTrue(fields.isNotEmpty(), "no field labelled $label")
+        rule.onAllNodes(hasText(label) and hasSetTextAction())[0].apply {
+            performTextClearance()
+            performTextInput(text)
+        }
     }
 
     @Test
@@ -62,5 +72,34 @@ class OwnWorkoutsScreenTest : AppTestBase() {
         waitForText("Give the workout a name.")
         val settings = ApplicationProvider.getApplicationContext<OpenConnectApp>().container.settings
         assertTrue(settings.workouts.isBlank(), "nothing is stored without a name")
+    }
+
+    @Test
+    fun aDistanceWorkoutIsSavedAndCanBeEditedAfterwards() {
+        openPlan()
+        clickText("New workout")
+        typeInto("Name", "1 km repeats")
+        typeInto("Distance per repeat", "1000")
+        typeInto("Pace", "300-330")
+        clickText("Save workout")
+        waitForText("1 km repeats")
+        waitForText("4 × 1000 m", substring = true)
+
+        val settings = ApplicationProvider.getApplicationContext<OpenConnectApp>().container.settings
+        val saved = WorkoutBook.decode(settings.workouts).workouts.single()
+        assertEquals(1_000, saved.fastMeters)
+        assertEquals(300, saved.paceFastS)
+        assertEquals(330, saved.paceSlowS)
+
+        clickText("Edit")
+        replaceIn("Repeats", "6")
+        clickText("Save workout")
+        waitForText("6 × 1000 m", substring = true)
+
+        val edited = WorkoutBook.decode(settings.workouts).workouts
+        assertEquals(1, edited.size, "editing replaces the workout instead of adding one")
+        assertEquals(saved.id, edited[0].id)
+        assertEquals(6, edited[0].repeats)
+        assertEquals(1_000, edited[0].fastMeters)
     }
 }

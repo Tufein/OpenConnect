@@ -66,12 +66,17 @@ class AndroidGarminBleLink(
     private val notificationOptions: () -> NotificationOptions = { NotificationOptions() },
     /** One line at a time about what the link is doing (Bluetooth steps, messages from the watch), for the log on the card. */
     private val diagnostics: (String) -> Unit = {},
+    /** The charge the watch reports when it connects, 0..100; the battery card keeps it with the time. */
+    private val onBattery: (Int) -> Unit = {},
 ) : GarminBleLink {
     companion object {
         private val CLIENT_CONFIG: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
         private const val PAIR_TIMEOUT_S = 90L
         private const val CONNECT_TIMEOUT_S = 30L
         private const val HANDSHAKE_TIMEOUT_MS = 30_000L
+
+        /** How long the watch gets to answer the battery question before the sync goes on without it. */
+        private const val BATTERY_WAIT_MS = 2_000L
 
         /** A write Android has not confirmed after this long is given up on; the link's own resending covers what was lost. */
         private const val WRITE_STUCK_MS = 4_000L
@@ -263,6 +268,8 @@ class AndroidGarminBleLink(
             session.start()
             val info = session.awaitReady(HANDSHAKE_TIMEOUT_MS)
             log("handshake done with ${info.deviceName} ${info.deviceModel}")
+            // the charge comes a moment later; a watch that stays quiet must not hold up the sync
+            CompletableFuture.runAsync { session.awaitBattery(BATTERY_WAIT_MS)?.let(onBattery) }
             // the name the watch gives itself, else the model its product number stands for, else what the scan showed
             return Established(session, connection, scheduler, info.nameOr(watch.name))
         } catch (e: Exception) {

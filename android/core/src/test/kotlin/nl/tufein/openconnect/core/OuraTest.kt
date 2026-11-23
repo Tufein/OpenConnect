@@ -78,7 +78,7 @@ class OuraTest {
         assertEquals("code", p["response_type"])
         assertEquals("client-1", p["client_id"])
         assertEquals("openconnect://oura", p["redirect_uri"])
-        assertEquals("daily workout spo2 personal", p["scope"])
+        assertEquals("daily workout spo2 personal ring_configuration", p["scope"])
         assertEquals("S256", p["code_challenge_method"])
         val verifier = store.pendingLogin!!.split(' ')[0]
         assertEquals(OuraAuth.challenge(verifier), p["code_challenge"])
@@ -292,5 +292,28 @@ class OuraTest {
         }
         OuraSync(OuraClient(flaky, auth, RetryPolicy(listOf(10L)) { waits += it }, { now }), repo).sync(7, today)
         assertEquals(listOf(10L), waits)
+    }
+
+    @Test
+    fun `the ring battery is read from the latest sample`() {
+        login()
+        http.collections["ring_battery_level"] =
+            """{"data":[{"timestamp":"2026-11-13T11:59:00Z","timestamp_unix":1763035140000,"charging":false,"level":72}]}"""
+        val battery = OuraClient(http, auth).latestBattery()
+        assertEquals(72, battery?.level)
+        assertEquals(false, battery?.charging)
+        assertEquals(Instant.ofEpochMilli(1763035140000), battery?.at)
+        assertTrue(http.calls.last().url.endsWith("ring_battery_level?latest=true"))
+    }
+
+    @Test
+    fun `an empty or impossible battery answer is no battery`() {
+        login()
+        assertNull(OuraClient(http, auth).latestBattery(), "no sample yet")
+        http.collections["ring_battery_level"] = """{"data":[{"timestamp_unix":1763035140000,"level":140}]}"""
+        assertNull(OuraClient(http, auth).latestBattery(), "outside 0..100")
+        http.collections["ring_battery_level"] = """{"data":[{"level":55}]}"""
+        assertEquals(55, OuraClient(http, auth).latestBattery()?.level, "the time may be missing")
+        assertNull(OuraClient(http, auth).latestBattery()?.at)
     }
 }

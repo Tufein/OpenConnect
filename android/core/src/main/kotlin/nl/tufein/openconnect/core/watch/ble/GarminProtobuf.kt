@@ -56,6 +56,63 @@ object GarminProtobuf {
     /** How every log line about a protobuf question starts; the log keeps one line per question that comes back. */
     const val LOG_PREFIX = "watch asked over protobuf: "
 
+    /** Device status (Smart field 8): the battery question Gadgetbridge asks once the handshake is done. */
+    private const val DEVICE_STATUS_SERVICE = 8
+    private const val BATTERY_REQUEST = 2
+    private const val BATTERY_RESPONSE = 3
+
+    /** `Smart.device_status_service { remote_device_battery_status_request {} }`, byte for byte what Gadgetbridge sends. */
+    val BATTERY_QUESTION: ByteArray = field(DEVICE_STATUS_SERVICE, field(BATTERY_REQUEST, ByteArray(0)))
+
+    /** The battery question as a GFDI protobuf request, to send when the watch is ready. */
+    fun batteryRequest(requestId: Int): GfdiMessage = GfdiMessage.build(GfdiType.PROTOBUF_REQUEST) {
+        short(requestId)
+        int(0)
+        int(BATTERY_QUESTION.size)
+        int(BATTERY_QUESTION.size)
+        bytes(BATTERY_QUESTION)
+    }
+
+    /**
+     * The charge in [bytes], the watch's answer to [batteryRequest], or null when it is not that answer or the level is
+     * not 0..100 — a half-understood message is no reason to show a wrong number.
+     */
+    fun batteryLevel(bytes: ByteArray): Int? {
+        val outer = Varints(bytes)
+        val tag = outer.varint() ?: return null
+        if (wireType(tag) != 2 || fieldNumber(tag) != DEVICE_STATUS_SERVICE) return null
+        val service = outer.take(outer.varint()?.toInt() ?: return null) ?: return null
+        val inner = Varints(service)
+        val innerTag = inner.varint() ?: return null
+        if (wireType(innerTag) != 2 || fieldNumber(innerTag) != BATTERY_RESPONSE) return null
+        val body = inner.take(inner.varint()?.toInt() ?: return null) ?: return null
+        val response = Varints(body)
+        var level: Int? = null
+        while (true) {
+            val fieldTag = response.varint() ?: break
+            when (wireType(fieldTag)) {
+                0 -> {
+                    val value = response.varint() ?: break
+                    if (fieldNumber(fieldTag) == 2) level = value.toInt()
+                }
+                2 -> response.take(response.varint()?.toInt() ?: break) ?: break
+                else -> break
+            }
+        }
+        return level?.takeIf { it in 0..100 }
+    }
+
+    /** Confirms a chunk of an answer this app asked for, so the watch knows it arrived and does not ask again. */
+    fun accepted(type: Int, chunk: Chunk): GfdiMessage = GfdiMessage.response(type) {
+        short(chunk.requestId)
+        int(chunk.offset)
+        byte(CHUNK_KEPT)
+        byte(NO_ERROR)
+    }
+
+    private fun fieldNumber(tag: Long): Int = (tag ushr 3).toInt()
+    private fun wireType(tag: Long): Int = (tag and 0x07L).toInt()
+
     /** An answer this app gives: the bytes of the Smart message to send back, and what it says, for the log. */
     class Reply(val smart: ByteArray, val said: String)
 
@@ -154,6 +211,14 @@ object GarminProtobuf {
                 shift += 7
             }
             return null
+        }
+
+        /** The next [count] bytes, or null when there are not that many. */
+        fun take(count: Int): ByteArray? {
+            if (count < 0 || pos + count > bytes.size) return null
+            val out = bytes.copyOfRange(pos, pos + count)
+            pos += count
+            return out
         }
     }
 

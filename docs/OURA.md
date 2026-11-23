@@ -16,10 +16,13 @@ the code follows Oura's published OpenAPI description (version 1.43) and is test
 
 ## The login
 
-*Log in at Oura* opens your browser at Oura's consent page. The app asks for `daily workout spo2 personal` and uses
+*Log in at Oura* opens your browser at Oura's consent page. The app asks for `daily workout spo2 personal` and, since
+v1.8.0, `ring_configuration` for the ring's charge (Oura does not publish which scope `ring_battery_level` needs; this
+is the one the community found, and it only covers the ring itself). It uses
 PKCE (S256) and a random state. After you allow it, Oura sends the browser to `openconnect://oura?code=…`, which
 opens OpenConnect again; it checks the state and trades the code for tokens. If the browser does not come back, copy the
-address it ends on and paste it in the app.
+address it ends on and paste it in the app. Someone who logged in before v1.8.0 has to log in once more to grant the
+new scope; until then the Watch tab's ring row shows a dash.
 
 The client secret, the access token and the refresh token are kept encrypted (Android Keystore), like the AI and Garmin
 keys, and are only sent to `api.ouraring.com`. Oura's refresh tokens work once: every refresh stores the new pair.
@@ -34,6 +37,7 @@ keys, and are only sent to `api.ouraring.com`. Oura's refresh tokens work once: 
 | `sleep` (the longest `long_sleep`/`sleep` of each day) | last night (asleep, deep, light, REM, awake), lowest heart rate, HRV, breathing |
 | `daily_spo2` | average blood oxygen |
 | `workout` | the ring's workouts |
+| `ring_battery_level?latest=true` | the charge on the Watch tab's battery card (with when it was reported) |
 
 Everything goes into its own table (`oura_days`, one row per day) and is **never mixed** into the watch's days, nights
 or activities, so nothing is counted twice and the Health, Home and Insights screens stay the watch's. The tab shows the

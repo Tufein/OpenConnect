@@ -113,8 +113,12 @@ class OuraAuth(private val http: OuraHttp, private val store: OuraStore, private
         const val TOKEN_URL = "https://api.ouraring.com/oauth/token"
         const val DEFAULT_REDIRECT = "openconnect://oura"
 
-        /** Only what the sync reads: day summaries, sleep, workouts and blood oxygen. */
-        const val SCOPES = "daily workout spo2 personal"
+        /**
+         * Only what the app reads: day summaries, sleep, workouts, blood oxygen and, for the battery card, the ring's
+         * configuration. Oura does not publish the scope for `ring_battery_level`; `ring_configuration` is the one
+         * the community found it needs, and it is the ring's own data, nothing else.
+         */
+        const val SCOPES = "daily workout spo2 personal ring_configuration"
         const val USER_AGENT = "OpenConnect/1.0"
         private const val TIMEOUT_MS = 30_000
         private val JSON = Json { ignoreUnknownKeys = true }
@@ -223,6 +227,10 @@ internal fun JsonObject.string(name: String): String? = (this[name] as? JsonPrim
 internal fun JsonObject.number(name: String): Double? = (this[name] as? JsonPrimitive)?.takeIf { !it.isString }?.contentOrNull?.toDoubleOrNull()
 internal fun JsonObject.int(name: String): Int? = number(name)?.let { Math.round(it).toInt() }
 
+/** A JSON boolean, or null when the field is missing (a JSON string never counts). */
+internal fun JsonObject.flag(name: String): Boolean? =
+    (this[name] as? JsonPrimitive)?.takeUnless { it.isString }?.contentOrNull?.toBooleanStrictOrNull()
+
 /** Reads Oura's v2 collections with the login of [OuraAuth], following `next_token` to the last page. */
 class OuraClient(
     private val http: OuraHttp,
@@ -251,8 +259,22 @@ class OuraClient(
         return out
     }
 
-    private fun get(url: String): JsonObject {
-        var response = call(url, auth.accessToken())
+    /**
+     * The ring's last known charge, or null when Oura has no sample yet. `latest` asks for the most recent one only;
+     * the answer is the usual envelope with that row in `data`.
+     */
+    fun latestBattery(): OuraBattery? {
+        val json = get(BASE + "ring_battery_level?latest=true")
+        val row = (json["data"] as? JsonArray)?.firstOrNull() as? JsonObject ?: return null
+        val level = row.int("level")?.takeIf { it in 0..100 } ?: return null
+        return OuraBattery(
+            level = level,
+            charging = row.flag("charging"),
+            at = (row["timestamp_unix"] as? JsonPrimitive)?.contentOrNull?.toLongOrNull()?.let(Instant::ofEpochMilli),
+        )
+    }
+
+    private fun get(url: String): JsonObject {        var response = call(url, auth.accessToken())
         // A token Oura no longer takes although it has not run out by the clock: get a new one, once.
         if (response.status == 401) response = call(url, auth.accessToken(forceRefresh = true))
         when (response.status) {

@@ -71,6 +71,14 @@ class GarminBleSession(
     private val lock = Any()
     private val cobs = CobsStream()
     private val readyFuture = CompletableFuture<GarminDeviceInfo>()
+    private val batteryFuture = CompletableFuture<Int>()
+    private var batteryRequestId: Int? = null
+    private var nextRequestId = 0
+
+    /** The charge the watch last reported, 0..100, or null until it answers. */
+    @Volatile
+    var batteryPercent: Int? = null
+        private set
 
     private var gfdiHandle: Int? = null
     private var mlr: MlrChannel? = null
@@ -134,6 +142,13 @@ class GarminBleSession(
         throw GarminBleException(GarminBleException.Reason.TIMEOUT, "The watch did not finish the handshake")
     } catch (e: ExecutionException) {
         throw (e.cause as? GarminBleException) ?: GarminBleException(GarminBleException.Reason.BROKEN, e.cause?.message ?: "handshake failed")
+    }
+
+    /** The charge the watch reports, or null when it did not answer within [timeoutMs]; never throws. */
+    fun awaitBattery(timeoutMs: Long = 2_000): Int? = try {
+        batteryFuture.get(timeoutMs, TimeUnit.MILLISECONDS)
+    } catch (e: Exception) {
+        batteryPercent
     }
 
     fun onNotification(packet: ByteArray) {
@@ -338,6 +353,20 @@ class GarminBleSession(
      */
     private fun onProtobuf(message: GfdiMessage) {
         val chunk = GarminProtobuf.parse(message)
+        val asked = synchronized(lock) { batteryRequestId }
+        if (message.type == GfdiType.PROTOBUF_RESPONSE && asked != null && chunk.requestId == asked) {
+            // our own answer: confirm it as kept, and take the level when this is the last piece
+            val level = if (chunk.last) GarminProtobuf.batteryLevel(chunk.data) else null
+            send(GarminProtobuf.accepted(message.type, chunk))
+            if (level != null) {
+                batteryPercent = level
+                batteryFuture.complete(level)
+                log("watch battery: $level%")
+            } else if (chunk.last) {
+                log("watch battery: no level in the answer")
+            }
+            return
+        }
         val reply = if (message.type == GfdiType.PROTOBUF_REQUEST && chunk.offset == 0 && chunk.last) GarminProtobuf.replyTo(chunk.data) else null
         if (reply != null) {
             log("${GarminProtobuf.LOG_PREFIX}${GarminProtobuf.describe(chunk.data)}; ${reply.said}")
@@ -382,6 +411,18 @@ class GarminBleSession(
         send(GfdiNotifications.subscriptionReply(requested, allowed = false))
     }
 
+    /** Asks for the charge once; the answer arrives as PROTOBUF_RESPONSE and is confirmed as kept. */
+    private fun askBattery() {
+        val id = synchronized(lock) {
+            if (batteryRequestId != null) return
+            val next = (nextRequestId + 1) and 0xFFFF
+            nextRequestId = next
+            batteryRequestId = next
+            next
+        }
+        send(GarminProtobuf.batteryRequest(id))
+    }
+
     private fun completeInitialization() {
         val device = synchronized(lock) {
             if (initialized) return
@@ -390,6 +431,7 @@ class GarminBleSession(
         }
         send(GfdiOut.supportedFileTypesRequest())
         send(GfdiOut.systemEvent(SystemEvent.SYNC_READY))
+        askBattery()
         if (firstConnect) {
             send(GfdiOut.systemEvent(SystemEvent.PAIR_COMPLETE))
             send(GfdiOut.systemEvent(SystemEvent.SYNC_COMPLETE))

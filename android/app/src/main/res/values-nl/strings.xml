@@ -280,6 +280,11 @@
     <string name="sync_failed">Synchroniseren mislukt</string>
     <string name="sync_fresh">Gesynchroniseerd %1$s</string>
     <string name="sync_never">Gekoppeld, nog niet gesynchroniseerd</string>
+    <string name="battery_title">Batterij</string>
+    <string name="battery_watch">Horloge</string>
+    <string name="battery_ring">Ring</string>
+    <string name="battery_updated">bijgewerkt %1$s</string>
+    <string name="battery_never">nog niet gemeld</string>
     <string name="readiness_title">Gereedheid</string>
     <string name="readiness_missing">Voor gereedheid zijn slaap, Body Battery of stress van je horloge nodig. Synchroniseer je Garmin-account om hem te zien.</string>
     <string name="readiness_description">Gereedheid %1$d van 100</string>
@@ -764,8 +769,14 @@
     <string name="own_cancel">Annuleren</string>
     <string name="own_delete">Verwijderen</string>
     <string name="own_summary">%1$d × %2$d min · %3$d min totaal</string>
+    <string name="own_summary_distance">%1$d × %2$d m · ≈ %3$d min totaal</string>
+    <string name="own_edit">Bewerken</string>
+    <string name="own_distance">Afstand per herhaling (m, leeg = op tijd)</string>
+    <string name="own_pace">Tempo (s/km, bijv. 330 of 300-330)</string>
     <string name="own_error_name">Geef de work-out een naam.</string>
     <string name="own_error_range">Controleer de getallen: 1 tot 50 herhalingen, 0,5 tot 60 snelle minuten, 0 tot 30 seconden rust, 0 tot 60 minuten warming-up en cooldown.</string>
+    <string name="own_error_pace">Controleer het tempo: twee getallen tussen 120 en 1200 seconden per kilometer, het snelste eerst.</string>
+    <string name="own_error_distance">Controleer de afstand: 100 tot 50.000 meter per herhaling.</string>
     <string name="workouts_done">%1$d trainingen naar het horloge gekopieerd, %2$d stonden er al.</string>
     <string name="workouts_none">Er zijn geen geplande lopen in de komende 7 dagen.</string>
     <string name="insights_zones">Zones</string>

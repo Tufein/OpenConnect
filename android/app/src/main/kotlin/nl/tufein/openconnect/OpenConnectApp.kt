@@ -368,6 +368,10 @@ class OpenConnectApp : Application() {
                         appName = { pkg -> apps.labelOf(pkg).takeIf { it != pkg } },
                     )
                 },
+                onBattery = { level ->
+                    settingsStore.watchBattery = level
+                    settingsStore.watchBatteryAt = System.currentTimeMillis()
+                },
             ),
             bleBackgroundSync = WorkManagerBleBackgroundSync(this),
             nudgeNotifier = AndroidNudgeNotifier(this),

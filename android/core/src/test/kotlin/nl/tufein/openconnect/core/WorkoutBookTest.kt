@@ -108,4 +108,45 @@ class WorkoutBookTest {
         assertEquals("Andere naam", two.workouts.single().name)
         assertEquals(0, two.without("own-1").workouts.size)
     }
+
+    @Test
+    fun aDistanceStepKeepsItsMetresAndPace() {
+        val interval = OwnWorkout(
+            "own-3", "1 km", fastS = 240, fastMeters = 1_000,
+            paceFastS = 300, paceSlowS = 330,
+        )
+        assertNull(interval.problem)
+        assertEquals(330, interval.fastStepS, "the slow end of the pace, so the estimate is not too short")
+        assertEquals(600 + 4 * (330 + 90) + 300, interval.totalS)
+
+        val step = interval.toWorkout().blocks[1].steps[0]
+        assertEquals(1_000, (step.length as StepLength.Distance).meters)
+        assertEquals(PaceRange(300, 330), step.pace)
+    }
+
+    @Test
+    fun distanceAndPaceAreBounded() {
+        assertEquals(OwnWorkout.Problem.FAST_METERS, OwnWorkout("own-4", "kort", fastMeters = 99).problem)
+        assertEquals(OwnWorkout.Problem.FAST_METERS, OwnWorkout("own-4", "lang", fastMeters = 50_001).problem)
+        assertEquals(OwnWorkout.Problem.PACE, OwnWorkout("own-4", "half", paceFastS = 300).problem)
+        assertEquals(OwnWorkout.Problem.PACE, OwnWorkout("own-4", "omgekeerd", paceFastS = 400, paceSlowS = 350).problem)
+        assertEquals(OwnWorkout.Problem.PACE, OwnWorkout("own-4", "te snel", paceFastS = 60, paceSlowS = 90).problem)
+        assertEquals(OwnWorkout.Problem.PACE, OwnWorkout("own-4", "te langzaam", paceFastS = 900, paceSlowS = 1_300).problem)
+    }
+
+    @Test
+    fun aDistanceWorkoutSurvivesTheRoundTripAndOldLinesStillRead() {
+        val withPace = OwnWorkout("own-5", "1 km", fastMeters = 1_000, paceFastS = 300, paceSlowS = 330)
+        val back = WorkoutBook.decode(WorkoutBook(listOf(withPace)).encode()).workouts.single()
+        assertEquals(1_000, back.fastMeters)
+        assertEquals(300, back.paceFastS)
+        assertEquals(330, back.paceSlowS)
+
+        // What v1.7.0 wrote: nine fields, no distance and no pace.
+        val old = "W|own-6|Oud|600|240|90|4|300|5"
+        val oldBack = WorkoutBook.decode(old).workouts.single()
+        assertEquals("Oud", oldBack.name)
+        assertNull(oldBack.fastMeters)
+        assertNull(oldBack.paceFastS)
+    }
 }

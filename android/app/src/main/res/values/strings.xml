@@ -280,6 +280,11 @@
     <string name="sync_failed">Sync failed</string>
     <string name="sync_fresh">Synced %1$s</string>
     <string name="sync_never">Connected, not synced yet</string>
+    <string name="battery_title">Battery</string>
+    <string name="battery_watch">Watch</string>
+    <string name="battery_ring">Ring</string>
+    <string name="battery_updated">updated %1$s</string>
+    <string name="battery_never">never reported</string>
     <string name="readiness_title">Readiness</string>
     <string name="readiness_missing">Readiness needs sleep, Body Battery or stress from your watch. Sync your Garmin account to see it.</string>
     <string name="readiness_description">Readiness %1$d out of 100</string>
@@ -764,8 +769,14 @@
     <string name="own_cancel">Cancel</string>
     <string name="own_delete">Delete</string>
     <string name="own_summary">%1$d × %2$d min · %3$d min in total</string>
+    <string name="own_summary_distance">%1$d × %2$d m · ≈ %3$d min in total</string>
+    <string name="own_edit">Edit</string>
+    <string name="own_distance">Distance per repeat (m, empty = by time)</string>
+    <string name="own_pace">Pace (s/km, e.g. 330 or 300-330)</string>
     <string name="own_error_name">Give the workout a name.</string>
     <string name="own_error_range">Check the numbers: 1 to 50 repeats, 0.5 to 60 fast minutes, 0 to 30 rest seconds, 0 to 60 warm-up and cool-down minutes.</string>
+    <string name="own_error_pace">Check the pace: two numbers between 120 and 1200 seconds per kilometre, the fastest one first.</string>
+    <string name="own_error_distance">Check the distance: 100 to 50,000 metres per repeat.</string>
     <string name="workouts_done">%1$d workouts copied to the watch, %2$d were already there.</string>
     <string name="workouts_none">There are no planned runs in the next 7 days.</string>
     <string name="insights_zones">Zones</string>

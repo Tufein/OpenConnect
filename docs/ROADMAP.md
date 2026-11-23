@@ -311,7 +311,7 @@ echte hardware daarom vraagt. **S/M/L/XL** zoals in de legenda.
 | Versie | Spoor | Wat erin zit | Maat |
 |--------|-------|--------------|------|
 | **v1.7.0** ✅ | Bereik | Drie widgetformaten: klein (alleen readiness en stappen), middel (ook de week) en groot (ook slaap en rusthartslag), passend bij elke celmaat op het startscherm; de widget hertekent zichzelf als je hem groter of kleiner sleept | S |
-| **v1.8.0** | Training | Work-outs met afstandsstappen, tempo-doelen en bewerken; dezelfde builder, dezelfde verzendknop | M |
+| **v1.8.0** ✅ | Training | Work-outs met afstandsstappen, tempo-doelen en bewerken; dezelfde builder, dezelfde verzendknop | M |
 | **v1.9.0** | Analyse | Jaaroverzicht: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar, met dezelfde eerlijke "geen data"-regels | M |
 | **v1.10.0** | Training | Het schema past zich aan: een gemiste week schuift niet stil door, maar vraagt en stelt voor; de coach gebruikt die cijfers | L |
 | **v1.11.0** | Bereik | Duits en Frans, met een taaltest die elke tekst dekt en een keuze in de instellingen | M |
@@ -420,6 +420,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.5.0 | Trainingen met de hand invoeren: op Activities opent *Toevoegen* een formulier met sport, datum, minuten, kilometers en gemiddelde hartslag; wat je typt wordt je eigen activiteit (bron `manual`), telt mee in de lijst, gaat in de back-up en er is geen schemawijziging nodig |
 | v1.6.0 | Work-outbouwer: op Plan staat *Je eigen work-outs* met naam, herhalingen, snelle minuten, rust, warming-up en cooldown; de FIT-work-outs gaan met dezelfde knop naar het horloge, staan in de back-up en er is geen schemawijziging |
 | v1.7.0 | Drie widgetformaten: klein toont readiness en stappen, de gewone kaart je weekdoel, groot ook de slaap van de laatste nacht en de rusthartslag; de widget hertekent zich bij het slepen en de minimale maat ging naar 110 × 70 dp |
+| v1.8.0 | Batterij van horloge en ring: het Watch-tabblad toont de lading en wanneer die voor het laatst gemeld is (het horloge via een protobuf-vraag bij het verbinden, de ring uit Oura `ring_battery_level`); de work-outbouwer kent afstand en tempo per herhaling (bijv. 6 × 1 km in 5:00–5:30) en je kunt een work-out achteraf bewerken |
 
 ## 9. Hoe releases werken
 

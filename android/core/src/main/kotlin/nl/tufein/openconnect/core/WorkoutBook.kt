@@ -16,29 +16,57 @@ data class OwnWorkout(
     val repeats: Int = 4,
     val cooldownS: Int = 300,
     val intensity: StepIntensity = StepIntensity.INTERVAL,
+    /** When set, the fast step is this many metres instead of [fastS] seconds. */
+    val fastMeters: Int? = null,
+    /** The pace the fast step asks for, seconds per kilometre; both or neither. */
+    val paceFastS: Int? = null,
+    val paceSlowS: Int? = null,
 ) {
-    val totalS: Int get() = warmupS + repeats * (fastS + recoveryS) + cooldownS
+    /**
+     * How long the fast step takes: from the distance and its pace when it is a distance step, else [fastS]. A distance
+     * step without a pace falls back to [fastS], which then only shapes the estimate.
+     */
+    val fastStepS: Int
+        get() {
+            val meters = fastMeters ?: return fastS
+            val pace = paceSlowS ?: return fastS
+            return ((meters.toLong() * pace) / 1_000).toInt()
+        }
+
+    val totalS: Int get() = warmupS + repeats * (fastStepS + recoveryS) + cooldownS
 
     val problem: Problem?
-        get() = when {
-            name.isBlank() -> Problem.NAME
-            warmupS !in 0..MAX_WARMUP_S -> Problem.WARMUP
-            fastS !in MIN_FAST_S..MAX_FAST_S -> Problem.FAST
-            recoveryS !in 0..MAX_RECOVERY_S -> Problem.RECOVERY
-            repeats !in 1..MAX_REPEATS -> Problem.REPEATS
-            cooldownS !in 0..MAX_COOLDOWN_S -> Problem.COOLDOWN
-            else -> null
+        get() {
+            val fastPace = paceFastS
+            val slowPace = paceSlowS
+            val meters = fastMeters
+            return when {
+                name.isBlank() -> Problem.NAME
+                warmupS !in 0..MAX_WARMUP_S -> Problem.WARMUP
+                meters == null && fastS !in MIN_FAST_S..MAX_FAST_S -> Problem.FAST
+                meters != null && meters !in MIN_FAST_M..MAX_FAST_M -> Problem.FAST_METERS
+                (fastPace == null) != (slowPace == null) -> Problem.PACE
+                fastPace != null && slowPace != null &&
+                    (fastPace !in MIN_PACE_S..MAX_PACE_S || slowPace !in MIN_PACE_S..MAX_PACE_S || fastPace > slowPace) -> Problem.PACE
+                recoveryS !in 0..MAX_RECOVERY_S -> Problem.RECOVERY
+                repeats !in 1..MAX_REPEATS -> Problem.REPEATS
+                cooldownS !in 0..MAX_COOLDOWN_S -> Problem.COOLDOWN
+                else -> null
+            }
         }
 
     /** The plan-shaped workout, with a block that repeats the fast/rest pair [repeats] times. */
     fun toWorkout(): Workout {
+        val length = fastMeters?.let { StepLength.Distance(it.coerceIn(MIN_FAST_M, MAX_FAST_M)) }
+            ?: StepLength.Time(fastS.coerceIn(MIN_FAST_S, MAX_FAST_S))
+        val pace = if (paceFastS != null && paceSlowS != null) PaceRange(paceFastS, paceSlowS) else null
         val blocks = buildList {
             if (warmupS > 0) add(WorkoutBlock(1, listOf(WorkoutStep("Warm-up", StepIntensity.WARMUP, StepLength.Time(warmupS)))))
             add(
                 WorkoutBlock(
                     repeats.coerceIn(1, MAX_REPEATS),
                     listOf(
-                        WorkoutStep(name.trim(), intensity, StepLength.Time(fastS.coerceIn(MIN_FAST_S, MAX_FAST_S))),
+                        WorkoutStep(name.trim(), intensity, length, pace),
                         WorkoutStep("Rest", StepIntensity.RECOVERY, StepLength.Time(recoveryS.coerceIn(0, MAX_RECOVERY_S))),
                     ),
                 ),
@@ -48,12 +76,18 @@ data class OwnWorkout(
         return Workout(name.trim(), blocks)
     }
 
-    enum class Problem { NAME, WARMUP, FAST, RECOVERY, REPEATS, COOLDOWN }
+    enum class Problem { NAME, WARMUP, FAST, FAST_METERS, PACE, RECOVERY, REPEATS, COOLDOWN }
 
     companion object {
         const val MAX_WARMUP_S = 3_600
         const val MIN_FAST_S = 30
         const val MAX_FAST_S = 3_600
+        const val MIN_FAST_M = 100
+        const val MAX_FAST_M = 50_000
+
+        /** Seconds per kilometre: 2:00 is a sprint, 20:00 a walk. */
+        const val MIN_PACE_S = 120
+        const val MAX_PACE_S = 1_200
         const val MAX_RECOVERY_S = 1_800
         const val MAX_REPEATS = 50
         const val MAX_COOLDOWN_S = 3_600
@@ -83,6 +117,9 @@ data class WorkoutBook(val workouts: List<OwnWorkout> = emptyList()) {
             w.repeats.toString(),
             w.cooldownS.toString(),
             w.intensity.fit.toString(),
+            w.fastMeters?.toString().orEmpty(),
+            w.paceFastS?.toString().orEmpty(),
+            w.paceSlowS?.toString().orEmpty(),
         ).joinToString("|")
     }
 
@@ -104,6 +141,10 @@ data class WorkoutBook(val workouts: List<OwnWorkout> = emptyList()) {
                 repeats = parts[6].toIntOrNull() ?: return null,
                 cooldownS = parts[7].toIntOrNull() ?: return null,
                 intensity = StepIntensity.entries.firstOrNull { it.fit == parts[8].toIntOrNull() } ?: StepIntensity.INTERVAL,
+                // The three after the intensity came in v1.8.0; a line from before then simply has them empty.
+                fastMeters = parts.getOrNull(9)?.toIntOrNull(),
+                paceFastS = parts.getOrNull(10)?.toIntOrNull(),
+                paceSlowS = parts.getOrNull(11)?.toIntOrNull(),
             ).takeIf { it.problem == null }
         }
 

@@ -125,28 +125,71 @@ fun PlanContent(
 @Composable
 private fun OwnWorkoutsCard(workouts: List<OwnWorkout>, onSave: (OwnWorkout) -> Unit, onDelete: (String) -> Unit) {
     var adding by rememberSaveable { mutableStateOf(false) }
+    var editingId by rememberSaveable { mutableStateOf<String?>(null) }
     var name by rememberSaveable { mutableStateOf("") }
     var repeatsText by rememberSaveable { mutableStateOf("4") }
     var fastText by rememberSaveable { mutableStateOf("4") }
     var recoveryText by rememberSaveable { mutableStateOf("90") }
     var warmupText by rememberSaveable { mutableStateOf("10") }
     var cooldownText by rememberSaveable { mutableStateOf("5") }
+    var distanceText by rememberSaveable { mutableStateOf("") }
+    var paceText by rememberSaveable { mutableStateOf("") }
     var tried by rememberSaveable { mutableStateOf(false) }
+
+    fun open(workout: OwnWorkout) {
+        editingId = workout.id
+        name = workout.name
+        repeatsText = workout.repeats.toString()
+        fastText = minutesText(workout.fastS)
+        recoveryText = workout.recoveryS.toString()
+        warmupText = minutesText(workout.warmupS)
+        cooldownText = minutesText(workout.cooldownS)
+        distanceText = workout.fastMeters?.toString().orEmpty()
+        paceText = if (workout.paceFastS != null && workout.paceSlowS != null) {
+            if (workout.paceFastS == workout.paceSlowS) "${workout.paceFastS}" else "${workout.paceFastS}-${workout.paceSlowS}"
+        } else {
+            ""
+        }
+        adding = true
+        tried = false
+    }
+
+    fun clear() {
+        editingId = null
+        name = ""
+        repeatsText = "4"
+        fastText = "4"
+        recoveryText = "90"
+        warmupText = "10"
+        cooldownText = "5"
+        distanceText = ""
+        paceText = ""
+        adding = false
+        tried = false
+    }
 
     val repeats = repeatsText.trim().toIntOrNull()
     val fastMin = fastText.trim().replace(',', '.').toDoubleOrNull()
     val recoveryS = recoveryText.trim().toIntOrNull()
     val warmupMin = warmupText.trim().replace(',', '.').toDoubleOrNull()
     val cooldownMin = cooldownText.trim().replace(',', '.').toDoubleOrNull()
-    val draft = if (repeats != null && fastMin != null && recoveryS != null && warmupMin != null && cooldownMin != null) {
+    val meters = distanceText.trim().toIntOrNull()
+    val pace = parsePace(paceText)
+    val paceBad = paceText.isNotBlank() && pace == null
+    val draft = if (repeats != null && recoveryS != null && warmupMin != null && cooldownMin != null &&
+        (meters != null || fastMin != null) && !paceBad
+    ) {
         OwnWorkout(
-            id = "",
+            id = editingId.orEmpty(),
             name = name,
             warmupS = (warmupMin * 60).toInt(),
-            fastS = (fastMin * 60).toInt(),
+            fastS = ((fastMin ?: 4.0) * 60).toInt(),
             recoveryS = recoveryS,
             repeats = repeats,
             cooldownS = (cooldownMin * 60).toInt(),
+            fastMeters = meters,
+            paceFastS = pace?.first,
+            paceSlowS = pace?.second,
         )
     } else {
         null
@@ -154,6 +197,8 @@ private fun OwnWorkoutsCard(workouts: List<OwnWorkout>, onSave: (OwnWorkout) -> 
     val problem: Int? = when {
         draft == null -> R.string.own_error_range
         draft.problem == OwnWorkout.Problem.NAME -> R.string.own_error_name
+        draft.problem == OwnWorkout.Problem.PACE -> R.string.own_error_pace
+        draft.problem == OwnWorkout.Problem.FAST_METERS -> R.string.own_error_distance
         draft.problem != null -> R.string.own_error_range
         else -> null
     }
@@ -167,19 +212,24 @@ private fun OwnWorkoutsCard(workouts: List<OwnWorkout>, onSave: (OwnWorkout) -> 
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Column {
+                Column(Modifier.weight(1f)) {
                     Text(workout.name, style = MaterialTheme.typography.bodyMedium)
                     Text(
-                        stringResource(R.string.own_summary, workout.repeats, workout.fastS / 60, workout.totalS / 60),
+                        workout.fastMeters?.let {
+                            stringResource(R.string.own_summary_distance, workout.repeats, it, workout.totalS / 60)
+                        } ?: stringResource(R.string.own_summary, workout.repeats, workout.fastS / 60, workout.totalS / 60),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                SecondaryButton(onClick = { onDelete(workout.id) }) { Text(stringResource(R.string.own_delete)) }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SecondaryButton(onClick = { open(workout) }) { Text(stringResource(R.string.own_edit)) }
+                    SecondaryButton(onClick = { onDelete(workout.id) }) { Text(stringResource(R.string.own_delete)) }
+                }
             }
         }
         if (!adding) {
-            SecondaryButton(onClick = { adding = true }) { Text(stringResource(R.string.own_add)) }
+            SecondaryButton(onClick = { clear(); adding = true }) { Text(stringResource(R.string.own_add)) }
         } else {
             OutlinedTextField(
                 value = name,
@@ -201,6 +251,20 @@ private fun OwnWorkoutsCard(workouts: List<OwnWorkout>, onSave: (OwnWorkout) -> 
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 label = { Text(stringResource(R.string.own_fast)) },
+            )
+            OutlinedTextField(
+                value = distanceText,
+                onValueChange = { distanceText = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                label = { Text(stringResource(R.string.own_distance)) },
+            )
+            OutlinedTextField(
+                value = paceText,
+                onValueChange = { paceText = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                label = { Text(stringResource(R.string.own_pace)) },
             )
             OutlinedTextField(
                 value = recoveryText,
@@ -230,10 +294,8 @@ private fun OwnWorkoutsCard(workouts: List<OwnWorkout>, onSave: (OwnWorkout) -> 
                 PrimaryButton(
                     onClick = {
                         if (draft != null && problem == null) {
-                            onSave(draft.copy(id = OwnWorkout.id(java.time.Instant.now())))
-                            adding = false
-                            name = ""
-                            tried = false
+                            onSave(draft.copy(id = editingId ?: OwnWorkout.id(java.time.Instant.now())))
+                            clear()
                         } else {
                             tried = true
                         }
@@ -241,11 +303,29 @@ private fun OwnWorkoutsCard(workouts: List<OwnWorkout>, onSave: (OwnWorkout) -> 
                 ) {
                     Text(stringResource(R.string.own_save))
                 }
-                SecondaryButton(onClick = { adding = false; tried = false }) { Text(stringResource(R.string.own_cancel)) }
+                SecondaryButton(onClick = { clear() }) { Text(stringResource(R.string.own_cancel)) }
             }
         }
     }
 }
+
+/** "330" or "300-330" as a fast and slow pace in seconds per kilometre; null when the text is neither. */
+private fun parsePace(text: String): Pair<Int, Int>? {
+    val parts = text.trim().split('-', '–').map { it.trim() }.filter { it.isNotEmpty() }
+    return when (parts.size) {
+        1 -> parts[0].toIntOrNull()?.let { it to it }
+        2 -> {
+            val fast = parts[0].toIntOrNull()
+            val slow = parts[1].toIntOrNull()
+            if (fast != null && slow != null) fast to slow else null
+        }
+        else -> null
+    }
+}
+
+/** Minutes as the form shows them: "10", or "3.5" when it is not a whole minute. */
+private fun minutesText(seconds: Int): String =
+    if (seconds % 60 == 0) (seconds / 60).toString() else "%.1f".format(seconds / 60.0)
 
 /** What the last weeks of running say: the shape for each distance and the VO2max. They come after the plan, which is the main thing here. */
 private fun LazyListScope.analysisItems(state: PlanState) {

@@ -3,7 +3,18 @@ package nl.tufein.openconnect.core.oura
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import nl.tufein.openconnect.core.BandWorkout
+import java.time.Instant
 import java.time.LocalDate
+
+/** The charge of the ring, as Oura last reported it (`ring_battery_level`). */
+data class OuraBattery(
+    /** 0..100, what Oura said. */
+    val level: Int,
+    /** True while the ring sits in its charger; null when Oura did not say. */
+    val charging: Boolean? = null,
+    /** When the ring last reported, or null when that was not in the answer. */
+    val at: Instant? = null,
+)
 
 /** A workout the ring saw (or that was entered in the Oura app). Kept apart from the watch's activities. */
 @Serializable

@@ -32,6 +32,12 @@ import java.util.concurrent.atomic.AtomicBoolean
 interface OuraSettings : OuraStore {
     /** Epoch milliseconds of the last sync that ran to the end, 0 when there was none. */
     var lastSyncMs: Long
+
+    /** The ring's charge as the last sync read it, -1 when it was never read. */
+    var ringBattery: Int
+
+    /** Epoch milliseconds of that reading, 0 when there was none. */
+    var ringBatteryAt: Long
 }
 
 /** Why something on the Oura screen did not work, in terms the screen can explain. */
@@ -85,7 +91,8 @@ class OuraController(
     }
 
     private val auth = OuraAuth(http, settings, now)
-    private val sync = OuraSync(OuraClient(http, auth, retry, now), repo)
+    private val client = OuraClient(http, auth, retry, now)
+    private val sync = OuraSync(client, repo)
     private val running = AtomicBoolean(false)
 
     /** After a rate limit the automatic syncs stay quiet until this moment; the Sync button still works. In memory only. */
@@ -242,6 +249,7 @@ class OuraController(
             report = sync.sync(daysBack, LocalDate.now(zone()))
             settings.lastSyncMs = now().toEpochMilli()
             coolDownUntil = null
+            rememberBattery()
             null
         } catch (e: OuraException) {
             if (e.kind == OuraException.Kind.RATE_LIMITED) coolDownUntil = now().plus(RetryAfter.coolDown(e.retryAfterS))
@@ -266,5 +274,21 @@ class OuraController(
         _state.value = snapshot(problem = problem, last = report)
         onBackgroundWanted(auth.connected)
         return problem == null
+    }
+
+    /**
+     * Keeps the ring's charge for the battery card. A ring that has never reported one, or an Oura that will not say,
+     * is no reason to call the sync a failure: the data that came in is already stored.
+     */
+    private fun rememberBattery() {
+        val battery = try {
+            client.latestBattery()
+        } catch (e: OuraException) {
+            null
+        } catch (e: Exception) {
+            null
+        } ?: return
+        settings.ringBattery = battery.level
+        settings.ringBatteryAt = (battery.at ?: now()).toEpochMilli()
     }
 }

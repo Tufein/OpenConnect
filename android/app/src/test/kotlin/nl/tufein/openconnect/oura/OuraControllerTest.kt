@@ -28,6 +28,8 @@ class OuraControllerTest {
         override var tokens: OuraTokens? = OuraTokens("access-1", "refresh-1", Instant.parse("2027-01-01T00:00:00Z"))
         override var pendingLogin: String? = null
         override var lastSyncMs: Long = 0
+        override var ringBattery: Int = -1
+        override var ringBatteryAt: Long = 0
     }
 
     private class FakeHttp(var status: Int, var headers: Map<String, String> = emptyMap()) : OuraHttp {
@@ -108,5 +110,38 @@ class OuraControllerTest {
         assertEquals(0, http.calls, "Oura was never asked")
         assertEquals(false, c.state.value.busy, "no spinner left behind")
         assertTrue(runBlocking { c.syncInBackground(Duration.ZERO) }, "the next background sync is not blocked for good")
+    }
+
+    @Test
+    fun `a sync keeps the charge of the ring for the battery card`() {
+        val http = object : OuraHttp {
+            override fun send(method: String, url: String, headers: Map<String, String>, form: String?, timeoutMs: Int) =
+                if ("ring_battery_level" in url) {
+                    OuraResponse(200, """{"data":[{"timestamp_unix":1763121600000,"level":64}]}""")
+                } else {
+                    OuraResponse(200, """{"data":[],"next_token":null}""")
+                }
+        }
+        val c = controller(http)
+        c.sync()
+        assertEquals(64, settings.ringBattery)
+        assertEquals(1763121600000L, settings.ringBatteryAt)
+        assertNull(c.state.value.problem)
+    }
+
+    @Test
+    fun `a ring that will not tell its charge does not fail the sync`() {
+        val http = object : OuraHttp {
+            override fun send(method: String, url: String, headers: Map<String, String>, form: String?, timeoutMs: Int) =
+                if ("ring_battery_level" in url) {
+                    OuraResponse(403, "{}")
+                } else {
+                    OuraResponse(200, """{"data":[],"next_token":null}""")
+                }
+        }
+        val c = controller(http)
+        c.sync()
+        assertNull(c.state.value.problem)
+        assertEquals(-1, settings.ringBattery, "the card shows a dash, not a wrong number")
     }
 }

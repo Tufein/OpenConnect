@@ -394,6 +394,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     /** The watch screen's state and actions live in [AppContainer.watch], which outlives the activity. */
     val watch: StateFlow<WatchUi> get() = container.watch.state
 
+    /** The charge of the watch and the ring for the card on the Watch screen, re-read with [refreshBattery]. */
+    val battery = MutableStateFlow(BatteriesUi())
+
+    /** Reads the stored charge again (after a watch sync, an Oura sync, or opening the screen). */
+    fun refreshBattery() {
+        battery.value = container.settings.batteries()
+    }
+
     /** The Garmin account screen's state and actions live in [AppContainer.garmin], which outlives the activity. */
     val garmin: StateFlow<GarminUi> get() = container.garmin.state
 
