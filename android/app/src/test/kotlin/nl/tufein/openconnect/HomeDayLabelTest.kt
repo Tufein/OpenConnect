@@ -1,7 +1,9 @@
 package nl.tufein.openconnect
 
+import android.content.Context
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.test.core.app.ApplicationProvider
 import nl.tufein.openconnect.core.DailySummary
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -30,11 +32,12 @@ class HomeDayLabelTest : AppTestBase() {
     /**
      * The day title of the steps card, by its own tag. After the battery card landed on Home the steps card can sit
      * just outside the viewport, and "Today" also names today's row in the journal further down; scroll to a fact that
-     * is inside the same card, then read the title.
+     * is inside the same card, then read the title from the unmerged tree (the tappable card merges its children).
      */
     private fun assertDayTitle(expected: String) {
-        scrollToText("Intensity minutes")
-        rule.onNodeWithTag("home-day").assertTextEquals(expected)
+        val anchor = ApplicationProvider.getApplicationContext<Context>().getString(R.string.intensity_minutes)
+        scrollToText(anchor)
+        rule.onNodeWithTag("home-day", useUnmergedTree = true).assertTextEquals(expected)
     }
 
     @Test
