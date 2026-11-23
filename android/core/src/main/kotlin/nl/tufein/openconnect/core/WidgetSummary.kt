@@ -9,6 +9,10 @@ data class WidgetSummary(
     val stepsGoal: Int?,
     val weekActivities: Int,
     val weekActivityGoal: Int,
+    /** Minutes asleep in the latest night, or null when there is none. Added in v1.7.0 for the large widget. */
+    val sleepMinutes: Int? = null,
+    /** Resting heart rate of the latest day, or null. Added in v1.7.0 for the large widget. */
+    val restingHr: Int? = null,
 ) {
     companion object {
         /** [today] is the day the data is looked up for; the newest daily summary of the last week is used when today has none yet. */
@@ -18,7 +22,15 @@ data class WidgetSummary(
             val readiness = day?.let {
                 ReadinessCalculator.compute(it, sleep, repo.listDaily(it.date.minusDays(ReadinessCalculator.BASELINE_DAYS.toLong()), it.date.minusDays(1)))
             }
-            return WidgetSummary(readiness?.score, day?.steps, day?.stepsGoal, stats.weeklySummary(today).activityCount, goals.activities)
+            return WidgetSummary(
+                readiness = readiness?.score,
+                steps = day?.steps,
+                stepsGoal = day?.stepsGoal,
+                weekActivities = stats.weeklySummary(today).activityCount,
+                weekActivityGoal = goals.activities,
+                sleepMinutes = sleep?.durationS?.takeIf { it > 0 }?.div(60),
+                restingHr = day?.restingHr,
+            )
         }
     }
 }

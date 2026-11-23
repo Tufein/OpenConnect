@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Four cells wide and three high or more: the usual card plus sleep and the resting heart rate. Added in v1.7.0. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/widget_readiness_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/widget_readiness"
+        android:textColor="#FFA39C88"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/widget_readiness"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#FFFF7A3D"
+        android:textSize="40sp"
+        android:fontFamily="monospace"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/widget_steps"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="#FFF0E9D6"
+        android:textSize="15sp" />
+
+    <TextView
+        android:id="@+id/widget_week"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#FFA39C88"
+        android:textSize="13sp" />
+
+    <TextView
+        android:id="@+id/widget_sleep"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textColor="#FFF0E9D6"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/widget_rest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#FFA39C88"
+        android:textSize="13sp" />
+</LinearLayout>

@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.7.0: een widget in drie maten
+
+De widget op je startscherm groeit nu mee met de ruimte die je hem geeft: klein toont readiness en stappen, de gewone kaart voegt je weekdoel toe en een grote kaart ook de slaap van vannacht en je rusthartslag. Je sleept hem groter of kleiner en hij tekent zichzelf opnieuw.
+
+[Release notes](docs/releases/v1.7.0.md)
+
 ## v1.6.0: je eigen work-out bouwen
 
 Op het Plan-tab staat nu een kaart **Je eigen work-outs**: geef een training een naam, kies hoeveel herhalingen, hoe lang snel en rust, en hoeveel warming-up en cooldown — de app maakt er een FIT-work-out van die met dezelfde knop naar je horloge gaat.

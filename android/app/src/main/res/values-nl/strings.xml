@@ -506,7 +506,7 @@
     <string name="watch_ble_archive_note">Zoals Garmin Connect, nadat de bestanden hier zijn opgeslagen. Het horloge kan die bestanden daarna wissen om ruimte te maken, dus houd een back-up. Zet dit alleen aan als deze app het horloge uitleest.</string>
     <string name="watch_ble_background">Op de achtergrond naar het horloge zoeken (experimenteel)</string>
     <string name="watch_ble_background_note">Ongeveer elke drie uur, met de app dicht, alleen voor het horloge hierboven. Android kan het uitstellen. Nog niet op een echt horloge geprobeerd.</string>
-    <string name="widget_description">Gereedheid, stappen en je weekdoel voor activiteiten</string>
+    <string name="widget_description">Gereedheid, stappen en je weekdoel voor activiteiten; groeit mee met de ruimte</string>
     <string name="widget_readiness">Gereedheid</string>
     <string name="widget_none">–</string>
     <string name="widget_steps_none">Nog geen stappen</string>
@@ -514,6 +514,10 @@
     <string name="widget_steps_goal">%1$s van %2$s stappen</string>
     <string name="widget_week">%1$d van %2$d activiteiten deze week</string>
     <string name="widget_week_free">%1$d activiteiten deze week</string>
+    <string name="widget_sleep">%1$d u %2$d m slaap</string>
+    <string name="widget_sleep_none">Nog geen slaap</string>
+    <string name="widget_rest">Rusthartslag %1$d bpm</string>
+    <string name="widget_rest_none">Nog geen rusthartslag</string>
     <string name="settings_nudges">Meldingen</string>
     <string name="settings_nudges_body">Een duwtje als een weekdoel dichtbij is (in de avond), een samenvatting van vorige week op maandagochtend en een bericht als je trainingsbelasting springt. Elke melding komt één keer. Ongeveer elke drie uur gecontroleerd.</string>
     <string name="settings_nudges_switch">Stuur me deze meldingen</string>

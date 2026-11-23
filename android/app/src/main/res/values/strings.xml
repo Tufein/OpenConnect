@@ -506,7 +506,7 @@
     <string name="watch_ble_archive_note">Like Garmin Connect, after the files are stored here. The watch may then delete those files to make room, so keep a backup. Only turn it on if this app is the one that reads the watch.</string>
     <string name="watch_ble_background">Look for the watch in the background (experimental)</string>
     <string name="watch_ble_background_note">About every three hours, with the app closed, for the watch above only. Android may delay it. Not tried on a real watch yet.</string>
-    <string name="widget_description">Readiness, steps and your weekly activity goal</string>
+    <string name="widget_description">Readiness, steps and your weekly activity goal; grows with the space it gets</string>
     <string name="widget_readiness">Readiness</string>
     <string name="widget_none">–</string>
     <string name="widget_steps_none">No steps yet</string>
@@ -514,6 +514,10 @@
     <string name="widget_steps_goal">%1$s of %2$s steps</string>
     <string name="widget_week">%1$d of %2$d activities this week</string>
     <string name="widget_week_free">%1$d activities this week</string>
+    <string name="widget_sleep">%1$d h %2$d m of sleep</string>
+    <string name="widget_sleep_none">No sleep yet</string>
+    <string name="widget_rest">Resting %1$d bpm</string>
+    <string name="widget_rest_none">No resting heart rate</string>
     <string name="settings_nudges">Notifications</string>
     <string name="settings_nudges_body">A nudge when a weekly goal is close (in the evening), a summary of last week on Monday morning, and a note when your training load jumps. Each is sent once. Checked about every three hours.</string>
     <string name="settings_nudges_switch">Send me these notifications</string>

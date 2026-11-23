@@ -1,7 +1,8 @@
 # OpenConnect: roadmap naar 1.0 en verder
 
-Waar OpenConnect staat en hoe het verder groeit. Opnieuw geschreven op 2026-11-20, na v1.0.4, en op 2026-11-22 (na
-v1.2.0) met een **thematische koerswissel**: paragraaf 4b, "Je geschiedenis is van jou". 1.0 is uitgebracht; dit plan zegt
+Waar OpenConnect staat en hoe het verder groeit. Opnieuw geschreven op 2026-11-20, na v1.0.4, op 2026-11-22 (na
+v1.2.0) met een **thematische koerswissel** (paragraaf 4b, "Je geschiedenis is van jou") en op 2026-11-23 (na v1.6.0)
+met de **grote koers naar 2.0** in paragraaf 6b. 1.0 is uitgebracht; dit plan zegt
 wat de volgorde is. Alles is **test-first** gebouwd: eerst de test, dan de code, en niets gaat uit zonder dat CI groen is.
 Wat zonder horloge, ring of telefoon niet te controleren is, staat er eerlijk bij.
 
@@ -10,7 +11,7 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
 
 **Legenda:** ✅ klaar · 🔜 volgende · 🧪 gebouwd en getest met nepgegevens, nog nooit op echte hardware of tegen de echte dienst · ❓ heeft iets nodig dat alleen de eigenaar kan geven · **S/M/L** = klein (een sessie), middel, groot (meerdere releases)
 
-## 1. Waar we staan (v1.2.0, 2026-11-22)
+## 1. Waar we staan (v1.6.0, 2026-11-23)
 
 - **Ruim 80 releases en kandidaten**, ruim 1.300 tests (Python, `core` en de app), AGPL-3.0, openbare repository, een Android-app die zonder server werkt en een
   Python-server voor wie die liever zelf draait. Nederlands en Engels.
@@ -18,9 +19,11 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   (via Health Connect, sinds v1.2.0 ook op de achtergrond aangevuld), bestanden (FIT, GPX, TCX), Claude en Gemini voor de coach.
 - **Sterk:** alles is test-first, gegevens blijven op de telefoon, horloge, ring en banden worden nooit door elkaar gemengd, elke release zegt eerlijk
   wat niet is gecontroleerd, en de app is met een in-app-updater te bijwerken met SHA-256-controle.
-- **De laatste negen dagen** (v1.0.0-rc.2 tot en met v1.2.0, ruim twintig uitgaven) gingen over drie dingen: meldingen op het horloge, het
-  uiterlijk (Graphite, tabs, ingeklapte grafieken) en kleine slices op Health (HRV-status, slaapfases, gewicht, water, Health Connect op de
-  achtergrond). Daar is de grond uit: elke volgende slice van dezelfde soort levert minder op en kan grotendeels alleen op echte hardware worden gecontroleerd.
+- **De laatste elf dagen** (v1.0.0-rc.2 tot en met v1.6.0, ruim dertig uitgaven) gingen over vier dingen: meldingen op het horloge, het
+  uiterlijk (Graphite, tabs, ingeklapte grafieken), kleine slices op Health (HRV-status, slaapfases, gewicht, water, Health Connect op de
+  achtergrond) en je eigen geschiedenis (archief-import, namen uit je export, zelf een training en een work-out invoeren). Daar is de
+  grond langzaam uit: elke volgende slice van dezelfde soort levert minder op en kan grotendeels alleen op echte hardware worden
+  gecontroleerd. Paragraaf 6b zegt daarom waar het de komende tien releases heen gaat.
 - **Zwak voor het verdere verhaal:**
   1. Op één bron na (de Garmin-account, die live is geprobeerd) is **niets op een echte telefoon, horloge, ring of band geproefd**. Zie het register in paragraaf 7; M9 is dat spoor.
   2. Of de meldingen op de fenix 8 nu bij elk bericht trillen, wacht op een nieuw logboek; v1.0.1 pakte de meest waarschijnlijke oorzaak aan.
@@ -265,17 +268,74 @@ testbare slice; daarna de zwaardere delen. Een ✅ betekent uitgebracht.
 | **Work-outs en routes** | ✅ Vrije work-outbouwer bovenop de bestaande FIT-work-outs: naam, herhalingen, snel/rust, warming-up en cooldown, bewaard en met de verzendknop naar het horloge (v1.6.0) | Courses/routes naar het horloge; wat Garmin's API niet toestaat blijft lokale export |
 | **Lichaam en voeding** | ✅ Gewicht en vetpercentage met de hand invoeren, met 30-daagse lijn en back-up (v1.0.7); ✅ water loggen met een dagtotaal, lokaal en in de back-up (v1.1.0) | Lichaamssamenstelling uit de Garmin-account |
 | **Sync en invoer** | ✅ Ontbrekende stappen, slaap en gewicht automatisch uit Health Connect aanvullen, ook als de app dicht is (v1.2.0); ✅ een training met de hand invoeren, met eigen bron en in de back-up (v1.5.0) | Garmin's nieuwere protobuf-synchronisatie; watchface terug (vraagt een Garmin-ontwikkelaarsaccount) |
-| **UX en bereik** | "Wat gaat er naar buiten"-pagina in de app | Meerdere widgetformaten; Duits en Frans |
+| **UX en bereik** | ✅ Drie widgetformaten naast de bestaande widget: klein toont readiness en stappen, de gewone kaart je weekdoel, groot ook slaap en rusthartslag (v1.7.0); "Wat gaat er naar buiten"-pagina in de app | Duits en Frans |
 
 Bewust buiten scope, zoals eerder: segmenten en sociaal, LiveTrack, upload naar Strava of Intervals.icu, Wear OS.
 
-De volgende slices, in deze orde: de **vrije work-outbouwer** (de FIT-work-outexport bestaat al, dus dit is vooral
-een formulier en een preview), **meerdere widgetformaten** naast de huidige gethemde widget, **Duits en Frans** als
-volgende talen, en de **"wat verlaat je telefoon"-pagina** die de losse privacynoot in About bundelt en per bron laat
-zien wat er wel en niet weggaat. Zwaarder, en pas zinvol met een echte fenix 8-opname: Training Effect, Recovery Time
-en Performance Condition uit FIT.
+De volgende slices staan sinds 2026-11-23 niet meer los in dit hoofdstuk, maar in de **grote koers naar 2.0**
+(paragraaf 6b): eerst drie widgetformaten, dan work-outs met afstand en tempo, dan een jaaroverzicht, en zo verder.
+De work-outbouwer van die lijst is met v1.6.0 klaar; de *"wat verlaat je telefoon"*-pagina staat er als v1.13.0 in,
+omdat ze pas waarde heeft als elke bron ook echt is geprobeerd of eerlijk gelabeld.
 
 **Bewust niet:** vermogensanalyse, een horlogecompanion, upload naar Intervals.icu of Strava (hun voorwaarden), segmenten en sociaal, labuitslagen, biologische leeftijd, Wear OS.
+
+### De grote koers naar 2.0 (2026-11-23)
+
+1.0 was de belofte dat een vreemde de app kan installeren en vertrouwen. **2.0 is de belofte dat je geen tweede app
+nodig hebt**: al je training, al je geschiedenis, alle inzichten en alle uitleg, op je eigen telefoon, zonder account
+en zonder abonnement. Drie dingen moeten dan waar zijn:
+
+1. **Compleet.** Van je eerste run tot de training van gisteren staat erin, uit elke bron die je gebruikt, zonder gaten
+   en zonder dubbelen. Wat er niet in staat, zegt de app eerlijk.
+2. **Het denkt mee.** De app zegt wat je vandaag het beste kunt doen en waarom, uit jouw cijfers — en durft te zeggen
+   dat het het niet weet.
+3. **Het is uit te leggen.** Van elke tegel is te herleiden welke bron en welke berekening erachter zit, en van elk
+   veld dat de telefoon verlaat staat erbij waar het heen gaat en waarom.
+
+Zes sporen dragen dat. Elk spoor begint met een dunne, testbare slice en groeit daarna; een ✅ is uitgebracht.
+
+| Spoor | De lat voor 2.0 | Eerste bewijs | Zwaarste stuk |
+|-------|------------------|----------------|----------------|
+| **Geschiedenis compleet** | Tien jaar Garmin en Strava in één import, in minuten, zonder duplicaten; daarna nooit meer een gat | ✅ archief-import (v1.3.0) en namen (v1.4.0) | Garmin's nieuwere protobuf-sync en de rest van de exportvelden |
+| **Training die meedenkt** | Een work-out met afstand, tempo en herhalingen; een schema dat zich aanpast als je week anders liep; een coach die één wijziging voorstelt, geen lap tekst | ✅ work-outbouwer (v1.6.0) | Schema-aanpassing en de coach aan de cijfers binden |
+| **Analyse die klopt** | Training Effect, hersteltijd en Performance Condition uit je eigen FIT, met dezelfde uitleg als de watch; een jaaroverzicht dat je het hele jaar laat zien | ✅ HRV-status (v1.0.6), slaapfases (v1.0.7) | De FIT-velden bevestigen op een echte fenix 8-opname |
+| **Bereik** | Drie widgetformaten, Duits en Frans, en een watchface dat zonder Garmin-account werkt | ✅ widget (v0.13.0), thema's | Watchface en de talen |
+| **Vertrouwen** | Eén pagina *Wat verlaat je telefoon* per bron, elke bron getest of eerlijk gelabeld, en een winkelversie die zonder updater werkt | ✅ labels en diagnose (v0.55.0), updater (v0.48.0) | Echte proeven op hardware en de winkels |
+| **Fundament** | Koud starten onder een seconde, geen batterijdrift, elke schemaversie migreert, niets stuk zonder netwerk | ✅ migratietest (v0.56.0), prestatiebudget (v0.58.0) | De gereedschapssprong die in v1.0.5 op CI strandde |
+
+#### De ladder naar 2.0
+
+Deze volgorde is een voorstel, geen wet: elke release staat op zichzelf en mag van plaats wisselen als een proef op
+echte hardware daarom vraagt. **S/M/L/XL** zoals in de legenda.
+
+| Versie | Spoor | Wat erin zit | Maat |
+|--------|-------|--------------|------|
+| **v1.7.0** | Bereik | Drie widgetformaten: klein (alleen readiness en stappen), middel (ook de week) en groot (ook slaap en rusthartslag), passend bij elke celmaat op het startscherm; de widget hertekent zichzelf als je hem groter of kleiner sleept | S |
+| **v1.8.0** | Training | Work-outs met afstandsstappen, tempo-doelen en bewerken; dezelfde builder, dezelfde verzendknop | M |
+| **v1.9.0** | Analyse | Jaaroverzicht: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar, met dezelfde eerlijke "geen data"-regels | M |
+| **v1.10.0** | Training | Het schema past zich aan: een gemiste week schuift niet stil door, maar vraagt en stelt voor; de coach gebruikt die cijfers | L |
+| **v1.11.0** | Bereik | Duits en Frans, met een taaltest die elke tekst dekt en een keuze in de instellingen | M |
+| **v1.12.0** | Geschiedenis | Garmin's protobuf-sync en de rest van de archiefvelden, zodat een tweede import geen gat meer laat | L ❓ |
+| **v1.13.0** | Vertrouwen | *Wat verlaat je telefoon*: één pagina per bron met wat er wel en niet weggaat, plus een test die elk veld dekt | M |
+| **v1.14.0** | Analyse | Training Effect, hersteltijd en Performance Condition uit FIT, met een register dat zegt wanneer het op echte data is bevestigd | L ❓ |
+| **v2.0.0** | Alle | De vijf poorten hieronder groen; geen nieuwe functie | XL |
+
+**Waarom deze volgorde:** eerst wat je elke dag ziet (de widget), dan wat je training stuurt (work-outs en het schema),
+dan wat je terugkijkt (het jaar), dan de zware bronnen. De twee ❓-releases wachten op een echte opname of export van
+Stefan; ze schuiven door als die er niet is, zonder de rest op te houden.
+
+#### De vijf poorten van 2.0
+
+| Poort | Moet waar zijn |
+|-------|----------------|
+| **P1 Geschiedenis** | Elke bron die de app noemt importeert zonder verlies, een tweede import verdubbelt niets, en alles komt terug uit een back-up |
+| **P2 Echt** | Elke bron is op echte hardware geprobeerd en gedateerd, of draagt in de app het label *Experimenteel* |
+| **P3 Talen** | Nederlands, Engels, Duits en Frans zijn volledig; de taaltest faalt op een ontbrekende regel |
+| **P4 Uitleg** | Elke tegel noemt zijn bron en berekening; *Wat verlaat je telefoon* klopt met de code en met de netwerktest |
+| **P5 Bereik** | De app installeert en werkt zonder server, zonder netwerk en zonder updater; een winkelversie en de GitHub-versie botsen niet |
+
+**Blijft buiten scope:** dezelfde lijst als hierboven, aangevuld met een abonnement of advertenties, cloudopslag van
+gezondheidsgegevens, medische uitspraken en een tweede app naast deze.
 
 ## 7. Wat nog niet is gecontroleerd (register)
 
@@ -359,6 +419,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.4.0 | M14: namen uit het archief (Strava `activities.csv`, Garmin `summarizedActivities.json` op starttijd), een tweede import geeft eerder binnengehaalde activiteiten hun naam zolang die nog bedacht is, de vorm van niet-gelezen JSON (alleen sleutelnamen) in het rapport met *Rapport kopiëren* |
 | v1.5.0 | Trainingen met de hand invoeren: op Activities opent *Toevoegen* een formulier met sport, datum, minuten, kilometers en gemiddelde hartslag; wat je typt wordt je eigen activiteit (bron `manual`), telt mee in de lijst, gaat in de back-up en er is geen schemawijziging nodig |
 | v1.6.0 | Work-outbouwer: op Plan staat *Je eigen work-outs* met naam, herhalingen, snelle minuten, rust, warming-up en cooldown; de FIT-work-outs gaan met dezelfde knop naar het horloge, staan in de back-up en er is geen schemawijziging |
+| v1.7.0 | Drie widgetformaten: klein toont readiness en stappen, de gewone kaart je weekdoel, groot ook de slaap van de laatste nacht en de rusthartslag; de widget hertekent zich bij het slepen en de minimale maat ging naar 110 × 70 dp |
 
 ## 9. Hoe releases werken
 
