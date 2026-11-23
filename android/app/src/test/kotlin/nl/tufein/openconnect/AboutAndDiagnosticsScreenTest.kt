@@ -23,11 +23,11 @@ import kotlin.test.assertTrue
 class AboutAndDiagnosticsScreenTest : AppTestBase() {
     @Test
     fun deviceSwitchesSayWhetherASourceWasEverTriedOnARealDevice() {
-        launchFresh(oura = true, whoop = true, hume = true)
+        launchFresh(oura = true)
         waitForText("Load demo data")
         tab("Settings").performClick()
         scrollToText("Status: tested on a real device", substring = true)
-        assertTrue(hasText("Status: experimental, not tried on a real device yet", substring = false), "Oura, WHOOP and Hume were never tried")
+        assertTrue(hasText("Status: experimental, not tried on a real device yet", substring = false), "Oura was never tried")
         shot("about-status-lines")
     }
 

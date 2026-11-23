@@ -109,11 +109,9 @@ fun SettingsScreen(
     onWatch: () -> Unit,
     onGarmin: () -> Unit,
     onOura: () -> Unit = {},
-    onWhoop: () -> Unit = {},
-    onHume: () -> Unit = {},
     onAbout: () -> Unit = {},
-    /** The choice of devices changed: Garmin, Oura Ring, WHOOP and Hume Band, each on or off. */
-    onSources: (garmin: Boolean, oura: Boolean, whoop: Boolean, hume: Boolean) -> Unit = { _, _, _, _ -> },
+    /** The choice of devices changed: the Garmin watch or the Oura Ring, each on or off. */
+    onSources: (garmin: Boolean, oura: Boolean) -> Unit = { _, _ -> },
     /** A colour theme was picked. */
     onLook: (palette: String) -> Unit = {},
     /** The letters were switched between pixel and clear. */
@@ -223,23 +221,15 @@ fun SettingsScreen(
         item {
             FoldableCard("settings-devices", stringResource(R.string.settings_devices)) {
                 Text(stringResource(R.string.settings_devices_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                DeviceSwitch(stringResource(R.string.device_garmin), stringResource(R.string.device_garmin_body), ui.sources.garmin, deviceStatus(DataSourceKind.GARMIN_ACCOUNT)) { onSources(it, ui.sources.oura, ui.sources.whoop, ui.sources.hume) }
+                DeviceSwitch(stringResource(R.string.device_garmin), stringResource(R.string.device_garmin_body), ui.sources.garmin, deviceStatus(DataSourceKind.GARMIN_ACCOUNT)) { onSources(it, ui.sources.oura) }
                 if (ui.sources.garmin) {
                     PrimaryButton(onClick = onGarmin, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_garmin)) }
                     PrimaryButton(onClick = onWatch, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_watch)) }
                     ConnectIqButton()
                 }
-                DeviceSwitch(stringResource(R.string.device_oura), stringResource(R.string.device_oura_body), ui.sources.oura, deviceStatus(DataSourceKind.OURA)) { onSources(ui.sources.garmin, it, ui.sources.whoop, ui.sources.hume) }
+                DeviceSwitch(stringResource(R.string.device_oura), stringResource(R.string.device_oura_body), ui.sources.oura, deviceStatus(DataSourceKind.OURA)) { onSources(ui.sources.garmin, it) }
                 if (ui.sources.oura) {
                     PrimaryButton(onClick = onOura, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_oura)) }
-                }
-                DeviceSwitch(stringResource(R.string.device_whoop), stringResource(R.string.device_whoop_body), ui.sources.whoop, deviceStatus(DataSourceKind.WHOOP)) { onSources(ui.sources.garmin, ui.sources.oura, it, ui.sources.hume) }
-                if (ui.sources.whoop) {
-                    PrimaryButton(onClick = onWhoop, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_whoop)) }
-                }
-                DeviceSwitch(stringResource(R.string.device_hume), stringResource(R.string.device_hume_body), ui.sources.hume, deviceStatus(DataSourceKind.HUME)) { onSources(ui.sources.garmin, ui.sources.oura, ui.sources.whoop, it) }
-                if (ui.sources.hume) {
-                    PrimaryButton(onClick = onHume, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_hume)) }
                 }
             }
         }
@@ -505,8 +495,6 @@ private fun sourceLabel(source: String): String = stringResource(
         "watch", "usb", "folder", "garmin-ble" -> R.string.source_watch
         "demo" -> R.string.source_demo
         "oura" -> R.string.source_oura
-        "whoop" -> R.string.source_whoop
-        "hume" -> R.string.source_hume
         else -> R.string.source_import
     },
 )
@@ -555,8 +543,6 @@ private fun SyncLogBody(log: List<SyncLogEntry>, onClear: () -> Unit) {
                 SyncLog.SOURCE_FOLDER -> R.string.synclog_folder
                 SyncLog.SOURCE_BLE -> R.string.synclog_ble
                 SyncLog.SOURCE_OURA -> R.string.synclog_oura
-                SyncLog.SOURCE_WHOOP -> R.string.synclog_whoop
-                SyncLog.SOURCE_HUME -> R.string.synclog_hume
                 SyncLog.SOURCE_HEALTH -> R.string.synclog_health
                 SyncLog.SOURCE_ARCHIVE -> R.string.synclog_archive
                 else -> R.string.synclog_account

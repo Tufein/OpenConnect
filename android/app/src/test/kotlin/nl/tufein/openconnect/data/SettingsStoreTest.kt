@@ -158,11 +158,9 @@ class SettingsStoreTest {
         s.setKey(AiVendor.CLAUDE, "sk-ant-claude-key-0123456789") // used to throw from the screen that saves it
         s.garmin.key = "GCDC_0123456789abcdef.fedcba9876543210.AbCdEf/12+34=="
         s.oura.clientSecret = "oura-secret-FAKE"
-        s.whoop.clientSecret = "whoop-secret-FAKE"
         assertNull(s.key(AiVendor.CLAUDE))
         assertNull(s.garmin.key)
         assertNull(s.oura.clientSecret)
-        assertNull(s.whoop.clientSecret)
         val plain = context.getSharedPreferences("settings", Context.MODE_PRIVATE).all.toString()
         assertFalse("claude-key" in plain || "FAKE" in plain, "nothing falls back to the plain preferences")
     }

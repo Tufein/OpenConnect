@@ -53,7 +53,7 @@ serializers, the Keystore library) being removed. The libraries bring their own 
 
 | What | When | Notes |
 |------|------|-------|
-| Account sync (Garmin, Oura, WHOOP, Hume via Health Connect) | about every 15 minutes through WorkManager, when there is a connection and the battery is not low; Android decides the exact moment | only for the sources you switched on; no-op writes when nothing changed |
+| Account sync (Garmin, Oura, Health Connect) | about every 15 minutes through WorkManager, when there is a connection and the battery is not low; Android decides the exact moment | only for the sources you switched on; no-op writes when nothing changed |
 | Sync while the app is open | every 10 minutes, and when the app comes to the front after a minute | stops when the app is closed |
 | Nudges (a reminder to move, to sleep) | WorkManager every 3 hours, only when switched on | |
 | Live heart rate | a foreground service, only from the moment you press *Live heart rate* until you press stop; it shows a notification | `START_NOT_STICKY`: Android does not restart it |

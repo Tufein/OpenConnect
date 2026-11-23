@@ -20,7 +20,7 @@ Stand op 2026-11-18, na v0.53.0: nog niets aangevinkt dat van een echt apparaat 
 - [ ] Health Connect lezen en schrijven (T9)
 - [ ] Back-up, alles wissen, terugzetten (T13)
 - [ ] App-vergrendeling, thema's en iconen op een echte telefoon (T14)
-- [ ] Oura, Claude, Gemini, WHOOP en Hume: elke bron is **getest** (T10 tot en met T12) of draagt het label *Experimenteel* in de app en in de docs
+- [ ] Oura, Claude en Gemini: elke bron is **getest** (T10 en T11) of draagt het label *Experimenteel* in de app en in de docs
 - [ ] Het register in ROADMAP.md, paragraaf 7, is bijgewerkt: geen 🧪 meer zonder label in de app
 
 ### G2 Gegevens veilig
@@ -84,11 +84,11 @@ Noteer bij elke stap de **versie van de app** (die staat in Instellingen) en de 
 | T9 | Zet Health Connect aan (Instellingen, Health Connect), sta de rechten toe. Schrijf een activiteit weg en lees stappen en slaap terug | De activiteit staat in Health Connect, geen dubbel geteld, de dagen zijn aangevuld | Welke rechten Android toonde en weigerde |
 | T10 | **Alleen met een Oura Ring:** log in met je eigen Oura-toepassing, synchroniseer, open het Oura-tabblad en het Dag-tabblad van Inzichten. Vergelijk paraatheid en slaapscore met de Oura-app voor dezelfde dag | Dezelfde scores | De foutmelding en op welke stap |
 | T11 | Voeg een eigen Claude- of Gemini-sleutel toe, vraag een weekverslag en één vraag aan de coach | Een antwoord in je taal, geen GPS-track in het verzoek | De foutmelding |
-| T12 | **Alleen met WHOOP of een Hume Band:** doe hetzelfde als T10 (zie [WHOOP.md](WHOOP.md), [HUME.md](HUME.md)) | Eigen tabblad met herstel en slaap (WHOOP) of slaap, stappen en hartslag (Hume) | De foutmelding en op welke stap |
+| ~~T12~~ | **Vervallen sinds v1.8.3**: de WHOOP-band en de Hume Band zijn uit de app; eerder opgeslagen dagen blijven leesbaar | — | — |
 | T13 | Maak een back-up (Back-up en herstel), wis alle gegevens, zet de back-up terug | Alle activiteiten, dagen en nachten zijn terug, de sleutels niet (die moet je opnieuw invoeren) | Wat ontbreekt |
 | T14 | Zet App-vergrendeling aan, kies een ander app-icoon, wissel twee thema's, zet de lettergrootte van Android op de grootste stand | De vergrendeling vraagt om je vinger of schermcode, het icoon wisselt, geen afgesneden tekst | Schermafbeelding waar het knelt |
 | T15 | Kopieer een training van je plan naar het horloge (USB, `GARMIN/NewFiles`) en open hem op het horloge | De training staat in de lijst en start | Of het horloge hem weigert, met de naam van het bestand |
-| T16 | Laat de app een dag draaien met je bronnen aan (Garmin, eventueel Oura of WHOOP) en een uur *Live hartslag*. Open daarna Android, Instellingen, Batterij, OpenConnect | Een batterijverbruik dat je niet hoeft op te merken (Android toont het in procenten en per uur) | Het percentage en wat je aan had staan |
+| T16 | Laat de app een dag draaien met je bronnen aan (Garmin, eventueel Oura) en een uur *Live hartslag*. Open daarna Android, Instellingen, Batterij, OpenConnect | Een batterijverbruik dat je niet hoeft op te merken (Android toont het in procenten en per uur) | Het percentage en wat je aan had staan |
 | T17 | Zet *Watch, Meldingen op het horloge* aan, geef toegang tot meldingen (op Android 13 of nieuwer eerst *Beperkte instellingen toestaan* in de app-info), kies één chat-app en druk op *Stuur een test naar het horloge*. Stuur jezelf daarna een bericht in die app | De test en het bericht staan op het horloge, met titel en tekst; wegvegen op het horloge veegt het ook op de telefoon weg; een app die je niet koos komt niet door | Wat het horloge toont (of niets), het stappenlijstje en het logboek onder *Wat gebeurt er?* (kopieer het), de regel *Laatste melding niet verstuurd* in de app, en of de Garmin Connect-app daarna nog verbinding kreeg |
 
 Een stap die niet kan (geen ring, geen band) hoef je niet te doen: die bron blijft dan *Experimenteel* in 1.0, en dat staat in de app.

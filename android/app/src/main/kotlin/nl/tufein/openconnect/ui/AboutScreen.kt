@@ -80,7 +80,6 @@ private fun privacyHostText(key: String): String = stringResource(
     when (key) {
         "garmin" -> R.string.privacy_host_garmin
         "oura" -> R.string.privacy_host_oura
-        "whoop" -> R.string.privacy_host_whoop
         "claude" -> R.string.privacy_host_claude
         "gemini" -> R.string.privacy_host_gemini
         else -> R.string.privacy_host_github
@@ -180,8 +179,6 @@ fun diagnosticInput(ui: SettingsUi): DiagnosticInput {
     val on = buildList {
         if (s.garmin) add("garmin")
         if (s.oura) add("oura")
-        if (s.whoop) add("whoop")
-        if (s.hume) add("hume")
     }
     val overview = ui.overview
     return DiagnosticInput(

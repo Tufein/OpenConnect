@@ -5,19 +5,19 @@
 An open-source, **private alternative to Garmin Connect**: an Android app (and a self-hosted server) that keeps your
 activities and daily health data on your own device, with charts, insights, a coach and reports, optionally written by
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
-Ring, a WHOOP band, a Hume Band (via Health Connect) and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
+Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.8.2.** Every section on every tab now **folds away under its title**, and the battery card **says so
-> when Oura withholds the ring's charge**, with a fresh Oura login right there. The three buttons at the bottom of the
-> front page (Garmin, Watch, Coach) are gone; those routes stay in the navigation. v1.8.1 put the watch and ring charge
-> on the front page; v1.8.0 brought that card, workouts by **distance and pace**, and editing a workout afterwards. The
-> widget sizes of v1.7.0, the workout builder of v1.6.0, the manual activity of v1.5.0, the archive import of v1.3.0
-> and the names from your export in v1.4.0 stay.
-> [Release notes](docs/releases/v1.8.2.md).
+> **Status: v1.8.3.** The WHOOP band and the Hume Band are gone: their tabs, settings and network code were removed,
+> while days already saved from them stay readable in your history and backups. The Garmin watch's charge is asked a
+> second time shortly after connecting, so it no longer sits a percent behind. Everything from v1.8.2 stays: every
+> section **folds away under its title**, the battery card **says so when Oura withholds the ring's charge**, and the
+> three buttons at the bottom of the front page are gone. The widget sizes of v1.7.0, distance and pace workouts of
+> v1.8.0, the workout builder of v1.6.0, the manual activity of v1.5.0 and the archive import of v1.3.0 stay.
+> [Release notes](docs/releases/v1.8.3.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).
-> Not affiliated with or endorsed by Garmin, Oura, WHOOP or Hume.
+> Not affiliated with or endorsed by Garmin or Oura.
 
 ![OpenConnect dashboard](docs/img/dashboard.png)
 
@@ -38,8 +38,8 @@ The signing certificate is listed in [SECURITY.md](SECURITY.md). A phone with An
 Then connect what you have, all optional: a Garmin watch, bike computer or golf device (any family, see
 [docs/GARMIN_DEVICES.md](docs/GARMIN_DEVICES.md)) over USB or Bluetooth ([docs/WATCH.md](docs/WATCH.md),
 [docs/BLUETOOTH.md](docs/BLUETOOTH.md)), your Garmin account with your own key ([docs/GARMIN.md](docs/GARMIN.md)), an
-Oura Ring ([docs/OURA.md](docs/OURA.md)), WHOOP ([docs/WHOOP.md](docs/WHOOP.md)), a Hume Band
-([docs/HUME.md](docs/HUME.md)), Claude or Gemini for reports and the coach ([docs/AI.md](docs/AI.md)). Everything about
+Oura Ring ([docs/OURA.md](docs/OURA.md)), Claude or Gemini for reports and the coach ([docs/AI.md](docs/AI.md)).
+Everything about
 the app, its limits and how to build it: [docs/ANDROID.md](docs/ANDROID.md).
 
 ## What it does
@@ -61,8 +61,8 @@ hardware is another matter.** The register of what has and has not been checked 
 |--------|-------|
 | Garmin account with your own key (daily data, sleep, HRV, SpO2, Body Battery) | tried once against a real account |
 | Garmin watch over USB, over Bluetooth, live heart rate with the screen off, workouts to the watch | **not tried on a real watch or phone** |
-| Health Connect, Hume Band | **not tried on a real phone or band** |
-| Oura Ring, WHOOP | **never run against the real service** |
+| Health Connect | **not tried on a real phone** |
+| Oura Ring | **never run against the real service** |
 | Claude and Gemini | **no live calls with a real key** |
 | In-app updater, key vault, app lock | **not tried on a real phone** |
 

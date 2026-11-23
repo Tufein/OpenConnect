@@ -38,12 +38,10 @@ fun OnboardingScreen(
     palette: String,
     onStyle: (String) -> Unit,
     onPalette: (String) -> Unit,
-    onDone: (garmin: Boolean, oura: Boolean, whoop: Boolean, hume: Boolean) -> Unit,
+    onDone: (garmin: Boolean, oura: Boolean) -> Unit,
 ) {
     var garmin by rememberSaveable { mutableStateOf(initial.garmin) }
     var oura by rememberSaveable { mutableStateOf(initial.oura) }
-    var whoop by rememberSaveable { mutableStateOf(initial.whoop) }
-    var hume by rememberSaveable { mutableStateOf(initial.hume) }
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
             Modifier.safeDrawingPadding().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 24.dp),
@@ -56,8 +54,6 @@ fun OnboardingScreen(
             SurfaceCard {
                 DeviceSwitch(stringResource(R.string.device_garmin), stringResource(R.string.device_garmin_body), garmin, deviceStatus(DataSourceKind.GARMIN_ACCOUNT)) { garmin = it }
                 DeviceSwitch(stringResource(R.string.device_oura), stringResource(R.string.device_oura_body), oura, deviceStatus(DataSourceKind.OURA)) { oura = it }
-                DeviceSwitch(stringResource(R.string.device_whoop), stringResource(R.string.device_whoop_body), whoop, deviceStatus(DataSourceKind.WHOOP)) { whoop = it }
-                DeviceSwitch(stringResource(R.string.device_hume), stringResource(R.string.device_hume_body), hume, deviceStatus(DataSourceKind.HUME)) { hume = it }
             }
             Text(stringResource(R.string.onboarding_experimental_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             SectionTitle(stringResource(R.string.onboarding_look))
@@ -83,11 +79,11 @@ fun OnboardingScreen(
                 Text(stringResource(R.string.onboarding_privacy_body), style = MaterialTheme.typography.bodyMedium)
             }
             Text(
-                stringResource(if (!garmin && !oura && !whoop && !hume) R.string.onboarding_none else R.string.onboarding_later),
+                stringResource(if (!garmin && !oura) R.string.onboarding_none else R.string.onboarding_later),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            PrimaryButton(onClick = { onDone(garmin, oura, whoop, hume) }, modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
+            PrimaryButton(onClick = { onDone(garmin, oura) }, modifier = Modifier.fillMaxWidth().align(Alignment.CenterHorizontally)) {
                 Text(stringResource(R.string.onboarding_start))
             }
         }

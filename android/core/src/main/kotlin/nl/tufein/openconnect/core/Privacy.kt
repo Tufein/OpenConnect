@@ -10,7 +10,6 @@ object PrivacyStatement {
     val called: Map<String, List<String>> = linkedMapOf(
         "garmin" to listOf("personal.connectapi.garmin.com"),
         "oura" to listOf("cloud.ouraring.com", "api.ouraring.com"),
-        "whoop" to listOf("api.prod.whoop.com"),
         "claude" to listOf("api.anthropic.com"),
         "gemini" to listOf("generativelanguage.googleapis.com"),
         // The updater: the release list, and the download links in it, which point at github.com.
@@ -20,7 +19,7 @@ object PrivacyStatement {
     /** Addresses that only appear as a link the person opens in the browser, a credit or a licence line: the app never calls them. */
     val linksOnly: Set<String> = setOf(
         "connect.garmin.com", "apps.garmin.com", "play.google.com", "console.anthropic.com", "aistudio.google.com",
-        "developer-dashboard.whoop.com", "codeberg.org", "gadgetbridge.org", "developer.android.com", "kotlinlang.org",
+        "developer-dashboard.whoop.com", "api.prod.whoop.com", "codeberg.org", "gadgetbridge.org", "developer.android.com", "kotlinlang.org",
     )
 
     /** XML namespace names used when reading GPX and TCX files: they look like addresses and are never opened. */

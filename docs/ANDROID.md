@@ -38,7 +38,7 @@ English and Dutch. The look is sporty by default (see [DESIGN.md](DESIGN.md)): c
 3. **A Garmin watch, directly** (new in v0.3.0): USB cable for everything the watch stores, Bluetooth for live
    heart rate. No server and no Garmin account. How it works and what is not tested yet: **[WATCH.md](WATCH.md)**.
 4. **Your Garmin account** (new in v0.4.0): with a personal key that you make yourself, no server in between. **[GARMIN.md](GARMIN.md)**.
-5. **Health Connect**: steps, sleep and (since v1.2.0) weight from the phone, filled by Garmin Connect, Oura, WHOOP or
+5. **Health Connect**: steps, sleep and (since v1.2.0) weight from the phone, filled by Garmin Connect, Oura or
    another app. The app can also send activities back, and since v1.2.0 fill missing days, nights and weights itself in
    the background. Card under *Settings → Health Connect*.
 
@@ -84,7 +84,7 @@ English and Dutch. The look is sporty by default (see [DESIGN.md](DESIGN.md)): c
   columns and indexes as a fresh install. A last test fails when `SqliteRepository.VERSION` goes up without a new fixture.
   The only thing a migration ever deleted is the Oura Ring's workouts among the activities (schema 3).
 - **Backup** (`core/Backup.kt`): the database (activities with tracks, daily, sleep, samples, the days of the Oura Ring,
-  WHOOP and Hume Band) plus, since v0.56.0, `UserData`: the journal, shoes, training plan, race, maximum heart rate and
+  plus, since v0.56.0, `UserData`: the journal, shoes, training plan, race, maximum heart rate and
   weekly goals, which live outside the database. Restoring never deletes or overwrites: journal days are joined, shoes are
   added by id, and the plan, race, maximum heart rate and goals are only taken when this phone has none of its own. Keys,
   tokens and passwords are never in the file (a test lists the allowed top-level parts). A guard test fails when a table

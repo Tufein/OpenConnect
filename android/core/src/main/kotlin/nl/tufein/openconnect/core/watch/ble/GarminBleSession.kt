@@ -71,7 +71,7 @@ class GarminBleSession(
     private val lock = Any()
     private val cobs = CobsStream()
     private val readyFuture = CompletableFuture<GarminDeviceInfo>()
-    private val batteryFuture = CompletableFuture<Int>()
+    @Volatile private var batteryFuture = CompletableFuture<Int>()
     private var batteryRequestId: Int? = null
     private var nextRequestId = 0
 
@@ -418,6 +418,23 @@ class GarminBleSession(
             val next = (nextRequestId + 1) and 0xFFFF
             nextRequestId = next
             batteryRequestId = next
+            next
+        }
+        send(GarminProtobuf.batteryRequest(id))
+    }
+
+    /**
+     * Asks the watch for its charge once more. A Garmin recalculates its gauge just after the handshake and the first
+     * answer can be a percent lower than what the watch itself shows a moment later; the sync is a good moment for a
+     * second, fresher answer. The earlier value stays until the new one arrives.
+     */
+    fun refreshBattery() {
+        val id = synchronized(lock) {
+            if (closed) return
+            val next = (nextRequestId + 1) and 0xFFFF
+            nextRequestId = next
+            batteryRequestId = next
+            batteryFuture = CompletableFuture()
             next
         }
         send(GarminProtobuf.batteryRequest(id))

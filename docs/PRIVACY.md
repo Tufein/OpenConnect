@@ -13,7 +13,7 @@ the app deletes it.
 
 Activities (with their GPS tracks), daily numbers (steps, heart rate, stress, Body Battery, sleep, HRV, SpO2), the journal,
 shoes, goals and your training plan are stored in the app's private storage on the phone (a SQLite database that no other
-app can read). Keys and sign-ins (AI keys, your Garmin key, Oura and WHOOP tokens) are stored in the Android Keystore through
+app can read). Keys and sign-ins (AI keys, your Garmin key and Oura tokens) are stored in the Android Keystore through
 `EncryptedSharedPreferences`; if secure storage is not available the key is not stored at all. Android's own backup and
 device-transfer are switched off for the app, so the data does not end up in a Google backup either.
 
@@ -29,7 +29,6 @@ Only to the services below, only when you use them, and only over HTTPS:
 |---------|------|--------------|
 | `personal.connectapi.garmin.com` | you use your own Garmin key | the key (to this address only), the dates you ask for; you get your daily data and activities back |
 | `cloud.ouraring.com`, `api.ouraring.com` | you connect an Oura Ring | the Oura sign-in (your own Oura app's client id and secret), the dates you ask for |
-| `api.prod.whoop.com` | you connect a WHOOP band | the WHOOP sign-in (your own WHOOP app), the dates you ask for |
 | `api.anthropic.com` | you add a Claude key and ask for a report or use the coach | a short JSON summary of your numbers and activity names, never the GPS track, and what you type to the coach; your key |
 | `generativelanguage.googleapis.com` | you add a Gemini key and ask for a report or use the coach | the same, with your Gemini key |
 | `api.github.com`, `github.com` | you open *Settings, Updates* | a request for the newest release and then the download of the APK; nothing about you, but GitHub sees your network address like any website does |
@@ -60,7 +59,7 @@ Connect IQ store, the source code) are opened in your browser; the app itself do
 
 *Settings, Your data, Delete all data* empties the database. Uninstalling the app deletes everything it stored, including
 keys. Files you exported or backed up yourself are yours to delete. Keys can be removed one by one in Settings. Data at an AI
-provider or at Garmin, Oura, WHOOP is theirs: use their own tools to delete it.
+provider, Garmin or Oura is theirs: use their own tools to delete it.
 
 ### What the project knows about you
 
@@ -83,7 +82,7 @@ de app verwijdert, zijn ze weg.
 
 Activiteiten (met hun gps-route), dagcijfers (stappen, hartslag, stress, Body Battery, slaap, HRV, SpO2), het dagboek,
 schoenen, doelen en je trainingsplan staan in de eigen opslag van de app op de telefoon (een SQLite-database die geen andere
-app kan lezen). Sleutels en logins (AI-sleutels, je Garmin-sleutel, Oura- en WHOOP-tokens) staan in de Android Keystore via
+app kan lezen). Sleutels en logins (AI-sleutels, je Garmin-sleutel en Oura-tokens) staan in de Android Keystore via
 `EncryptedSharedPreferences`; is veilige opslag er niet, dan wordt een sleutel helemaal niet bewaard. De back-up en
 toestelovername van Android zelf staan voor de app uit, dus de gegevens komen ook niet in een Google-back-up terecht.
 
@@ -99,7 +98,6 @@ Alleen naar de diensten hieronder, alleen als je ze gebruikt, en alleen via HTTP
 |-------|---------|------------------|
 | `personal.connectapi.garmin.com` | je gebruikt je eigen Garmin-sleutel | de sleutel (alleen naar dit adres), de data die je opvraagt; je krijgt je dagcijfers en activiteiten terug |
 | `cloud.ouraring.com`, `api.ouraring.com` | je koppelt een Oura Ring | het inloggen bij Oura (met de client-id en het geheim van je eigen Oura-toepassing), de data die je opvraagt |
-| `api.prod.whoop.com` | je koppelt een WHOOP-band | het inloggen bij WHOOP (je eigen WHOOP-toepassing), de data die je opvraagt |
 | `api.anthropic.com` | je voegt een Claude-sleutel toe en vraagt een verslag of gebruikt de coach | een korte JSON-samenvatting van je cijfers en activiteitsnamen, nooit de gps-route, en wat je aan de coach typt; je sleutel |
 | `generativelanguage.googleapis.com` | je voegt een Gemini-sleutel toe en vraagt een verslag of gebruikt de coach | hetzelfde, met je Gemini-sleutel |
 | `api.github.com`, `github.com` | je opent *Instellingen, Updates* | een vraag om de nieuwste release en daarna het binnenhalen van de APK; niets over jou, maar GitHub ziet je netwerkadres zoals elke website |
@@ -132,7 +130,7 @@ van de AI-aanbieders, de Connect IQ-winkel, de broncode) worden in je browser ge
 
 *Instellingen, Jouw gegevens, Alle gegevens wissen* maakt de database leeg. De app verwijderen wist alles wat hij bewaarde,
 sleutels inbegrepen. Bestanden die je zelf exporteerde of als back-up bewaarde, zijn aan jou om te wissen. Sleutels kun je
-in Instellingen één voor één verwijderen. Gegevens bij een AI-aanbieder of bij Garmin, Oura, WHOOP zijn van hen: gebruik hun
+in Instellingen één voor één verwijderen. Gegevens bij een AI-aanbieder of bij Garmin of Oura zijn van hen: gebruik hun
 eigen hulpmiddelen om ze te wissen.
 
 ### Wat het project over jou weet

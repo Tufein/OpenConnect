@@ -30,15 +30,15 @@ class DeviceComparisonScreenTest : AppTestBase() {
     }
 
     @Test
-    fun withAWatchAndTwoBandsTheDayIsShownSideBySide() {
-        launchFresh(oura = true, whoop = true, hume = false)
+    fun withAWatchAndTheRingTheDayIsShownSideBySide() {
+        launchFresh(oura = true)
         loadDemo()
         openDay()
         scrollToText("Devices compared")
         assertTrue(hasText("Devices compared", substring = false))
         // Sleep is the one measure all three have; each device is named next to its own number.
         scrollToText("Garmin", substring = true)
-        assertTrue(hasText("Garmin", substring = true) && hasText("Oura", substring = true) && hasText("WHOOP", substring = true))
+        assertTrue(hasText("Garmin", substring = true) && hasText("Oura", substring = true))
         assertTrue(hasText("Close:", substring = true) || hasText("Far apart:", substring = true), "a verdict on the gap")
         scrollToText("HRV and scores are each maker", substring = true)
         shot("compare-day")
@@ -53,18 +53,9 @@ class DeviceComparisonScreenTest : AppTestBase() {
     }
 
     @Test
-    fun withTheHumeBandToo() {
-        launchFresh(oura = false, whoop = false, hume = true)
-        loadDemo()
-        openDay()
-        scrollToText("Devices compared")
-        assertTrue(hasText("Hume Band", substring = true))
-    }
-
-    @Test
     @Config(qualifiers = "nl-w411dp-h891dp-night-xxhdpi")
     fun theCardIsInDutchToo() {
-        launchFresh(oura = true, whoop = true)
+        launchFresh(oura = true)
         loadDemo("Demodata laden")
         tab("Inzichten").performClick()
         waitForText("Week van", substring = true)

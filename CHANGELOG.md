@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.8.3: de banden eruit, het horloge bij
+
+De WHOOP-band en de Hume Band zijn uit de app, en het horloge krijgt kort na het verbinden een tweede batterijvraag zodat de kaart niet een procent achterloopt. Wat je eerder van die banden opsloeg, blijft leesbaar.
+
+[Release notes](docs/releases/v1.8.3.md)
+
 ## v1.8.2: elke sectie inklapbaar, en de ring zegt waarom
 
 De ringbatterij bleef soms leeg zonder uitleg, en de app was op elk tabblad een lange lijst geworden. Nu zegt de batterijkaart het als Oura de lading niet deelt, met een nieuwe login, en elke sectie klapt in onder zijn titel. De drie knoppen onderaan het voorblad zijn weg.

@@ -78,6 +78,9 @@ class AndroidGarminBleLink(
         /** How long the watch gets to answer the battery question before the sync goes on without it. */
         private const val BATTERY_WAIT_MS = 2_000L
 
+        /** A second question after this pause, because a Garmin can settle on a percent higher just after connecting. */
+        private const val SECOND_BATTERY_ASK_MS = 2_000L
+
         /** A write Android has not confirmed after this long is given up on; the link's own resending covers what was lost. */
         private const val WRITE_STUCK_MS = 4_000L
 
@@ -270,6 +273,12 @@ class AndroidGarminBleLink(
             log("handshake done with ${info.deviceName} ${info.deviceModel}")
             // the charge comes a moment later; a watch that stays quiet must not hold up the sync
             CompletableFuture.runAsync { session.awaitBattery(BATTERY_WAIT_MS)?.let(onBattery) }
+            // Ask once more while the sync runs: Garmin settles its gauge just after connecting, and the first answer can
+            // be a percent lower than the watch's own display. The card keeps the newest answer.
+            Handler(Looper.getMainLooper()).postDelayed(
+                { CompletableFuture.runAsync { session.refreshBattery(); session.awaitBattery(BATTERY_WAIT_MS)?.let(onBattery) } },
+                SECOND_BATTERY_ASK_MS,
+            )
             // the name the watch gives itself, else the model its product number stands for, else what the scan showed
             return Established(session, connection, scheduler, info.nameOr(watch.name))
         } catch (e: Exception) {

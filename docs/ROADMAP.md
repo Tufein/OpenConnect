@@ -15,7 +15,7 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
 
 - **Ruim 80 releases en kandidaten**, ruim 1.300 tests (Python, `core` en de app), AGPL-3.0, openbare repository, een Android-app die zonder server werkt en een
   Python-server voor wie die liever zelf draait. Nederlands en Engels.
-- **Bronnen:** Garmin-horloge (USB, Bluetooth, map met bestanden), Garmin-account met een eigen sleutel, Oura Ring, WHOOP, Hume Band
+- **Bronnen:** Garmin-horloge (USB, Bluetooth, map met bestanden), Garmin-account met een eigen sleutel, Oura Ring, Health Connect
   (via Health Connect, sinds v1.2.0 ook op de achtergrond aangevuld), bestanden (FIT, GPX, TCX), Claude en Gemini voor de coach.
 - **Sterk:** alles is test-first, gegevens blijven op de telefoon, horloge, ring en banden worden nooit door elkaar gemengd, elke release zegt eerlijk
   wat niet is gecontroleerd, en de app is met een in-app-updater te bijwerken met SHA-256-controle.
@@ -154,7 +154,7 @@ De kandidaat `v1.0.0-rc.1` is uitgebracht als GitHub pre-release (zelfde code al
 
 Het register in paragraaf 7 is de lijst. Per bron: installeren en bijwerken over de vorige versie, demo en import, de Garmin-sleutel, de fenix 8 over
 USB en over Bluetooth (sync, live hartslag, en voor de meldingen een **nieuw logboek** zodat blijkt of de reparaties van v1.0.1 houden), Health Connect,
-en Oura, WHOOP of Hume als die er zijn. Wat klopt, krijgt in de app het label *Getest op echt apparaat* met datum en versie; wat niet kan blijft
+en Oura als die er is. Wat klopt, krijgt in de app het label *Getest op echt apparaat* met datum en versie; wat niet kan blijft
 *Experimenteel*. Reparaties komen als gewone 1.0.x-uitgaven; geen nieuwe features in dit spoor. Schermafbeeldingen van je eigen telefoon horen hier
 ook bij (G5), evenals het besluit over de naam (G6), dat Stefan alleen kan nemen.
 
@@ -352,8 +352,6 @@ De bron van waarheid voor poort G1. Een regel gaat pas naar ✅ als er een echte
 | Trainingen naar `GARMIN/NewFiles` | 🧪 ❓ of een fenix 8 de bestanden accepteert | [WATCH.md](WATCH.md) |
 | Health Connect (lezen en schrijven) | 🧪 niet op een echte telefoon | [ANDROID.md](ANDROID.md) |
 | Oura Ring | 🧪 nooit tegen de echte dienst | [OURA.md](OURA.md) |
-| WHOOP | 🧪 nooit met een echte band of account, scopenamen zijn aannames | [WHOOP.md](WHOOP.md) |
-| Hume Band | 🧪 nooit met een echte band, pakketnaam van de Hume-app is een aanname | [HUME.md](HUME.md) |
 | Claude en Gemini voor rapporten en coach | 🧪 geen live aanroepen met eigen sleutels | [AI.md](AI.md) |
 | Archief-import (Strava- en Garmin-export, ZIP en `.gz`) | 🧪 gebouwd met zelf gemaakte archieven in de indeling die de bronnen beschrijven; nooit met een echte export | [MIGRATING.md](MIGRATING.md) |
 | In-app-updater | 🧪 niet op een echte telefoon | [ANDROID.md](ANDROID.md) |
@@ -423,6 +421,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.8.0 | Batterij van horloge en ring: het Watch-tabblad toont de lading en wanneer die voor het laatst gemeld is (het horloge via een protobuf-vraag bij het verbinden, de ring uit Oura `ring_battery_level`); de work-outbouwer kent afstand en tempo per herhaling (bijv. 6 × 1 km in 5:00–5:30) en je kunt een work-out achteraf bewerken |
 | v1.8.1 | De batterijkaart van horloge en ring staat nu ook bovenaan het voorblad (Home), met per device alleen een rij als je dat device hebt; de waarden verversen zodra een horloge- of Oura-sync klaar is, zonder het Watch-tabblad te openen |
 | v1.8.2 | Elke sectie op elk tabblad klapt in onder zijn titel (pijltje, begint open, keuze blijft per scherm); het voorblad heeft ook voor kaarten zonder eigen titel een pijltje en de drie knoppen onderaan (Garmin, Watch, Coach) zijn weg. De ringbatterij zegt het als Oura de lading niet deelt en biedt een nieuwe Oura-login aan, met de bestaande client-configuratie |
+| v1.8.3 | De WHOOP-band en de Hume Band zijn uit de app: hun tabbladen, instellingen, achtergrond-sync en netwerkcode weg; eerder opgeslagen dagen blijven leesbaar in de geschiedenis en back-ups. Het horloge krijgt kort na het verbinden een tweede batterijvraag, zodat de kaart niet een procent achterloopt |
 
 ## 9. Hoe releases werken
 
