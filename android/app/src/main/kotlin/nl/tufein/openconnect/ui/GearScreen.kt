@@ -130,8 +130,7 @@ private fun AddShoesCard(onAction: (GearAction) -> Unit) {
     var name by rememberSaveable { mutableStateOf("") }
     var sport by rememberSaveable { mutableStateOf(Sport.RUNNING.key) }
     var earlier by rememberSaveable { mutableStateOf(false) }
-    SectionTitle(stringResource(R.string.gear_add_title))
-    SurfaceCard {
+    FoldableCard("gear-add", stringResource(R.string.gear_add_title)) {
         OutlinedTextField(
             value = name,
             onValueChange = { name = it.take(Gear.MAX_NAME) },
@@ -161,8 +160,7 @@ private fun AddShoesCard(onAction: (GearAction) -> Unit) {
 fun ActivityShoesCard(state: DetailState, onAssign: (String?) -> Unit) {
     val activity = state.activity ?: return
     if (state.shoeChoices.isEmpty()) return
-    SectionTitle(stringResource(R.string.gear_activity_title))
-    SurfaceCard {
+    FoldableCard("gear-activity", stringResource(R.string.gear_activity_title)) {
         val shoe = state.shoe
         Text(
             if (shoe == null) stringResource(R.string.gear_on_none) else stringResource(R.string.gear_on, shoe.name),

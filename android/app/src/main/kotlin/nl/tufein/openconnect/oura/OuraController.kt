@@ -38,6 +38,9 @@ interface OuraSettings : OuraStore {
 
     /** Epoch milliseconds of that reading, 0 when there was none. */
     var ringBatteryAt: Long
+
+    /** True when Oura refused the ring's charge: the login has to be done again to allow it. */
+    var ringBatteryRefused: Boolean
 }
 
 /** Why something on the Oura screen did not work, in terms the screen can explain. */
@@ -284,11 +287,15 @@ class OuraController(
         val battery = try {
             client.latestBattery()
         } catch (e: OuraException) {
+            // A 403 means the login predates the battery permission (or Oura will not give it): keep that on record,
+            // so the card can ask for a new login instead of showing a silent dash for ever.
+            settings.ringBatteryRefused = e.kind == OuraException.Kind.FORBIDDEN
             null
         } catch (e: Exception) {
             null
         } ?: return
         settings.ringBattery = battery.level
         settings.ringBatteryAt = (battery.at ?: now()).toEpochMilli()
+        settings.ringBatteryRefused = false
     }
 }

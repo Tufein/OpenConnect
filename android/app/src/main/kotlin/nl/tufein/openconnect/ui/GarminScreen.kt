@@ -75,8 +75,7 @@ fun GarminScreen(
             Text(stringResource(R.string.garmin_intro), style = MaterialTheme.typography.bodyMedium)
         }
         item {
-            SectionTitle(stringResource(R.string.garmin_key_title))
-            SurfaceCard {
+            FoldableCard("garmin-key", stringResource(R.string.garmin_key_title)) {
                 Text(stringResource(R.string.garmin_key_body), style = MaterialTheme.typography.bodyMedium)
                 SecondaryButton(onClick = { openKeyPage(context) }, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.garmin_open_key_page))
@@ -106,8 +105,7 @@ fun GarminScreen(
             }
         }
         item {
-            SectionTitle(stringResource(R.string.garmin_sync_title))
-            SurfaceCard {
+            FoldableCard("garmin-sync", stringResource(R.string.garmin_sync_title)) {
                 Text(stringResource(R.string.garmin_sync_body), style = MaterialTheme.typography.bodyMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     for (days in GarminController.DAY_CHOICES) {

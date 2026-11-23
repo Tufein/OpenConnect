@@ -20,12 +20,18 @@ import java.time.Instant
 data class BatteryReading(val level: Int? = null, val at: Long = 0L)
 
 /** The watch and the ring side by side, for the card on the front page and on the Watch screen. */
-data class BatteriesUi(val watch: BatteryReading = BatteryReading(), val ring: BatteryReading = BatteryReading())
+data class BatteriesUi(
+    val watch: BatteryReading = BatteryReading(),
+    val ring: BatteryReading = BatteryReading(),
+    /** Oura refused the ring's charge; the card explains that a new login is needed. */
+    val ringRefused: Boolean = false,
+)
 
 /** Reads what was kept in the settings; -1 and 0 mean "never reported", which is shown as a dash. */
 fun SettingsStore.batteries(): BatteriesUi = BatteriesUi(
     watch = BatteryReading(watchBattery.takeIf { it in 0..100 }, watchBatteryAt),
     ring = BatteryReading(ringBattery.takeIf { it in 0..100 }, ringBatteryAt),
+    ringRefused = ringBatteryRefused,
 )
 
 /**
@@ -41,12 +47,23 @@ fun BatteryCard(
     showWatch: Boolean = true,
     /** False for someone without an Oura ring. */
     showRing: Boolean = true,
+    /** Opens the Oura tab, so the ring's refused charge can be allowed with a new login. */
+    onOpenOura: (() -> Unit)? = null,
 ) {
-    SectionTitle(stringResource(R.string.battery_title))
-    SurfaceCard(modifier) {
+    FoldableCard("battery", stringResource(R.string.battery_title), modifier) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             if (showWatch) Reading(stringResource(R.string.battery_watch), ui.watch, now)
             if (showRing) Reading(stringResource(R.string.battery_ring), ui.ring, now)
+            if (showRing && ui.ringRefused && ui.ring.level == null) {
+                Text(
+                    stringResource(R.string.battery_ring_refused),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+                if (onOpenOura != null) {
+                    SecondaryButton(onClick = onOpenOura) { Text(stringResource(R.string.battery_ring_open)) }
+                }
+            }
         }
     }
 }

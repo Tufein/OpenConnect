@@ -154,6 +154,11 @@ class SettingsStore(
         get() = prefs.getLong(KEY_RING_BATTERY_AT, 0L)
         set(value) = prefs.edit().putLong(KEY_RING_BATTERY_AT, value).apply()
 
+    /** Oura said no (403) when the ring's charge was asked for; a new login can allow it. */
+    var ringBatteryRefused: Boolean
+        get() = prefs.getBoolean(KEY_RING_BATTERY_REFUSED, false)
+        set(value) = prefs.edit().putBoolean(KEY_RING_BATTERY_REFUSED, value).apply()
+
     /** What the person wrote or chose (journal, shoes, plan, race, max heart rate, goals) for the backup. No keys. */
     fun userData() = nl.tufein.openconnect.core.UserData(journal, gear, trainingPlan, raceGoal, maxHr, weeklyGoals, workouts)
 
@@ -283,6 +288,12 @@ class SettingsStore(
             get() = this@SettingsStore.ringBatteryAt
             set(value) {
                 this@SettingsStore.ringBatteryAt = value
+            }
+
+        override var ringBatteryRefused: Boolean
+            get() = this@SettingsStore.ringBatteryRefused
+            set(value) {
+                this@SettingsStore.ringBatteryRefused = value
             }
     }
 
@@ -468,6 +479,7 @@ class SettingsStore(
         private const val KEY_WATCH_BATTERY_AT = "watch_battery_at"
         private const val KEY_RING_BATTERY = "ring_battery"
         private const val KEY_RING_BATTERY_AT = "ring_battery_at"
+        private const val KEY_RING_BATTERY_REFUSED = "ring_battery_refused"
         private const val KEY_JOURNAL = "journal"
         private const val KEY_APP_LOCK = "app_lock"
         private const val KEY_SYNC_LOG = "sync_log"

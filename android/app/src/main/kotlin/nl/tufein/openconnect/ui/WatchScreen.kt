@@ -126,8 +126,7 @@ fun WatchScreen(
             BatteryCard(battery)
         }
         item {
-            SectionTitle(stringResource(R.string.watch_ble_title))
-            SurfaceCard(accent = MaterialTheme.colorScheme.primary) {
+            FoldableCard("watch-ble", stringResource(R.string.watch_ble_title), accent = MaterialTheme.colorScheme.primary) {
                 Text(stringResource(R.string.watch_ble_body), style = MaterialTheme.typography.bodyMedium)
                 Text(stringResource(R.string.watch_ble_warning), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
                 GarminBleControls(
@@ -143,8 +142,7 @@ fun WatchScreen(
             }
         }
         item {
-            SectionTitle(stringResource(R.string.forward_title))
-            SurfaceCard {
+            FoldableCard("watch-forward", stringResource(R.string.forward_title)) {
                 ForwardControls(
                     ui = forward,
                     log = forwardLog,
@@ -160,21 +158,18 @@ fun WatchScreen(
             }
         }
         item {
-            SectionTitle(stringResource(R.string.watch_together_title))
-            SurfaceCard {
+            FoldableCard("watch-together", stringResource(R.string.watch_together_title)) {
                 Text(stringResource(R.string.watch_together_body), style = MaterialTheme.typography.bodyMedium)
             }
         }
         item {
-            SectionTitle(stringResource(R.string.watch_usb_title))
-            SurfaceCard {
+            FoldableCard("watch-usb", stringResource(R.string.watch_usb_title)) {
                 Text(stringResource(R.string.watch_usb_body), style = MaterialTheme.typography.bodyMedium)
                 UsbControls(ui, onSearchUsb, onRead)
             }
         }
         item {
-            SectionTitle(stringResource(R.string.watch_folder_title))
-            SurfaceCard {
+            FoldableCard("watch-folder", stringResource(R.string.watch_folder_title)) {
                 Text(stringResource(R.string.watch_folder_body), style = MaterialTheme.typography.bodyMedium)
                 SecondaryButton(
                     onClick = { folderPicker.launch(null) },
@@ -184,8 +179,7 @@ fun WatchScreen(
             }
         }
         item {
-            SectionTitle(stringResource(R.string.watch_live_title))
-            SurfaceCard {
+            FoldableCard("watch-live", stringResource(R.string.watch_live_title)) {
                 Text(stringResource(R.string.watch_live_body), style = MaterialTheme.typography.bodyMedium)
                 LiveControls(
                     live = ui.live,

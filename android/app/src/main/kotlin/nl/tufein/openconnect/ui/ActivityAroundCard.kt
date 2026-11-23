@@ -28,8 +28,7 @@ import java.util.Locale
  */
 @Composable
 fun ActivityAroundCard(around: ActivityAround) {
-    SectionTitle(stringResource(R.string.around_title))
-    SurfaceCard(Modifier.testTag("activity-around")) {
+    FoldableCard("activity-around", stringResource(R.string.around_title), Modifier.testTag("activity-around")) {
         around.watch?.let { WatchBlock(it) }
         around.ring?.let { RingBlock(it) }
         val muted = MaterialTheme.colorScheme.onSurfaceVariant

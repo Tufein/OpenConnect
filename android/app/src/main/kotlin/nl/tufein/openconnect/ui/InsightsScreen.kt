@@ -191,8 +191,7 @@ private fun WeekContent(
         item { ReportCard(state.report, busy, onGenerate, active) }
         if (state.efforts.isNotEmpty()) {
             item {
-                SectionTitle(stringResource(R.string.best_efforts))
-                SurfaceCard {
+                FoldableCard("insights-efforts", stringResource(R.string.best_efforts)) {
                     for (e in state.efforts) {
                         Row(
                             Modifier.fillMaxWidth().clickable(enabled = e.activityId != null, role = Role.Button) { e.activityId?.let(onOpenActivity) },

@@ -23,7 +23,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -221,6 +225,91 @@ fun SegmentBar(fraction: Float, color: Color, modifier: Modifier = Modifier, seg
 @Composable
 fun SurfaceCard(modifier: Modifier = Modifier, accent: Color? = null, content: @Composable () -> Unit) {
     Panel(modifier.fillMaxWidth(), tint = accent) { content() }
+}
+
+/** A [SectionTitle] above a [SurfaceCard], where tapping the title folds the whole card away. */
+@Composable
+fun FoldableCard(
+    key: String,
+    title: String,
+    modifier: Modifier = Modifier,
+    accent: Color? = null,
+    initiallyOpen: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    CollapsibleSection(key, title, modifier, initiallyOpen) {
+        SurfaceCard(accent = accent) { content() }
+    }
+}
+
+/** Folds a single card away with only a small arrow above it, for cards that carry their own title. */
+@Composable
+fun Foldable(
+    key: String,
+    modifier: Modifier = Modifier,
+    initiallyOpen: Boolean = true,
+    content: @Composable () -> Unit,
+) {
+    var open by rememberSaveable(key) { mutableStateOf(initiallyOpen) }
+    val state = stringResource(if (open) R.string.fold_open else R.string.fold_closed)
+    val toggle = stringResource(R.string.fold_toggle)
+    Column(modifier.fillMaxWidth()) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
+                .clickable(role = Role.Button) { open = !open }
+                .semantics {
+                    contentDescription = toggle
+                    stateDescription = state
+                },
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            PixelIcon(
+                if (open) PixelIcons.ChevronUp else PixelIcons.ChevronDown,
+                size = 16.dp,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+            )
+        }
+        if (open) content()
+    }
+}
+
+/**
+ * The same title as [SectionTitle], but tapping it folds the section away. Every tab uses this so each section can be
+ * put out of the way; the choice is remembered per [key] while the screen lives, and a section starts open.
+ */
+@Composable
+fun CollapsibleSection(
+    key: String,
+    title: String,
+    modifier: Modifier = Modifier,
+    initiallyOpen: Boolean = true,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    var open by rememberSaveable(key) { mutableStateOf(initiallyOpen) }
+    val state = stringResource(if (open) R.string.fold_open else R.string.fold_closed)
+    Column(modifier.fillMaxWidth()) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
+                .clickable(role = Role.Button) { open = !open }
+                .semantics { stateDescription = state },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SectionTitle(title, Modifier.weight(1f))
+            PixelIcon(
+                if (open) PixelIcons.ChevronUp else PixelIcons.ChevronDown,
+                size = 18.dp,
+                tint = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(start = 8.dp, top = 8.dp),
+            )
+        }
+        if (open) content()
+    }
 }
 
 /** A small marker in a signal's colour, the bullet in front of a label: a dot in the modern style, a square in retro. */

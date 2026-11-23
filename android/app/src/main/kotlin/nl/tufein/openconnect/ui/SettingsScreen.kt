@@ -213,8 +213,7 @@ fun SettingsScreen(
             }
         }
         item {
-            SectionTitle(stringResource(R.string.settings_goals))
-            SurfaceCard {
+            FoldableCard("settings-goals", stringResource(R.string.settings_goals)) {
                 Text(stringResource(R.string.settings_goals_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 GoalStepper(stringResource(R.string.goal_intensity), ui.goals.intensityMinutes, "min", 10) { onGoals(ui.goals.copy(intensityMinutes = it)) }
                 GoalStepper(stringResource(R.string.goal_distance), ui.goals.distanceKm, "km", 5) { onGoals(ui.goals.copy(distanceKm = it)) }
@@ -222,8 +221,7 @@ fun SettingsScreen(
             }
         }
         item {
-            SectionTitle(stringResource(R.string.settings_devices))
-            SurfaceCard {
+            FoldableCard("settings-devices", stringResource(R.string.settings_devices)) {
                 Text(stringResource(R.string.settings_devices_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 DeviceSwitch(stringResource(R.string.device_garmin), stringResource(R.string.device_garmin_body), ui.sources.garmin, deviceStatus(DataSourceKind.GARMIN_ACCOUNT)) { onSources(it, ui.sources.oura, ui.sources.whoop, ui.sources.hume) }
                 if (ui.sources.garmin) {
@@ -246,8 +244,7 @@ fun SettingsScreen(
             }
         }
         item {
-            SectionTitle(stringResource(R.string.settings_data))
-            SurfaceCard {
+            FoldableCard("settings-data", stringResource(R.string.settings_data)) {
                 Text(stringResource(R.string.settings_data_body), style = MaterialTheme.typography.bodyMedium)
                 SecondaryButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.action_import)) }
                 ImportStatus(ui.fileImport, onCancelImport)
@@ -258,8 +255,7 @@ fun SettingsScreen(
             }
         }
         item {
-            SectionTitle(stringResource(R.string.settings_export))
-            SurfaceCard {
+            FoldableCard("settings-export", stringResource(R.string.settings_export)) {
                 Text(stringResource(R.string.settings_export_body), style = MaterialTheme.typography.bodyMedium)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     SecondaryButton(onClick = onExportDaily) { Text(stringResource(R.string.export_daily)) }
@@ -268,8 +264,7 @@ fun SettingsScreen(
             }
         }
         item {
-            SectionTitle(stringResource(R.string.settings_nudges))
-            SurfaceCard {
+            FoldableCard("settings-nudges", stringResource(R.string.settings_nudges)) {
                 Text(stringResource(R.string.settings_nudges_body), style = MaterialTheme.typography.bodyMedium)
                 val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> if (granted) onNudges(true) }
                 val context = LocalContext.current
@@ -286,8 +281,7 @@ fun SettingsScreen(
             }
         }
         item {
-            SectionTitle(stringResource(R.string.settings_lock))
-            SurfaceCard {
+            FoldableCard("settings-lock", stringResource(R.string.settings_lock)) {
                 Text(stringResource(R.string.settings_lock_body), style = MaterialTheme.typography.bodyMedium)
                 if (!ui.lockAvailable && !ui.appLock) {
                     Text(stringResource(R.string.settings_lock_unavailable), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -298,12 +292,10 @@ fun SettingsScreen(
             }
         }
         item {
-            SectionTitle(stringResource(R.string.settings_health))
-            SurfaceCard { HealthConnectBody(health, onHealthChecked, onHealthExport, onHealthImport, onHealthAuto, onHealthAutoImport) }
+            FoldableCard("settings-health", stringResource(R.string.settings_health)) { HealthConnectBody(health, onHealthChecked, onHealthExport, onHealthImport, onHealthAuto, onHealthAutoImport) }
         }
         item {
-            SectionTitle(stringResource(R.string.settings_backup))
-            SurfaceCard {
+            FoldableCard("settings-backup", stringResource(R.string.settings_backup)) {
                 Text(stringResource(R.string.settings_backup_body), style = MaterialTheme.typography.bodyMedium)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     PrimaryButton(onClick = onBackup) { Text(stringResource(R.string.action_backup)) }
@@ -313,16 +305,13 @@ fun SettingsScreen(
             }
         }
         item {
-            SectionTitle(stringResource(R.string.settings_sources))
-            SurfaceCard { SourcesBody(ui.overview) }
+            FoldableCard("settings-sources", stringResource(R.string.settings_sources)) { SourcesBody(ui.overview) }
         }
         item {
-            SectionTitle(stringResource(R.string.settings_synclog))
-            SurfaceCard { SyncLogBody(ui.syncLog, onClearLog) }
+            FoldableCard("settings-synclog", stringResource(R.string.settings_synclog)) { SyncLogBody(ui.syncLog, onClearLog) }
         }
         item {
-            SectionTitle(stringResource(R.string.settings_ai))
-            SurfaceCard {
+            FoldableCard("settings-ai", stringResource(R.string.settings_ai)) {
                 Text(stringResource(R.string.settings_ai_body), style = MaterialTheme.typography.bodyMedium)
                 for ((value, label) in listOf(
                     "template" to R.string.provider_template,
@@ -356,8 +345,7 @@ fun SettingsScreen(
             UpdateCard()
         }
         item {
-            SectionTitle(stringResource(R.string.settings_about))
-            SurfaceCard {
+            FoldableCard("settings-about", stringResource(R.string.settings_about)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     LogoMark(size = 40.dp)
                     Text("OpenConnect ${ui.versionName}", style = MaterialTheme.typography.titleMedium)

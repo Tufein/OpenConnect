@@ -89,8 +89,7 @@ fun HumeScreen(
                 Text(stringResource(R.string.hume_unavailable), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             HealthAccess.NEEDS_PERMISSION -> item(key = "allow") {
-                SectionTitle(stringResource(R.string.hume_allow_title))
-                SurfaceCard {
+                FoldableCard("hume-allow", stringResource(R.string.hume_allow_title)) {
                     Text(stringResource(R.string.hume_allow_body), style = MaterialTheme.typography.bodyMedium)
                     PrimaryButton(onClick = { permission.launch(ui.permissions) }, enabled = ui.permissions.isNotEmpty(), modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(R.string.hume_allow))
@@ -99,8 +98,7 @@ fun HumeScreen(
             }
             HealthAccess.READY -> {
                 item(key = "link") {
-                    SectionTitle(stringResource(R.string.oura_connected_title))
-                    SurfaceCard(accent = OpenConnectColors.metrics.readiness) {
+                    FoldableCard("hume-connected", stringResource(R.string.oura_connected_title), accent = OpenConnectColors.metrics.readiness) {
                         Text(
                             ui.lastSync?.let { stringResource(R.string.oura_last_sync, Fmt.dateTime(it)) } ?: stringResource(R.string.oura_never_synced),
                             style = MaterialTheme.typography.bodyMedium,
@@ -124,8 +122,7 @@ fun HumeScreen(
                     }
                 }
                 item(key = "origin") {
-                    SectionTitle(stringResource(R.string.hume_origin_title))
-                    SurfaceCard {
+                    FoldableCard("hume-origin", stringResource(R.string.hume_origin_title)) {
                         Text(stringResource(R.string.hume_origin_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         // The apps that wrote data: the one in use, and when the band's was not found, every candidate.
                         val choices = (ui.found + listOfNotNull(ui.origin)).toSortedSet()
@@ -232,8 +229,7 @@ private fun LazyListScope.humeDashboard(
     val workouts = days.flatMap { it.workouts }.sortedByDescending { it.startMs }.take(10)
     if (workouts.isNotEmpty()) {
         section("workouts") {
-            SectionTitle(stringResource(R.string.hume_workouts))
-            SurfaceCard {
+            FoldableCard("hume-workouts", stringResource(R.string.hume_workouts)) {
                 for (w in workouts) {
                     val parts = listOfNotNull(
                         Fmt.duration(w.durationS.toDouble()),

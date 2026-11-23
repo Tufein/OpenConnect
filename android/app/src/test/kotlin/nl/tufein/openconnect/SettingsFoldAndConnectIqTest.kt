@@ -79,6 +79,20 @@ class SettingsFoldAndConnectIqTest : AppTestBase() {
     }
 
     @Test
+    fun aSettingsSectionFoldsAwayUnderItsTitleAndComesBack() {
+        launchApp()
+        tab("Settings").performClick()
+        waitForText("Weekly goals")
+        assertTrue(hasText("What you want to reach each week", substring = true))
+        clickText("Weekly goals")
+        rule.waitUntil(5_000) { !hasText("What you want to reach each week", substring = true) }
+        // The title stays, so the section can be opened again.
+        assertTrue(hasText("Weekly goals", substring = false))
+        clickText("Weekly goals")
+        waitForText("What you want to reach each week", substring = true)
+    }
+
+    @Test
     fun aColourThemeIsPickedInTheOpenedSectionAndTheHeaderNamesIt() {
         launchApp()
         loadDemo()

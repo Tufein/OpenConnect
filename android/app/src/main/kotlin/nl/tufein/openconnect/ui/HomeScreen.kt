@@ -72,7 +72,6 @@ fun HomeScreen(
     onGarmin: () -> Unit,
     onSync: () -> Unit,
     onTrophies: () -> Unit,
-    onCoach: () -> Unit,
     contentPadding: PaddingValues = PaddingValues(),
     zone: ZoneId = ZoneId.systemDefault(),
     /** A tile was tapped: open that chart on the Health screen. */
@@ -87,10 +86,6 @@ fun HomeScreen(
     useGarmin: Boolean = true,
     /** Opens the Oura tab; null for someone without a ring. */
     onOura: (() -> Unit)? = null,
-    /** Opens the WHOOP tab; null for someone without a band. */
-    onWhoop: (() -> Unit)? = null,
-    /** Opens the Hume tab; null for someone without a Hume Band. */
-    onHume: (() -> Unit)? = null,
 ) {
     val badge = syncBadge(garmin).takeIf { useGarmin }
     val metrics = OpenConnectColors.metrics
@@ -120,7 +115,7 @@ fun HomeScreen(
             }
             // The charge of the devices themselves, high on the front page: a dead watch or ring is worth noticing early.
             if (useGarmin || onOura != null) item {
-                BatteryCard(battery, showWatch = useGarmin, showRing = onOura != null)
+                BatteryCard(battery, showWatch = useGarmin, showRing = onOura != null, onOpenOura = onOura)
             }
             if (!state.loaded) return@LazyColumn
             val overview = state.overview
@@ -135,14 +130,15 @@ fun HomeScreen(
             // and the card must say so, or its numbers look wrong next to the watch.
             val freshness = DayFreshness.of(today?.date, now.atZone(zone).toLocalDate())
 
-            fun readiness() = item { Box(Modifier.tappable { onOpenHealth(ChartMetric.READINESS) }) { ReadinessCard(state.readiness) } }
+            fun readiness() = item { Foldable("home-readiness") { Box(Modifier.tappable { onOpenHealth(ChartMetric.READINESS) }) { ReadinessCard(state.readiness) } } }
             fun goalsAndLoad() {
-                state.goalProgress?.let { progress -> item { Box(Modifier.tappable(onOpenInsights)) { GoalsCard(progress, state.goals) } } }
-                state.load?.let { load -> item { Box(Modifier.tappable(onOpenActivities)) { LoadCard(load) } } }
+                state.goalProgress?.let { progress -> item { Foldable("home-goals") { Box(Modifier.tappable(onOpenInsights)) { GoalsCard(progress, state.goals) } } } }
+                state.load?.let { load -> item { Foldable("home-load") { Box(Modifier.tappable(onOpenActivities)) { LoadCard(load) } } } }
             }
             fun stepsCard() = item {
                 val goal = (today?.stepsGoal ?: 10_000).coerceAtLeast(1)
                 val steps = today?.steps ?: 0
+                Foldable("home-steps") {
                 SurfaceCard(Modifier.tappable { onOpenHealth(ChartMetric.STEPS) }, accent = metrics.steps) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(18.dp)) {
                         RingGauge(
@@ -164,6 +160,7 @@ fun HomeScreen(
                         }
                     }
                 }
+                }
             }
 
             val last7 = overview.trend.takeLast(7)
@@ -182,9 +179,9 @@ fun HomeScreen(
             // One order: how ready you are, today's four signals, the day so far, then the week.
             if (freshness.isStale) item { StaleDayNotice(freshness) }
             readiness()
-            state.advice?.let { advice -> item { Box(Modifier.tappable(onOpenForm)) { AdviceCard(advice) } } }
-            state.warning?.let { warning -> item { WarningCard(warning) } }
-            state.restingHrTrend?.let { t -> item { RestingHrTrendCard(t) } }
+            state.advice?.let { advice -> item { Foldable("home-advice") { Box(Modifier.tappable(onOpenForm)) { AdviceCard(advice) } } } }
+            state.warning?.let { warning -> item { Foldable("home-warning") { WarningCard(warning) } } }
+            state.restingHrTrend?.let { t -> item { Foldable("home-rhr") { RestingHrTrendCard(t) } } }
             signalGrid()
             item {
                 val trendRows = listOf(
@@ -208,18 +205,19 @@ fun HomeScreen(
             stepsCard()
             state.stepGoalWeek?.let { w -> item { StepGoalWeekCard(w) } }
             goalsAndLoad()
-            state.sleepNeed?.let { need -> item { SleepNeedCard(need) } }
-            state.sleepConsistency?.let { c -> item { SleepConsistencyCard(c) } }
-            item { JournalCard(state.journal, java.time.LocalDate.now(), onToggleJournal) }
+            state.sleepNeed?.let { need -> item { Foldable("home-sleep-need") { SleepNeedCard(need) } } }
+            state.sleepConsistency?.let { c -> item { Foldable("home-sleep-consistency") { SleepConsistencyCard(c) } } }
+            item { Foldable("home-journal") { JournalCard(state.journal, java.time.LocalDate.now(), onToggleJournal) } }
 
             item {
                 val week = overview.last7
-                SectionTitle(stringResource(R.string.last_7_days))
+                CollapsibleSection("home-last7", stringResource(R.string.last_7_days)) {
                 Spacer(Modifier.padding(top = 8.dp))
                 TileRow(
                     { StatTile(stringResource(R.string.distance), Fmt.km(week.totalDistanceM), it, unit = "km", color = metrics.distance, onClick = onOpenActivities) },
                     { StatTile(stringResource(R.string.activities), week.activityCount.toString(), it, color = MaterialTheme.colorScheme.primary, onClick = onOpenActivities) },
                 )
+                }
             }
             item {
                 val change = overview.stepsChangePct
@@ -252,24 +250,6 @@ fun HomeScreen(
                         labels = overview.trend.map { Fmt.shortDate(it.date) },
                         format = { insightValue(ChartMetric.STEPS, it) },
                     )
-                }
-            }
-            item {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    if (useGarmin) {
-                        SecondaryButton(onClick = onGarmin, Modifier.weight(1f)) { Text(stringResource(R.string.action_garmin_short), maxLines = 1) }
-                        SecondaryButton(onClick = onWatch, Modifier.weight(1f)) { Text(stringResource(R.string.action_watch_short), maxLines = 1) }
-                    }
-                    if (onOura != null) {
-                        SecondaryButton(onClick = onOura, Modifier.weight(1f)) { Text(stringResource(R.string.tab_oura), maxLines = 1) }
-                    }
-                    if (onWhoop != null) {
-                        SecondaryButton(onClick = onWhoop, Modifier.weight(1f)) { Text(stringResource(R.string.tab_whoop), maxLines = 1) }
-                    }
-                    if (onHume != null) {
-                        SecondaryButton(onClick = onHume, Modifier.weight(1f)) { Text(stringResource(R.string.tab_hume), maxLines = 1) }
-                    }
-                    SecondaryButton(onClick = onCoach, Modifier.weight(1f)) { Text(stringResource(R.string.action_coach_short), maxLines = 1) }
                 }
             }
             item {

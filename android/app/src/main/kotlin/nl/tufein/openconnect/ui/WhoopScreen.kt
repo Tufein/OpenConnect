@@ -88,8 +88,7 @@ fun WhoopScreen(
         ui.problem?.let { problem -> item(key = "problem") { Text(stringResource(whoopProblemText(problem)), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium) } }
         if (ui.connected) {
             item(key = "link") {
-                SectionTitle(stringResource(R.string.oura_connected_title))
-                SurfaceCard(accent = OpenConnectColors.metrics.readiness) {
+                FoldableCard("whoop-connected", stringResource(R.string.oura_connected_title), accent = OpenConnectColors.metrics.readiness) {
                     Text(
                         ui.lastSync?.let { stringResource(R.string.oura_last_sync, Fmt.dateTime(it)) } ?: stringResource(R.string.oura_never_synced),
                         style = MaterialTheme.typography.bodyMedium,
@@ -112,8 +111,7 @@ fun WhoopScreen(
             return@LazyColumn
         }
         item {
-            SectionTitle(stringResource(R.string.whoop_step1))
-            SurfaceCard {
+            FoldableCard("whoop-step1", stringResource(R.string.whoop_step1)) {
                 Text(stringResource(R.string.whoop_step1_body, ui.redirectUri), style = MaterialTheme.typography.bodyMedium)
                 SecondaryButton(onClick = { uri.openUri(WhoopAuth.DASHBOARD_URL) }, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.whoop_open_apps))
@@ -121,8 +119,7 @@ fun WhoopScreen(
             }
         }
         item {
-            SectionTitle(stringResource(R.string.whoop_step2))
-            SurfaceCard {
+            FoldableCard("whoop-step2", stringResource(R.string.whoop_step2)) {
                 if (!ui.canStore) {
                     Text(stringResource(R.string.whoop_cannot_store), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                 } else {
@@ -144,8 +141,7 @@ fun WhoopScreen(
         }
         if (ui.hasClient) {
             item {
-                SectionTitle(stringResource(R.string.whoop_step3))
-                SurfaceCard {
+                FoldableCard("whoop-step3", stringResource(R.string.whoop_step3)) {
                     Text(stringResource(R.string.whoop_step3_body), style = MaterialTheme.typography.bodyMedium)
                     PrimaryButton(onClick = { loginUrl()?.let(uri::openUri) }, enabled = !ui.busy, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(R.string.whoop_log_in))
@@ -241,8 +237,7 @@ private fun LazyListScope.whoopDashboard(
     val workouts = days.flatMap { it.workouts }.sortedByDescending { it.startMs }.take(10)
     if (workouts.isNotEmpty()) {
         section("workouts") {
-            SectionTitle(stringResource(R.string.whoop_workouts))
-            SurfaceCard {
+            FoldableCard("whoop-workouts", stringResource(R.string.whoop_workouts)) {
                 for (w in workouts) {
                     val parts = listOfNotNull(
                         Fmt.duration(w.durationS.toDouble()),

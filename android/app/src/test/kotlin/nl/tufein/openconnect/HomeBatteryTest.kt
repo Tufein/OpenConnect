@@ -31,4 +31,15 @@ class HomeBatteryTest : AppTestBase() {
         assertTrue(hasText("updated", substring = true))
         shot("17-home-batteries")
     }
+
+    @Test
+    fun whenOuraRefusesTheChargeTheCardSaysSoAndOffersTheOuraTab() {
+        launchFresh(oura = true, prepare = { app ->
+            app.container.settings.ringBatteryRefused = true
+        })
+
+        waitForText("Oura does not share", substring = true)
+        assertTrue(hasText("Open Oura", substring = false))
+        shot("18-home-ring-refused")
+    }
 }

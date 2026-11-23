@@ -325,7 +325,6 @@ fun OpenConnectRoot(
                     onGarmin = ::openGarmin,
                     onSync = vm::syncGarmin,
                     onTrophies = { openInsights(InsightsTab.Trophies) },
-                    onCoach = { openInsights(InsightsTab.Coach) },
                     contentPadding = padding,
                     onOpenHealth = ::openHealth,
                     onOpenActivities = { openTab(Tab.Activities) },
@@ -334,8 +333,6 @@ fun OpenConnectRoot(
                     onToggleJournal = vm::toggleJournal,
                     useGarmin = sources.garmin,
                     onOura = if (sources.oura) ::openOura else null,
-                    onWhoop = if (sources.whoop) ::openWhoop else null,
-                    onHume = if (sources.hume) ::openHume else null,
                 )
             }
             composable(Tab.Activities.route) {

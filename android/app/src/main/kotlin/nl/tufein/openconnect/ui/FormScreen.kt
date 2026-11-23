@@ -121,20 +121,17 @@ fun FormContent(form: FormSeries?, advice: TodayAdvice?, monotony: MonotonyResul
         }
         val labels = form.points.map { Fmt.shortDate(it.date) }
         item {
-            SectionTitle(stringResource(R.string.form_chart_fitness))
-            SurfaceCard {
+            FoldableCard("form-fitness", stringResource(R.string.form_chart_fitness)) {
                 LineChart(form.points.map { it.fitness }, stringResource(R.string.form_chart_fitness), color = metrics.distance, includeZero = true, labels = labels, format = { it.roundToInt().toString() })
             }
         }
         item {
-            SectionTitle(stringResource(R.string.form_chart_fatigue))
-            SurfaceCard {
+            FoldableCard("form-fatigue", stringResource(R.string.form_chart_fatigue)) {
                 LineChart(form.points.map { it.fatigue }, stringResource(R.string.form_chart_fatigue), color = metrics.heart, includeZero = true, labels = labels, format = { it.roundToInt().toString() })
             }
         }
         item {
-            SectionTitle(stringResource(R.string.form_chart_form))
-            SurfaceCard {
+            FoldableCard("form-form", stringResource(R.string.form_chart_form)) {
                 LineChart(form.points.map { it.form }, stringResource(R.string.form_chart_form), color = metrics.readiness, includeZero = true, labels = labels, format = { signed(it) })
             }
         }

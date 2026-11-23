@@ -83,8 +83,7 @@ fun ZonesContent(state: ZonesState, onAction: (ZonesAction) -> Unit, contentPadd
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun MaxHrCard(overview: ZoneOverview, onAction: (ZonesAction) -> Unit) {
-    SectionTitle(stringResource(R.string.zones_max_title))
-    SurfaceCard {
+    FoldableCard("zones-max", stringResource(R.string.zones_max_title)) {
         val max = overview.maxHr
         if (max.bpm > 0) Text(stringResource(R.string.zones_max_value, max.bpm), style = MaterialTheme.typography.headlineSmall)
         val note = when (max.source) {
@@ -105,8 +104,7 @@ private fun MaxHrCard(overview: ZoneOverview, onAction: (ZonesAction) -> Unit) {
 
 @Composable
 private fun ZoneTableCard(ranges: List<ZoneRange>) {
-    SectionTitle(stringResource(R.string.zones_table_title))
-    SurfaceCard {
+    FoldableCard("zones-table", stringResource(R.string.zones_table_title)) {
         for (r in ranges) {
             val to = r.to
             val text = if (to == null) {
@@ -121,8 +119,7 @@ private fun ZoneTableCard(ranges: List<ZoneRange>) {
 
 @Composable
 private fun WeekCard(overview: ZoneOverview) {
-    SectionTitle(stringResource(R.string.zones_week_title))
-    SurfaceCard {
+    FoldableCard("zones-week", stringResource(R.string.zones_week_title)) {
         val week = overview.thisWeek
         if (week == null || week.times.zoned <= 0.0) {
             Text(stringResource(R.string.zones_week_none), style = MaterialTheme.typography.bodyMedium)
@@ -164,8 +161,7 @@ private fun ZoneBars(times: ZoneTimes) {
 
 @Composable
 private fun EarlierWeeksCard(weeks: List<WeekZones>) {
-    SectionTitle(stringResource(R.string.zones_earlier_title))
-    SurfaceCard {
+    FoldableCard("zones-earlier", stringResource(R.string.zones_earlier_title)) {
         for (w in weeks) {
             Text(
                 stringResource(R.string.zones_earlier_line, Fmt.shortDate(w.start), Fmt.duration(w.times.zoned), w.activities),
@@ -178,8 +174,7 @@ private fun EarlierWeeksCard(weeks: List<WeekZones>) {
 /** The zones of one activity, under its heart-rate chart. */
 @Composable
 fun ActivityZonesCard(zones: ActivityZones, maxHr: Int) {
-    SectionTitle(stringResource(R.string.zones_activity_title))
-    SurfaceCard {
+    FoldableCard("zones-activity", stringResource(R.string.zones_activity_title)) {
         ZoneBars(zones.times)
         Text(
             stringResource(R.string.zones_activity_max, maxHr),

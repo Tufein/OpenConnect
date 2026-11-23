@@ -196,8 +196,7 @@ fun DayContent(state: DayState, contentPadding: PaddingValues, onOpenActivity: (
         }
         if (insight.workouts.isNotEmpty()) {
             item(key = "workouts") {
-                SectionTitle(stringResource(R.string.day_workouts))
-                SurfaceCard {
+                FoldableCard("day-workouts", stringResource(R.string.day_workouts)) {
                     for (w in insight.workouts) WorkoutRow(w, onOpenActivity)
                 }
             }

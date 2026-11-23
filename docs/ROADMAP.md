@@ -422,6 +422,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.7.0 | Drie widgetformaten: klein toont readiness en stappen, de gewone kaart je weekdoel, groot ook de slaap van de laatste nacht en de rusthartslag; de widget hertekent zich bij het slepen en de minimale maat ging naar 110 × 70 dp |
 | v1.8.0 | Batterij van horloge en ring: het Watch-tabblad toont de lading en wanneer die voor het laatst gemeld is (het horloge via een protobuf-vraag bij het verbinden, de ring uit Oura `ring_battery_level`); de work-outbouwer kent afstand en tempo per herhaling (bijv. 6 × 1 km in 5:00–5:30) en je kunt een work-out achteraf bewerken |
 | v1.8.1 | De batterijkaart van horloge en ring staat nu ook bovenaan het voorblad (Home), met per device alleen een rij als je dat device hebt; de waarden verversen zodra een horloge- of Oura-sync klaar is, zonder het Watch-tabblad te openen |
+| v1.8.2 | Elke sectie op elk tabblad klapt in onder zijn titel (pijltje, begint open, keuze blijft per scherm); het voorblad heeft ook voor kaarten zonder eigen titel een pijltje en de drie knoppen onderaan (Garmin, Watch, Coach) zijn weg. De ringbatterij zegt het als Oura de lading niet deelt en biedt een nieuwe Oura-login aan, met de bestaande client-configuratie |
 
 ## 9. Hoe releases werken
 

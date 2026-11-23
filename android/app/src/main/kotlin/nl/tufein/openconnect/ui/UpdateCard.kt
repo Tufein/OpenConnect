@@ -42,8 +42,7 @@ fun UpdateCard() {
         runCatching { context.startActivity(intent) }
     }
 
-    SectionTitle(stringResource(R.string.settings_update))
-    SurfaceCard {
+    FoldableCard("update", stringResource(R.string.settings_update)) {
         Text(stringResource(R.string.update_current, BuildConfig.VERSION_NAME))
         when {
             state.checking -> Text(stringResource(R.string.update_checking))

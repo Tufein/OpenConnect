@@ -121,19 +121,16 @@ fun AboutScreen(
             }
         }
         item {
-            SectionTitle(stringResource(R.string.about_tried_title))
-            SurfaceCard {
+            FoldableCard("about-tried", stringResource(R.string.about_tried_title)) {
                 Text(stringResource(R.string.about_tried_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 for (kind in DataSourceKind.values()) Text(sourceLine(SourceLabels.status(kind)), style = MaterialTheme.typography.bodyMedium)
             }
         }
         item {
-            SectionTitle(stringResource(R.string.about_privacy_title))
-            SurfaceCard { Text(stringResource(R.string.about_privacy_body), style = MaterialTheme.typography.bodyMedium) }
+            FoldableCard("about-privacy", stringResource(R.string.about_privacy_title)) { Text(stringResource(R.string.about_privacy_body), style = MaterialTheme.typography.bodyMedium) }
         }
         item {
-            SectionTitle(stringResource(R.string.about_calls_title))
-            SurfaceCard {
+            FoldableCard("about-calls", stringResource(R.string.about_calls_title)) {
                 Text(stringResource(R.string.about_calls_intro), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 for (key in PrivacyStatement.called.keys) Text(privacyHostText(key), style = MaterialTheme.typography.bodyMedium)
                 SecondaryButton(onClick = { openLink(context, PrivacyStatement.STATEMENT_URL) }, modifier = Modifier.fillMaxWidth()) {
@@ -142,8 +139,7 @@ fun AboutScreen(
             }
         }
         item {
-            SectionTitle(stringResource(R.string.about_licences_title))
-            SurfaceCard {
+            FoldableCard("about-licences", stringResource(R.string.about_licences_title)) {
                 for (l in Licences.all) {
                     Text(l.name, style = MaterialTheme.typography.titleSmall)
                     Text(l.licence, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)

@@ -85,16 +85,14 @@ fun PlanContent(
             }
         }
         item {
-            SectionTitle(stringResource(R.string.plan_next))
-            SurfaceCard {
+            FoldableCard("plan-next", stringResource(R.string.plan_next)) {
                 val next = progress.next
                 if (next == null) Text(stringResource(R.string.plan_next_none), style = MaterialTheme.typography.bodyMedium) else SessionRow(next, detailed = true)
             }
         }
         progress.current?.let { current ->
             item {
-                SectionTitle(stringResource(R.string.plan_this_week))
-                SurfaceCard {
+                FoldableCard("plan-week", stringResource(R.string.plan_this_week)) {
                     for (s in current.week.sessions) SessionRow(s, detailed = false)
                     Text(
                         stringResource(R.string.plan_km_of, Fmt.oneDecimal(current.doneKm), Fmt.oneDecimal(current.week.volumeKm)),
@@ -107,8 +105,7 @@ fun PlanContent(
         item { SectionTitle(stringResource(R.string.plan_all_weeks)) }
         items(progress.weeks.size) { i -> WeekRow(progress.weeks[i]) }
         item {
-            SectionTitle(stringResource(R.string.workouts_title))
-            SurfaceCard {
+            FoldableCard("plan-workouts", stringResource(R.string.workouts_title)) {
                 Text(stringResource(R.string.workouts_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 PrimaryButton(onClick = onSendWorkouts, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.workouts_send)) }
             }
@@ -203,8 +200,7 @@ private fun OwnWorkoutsCard(workouts: List<OwnWorkout>, onSave: (OwnWorkout) -> 
         else -> null
     }
 
-    SectionTitle(stringResource(R.string.own_title))
-    SurfaceCard {
+    FoldableCard("plan-own", stringResource(R.string.own_title)) {
         Text(stringResource(R.string.own_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         workouts.forEach { workout ->
             Row(
@@ -469,8 +465,7 @@ private fun PredictionRow(p: RacePrediction) {
 @Composable
 private fun RaceCard(race: RaceState, onRace: (RaceAction) -> Unit) {
     var distance by rememberSaveable { mutableStateOf(RaceDistance.K10.key) }
-    SectionTitle(stringResource(R.string.race_title))
-    SurfaceCard {
+    FoldableCard("plan-race", stringResource(R.string.race_title)) {
         val outlook = race.outlook
         if (outlook == null) {
             Text(stringResource(R.string.race_intro), style = MaterialTheme.typography.bodyMedium)

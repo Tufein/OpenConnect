@@ -293,16 +293,14 @@ fun ActivityDetailScreen(
         val positions = activity.track.filter { it.hasPosition }.map { it.lat!! to it.lon!! }
         if (positions.size >= 2) {
             item {
-                SectionTitle(stringResource(R.string.route))
-                SurfaceCard { RouteMap(downsample(positions, 400), description = stringResource(R.string.route)) }
+                FoldableCard("activity-route", stringResource(R.string.route)) { RouteMap(downsample(positions, 400), description = stringResource(R.string.route)) }
             }
             state.route?.let { history -> item { RouteHistoryCard(history, activity) } }
         }
         val hr = activity.track.map { it.hr?.toDouble() }
         if (hr.count { it != null } >= 2) {
             item {
-                SectionTitle(stringResource(R.string.heart_rate))
-                SurfaceCard {
+                FoldableCard("activity-heart", stringResource(R.string.heart_rate)) {
                     LineChart(downsample(hr), description = stringResource(R.string.heart_rate), color = OpenConnectColors.metrics.heart)
                     val present = hr.filterNotNull()
                     Text(
@@ -317,8 +315,7 @@ fun ActivityDetailScreen(
         val ele = activity.track.map { it.ele }
         if (ele.count { it != null } >= 2) {
             item {
-                SectionTitle(stringResource(R.string.elevation))
-                SurfaceCard {
+                FoldableCard("activity-elevation", stringResource(R.string.elevation)) {
                     LineChart(downsample(ele), description = stringResource(R.string.elevation), color = OpenConnectColors.metrics.distance)
                     val present = ele.filterNotNull()
                     Text(
@@ -330,14 +327,12 @@ fun ActivityDetailScreen(
         }
         if (state.laps.isNotEmpty()) {
             item {
-                SectionTitle(stringResource(R.string.splits))
-                SurfaceCard { LapTable(state.laps) }
+                FoldableCard("activity-splits", stringResource(R.string.splits)) { LapTable(state.laps) }
             }
         }
         if (state.efforts.isNotEmpty()) {
             item {
-                SectionTitle(stringResource(R.string.best_efforts_here))
-                SurfaceCard {
+                FoldableCard("activity-efforts", stringResource(R.string.best_efforts_here)) {
                     for (e in state.efforts) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text(effortLabel(e.distanceM), style = MaterialTheme.typography.bodyMedium)
@@ -354,13 +349,14 @@ fun ActivityDetailScreen(
         if (state.fromRing) return@LazyColumn
         item { ReportCard(state.report, busy, onGenerate, active) }
         item {
-            SectionTitle(stringResource(R.string.export))
+            CollapsibleSection("activity-export", stringResource(R.string.export)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 for (format in listOf("fit", "gpx", "tcx")) {
                     SecondaryButton(onClick = { onExport(format) }, enabled = format != "gpx" || positions.isNotEmpty()) {
                         Text(format.uppercase())
                     }
                 }
+            }
             }
         }
         item {

@@ -41,8 +41,7 @@ private fun verdictLabel(v: ShapeVerdict): Int = when (v) {
 internal fun ShapeCard(shapes: List<RaceShape>, goal: RaceDistance?) {
     val colors = MaterialTheme.colorScheme
     val metric = OpenConnectColors.metrics
-    SectionTitle(stringResource(R.string.shape_title))
-    SurfaceCard {
+    FoldableCard("shape", stringResource(R.string.shape_title)) {
         Text(stringResource(R.string.shape_intro), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
         for (s in shapes) {
             val name = stringResource(distanceLabel(s.distance))
@@ -86,8 +85,7 @@ internal fun ShapeCard(shapes: List<RaceShape>, goal: RaceDistance?) {
 internal fun Vo2Card(vo2: Vo2Summary) {
     val colors = MaterialTheme.colorScheme
     val metric = OpenConnectColors.metrics
-    SectionTitle(stringResource(R.string.vo2_title))
-    SurfaceCard(accent = metric.heart) {
+    FoldableCard("vo2", stringResource(R.string.vo2_title), accent = metric.heart) {
         Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(Fmt.oneDecimal(vo2.current), style = MaterialTheme.typography.displayMedium, color = metric.heart)
             Text(stringResource(R.string.vo2_unit), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)

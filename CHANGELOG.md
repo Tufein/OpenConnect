@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.8.2: elke sectie inklapbaar, en de ring zegt waarom
+
+De ringbatterij bleef soms leeg zonder uitleg, en de app was op elk tabblad een lange lijst geworden. Nu zegt de batterijkaart het als Oura de lading niet deelt, met een nieuwe login, en elke sectie klapt in onder zijn titel. De drie knoppen onderaan het voorblad zijn weg.
+
+[Release notes](docs/releases/v1.8.2.md)
+
 ## v1.8.1: de lading van je horloge en je ring op het voorblad
 
 De batterijkaart van het horloge en de Oura Ring stond alleen op het Watch-tabblad. Hij staat nu ook bovenaan het voorblad, zodat je ziet of een van je devices bijna leeg is voordat je gaat trainen.

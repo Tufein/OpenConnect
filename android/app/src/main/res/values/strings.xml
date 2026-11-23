@@ -265,9 +265,6 @@
     <string name="of_goal">of %1$s</string>
     <string name="floors">Floors</string>
     <string name="active_kcal">Active calories</string>
-    <string name="action_garmin_short">Garmin</string>
-    <string name="action_watch_short">Watch</string>
-    <string name="action_coach_short">Coach</string>
     <string name="ago_now">just now</string>
     <string name="ago_minutes">%1$d min ago</string>
     <string name="ago_hours">%1$d h ago</string>
@@ -285,6 +282,8 @@
     <string name="battery_ring">Ring</string>
     <string name="battery_updated">updated %1$s</string>
     <string name="battery_never">never reported</string>
+    <string name="battery_ring_refused">Oura does not share the ring\'s charge. Log in at Oura again to allow it.</string>
+    <string name="battery_ring_open">Open Oura</string>
     <string name="readiness_title">Readiness</string>
     <string name="readiness_missing">Readiness needs sleep, Body Battery or stress from your watch. Sync your Garmin account to see it.</string>
     <string name="readiness_description">Readiness %1$d out of 100</string>
@@ -624,6 +623,7 @@
     <string name="oura_step3">3. Log in at Oura</string>
     <string name="oura_step3_body">Your browser opens Oura\'s login. After you allow it, the browser comes back to OpenConnect and the last 30 days are synced. If it does not come back, copy the address the browser ends up on and paste it below.</string>
     <string name="oura_log_in">Log in at Oura</string>
+    <string name="oura_log_in_again">Log in at Oura again</string>
     <string name="oura_paste">Address after the login</string>
     <string name="oura_paste_button">Finish the login</string>
     <string name="oura_connected_title">Connected</string>
@@ -1041,6 +1041,7 @@
     <string name="step_week_note">The last 7 days against your step goal of %1$s (10,000 when your watch gives none). Days without steps are left out.</string>
 
     <!-- v0.43.0: a section that folds away, Connect IQ straight into Garmin's app, activities filled in by watch and ring -->
+    <string name="fold_toggle">Collapse or expand</string>
     <string name="fold_open">open</string>
     <string name="fold_closed">folded away</string>
     <string name="connect_iq_open">Open Garmin Connect IQ</string>

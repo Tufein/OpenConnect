@@ -16,6 +16,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -30,6 +31,7 @@ class OuraControllerTest {
         override var lastSyncMs: Long = 0
         override var ringBattery: Int = -1
         override var ringBatteryAt: Long = 0
+        override var ringBatteryRefused: Boolean = false
     }
 
     private class FakeHttp(var status: Int, var headers: Map<String, String> = emptyMap()) : OuraHttp {
@@ -126,6 +128,7 @@ class OuraControllerTest {
         c.sync()
         assertEquals(64, settings.ringBattery)
         assertEquals(1763121600000L, settings.ringBatteryAt)
+        assertFalse(settings.ringBatteryRefused, "a charge that came in clears an earlier refusal")
         assertNull(c.state.value.problem)
     }
 
@@ -143,5 +146,6 @@ class OuraControllerTest {
         c.sync()
         assertNull(c.state.value.problem)
         assertEquals(-1, settings.ringBattery, "the card shows a dash, not a wrong number")
+        assertTrue(settings.ringBatteryRefused, "the card can say that a new login is needed")
     }
 }
