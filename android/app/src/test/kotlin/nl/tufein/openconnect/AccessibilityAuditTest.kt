@@ -8,6 +8,7 @@ import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.test.performClick
@@ -112,7 +113,11 @@ class AccessibilityAuditTest : AppTestBase() {
 
     private fun walkTheMainScreens(): List<String> {
         val problems = ArrayList<String>()
-        waitForText(" highest", substring = true)
+        // With letters at 200% the Body Battery fixture is below the fold; scroll to it as the "data is in" signal,
+        // then back to the top so the audit still looks at the first screen.
+        scrollToText(" highest", substring = true)
+        rule.onAllNodes(androidx.compose.ui.test.hasScrollAction())[0].performScrollToIndex(0)
+        rule.waitForIdle()
         problems += auditScrolling("Home")
         for (tab in listOf("Activities", "Health", "Insights", "Settings")) {
             tab(tab).performClick()

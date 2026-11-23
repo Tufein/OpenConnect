@@ -42,6 +42,7 @@ class HomeDayLabelTest : AppTestBase() {
         launchFresh(prepare = seed(1))
         waitForText(" highest")
         scrollToText("No data for today yet", substring = true)
+        scrollToText("Yesterday") // the steps card can sit just above the viewport after that scroll
         assertTrue(hasText("Yesterday", substring = false), "the steps card names the day")
         assertFalse(hasText("Today", substring = false), "yesterday's steps must not be called Today")
         shot("home-day-yesterday")
@@ -53,6 +54,7 @@ class HomeDayLabelTest : AppTestBase() {
         waitForText(" highest")
         scrollToText("No data for today yet", substring = true)
         val date = nl.tufein.openconnect.ui.Fmt.date(LocalDate.now().minusDays(4))
+        scrollToText(date, substring = true)
         assertTrue(hasText(date, substring = true), "the card shows $date")
     }
 
@@ -62,6 +64,7 @@ class HomeDayLabelTest : AppTestBase() {
         launchFresh(prepare = seed(1))
         waitForText(" hoogste")
         scrollToText("Nog geen gegevens van vandaag", substring = true)
+        scrollToText("Gisteren")
         assertTrue(hasText("Gisteren", substring = false))
     }
 }
