@@ -51,6 +51,7 @@ class WorkoutsScreenTest : AppTestBase() {
         waitForText("Create plan")
         clickText("10K")
         clickText("Create plan")
+        scrollToText("10K plan")
         waitForText("10K plan")
 
         // No watch on the cable yet.
