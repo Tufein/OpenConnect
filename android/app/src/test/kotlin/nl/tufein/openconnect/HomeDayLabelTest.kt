@@ -1,6 +1,10 @@
 package nl.tufein.openconnect
 
-import androidx.test.core.app.ApplicationProvider
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performScrollToNode
 import nl.tufein.openconnect.core.DailySummary
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -8,7 +12,6 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.time.LocalDate
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 /**
  * v0.54.0: Home called the latest record "Today" even when it was yesterday's, so the numbers differed from the watch
@@ -27,13 +30,22 @@ class HomeDayLabelTest : AppTestBase() {
         )
     }
 
+    /**
+     * The day title of the steps card, by its own tag: after the battery card landed on Home the steps card can sit
+     * just outside the viewport, and "Today" also names today's row in the journal further down.
+     */
+    private fun assertDayTitle(expected: String) {
+        rule.onAllNodes(hasScrollAction())[0].performScrollToNode(hasTestTag("home-day"))
+        rule.onNodeWithTag("home-day").assertTextEquals(expected)
+    }
+
     @Test
     fun aRecordOfTodayCarriesNoWarning() {
         launchFresh(prepare = seed(0))
         waitForText(" highest")
+        assertDayTitle("Today")
         scrollToText("Intensity minutes")
         assertFalse(hasText("No data for today yet", substring = true), "today's numbers need no warning")
-        assertTrue(hasText("Today", substring = false), "the steps card says Today")
         shot("home-day-today")
     }
 
@@ -42,9 +54,7 @@ class HomeDayLabelTest : AppTestBase() {
         launchFresh(prepare = seed(1))
         waitForText(" highest")
         scrollToText("No data for today yet", substring = true)
-        scrollToText("Yesterday") // the steps card can sit just above the viewport after that scroll
-        assertTrue(hasText("Yesterday", substring = false), "the steps card names the day")
-        assertFalse(hasText("Today", substring = false), "yesterday's steps must not be called Today")
+        assertDayTitle("Yesterday")
         shot("home-day-yesterday")
     }
 
@@ -52,10 +62,7 @@ class HomeDayLabelTest : AppTestBase() {
     fun anOlderRecordShowsItsDate() {
         launchFresh(prepare = seed(4))
         waitForText(" highest")
-        scrollToText("No data for today yet", substring = true)
-        val date = nl.tufein.openconnect.ui.Fmt.date(LocalDate.now().minusDays(4))
-        scrollToText(date, substring = true)
-        assertTrue(hasText(date, substring = true), "the card shows $date")
+        assertDayTitle(nl.tufein.openconnect.ui.Fmt.date(LocalDate.now().minusDays(4)))
     }
 
     @Test
@@ -64,7 +71,6 @@ class HomeDayLabelTest : AppTestBase() {
         launchFresh(prepare = seed(1))
         waitForText(" hoogste")
         scrollToText("Nog geen gegevens van vandaag", substring = true)
-        scrollToText("Gisteren")
-        assertTrue(hasText("Gisteren", substring = false))
+        assertDayTitle("Gisteren")
     }
 }

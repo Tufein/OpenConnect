@@ -34,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -155,7 +156,7 @@ fun HomeScreen(
                             }
                         }
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text(dayTitle(freshness), style = MaterialTheme.typography.titleMedium)
+                            Text(dayTitle(freshness), style = MaterialTheme.typography.titleMedium, modifier = Modifier.testTag("home-day"))
                             Fact(stringResource(R.string.distance), Fmt.km((today?.distanceM ?: 0.0)) + " km", metrics.distance)
                             Fact(stringResource(R.string.floors), (today?.floorsClimbed ?: 0).toString(), metrics.battery)
                             Fact(stringResource(R.string.active_kcal), (today?.activeKcal ?: 0).toString(), metrics.calories)
