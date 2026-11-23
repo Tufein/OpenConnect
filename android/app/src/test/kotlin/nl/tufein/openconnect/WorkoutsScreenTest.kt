@@ -47,6 +47,7 @@ class WorkoutsScreenTest : AppTestBase() {
         waitForText("Week of", substring = true)
         clickChip("More")
         clickChip("Plan")
+        scrollToText("Create plan")
         waitForText("Create plan")
         clickText("10K")
         clickText("Create plan")

@@ -41,6 +41,7 @@ class PlanAndLockScreenTest : AppTestBase() {
         waitForText("Week of", substring = true)
         clickChip("More")
         clickChip("Plan")
+        scrollToText("Create plan")
         waitForText("Create plan")
         shot("33-plan-setup")
         clickText("10K")
@@ -53,6 +54,7 @@ class PlanAndLockScreenTest : AppTestBase() {
         scrollToText("All weeks")
         shot("35-plan-weeks")
         clickText("Delete plan")
+        scrollToText("Create plan")
         waitForText("Create plan")
     }
 
