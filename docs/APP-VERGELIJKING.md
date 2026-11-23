@@ -203,8 +203,8 @@ dezelfde manier tellen (slaap, stappen, rusthartslag, bloedzuurstof) en noemt de
 | Een training van de band doorsturen naar Strava | WHOOP | De API-voorwaarden van Strava voor 2026 verbieden volgens de berichten gebruik voor AI-doeleinden, en OpenConnect heeft een AI-coach; eerst de voorwaarden lezen. | M |
 | Een nieuw schermloos Garmin-bandje (Cirqa) als apparaat | Garmin | Alleen een aankondiging; er is nog niets bekend over een koppeling of Health Connect-gegevens. Pas bekijken als er documentatie is. | ? |
 
-**Volgorde van hier.** (1) Eerst de drie banden echt proberen (nu draait niets daarvan tegen een echt account, band of telefoon;
-zie de "Niet gecontroleerd"-lijsten in [WHOOP.md](WHOOP.md) en [HUME.md](HUME.md)). (2) Het dagboek met extra vakjes. (3) De
+**Volgorde van hier.** (1) Eerst de Garmin en de Oura Ring echt proberen (de WHOOP- en Hume-integraties zijn in v1.8.3 uit de
+app gehaald; hun opgeslagen dagen blijven wel leesbaar). (2) Het dagboek met extra vakjes. (3) De
 trend van actieve tijd.
 
 ## Bronnen
