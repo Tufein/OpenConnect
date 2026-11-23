@@ -28,16 +28,16 @@ class OwnWorkoutsScreenTest : AppTestBase() {
         waitForText("Your own workouts")
     }
 
-    private fun typeInto(label: String, text: String) {
-        val fields = rule.onAllNodes(hasText(label) and hasSetTextAction()).fetchSemanticsNodes()
+    private fun typeInto(label: String, text: String, substring: Boolean = false) {
+        val fields = rule.onAllNodes(androidx.compose.ui.test.hasText(label, substring = substring) and hasSetTextAction()).fetchSemanticsNodes()
         assertTrue(fields.isNotEmpty(), "no field labelled $label")
-        rule.onAllNodes(hasText(label) and hasSetTextAction())[0].performTextInput(text)
+        rule.onAllNodes(androidx.compose.ui.test.hasText(label, substring = substring) and hasSetTextAction())[0].performTextInput(text)
     }
 
-    private fun replaceIn(label: String, text: String) {
-        val fields = rule.onAllNodes(hasText(label) and hasSetTextAction()).fetchSemanticsNodes()
+    private fun replaceIn(label: String, text: String, substring: Boolean = false) {
+        val fields = rule.onAllNodes(androidx.compose.ui.test.hasText(label, substring = substring) and hasSetTextAction()).fetchSemanticsNodes()
         assertTrue(fields.isNotEmpty(), "no field labelled $label")
-        rule.onAllNodes(hasText(label) and hasSetTextAction())[0].apply {
+        rule.onAllNodes(androidx.compose.ui.test.hasText(label, substring = substring) and hasSetTextAction())[0].apply {
             performTextClearance()
             performTextInput(text)
         }
@@ -79,8 +79,8 @@ class OwnWorkoutsScreenTest : AppTestBase() {
         openPlan()
         clickText("New workout")
         typeInto("Name", "1 km repeats")
-        typeInto("Distance per repeat", "1000")
-        typeInto("Pace", "300-330")
+        typeInto("Distance per repeat", "1000", substring = true)
+        typeInto("Pace", "300-330", substring = true)
         clickText("Save workout")
         waitForText("1 km repeats")
         waitForText("4 × 1000 m", substring = true)

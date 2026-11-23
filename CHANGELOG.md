@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.8.0: de lading van je horloge en je ring, en work-outs op afstand
+
+Twee dingen die in de dagelijkse ronde ontbraken: je kon niet zien hoe vol je horloge of je ring was, en de work-outbouwer telde alleen minuten. Allebei is dat nu anders.
+
+[Release notes](docs/releases/v1.8.0.md)
+
 ## v1.7.0: een widget in drie maten
 
 De widget op je startscherm groeit nu mee met de ruimte die je hem geeft: klein toont readiness en stappen, de gewone kaart voegt je weekdoel toe en een grote kaart ook de slaap van vannacht en je rusthartslag. Je sleept hem groter of kleiner en hij tekent zichzelf opnieuw.
