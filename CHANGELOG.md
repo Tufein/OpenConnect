@@ -4,7 +4,7 @@ Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do
 
 ## v1.11.0: Duits, Frans en een voorblad dat met de dag meegaat
 
-De app heeft nu vier talen: kies in Instellingen tussen *Taal van telefoon*, Engels, Nederlands, Duits of Frans. De keuze geldt voor de hele app, de widget en de meldingen; datums en getallen volgen de taal. De rapporten en de coach blijven voorlopig Engels of Nederlands. De Oura-tab is opgeruimd en de foto boven Home en Oura volgt nu echt de dag met een andere uitsnede en lucht. De Duitse en Franse teksten zijn machine-draft, niet native nagekeken.
+De app heeft nu vier talen. Kies in **Instellingen → Taal** voor *Taal van telefoon*, Engels, Nederlands, Duits of Frans; de keuze geldt voor de hele app, de widget en de meldingen. De rapporten en de coach blijven voorlopig Engels of Nederlands, en de app zegt dat er eerlijk bij. Op een Duitse of Franse telefoon opent de app na deze update meteen in die taal.
 
 [Release notes](docs/releases/v1.11.0.md)
 
