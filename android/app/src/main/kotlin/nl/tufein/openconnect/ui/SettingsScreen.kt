@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.graphics.luminance
@@ -118,6 +119,12 @@ fun SettingsScreen(
     onLetters: (letters: String) -> Unit = {},
     /** The style was switched between editorial, sleek, retro and classic. */
     onStyle: (style: String) -> Unit = {},
+    /** The signals were switched between the theme's soft colours and one clear colour each. */
+    onSignals: (signals: String) -> Unit = {},
+    /** The metric rings were switched between thin and bold. */
+    onRings: (rings: String) -> Unit = {},
+    /** The photo header was set to follow the hour or to hold one light. */
+    onHero: (hero: String) -> Unit = {},
     /** A launcher icon was picked. */
     onAppIcon: (AppIcon) -> Unit = {},
     onBackup: () -> Unit = {},
@@ -188,6 +195,40 @@ fun SettingsScreen(
                     }
                     Text(stringResource(R.string.letters_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
+                // Each signal can keep the theme's quiet family or get its own clear colour; the dots show the result at once.
+                Text(stringResource(R.string.look_signals), style = MaterialTheme.typography.titleMedium)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for ((signals, label) in listOf("soft" to R.string.signals_soft, "clear" to R.string.signals_clear)) {
+                        PixelChip(selected = ui.look.signals == signals, onClick = { onSignals(signals) }, label = { Text(stringResource(label)) })
+                    }
+                }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    val metrics = OpenConnectColors.metrics
+                    for (colour in listOf(metrics.readiness, metrics.sleep, metrics.steps, metrics.heart, metrics.stress)) {
+                        Box(Modifier.size(18.dp).background(colour, CircleShape))
+                    }
+                }
+                Text(stringResource(R.string.signals_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.look_rings), style = MaterialTheme.typography.titleMedium)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for ((rings, label) in listOf("thin" to R.string.rings_thin, "bold" to R.string.rings_bold)) {
+                        PixelChip(selected = ui.look.rings == rings, onClick = { onRings(rings) }, label = { Text(stringResource(label)) })
+                    }
+                }
+                Text(stringResource(R.string.rings_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.look_hero), style = MaterialTheme.typography.titleMedium)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for ((hero, label) in listOf(
+                        "auto" to R.string.hero_auto,
+                        "dawn" to R.string.hero_dawn,
+                        "day" to R.string.hero_day,
+                        "dusk" to R.string.hero_dusk,
+                        "night" to R.string.hero_night,
+                    )) {
+                        PixelChip(selected = ui.look.hero == hero, onClick = { onHero(hero) }, label = { Text(stringResource(label)) })
+                    }
+                }
+                Text(stringResource(R.string.hero_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(stringResource(R.string.look_colours), style = MaterialTheme.typography.titleMedium)
                 val darkNow = MaterialTheme.colorScheme.background.luminance() < 0.5f
                 for (group in PaletteGroup.entries) {

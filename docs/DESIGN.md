@@ -73,6 +73,12 @@ header shows what is chosen now (for example "Olive · Editorial"). At the top s
 a small dashboard drawn in the chosen theme, so a colour or style can be judged before it is kept instead of from two
 little squares. The first start shows the same preview with a choice of style and theme (`OnboardingScreen`).
 
+Since v1.9.1 the same section also carries three app-wide choices below the style and colour rows: **signal colours**
+(soft theme tints or a clear colour per signal), **ring weight** (thin 2 dp or bold 4.5 dp) and the **front-page
+photo** light (following the hour or fixed). They are stored under `theme_signals`, `theme_rings` and `theme_hero`, read
+through `Look`, and handed to the tree as `LocalRingWeight` and `LocalHeroChoice`, so the orbs, tiles, charts and both
+editorial heroes follow without each screen passing a parameter.
+
 The watch faces (Clean, Dashboard, Retro, see [WATCH_FACES.md](WATCH_FACES.md)) are not part of the app since v0.43.0: they are Connect IQ code
 for the watch and keep their own three designs.
 

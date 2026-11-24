@@ -102,6 +102,24 @@ class SettingsStore(
         get() = prefs.getString(KEY_STYLE, "editorial")?.takeIf { it == "editorial" || it == "clean" || it == "retro" || it == "classic" } ?: "editorial"
         set(value) = prefs.edit().putString(KEY_STYLE, if (value == "editorial" || value == "clean" || value == "retro" || value == "classic") value else "editorial").apply()
 
+    /** Whether the signals keep the theme's soft colours ("soft", the default) or get one clear colour each ("clear"). */
+    var signals: String
+        get() = prefs.getString(KEY_SIGNALS, "soft")?.takeIf { it == "soft" || it == "clear" } ?: "soft"
+        set(value) = prefs.edit().putString(KEY_SIGNALS, if (value == "clear") "clear" else "soft").apply()
+
+    /** The thickness of the metric rings: "thin" (the default) or "bold". */
+    var rings: String
+        get() = prefs.getString(KEY_RINGS, "thin")?.takeIf { it == "thin" || it == "bold" } ?: "thin"
+        set(value) = prefs.edit().putString(KEY_RINGS, if (value == "bold") "bold" else "thin").apply()
+
+    /**
+     * The tone of the photo header: "auto" (the default, which follows the hour), "dawn", "day", "dusk" or "night".
+     * A fixed key lets the photo keep one light; auto gives it another as the day moves.
+     */
+    var hero: String
+        get() = prefs.getString(KEY_HERO, "auto")?.takeIf { it in HERO_TONES } ?: "auto"
+        set(value) = prefs.edit().putString(KEY_HERO, value.takeIf { it in HERO_TONES } ?: "auto").apply()
+
     /** The record of the last syncs, as the text [nl.tufein.openconnect.core.SyncLog] writes. */
     var syncLogText: String
         get() = prefs.getString(KEY_SYNC_LOG, "") ?: ""
@@ -381,12 +399,18 @@ class SettingsStore(
     companion object {
         val THEMES = listOf("system", "dark", "light")
 
+        /** The tones the photo header can take; "auto" picks one from the hour. */
+        val HERO_TONES = listOf("auto", "dawn", "day", "dusk", "night")
+
         private const val KEY_LANGUAGE = "report_language"
         private const val KEY_PROVIDER = "provider"
         private const val KEY_THEME = "theme_mode"
         private const val KEY_PALETTE = "theme_palette"
         private const val KEY_LETTERS = "theme_letters"
         private const val KEY_STYLE = "theme_style"
+        private const val KEY_SIGNALS = "theme_signals"
+        private const val KEY_RINGS = "theme_rings"
+        private const val KEY_HERO = "theme_hero"
         private const val KEY_OURA_CLIENT = "oura_client_id"
         private const val KEY_OURA_SECRET = "oura_client_secret"
         private const val KEY_OURA_REDIRECT = "oura_redirect"

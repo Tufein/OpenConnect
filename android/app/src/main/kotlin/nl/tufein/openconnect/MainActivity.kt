@@ -55,7 +55,7 @@ class MainActivity : ComponentActivity() {
                 )
                 onDispose { }
             }
-            OpenConnectTheme(mode, look.palette, look.letters, look.style) {
+            OpenConnectTheme(mode, look.palette, look.letters, look.style, look.signals, look.rings, look.hero) {
                 var pendingExport by remember { mutableStateOf<Pair<String, String>?>(null) }
                 var pendingCsv by remember { mutableStateOf<String?>(null) }
                 val importPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->

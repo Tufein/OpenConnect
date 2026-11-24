@@ -7,12 +7,14 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.9.0.** The app opens in the new **editorial** style: a photo header with five metric orbs, an
-> active-calorie arc, serif readiness and sleep cards, a journal check-in and the **Olive** colour theme. **Sleek** is
-> the new name of the sporty look; Retro and Classic stay, and a look you chose before is kept. Everything from v1.8.3
-> stays: WHOOP and Hume are gone while their saved days remain readable, and the Garmin watch is asked for its charge
-> twice so the card no longer sits a percent behind. Folding sections, the honest Oura battery card, distance and pace
-> workouts, the widget sizes and the in-app updater all stay. [Release notes](docs/releases/v1.9.0.md).
+> **Status: v1.9.1.** The editorial front page is now yours to adjust: **signal colours** switch from the soft theme
+> tints to a clear colour per signal across orbs, tiles, charts and legends, **rings** can stay thin or turn bold, and
+> the **front-page photo** follows the hour (morning, day, evening, night) or stays on one light. The choice applies
+> immediately and everywhere, including the Oura tab. Everything from v1.9.0 stays: the editorial style with its photo
+> header, five metric orbs, calorie arc, serif readiness and sleep cards and the **Olive** theme; Sleek, Retro and
+> Classic remain, and a look you chose before is kept. WHOOP and Hume are gone while their saved days remain readable,
+> and the Garmin watch is asked for its charge twice. Folding sections, the honest Oura battery card, distance and pace
+> workouts, the widget sizes and the in-app updater all stay. [Release notes](docs/releases/v1.9.1.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

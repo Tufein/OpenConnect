@@ -253,8 +253,15 @@ const val WATCH_APPS_ROUTE = "watch-apps"
 const val GARMIN_ROUTE = "garmin"
 const val OURA_ROUTE = "oura"
 
-/** The colour theme ([Palette] key), the letters ([Letters] key) and the style of shapes and lines ([Style] key). */
-data class Look(val palette: String = "olive", val letters: String = "clear", val style: String = "editorial")
+/** The colour theme ([Palette] key), the letters ([Letters] key), the style ([Style] key), signal colours, ring weight and photo tone. */
+data class Look(
+    val palette: String = "olive",
+    val letters: String = "clear",
+    val style: String = "editorial",
+    val signals: String = "soft",
+    val rings: String = "thin",
+    val hero: String = "auto",
+)
 
 /** Which devices the person uses. [onboarded] is false until the first-start questions are answered. */
 data class SourcesUi(val onboarded: Boolean = true, val garmin: Boolean = true, val oura: Boolean = false)
@@ -332,7 +339,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         if (oura) container.oura.syncIfDue(OPEN_GAP)
     }
 
-    private fun lookNow() = Look(Palette.of(container.settings.palette).key, Letters.of(container.settings.letters).key, Style.of(container.settings.style).key)
+    private fun lookNow() = Look(
+        Palette.of(container.settings.palette).key,
+        Letters.of(container.settings.letters).key,
+        Style.of(container.settings.style).key,
+        container.settings.signals,
+        RingWeight.of(container.settings.rings).key,
+        container.settings.hero,
+    )
 
     private val _look = MutableStateFlow(lookNow())
 
@@ -354,6 +368,24 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         container.settings.style = Style.of(style).key
         _look.value = lookNow()
         redrawWidget()
+    }
+
+    /** "soft" keeps the signals in the theme's family, "clear" gives each its own strong colour. */
+    fun setSignals(signals: String) {
+        container.settings.signals = if (signals == "clear") "clear" else "soft"
+        _look.value = lookNow()
+    }
+
+    /** "thin" (the default) or "bold"; the orbs on the front page and the ring tab follow it. */
+    fun setRings(rings: String) {
+        container.settings.rings = RingWeight.of(rings).key
+        _look.value = lookNow()
+    }
+
+    /** "auto" follows the hour; "dawn", "day", "dusk" and "night" hold one light. */
+    fun setHero(hero: String) {
+        container.settings.hero = hero
+        _look.value = lookNow()
     }
 
     /** The widget has no Compose theme; repaint it with the new palette as soon as one is picked. */

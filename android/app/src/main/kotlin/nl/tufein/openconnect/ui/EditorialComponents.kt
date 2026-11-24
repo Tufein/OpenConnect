@@ -78,9 +78,11 @@ fun EditorialHero(
     subtitle: String,
     modifier: Modifier = Modifier,
     height: Dp = 360.dp,
+    tone: HeroTone? = null,
     trailing: @Composable RowScope.() -> Unit = {},
     footer: @Composable ColumnScope.() -> Unit = {},
 ) {
+    val light = tone ?: heroTone(LocalHeroChoice.current, java.time.LocalTime.now().hour)
     val photo = OpenConnectColors.photo
     Box(
         modifier
@@ -95,17 +97,18 @@ fun EditorialHero(
             alignment = Alignment.Center,
             modifier = Modifier.fillMaxSize(),
         )
-        // A low uniform scrim keeps the type readable on the bright sky, then a gradient anchors the orbs at the bottom.
-        Box(Modifier.fillMaxSize().background(photo.scrim.copy(alpha = 0.18f)))
+        // The wash gives the same photograph another light with the hour; the scrims below keep the words readable.
+        Box(Modifier.fillMaxSize().background(light.wash.copy(alpha = 0.16f)))
+        Box(Modifier.fillMaxSize().background(light.scrim.copy(alpha = 0.18f)))
         Box(
             Modifier
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        0f to photo.scrim.copy(alpha = 0.55f),
-                        0.32f to photo.scrim.copy(alpha = 0.12f),
-                        0.66f to photo.scrim.copy(alpha = 0.48f),
-                        1f to photo.scrim.copy(alpha = 0.92f),
+                        0f to light.scrim.copy(alpha = 0.55f),
+                        0.32f to light.scrim.copy(alpha = 0.12f),
+                        0.66f to light.scrim.copy(alpha = 0.48f),
+                        1f to light.scrim.copy(alpha = 0.92f),
                     ),
                 ),
         )
@@ -159,6 +162,7 @@ fun MetricOrb(
     size: Dp = 54.dp,
 ) {
     val photo = OpenConnectColors.photo
+    val ring = LocalRingWeight.current
     val valueColor = if (onPhoto) photo.ink else MaterialTheme.colorScheme.onSurface
     val labelColor = if (onPhoto) photo.dimmedInk.copy(alpha = 0.82f) else MaterialTheme.colorScheme.onSurfaceVariant
     val shown by animateFloatAsState(
@@ -177,7 +181,7 @@ fun MetricOrb(
     ) {
         Box(Modifier.size(size), contentAlignment = Alignment.Center) {
             Canvas(Modifier.fillMaxSize()) {
-                val stroke = 2.dp.toPx()
+                val stroke = ring.stroke.toPx()
                 val inset = stroke / 2f
                 val arc = Size(this.size.width - stroke, this.size.height - stroke)
                 val topLeft = Offset(inset, inset)

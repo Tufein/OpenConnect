@@ -38,6 +38,27 @@ class SettingsStoreTest {
         assertTrue(s.garmin.autoSync, "Garmin Connect syncs by itself, so does this")
         assertEquals(30, s.garmin.days)
         assertEquals("system", s.themeMode)
+        assertEquals("soft", s.signals)
+        assertEquals("thin", s.rings)
+        assertEquals("auto", s.hero)
+    }
+
+    @Test
+    fun `customization keeps only known keys and follows the chosen signals, rings and photo tone`() {
+        val s = store()
+        s.signals = "clear"
+        s.rings = "bold"
+        s.hero = "dusk"
+        assertEquals("clear", store().signals)
+        assertEquals("bold", store().rings)
+        assertEquals("dusk", store().hero)
+        // A value from a newer version, or a typo, falls back to the calm default instead of breaking the look.
+        s.signals = "neon"
+        s.rings = "huge"
+        s.hero = "midnight"
+        assertEquals("soft", s.signals)
+        assertEquals("thin", s.rings)
+        assertEquals("auto", s.hero)
     }
 
     @Test

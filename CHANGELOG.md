@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.9.1: je eigen kleuren, ringen en licht
+
+De editorial-look is nu aan te passen: heldere signaalkleuren in plaats van de zachte tinten, dikkere ringen als je die wilt, en een voorbladfoto die met het uur meegaat of op één licht blijft staan. De keuze geldt meteen overal in de app.
+
+[Release notes](docs/releases/v1.9.1.md)
+
 ## v1.9.0: het voorblad als een rustige pagina
 
 De app opent nu in de **editorial**-stijl: een rustige pagina met een foto bovenaan, grote ronde kaarten, Instrument Serif als titelletters en de nieuwe **Olive**-kleuren. De sportieve Sleek-stijl, Retro en Classic blijven, en een look die je al koos blijft staan.

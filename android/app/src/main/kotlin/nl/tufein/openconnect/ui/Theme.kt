@@ -136,6 +136,51 @@ enum class Style(val key: String) {
 
 val LocalStyle = staticCompositionLocalOf { Style.EDITORIAL }
 
+/** The thickness of the metric rings: "thin" as drawn since v1.9.0 or "bold" for a stronger row of orbs. */
+enum class RingWeight(val key: String, val stroke: Dp) {
+    THIN("thin", 2.dp), BOLD("bold", 4.5.dp);
+
+    companion object {
+        fun of(key: String?): RingWeight = entries.firstOrNull { it.key == key } ?: THIN
+    }
+}
+
+val LocalRingWeight = staticCompositionLocalOf { RingWeight.THIN }
+
+/**
+ * The light on the photo header: [scrim] darkens it behind the words, [wash] tints the photograph itself. "auto" is not a
+ * tone but a choice: [heroTone] turns it into dawn, day, dusk or night from the hour, so the front page changes with the
+ * day without the person touching a setting.
+ */
+@Immutable
+class HeroTone(val key: String, val scrim: Color, val wash: Color)
+
+private val DawnTone = HeroTone("dawn", Color(0xFF1A120C), Color(0xFFE9B98A))
+private val DayTone = HeroTone("day", Color(0xFF0B0E0A), Color(0xFF9AA76B))
+private val DuskTone = HeroTone("dusk", Color(0xFF160F11), Color(0xFFC8826A))
+private val NightTone = HeroTone("night", Color(0xFF070A12), Color(0xFF5C6E96))
+
+/** The tone for a stored choice and the local hour; an unknown key falls back to the automatic one. */
+fun heroTone(choice: String?, hour: Int): HeroTone {
+    val key = when (choice) {
+        "dawn", "day", "dusk", "night" -> choice
+        else -> when (hour) {
+            in 5..9 -> "dawn"
+            in 10..16 -> "day"
+            in 17..20 -> "dusk"
+            else -> "night"
+        }
+    }
+    return when (key) {
+        "dawn" -> DawnTone
+        "dusk" -> DuskTone
+        "night" -> NightTone
+        else -> DayTone
+    }
+}
+
+val LocalHeroChoice = staticCompositionLocalOf { "auto" }
+
 /** The key colours of one theme, for its dark and its light version. [onAccent] is the colour of text on the three accents. */
 private class Keys(
     val primary: Color, val secondary: Color, val tertiary: Color, val background: Color, val surface: Color, val text: Color,
@@ -525,9 +570,18 @@ internal fun paletteSwatch(palette: Palette, dark: Boolean): Pair<Color, Color>?
     return k.background to k.primary
 }
 
-/** [mode] is "system" (follow the phone), "dark" or "light"; [palette] is a key of [Palette]; [letters] a key of [Letters], [style] a key of [Style]. */
+/** [mode] is "system" (follow the phone), "dark" or "light"; [palette] is a key of [Palette]; [letters] a key of [Letters], [style] a key of [Style]; [signals] is "soft" or "clear", [rings] "thin" or "bold" and [hero] a key of [SettingsStore.HERO_TONES]. */
 @Composable
-fun OpenConnectTheme(mode: String = "system", palette: String = "olive", letters: String = "clear", style: String = "editorial", content: @Composable () -> Unit) {
+fun OpenConnectTheme(
+    mode: String = "system",
+    palette: String = "olive",
+    letters: String = "clear",
+    style: String = "editorial",
+    signals: String = "soft",
+    rings: String = "thin",
+    hero: String = "auto",
+    content: @Composable () -> Unit,
+) {
     val dark = when (mode) {
         "dark" -> true
         "light" -> false
@@ -549,10 +603,12 @@ fun OpenConnectTheme(mode: String = "system", palette: String = "olive", letters
         else -> colorSchemeFor(chosen, dark)
     }
     CompositionLocalProvider(
-        LocalMetricColors provides metricsFor(chosen, colors, dark),
+        LocalMetricColors provides metricsFor(chosen, colors, dark, signals),
         LocalLetters provides chosenLetters,
         LocalStyle provides chosenStyle,
         LocalPhotoColors provides PhotoInk,
+        LocalRingWeight provides RingWeight.of(rings),
+        LocalHeroChoice provides hero,
     ) {
         MaterialTheme(
             colorScheme = colors,
@@ -579,9 +635,11 @@ fun OpenConnectTheme(mode: String = "system", palette: String = "olive", letters
  * page reads as one quiet palette. The one-colour screens (Game Boy, Virtual Boy, Terminal) are the exception: shades of
  * their colour, as on the originals.
  */
-private fun metricsFor(palette: Palette, colors: androidx.compose.material3.ColorScheme, dark: Boolean): MetricColors {
+private fun metricsFor(palette: Palette, colors: androidx.compose.material3.ColorScheme, dark: Boolean, signals: String): MetricColors {
     val base = if (dark) DarkMetrics else LightMetrics
-    if (palette == Palette.OLIVE) return if (dark) EditorialDarkMetrics else EditorialLightMetrics
+    // Clear signals get one strong colour each in every theme that has more than one colour.
+    val clear = signals == "clear"
+    if (palette == Palette.OLIVE && !clear) return if (dark) EditorialDarkMetrics else EditorialLightMetrics
     if (palette == Palette.HANDHELD) return base
     // The screens that only had one colour keep to its shades, as on the original.
     val shades: List<Color>? = when (palette) {
@@ -594,6 +652,7 @@ private fun metricsFor(palette: Palette, colors: androidx.compose.material3.Colo
         else -> null
     }
     if (shades != null) return MetricColors(shades[0], shades[1], shades[2], shades[3], shades[1], shades[2], shades[3], shades[0])
+    if (clear) return base
     return MetricColors(
         steps = colors.primary, heart = base.heart, stress = base.stress, battery = base.battery, sleep = base.sleep,
         distance = base.distance, calories = base.calories, readiness = colors.primary,
