@@ -6,8 +6,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,11 +61,13 @@ fun SyncPill(badge: SyncBadge, now: Instant, onClick: () -> Unit, modifier: Modi
         is SyncBadge.Fresh -> ok to stringResource(R.string.sync_fresh, agoText(badge.lastSync, now))
         SyncBadge.NeverSynced -> quiet to stringResource(R.string.sync_never)
     }
-    val shape = MaterialTheme.shapes.small
+    val editorial = LocalStyle.current == Style.EDITORIAL
+    val shape = if (editorial) PillShape else MaterialTheme.shapes.small
     Row(
         modifier
+            .heightIn(min = 48.dp)
             .background(MaterialTheme.colorScheme.surface, shape)
-            .border(lineWidth(), inkColor(), shape)
+            .border(if (editorial) 1.dp else lineWidth(), if (editorial) MaterialTheme.colorScheme.outline else inkColor(), shape)
             .clip(shape)
             .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp),
@@ -72,6 +76,9 @@ fun SyncPill(badge: SyncBadge, now: Instant, onClick: () -> Unit, modifier: Modi
     ) {
         if (badge is SyncBadge.Syncing) {
             PixelSpinner(Modifier.size(14.dp), color = warn)
+        } else if (editorial) {
+            // A soft dot, not a square: in the pill it should read as a status light rather than an empty checkbox.
+            Box(Modifier.size(8.dp).background(dot.copy(alpha = 0.85f), CircleShape))
         } else {
             // A square status light, like the LED on a handheld.
             Box(Modifier.size(10.dp).background(dot))

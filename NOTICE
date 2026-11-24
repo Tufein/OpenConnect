@@ -14,6 +14,10 @@ Protocol notes: https://gadgetbridge.org/internals/specifics/garmin-protocol/
 Garmin, Garmin Connect and fenix are trademarks of Garmin Ltd. or its subsidiaries.
 OpenConnect is not affiliated with or endorsed by Garmin.
 
-The Android app bundles two typefaces under the SIL Open Font License 1.1 (texts in licenses/):
+The Android app bundles three typefaces under the SIL Open Font License 1.1 (texts in licenses/):
   Jersey 10, Copyright 2023 The Soft Type Project Authors, https://github.com/scfried/soft-type-jersey
   IBM Plex Sans and IBM Plex Mono, Copyright 2017 IBM Corp., https://github.com/IBM/plex
+  Instrument Serif, Copyright 2022 The Instrument Serif Project Authors, https://github.com/Instrument/instrument-serif
+
+The editorial hero photograph is by Luca Bravo on Unsplash (https://unsplash.com/photos/zAjdgNXsMeg), used under the
+Unsplash License. See CREDITS.md.

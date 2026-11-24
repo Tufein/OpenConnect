@@ -1,12 +1,12 @@
 package nl.tufein.openconnect.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -52,38 +52,49 @@ fun OuraScreen(
     var redirect by remember(ui.redirectUri) { mutableStateOf(ui.redirectUri) }
     var pasted by remember { mutableStateOf("") }
     val metrics = OpenConnectColors.metrics
+    val editorial = LocalStyle.current == Style.EDITORIAL
+    val gutter = if (editorial) 20.dp else 16.dp
+    val lastDay = ui.days.lastOrNull()
     val list = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val positions = remember { HashMap<String, Int>() }
     LazyColumn(
         state = list,
         contentPadding = PaddingValues(
-            start = 16.dp, end = 16.dp,
-            top = contentPadding.calculateTopPadding() + 16.dp,
+            top = contentPadding.calculateTopPadding() + if (editorial) 0.dp else 16.dp,
             bottom = contentPadding.calculateBottomPadding() + 16.dp,
         ),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(if (editorial) 16.dp else 12.dp),
     ) {
-        var index = 0
-        fun section(key: String, content: @Composable LazyItemScope.() -> Unit) {
+        // The editorial hero is a plain item before the sections, so the positions of everything below it shift by one.
+        var index = if (editorial) 1 else 0
+        fun section(key: String, content: @Composable () -> Unit) {
             positions[key] = index++
-            item(key = key, content = content)
+            item(key = key) {
+                Box(Modifier.fillMaxWidth().padding(horizontal = gutter)) { content() }
+            }
         }
         fun scrollTo(key: String) {
             positions[key]?.let { scope.launch { list.animateScrollToItem(it) } }
         }
-        section("title") {
-            Text(stringResource(R.string.oura_title), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
+        if (editorial) {
+            item(key = "hero") {
+                OuraEditorialHero(lastDay, metrics, ::scrollTo)
+            }
+        } else {
+            section("title") {
+                Text(stringResource(R.string.oura_title), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
+            }
         }
         if (ui.days.isNotEmpty()) {
             ouraDashboard(ui.days, ::section, ::scrollTo, metrics)
         } else {
             section("intro") { Text(stringResource(if (ui.connected) R.string.oura_no_days else R.string.oura_intro), style = MaterialTheme.typography.bodyMedium) }
         }
-        if (ui.busy) item { PixelProgress(Modifier.fillMaxWidth()) }
-        ui.problem?.let { problem -> item(key = "problem") { Text(stringResource(problemText(problem)), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium) } }
+        if (ui.busy) section("busy") { PixelProgress(Modifier.fillMaxWidth()) }
+        ui.problem?.let { problem -> section("problem") { Text(stringResource(problemText(problem)), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium) } }
         if (ui.connected) {
-            item(key = "link") {
+            section("link") {
                 FoldableCard("oura-connected", stringResource(R.string.oura_connected_title), accent = OpenConnectColors.metrics.sleep) {
                     Text(
                         ui.lastSync?.let { stringResource(R.string.oura_last_sync, Fmt.dateTime(it)) } ?: stringResource(R.string.oura_never_synced),
@@ -110,7 +121,7 @@ fun OuraScreen(
             }
             return@LazyColumn
         }
-        item {
+        section("step1") {
             FoldableCard("oura-step1", stringResource(R.string.oura_step1)) {
                 Text(stringResource(R.string.oura_step1_body, ui.redirectUri), style = MaterialTheme.typography.bodyMedium)
                 SecondaryButton(onClick = { uri.openUri("https://cloud.ouraring.com/oauth/applications") }, modifier = Modifier.fillMaxWidth()) {
@@ -118,7 +129,7 @@ fun OuraScreen(
                 }
             }
         }
-        item {
+        section("step2") {
             FoldableCard("oura-step2", stringResource(R.string.oura_step2)) {
                 if (!ui.canStore) {
                     Text(stringResource(R.string.oura_cannot_store), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
@@ -140,7 +151,7 @@ fun OuraScreen(
             }
         }
         if (ui.hasClient) {
-            item {
+            section("step3") {
                 FoldableCard("oura-step3", stringResource(R.string.oura_step3)) {
                     Text(stringResource(R.string.oura_step3_body), style = MaterialTheme.typography.bodyMedium)
                     PrimaryButton(onClick = { loginUrl()?.let(uri::openUri) }, enabled = !ui.busy, modifier = Modifier.fillMaxWidth()) {
@@ -157,10 +168,45 @@ fun OuraScreen(
     }
 }
 
+/** The Oura tab opens on the same photo header and orbs as Home, with the ring's own three scores. */
+@Composable
+private fun OuraEditorialHero(last: OuraDay?, metrics: MetricColors, scrollTo: (String) -> Unit) {
+    val orbs = listOf(
+        OrbValue(
+            label = stringResource(R.string.oura_readiness),
+            value = last?.readiness?.toString() ?: "–",
+            progress = (last?.readiness ?: 0) / 100f,
+            color = metrics.readiness,
+            onClick = { scrollTo("readiness") },
+        ),
+        OrbValue(
+            label = stringResource(R.string.oura_sleep),
+            value = last?.sleepScore?.toString() ?: "–",
+            progress = (last?.sleepScore ?: 0) / 100f,
+            color = metrics.sleep,
+            onClick = { scrollTo("sleep") },
+        ),
+        OrbValue(
+            label = stringResource(R.string.oura_activity),
+            value = last?.activityScore?.toString() ?: "–",
+            progress = (last?.activityScore ?: 0) / 100f,
+            color = metrics.steps,
+            onClick = { scrollTo("steps") },
+        ),
+    )
+    EditorialHero(
+        eyebrow = stringResource(R.string.tab_oura),
+        title = stringResource(R.string.oura_title),
+        subtitle = last?.let { stringResource(R.string.oura_today, Fmt.date(it.date)) } ?: stringResource(R.string.editorial_oura_subtitle),
+        height = if (last != null) 300.dp else 220.dp,
+        footer = { if (last != null) MetricOrbRow(orbs, onPhoto = true, spread = false) },
+    )
+}
+
 /** The ring's scores, charts and workouts of the last 30 days. */
 private fun LazyListScope.ouraDashboard(
     days: List<OuraDay>,
-    section: (String, @Composable LazyItemScope.() -> Unit) -> Unit,
+    section: (String, @Composable () -> Unit) -> Unit,
     scrollTo: (String) -> Unit,
     metrics: MetricColors,
 ) {
@@ -192,6 +238,18 @@ private fun LazyListScope.ouraDashboard(
                 last.temperatureDeviation?.let { stringResource(R.string.oura_temp, String.format(currentLocale(), "%+.1f", it)) },
             )
             if (extras.isNotEmpty()) Text(extras.joinToString("  ·  "), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            val nightS = last.sleepS
+            if (LocalStyle.current == Style.EDITORIAL && nightS != null && nightS > 0) {
+                val deep = last.deepS ?: 0
+                val rem = last.remS ?: 0
+                val light = (nightS - deep - rem).coerceAtLeast(0)
+                SleepStageBar(
+                    deepS = deep,
+                    lightS = light,
+                    remS = rem,
+                    description = stringResource(R.string.editorial_sleep_stages),
+                )
+            }
         }
     }
     val charts = listOf(

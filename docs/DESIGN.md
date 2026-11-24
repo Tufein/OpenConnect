@@ -1,14 +1,19 @@
 # The OpenConnect look
 
-A fresh install opens in a **sporty modern** style: compact Plex Sans type, flat panels with a hairline border and
-restrained corners, rectangular controls and a plain bottom bar. The default colours are **Graphite**, cool neutrals with
-one blue accent; **Track** is the same idea with an orange accent. The original **Handheld** console look (v0.31.0) is
-still here as the *Retro* style, and all colour themes work in every style, so nobody loses a look they chose in an
-older version. Everything below lives in `android/app/src/main/kotlin/nl/tufein/openconnect/ui/`.
+A fresh install opens in the **editorial** style: a calm page with Instrument Serif display type, IBM Plex Sans running
+text, very large rounded cards, hairline borders and a floating tab bar. The default colours are **Olive**, near-black
+olive and warm cream in dark mode, warm paper and deep olive in light mode. The sporty **Sleek** style and **Graphite**
+are still here, as are the original **Handheld** console look (v0.31.0) as *Retro* and the formal *Classic* style. All
+colour themes work in every style, so nobody loses a look they chose in an older version. Everything below lives in
+`android/app/src/main/kotlin/nl/tufein/openconnect/ui/`.
+
+The editorial page opens with a full-width landscape photograph under a deep olive scrim (`EditorialHero`), five metric
+orbs, a semicircular active-calorie gauge, serif insight cards for readiness and sleep, and a journal check-in. The
+photograph is by Luca Bravo on Unsplash (Unsplash License); fonts and credits are listed in `CREDITS.md`.
 
 ## The rules
 
-| | Modern (default, `clean`) | Retro (`retro`) |
+| | Sleek (`clean`) | Retro (`retro`) |
 |---|---|---|
 | **Type** | *IBM Plex Sans* for headlines, numbers and sentences, compact and semi-bold, with tighter tracking on big titles; *IBM Plex Mono* for labels, units and data. | *Jersey 10* (a pixel face made for sports shirts) for headlines and big numbers, Plex Sans for sentences, Plex Mono for labels. |
 | **Corners** | Restrained corners of 8, 10, 12, 16 and 20 dp (`ModernShapes`): enough to read as a panel, not a bubble. | Corners cut in pixel steps (`PixelCornerShape`): two steps of half the corner size, like a rounded corner on graph paper. |
@@ -21,14 +26,15 @@ older version. Everything below lives in `android/app/src/main/kotlin/nl/tufein/
 | **Tab bar** | A flat strip with a hairline above it and a short accent line under the open tab (`ModernBar` in `Navigation.kt`); every tab is at least 56 dp high. | A flat strip under an ink line, the open tab a block filled with ink. |
 | **Hierarchy** | Score tiles show numbers only; the 7-day lines sit in a folded *Trends* section, and the month chart and recent activities fold away with their headline value in the header (`FoldSection`). Health keeps the scores on top and draws **one chart at a time**, chosen by tabs (`health_chart`). Insights keeps six everyday tabs and puts the other six behind *More*. Folds and tabs are for secondary information only. | The same structure, with the console look. |
 
-No gradients and no blur are used in either style; emphasis comes from colour, a tint or a shadow. A `tint` washes a
-little of a signal colour into a panel.
+No gradients and no blur are used, except for the scrim over the editorial photo; emphasis comes from colour, a tint or
+a shadow. A `tint` washes a little of a signal colour into a panel.
 
 ## Colour themes, letters and the launcher icon
 
-**Colour themes** (*Settings, Appearance*) come in five groups, 26 in all, each with a dark and a light version:
+**Colour themes** (*Settings, Appearance*) come in six groups, 27 in all, each with a dark and a light version:
 
-- **Sport**: Graphite (the default, cool neutrals with one blue accent) and Track (near-black with an orange accent).
+- **Editorial**: Olive (the default, near-black olive and warm cream, or warm paper and deep olive in light mode).
+- **Sport**: Graphite (cool neutrals with one blue accent) and Track (near-black with an orange accent).
 - **Retro screens**: Handheld, Game Boy, Virtual Boy, Famicom, Commodore 64, Atari, Amber terminal, Terminal
   and Synthwave. Game Boy, Virtual Boy and Terminal keep to the shades of their one colour, also for the body signals.
 - **Easy on the eyes**: High contrast (pure black and white), Grey, Slate, Sand, Nord, Solarized, Gruvbox and Dracula.
@@ -46,7 +52,7 @@ A theme saved by an older version (Arcade, Clean, Midnight) no longer exists and
 exist again, with new colours.
 
 **Letters** (*Settings, Appearance, Letters*) only apply to Retro: *Pixel letters* is the console look above, *Clear
-letters* swaps Jersey and Plex Mono for Plex Sans. Modern and Classic always use the clear type.
+letters* swaps Jersey and Plex Mono for Plex Sans. Editorial, Sleek and Classic always use the clear type.
 
 **Launcher icon** (*Settings, App icon*): eight icons, each an `activity-alias` of the main screen in the manifest
 (`.IconHandheld`, `.IconNight`, and so on) with its own adaptive icon in `res/mipmap-anydpi-v26`. Exactly one alias is
@@ -58,11 +64,12 @@ first icon is hand-made). The launcher may take a moment to show the new icon, a
 The home-screen widget and the short start-up background follow the chosen palette too. `HomeWidgetViews` paints its
 `RemoteViews` from `colorSchemeFor` (it cannot read the Compose theme), and `HomeWidget.refresh` is called when a palette,
 style or dark mode is picked. The window background in `values/colors.xml` and `values-night/colors.xml` uses the two
-Graphite background colours so a start-up in another theme does not flash cream.
+Graphite background colours so a start-up in another theme does not flash cream. The editorial hero photograph is
+decoded from `res/drawable-nodpi/hero_editorial.jpg`.
 
 Since v0.43.0 the whole look is one section of Settings (*Appearance*) that is folded away until its header is tapped
 (`FoldSection` in `Components.kt`): dark or light, style, letters (Retro only), colour themes and the launcher icon. The
-header shows what is chosen now (for example "Graphite · Sleek"). At the top sits a live **preview** (`LookPreview`):
+header shows what is chosen now (for example "Olive · Editorial"). At the top sits a live **preview** (`LookPreview`):
 a small dashboard drawn in the chosen theme, so a colour or style can be judged before it is kept instead of from two
 little squares. The first start shows the same preview with a choice of style and theme (`OnboardingScreen`).
 
@@ -75,22 +82,25 @@ for the watch and keep their own three designs.
    sentences in `bodyMedium`. Take text styles from the theme: they change with the style and the phone's font scale.
 2. Use the controls above, never `Button`, `FilterChip`, `Switch` or an icon from the Material icon set.
 3. A new icon is a new grid in `PixelIcons.kt`: `#` is filled, anything else is empty, and every row has the same length.
-4. Never add a gradient or a blur. If something needs emphasis, use a tint, a colour or a weight. Check the screen in
-   both the modern default and Retro, at 200% font size and in dark and light mode.
+4. Never add a gradient or a blur, except for the editorial photo scrim. If something needs emphasis, use a tint, a
+   colour or a weight. Check the screen in editorial, Sleek and Retro, at 200% font size and in dark and light mode.
 5. Fold only secondary information, with its headline value in the fold header (`FoldSection`). The day's key numbers and
    anything a test or the daily glance needs stay visible.
 
 ## Fonts
 
-Jersey 10 (Copyright 2023 The Soft Type Project Authors) and IBM Plex Sans and Mono (Copyright 2017 IBM Corp.) are
-licensed under the SIL Open Font License 1.1; the texts are in `licenses/` and the credit is in `NOTICE`.
+Instrument Serif (Copyright 2022 The Instrument Serif Project Authors), Jersey 10 (Copyright 2023 The Soft Type Project
+Authors) and IBM Plex Sans and Mono (Copyright 2017 IBM Corp.) are licensed under the SIL Open Font License 1.1; the
+texts are in `licenses/` and the credits are in `CREDITS.md` and `NOTICE`. The hero photograph is by Luca Bravo on
+Unsplash, under the Unsplash License; see `CREDITS.md`.
 
 ## Styles
 
 `Style` in `Theme.kt` is saved as `theme_style` and read through `LocalStyle`:
 
-- **Sleek** (`clean`): the modern default above, with `ModernShapes` (12 to 36 dp), soft shadows, pill controls, clear
-  letters and smooth charts.
+- **Editorial** (`editorial`, the default): `EditorialShapes` (12 to 36 dp), Instrument Serif display type, hairline
+  borders, pill buttons and the photo hero.
+- **Sleek** (`clean`): the sporty dashboard, with `ModernShapes`, compact panels, rectangular controls and clear letters.
 - **Retro** (`retro`): the original Handheld console look, with pixel-cut corners, ink outlines and a hard shadow.
 - **Classic** (`classic`): small corners (2 to 8 dp), hairlines, no shadow, clear letters with serif titles.
 

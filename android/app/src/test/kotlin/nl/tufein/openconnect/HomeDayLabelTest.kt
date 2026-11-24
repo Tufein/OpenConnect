@@ -34,6 +34,12 @@ class HomeDayLabelTest : AppTestBase() {
      * just outside the viewport, and "Today" also names today's row in the journal further down; scroll to a fact that
      * is inside the same card, then read the title from the unmerged tree (the tappable card merges its children).
      */
+    /** The editorial gauge only exists once the day is loaded; it sits above the detailed cards, so it makes a good anchor. */
+    private fun waitForLoadedHome() {
+        val gauge = ApplicationProvider.getApplicationContext<Context>().getString(R.string.editorial_active_calories).uppercase()
+        waitForText(gauge, substring = true)
+    }
+
     private fun assertDayTitle(expected: String) {
         val anchor = ApplicationProvider.getApplicationContext<Context>().getString(R.string.intensity_minutes)
         scrollToText(anchor)
@@ -43,7 +49,7 @@ class HomeDayLabelTest : AppTestBase() {
     @Test
     fun aRecordOfTodayCarriesNoWarning() {
         launchFresh(prepare = seed(0))
-        waitForText(" highest")
+        waitForLoadedHome()
         assertDayTitle("Today")
         assertFalse(hasText("No data for today yet", substring = true), "today's numbers need no warning")
         shot("home-day-today")
@@ -52,7 +58,7 @@ class HomeDayLabelTest : AppTestBase() {
     @Test
     fun aRecordOfYesterdayIsCalledYesterdayAndExplained() {
         launchFresh(prepare = seed(1))
-        waitForText(" highest")
+        waitForLoadedHome()
         scrollToText("No data for today yet", substring = true)
         assertDayTitle("Yesterday")
         shot("home-day-yesterday")
@@ -61,7 +67,7 @@ class HomeDayLabelTest : AppTestBase() {
     @Test
     fun anOlderRecordShowsItsDate() {
         launchFresh(prepare = seed(4))
-        waitForText(" highest")
+        waitForLoadedHome()
         assertDayTitle(nl.tufein.openconnect.ui.Fmt.date(LocalDate.now().minusDays(4)))
     }
 
@@ -69,7 +75,7 @@ class HomeDayLabelTest : AppTestBase() {
     @Config(qualifiers = "nl-w411dp-h891dp-night-xxhdpi")
     fun theNoticeIsInDutchToo() {
         launchFresh(prepare = seed(1))
-        waitForText(" hoogste")
+        waitForLoadedHome()
         scrollToText("Nog geen gegevens van vandaag", substring = true)
         assertDayTitle("Gisteren")
     }

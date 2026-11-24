@@ -22,9 +22,9 @@ class FormScreenTest : AppTestBase() {
     @Test
     fun homeShowsTheAdviceAndTappingItOpensTheFormTab() {
         loadDemo()
-        waitForText("Training advice")
+        scrollToText("Training advice")
         shot("60-advice")
-        rule.onNodeWithText("Training advice").performClick()
+        clickText("Training advice")
         waitForText("Fitness, fatigue and form")
         waitForText("Fitness")
         shot("61-form")

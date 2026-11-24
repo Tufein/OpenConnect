@@ -312,7 +312,8 @@ echte hardware daarom vraagt. **S/M/L/XL** zoals in de legenda.
 |--------|-------|--------------|------|
 | **v1.7.0** ✅ | Bereik | Drie widgetformaten: klein (alleen readiness en stappen), middel (ook de week) en groot (ook slaap en rusthartslag), passend bij elke celmaat op het startscherm; de widget hertekent zichzelf als je hem groter of kleiner sleept | S |
 | **v1.8.0** ✅ | Training | Work-outs met afstandsstappen, tempo-doelen en bewerken; dezelfde builder, dezelfde verzendknop | M |
-| **v1.9.0** | Analyse | Jaaroverzicht: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar, met dezelfde eerlijke "geen data"-regels | M |
+| **v1.9.0** ✅ | Bereik | De editorial-look: foto-kop, vijf metrische ringen, calorie-boog, serif readiness- en slaapkaarten, journaal-check-in en het Olive-palet als nieuwe standaard; Sleek, Retro en Classic blijven | M |
+| **v1.9.1** | Analyse | Jaaroverzicht: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar, met dezelfde eerlijke "geen data"-regels | M |
 | **v1.10.0** | Training | Het schema past zich aan: een gemiste week schuift niet stil door, maar vraagt en stelt voor; de coach gebruikt die cijfers | L |
 | **v1.11.0** | Bereik | Duits en Frans, met een taaltest die elke tekst dekt en een keuze in de instellingen | M |
 | **v1.12.0** | Geschiedenis | Garmin's protobuf-sync en de rest van de archiefvelden, zodat een tweede import geen gat meer laat | L ❓ |

@@ -116,7 +116,7 @@ fun SettingsScreen(
     onLook: (palette: String) -> Unit = {},
     /** The letters were switched between pixel and clear. */
     onLetters: (letters: String) -> Unit = {},
-    /** The style was switched between retro, sleek and classic. */
+    /** The style was switched between editorial, sleek, retro and classic. */
     onStyle: (style: String) -> Unit = {},
     /** A launcher icon was picked. */
     onAppIcon: (AppIcon) -> Unit = {},
@@ -167,13 +167,18 @@ fun SettingsScreen(
                     }
                 }
                 Text(stringResource(R.string.look_style), style = MaterialTheme.typography.titleMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    for ((style, label) in listOf("retro" to R.string.style_retro, "clean" to R.string.style_clean, "classic" to R.string.style_classic)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    for ((style, label) in listOf(
+                        "editorial" to R.string.style_editorial,
+                        "clean" to R.string.style_clean,
+                        "retro" to R.string.style_retro,
+                        "classic" to R.string.style_classic,
+                    )) {
                         PixelChip(selected = ui.look.style == style, onClick = { onStyle(style) }, label = { Text(stringResource(label)) })
                     }
                 }
                 Text(stringResource(R.string.style_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                // Only the retro style has a choice of letters; the other two always use the clear ones.
+                // Only the retro style has a choice of letters; the others always use the clear ones.
                 if (ui.look.style == "retro") {
                     Text(stringResource(R.string.look_letters), style = MaterialTheme.typography.titleMedium)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -651,6 +656,7 @@ private fun AppIconChoice(icon: AppIcon, selected: Boolean, onClick: () -> Unit)
 @Composable
 private fun lookSummary(look: Look): String {
     val style = when (look.style) {
+        "editorial" -> R.string.style_editorial
         "clean" -> R.string.style_clean
         "classic" -> R.string.style_classic
         else -> R.string.style_retro

@@ -16,10 +16,10 @@ import nl.tufein.openconnect.watch.GarminWatchMemory
 import java.util.Locale
 
 /**
- * The theme a fresh install starts with: Graphite, cool neutrals with one blue accent. The wallpaper colours and the
- * older Handheld look stay available in Settings.
+ * The theme a fresh install starts with: Olive, the near-black olive and warm cream of the editorial look. The wallpaper
+ * colours and every older colour theme stay available in Settings.
  */
-internal fun defaultPaletteKey(): String = "graphite"
+internal fun defaultPaletteKey(): String = "olive"
 
 /**
  * App settings. Every key (Claude, Gemini, Garmin) lives in Android Keystore-backed encrypted preferences; if that is
@@ -85,22 +85,22 @@ class SettingsStore(
         set(value) = prefs.edit().putString(KEY_THEME, value.takeIf { it in THEMES } ?: "system").apply()
 
     /**
-     * The colour theme, a key of [nl.tufein.openconnect.ui.Palette]. A fresh install starts on Graphite; a key that is
-     * no theme any more (arcade, clean, midnight, from before v0.31.0) opens as "handheld".
+     * The colour theme, a key of [nl.tufein.openconnect.ui.Palette]. A fresh install starts on Olive; a key that is no
+     * theme any more (arcade, clean, midnight, from before v0.31.0) opens as "handheld", and a stored key always wins.
      */
     var palette: String
         get() = prefs.getString(KEY_PALETTE, null) ?: defaultPaletteKey()
         set(value) = prefs.edit().putString(KEY_PALETTE, value).apply()
 
-    /** The letters, a key of [nl.tufein.openconnect.ui.Letters]: "pixel" (the look of the app) or "clear" (plain and easier to read). */
+    /** The letters, a key of [nl.tufein.openconnect.ui.Letters]: "pixel" (the Retro look) or "clear" (plain and easier to read, the default). */
     var letters: String
-        get() = prefs.getString(KEY_LETTERS, "pixel")?.takeIf { it == "pixel" || it == "clear" } ?: "pixel"
-        set(value) = prefs.edit().putString(KEY_LETTERS, if (value == "clear") "clear" else "pixel").apply()
+        get() = prefs.getString(KEY_LETTERS, "clear")?.takeIf { it == "pixel" || it == "clear" } ?: "clear"
+        set(value) = prefs.edit().putString(KEY_LETTERS, if (value == "pixel") "pixel" else "clear").apply()
 
-    /** The style of shapes and lines, a key of [nl.tufein.openconnect.ui.Style]: "clean" (the modern default), "retro" or "classic". */
+    /** The style of shapes and lines, a key of [nl.tufein.openconnect.ui.Style]: "editorial" (the default), "clean", "retro" or "classic". */
     var style: String
-        get() = prefs.getString(KEY_STYLE, "clean")?.takeIf { it == "clean" || it == "retro" || it == "classic" } ?: "clean"
-        set(value) = prefs.edit().putString(KEY_STYLE, if (value == "retro" || value == "classic") value else "clean").apply()
+        get() = prefs.getString(KEY_STYLE, "editorial")?.takeIf { it == "editorial" || it == "clean" || it == "retro" || it == "classic" } ?: "editorial"
+        set(value) = prefs.edit().putString(KEY_STYLE, if (value == "editorial" || value == "clean" || value == "retro" || value == "classic") value else "editorial").apply()
 
     /** The record of the last syncs, as the text [nl.tufein.openconnect.core.SyncLog] writes. */
     var syncLogText: String

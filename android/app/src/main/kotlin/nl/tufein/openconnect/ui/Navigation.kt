@@ -3,6 +3,7 @@ package nl.tufein.openconnect.ui
 import android.net.Uri
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,6 +40,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -99,6 +101,7 @@ private fun RetroBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
                     .clip(shape)
                     .background(if (selected) colors.onBackground else Color.Transparent, shape)
                     .selectable(selected = selected, role = Role.Tab, onClick = { onOpen(tab) })
+                    .semantics(mergeDescendants = true) {}
                     .padding(horizontal = 1.dp, vertical = 6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -147,6 +150,7 @@ private fun ModernBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
                         .weight(1f)
                         .heightIn(min = 56.dp)
                         .selectable(selected = selected, role = Role.Tab, onClick = { onOpen(tab) })
+                    .semantics(mergeDescendants = true) {}
                         .padding(horizontal = 1.dp, vertical = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -175,10 +179,72 @@ private fun ModernBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
     }
 }
 
+/**
+ * The editorial tab bar: a floating pill with a hairline, the open tab in a soft sage pill. It keeps the labels and the
+ * auto-shrink rule of the other bars, so every translation fits and every tab stays at least 56 dp high.
+ */
+@Composable
+private fun EditorialBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    val labels = tabs.map { stringResource(if (tabs.size > 5) it.compact else it.label) }
+    var labelSize by remember(labels) { mutableFloatStateOf(11f) }
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .background(colors.background)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clip(PillShape)
+                .background(colors.surface)
+                .border(1.dp, colors.outlineVariant, PillShape)
+                .padding(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            for ((index, tab) in tabs.withIndex()) {
+                val selected = route == tab.route
+                val content = if (selected) colors.primary else colors.onSurfaceVariant
+                Column(
+                    Modifier
+                        .weight(1f)
+                        .heightIn(min = 56.dp)
+                        .clip(PillShape)
+                        .background(if (selected) colors.primary.copy(alpha = 0.14f) else Color.Transparent, PillShape)
+                        .selectable(selected = selected, role = Role.Tab, onClick = { onOpen(tab) })
+                    .semantics(mergeDescendants = true) {}
+                        .padding(horizontal = 2.dp, vertical = 7.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(3.dp),
+                ) {
+                    PixelIcon(tab.icon, size = 21.dp, tint = content)
+                    Text(
+                        labels[index],
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        maxLines = 1,
+                        softWrap = false,
+                        color = content,
+                        style = MaterialTheme.typography.labelMedium.copy(fontSize = labelSize.sp, lineHeight = 15.sp, letterSpacing = 0.2.sp),
+                        onTextLayout = { if (it.didOverflowWidth && labelSize > 9f) labelSize -= 0.5f },
+                    )
+                }
+            }
+        }
+    }
+}
+
 /** The style follows the same choice as the rest of the app. */
 @Composable
 private fun TabBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
-    if (LocalStyle.current == Style.RETRO) RetroBar(tabs, route, onOpen) else ModernBar(tabs, route, onOpen)
+    when (LocalStyle.current) {
+        Style.RETRO -> RetroBar(tabs, route, onOpen)
+        Style.EDITORIAL -> EditorialBar(tabs, route, onOpen)
+        else -> ModernBar(tabs, route, onOpen)
+    }
 }
 
 @Composable

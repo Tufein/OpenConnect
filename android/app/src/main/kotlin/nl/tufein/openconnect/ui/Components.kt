@@ -112,13 +112,18 @@ fun ScreenTitle(text: String, modifier: Modifier = Modifier, trailing: @Composab
 @Composable
 fun SectionTitle(text: String, modifier: Modifier = Modifier) {
     val retro = LocalStyle.current == Style.RETRO
+    val editorial = LocalStyle.current == Style.EDITORIAL
     Row(modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         if (retro) {
             Box(Modifier.size(10.dp).background(MaterialTheme.colorScheme.primary))
-        } else {
+        } else if (!editorial) {
             Box(Modifier.size(width = 4.dp, height = 18.dp).background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp)))
         }
-        Text(text, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onBackground)
+        Text(
+            text,
+            style = if (editorial) MaterialTheme.typography.labelLarge else MaterialTheme.typography.titleMedium,
+            color = if (editorial) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onBackground,
+        )
         DottedRule(Modifier.weight(1f))
     }
 }
@@ -138,23 +143,31 @@ fun FoldSection(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val state = stringResource(if (open) R.string.fold_open else R.string.fold_closed)
+    val editorial = LocalStyle.current == Style.EDITORIAL
     Panel(modifier.fillMaxWidth().padding(top = 8.dp)) {
         Row(
             Modifier
                 .fillMaxWidth()
+                .heightIn(min = 48.dp)
                 .clickable(role = Role.Button, onClick = onToggle)
                 .semantics { stateDescription = state }
                 .padding(vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            if (LocalStyle.current == Style.RETRO) {
-                Box(Modifier.size(10.dp).background(MaterialTheme.colorScheme.primary))
-            } else {
-                Box(Modifier.size(width = 4.dp, height = 18.dp).background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp)))
+            if (!editorial) {
+                if (LocalStyle.current == Style.RETRO) {
+                    Box(Modifier.size(10.dp).background(MaterialTheme.colorScheme.primary))
+                } else {
+                    Box(Modifier.size(width = 4.dp, height = 18.dp).background(MaterialTheme.colorScheme.primary, RoundedCornerShape(2.dp)))
+                }
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(title, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    title,
+                    style = if (editorial) MaterialTheme.typography.labelLarge else MaterialTheme.typography.titleMedium,
+                    color = if (editorial) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                )
                 Text(summary, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             PixelIcon(if (open) PixelIcons.ChevronUp else PixelIcons.ChevronDown, size = 18.dp, tint = MaterialTheme.colorScheme.onSurface)

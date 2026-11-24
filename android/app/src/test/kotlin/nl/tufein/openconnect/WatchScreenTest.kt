@@ -71,7 +71,7 @@ class WatchScreenTest : AppTestBase() {
         launchWithFakes()
         waitForText("Connect watch")
         shot("08-home-with-watch-card")
-        rule.onNodeWithText("Connect watch").performClick()
+        clickText("Connect watch")
 
         // the USB card sits below the Bluetooth and notification cards, and a list only composes what is on screen
         waitForText("Sync a Garmin watch over Bluetooth")
@@ -102,7 +102,7 @@ class WatchScreenTest : AppTestBase() {
     fun theWatchScreenOffersToReadAFolderAndExplainsWhatBluetoothCanDo() {
         launchWithFakes()
         waitForText("Connect watch")
-        rule.onNodeWithText("Connect watch").performClick()
+        clickText("Connect watch")
         waitForText("Sync a Garmin watch over Bluetooth")
         scrollToText("Read a folder with watch files")
         scrollToText("Pick a folder")
@@ -134,7 +134,7 @@ class WatchScreenTest : AppTestBase() {
         shadowOf(ApplicationProvider.getApplicationContext<Context>() as android.app.Application)
             .grantPermissions(*bluetoothPermissions())
         waitForText("Connect watch")
-        rule.onNodeWithText("Connect watch").performClick()
+        clickText("Connect watch")
         waitForText("Sync a Garmin watch over Bluetooth")
         assertTrue(hasText("no longer sync with the Garmin Connect app", substring = true))
         shot("16-watch-ble-card")
@@ -174,7 +174,7 @@ class WatchScreenTest : AppTestBase() {
         shadowOf(ApplicationProvider.getApplicationContext<Context>() as android.app.Application)
             .grantPermissions(*bluetoothPermissions())
         waitForText("Connect watch")
-        rule.onNodeWithText("Connect watch").performClick()
+        clickText("Connect watch")
         waitForText("Sync a Garmin watch over Bluetooth")
         assertTrue(!hasText("every kind of Garmin watch", substring = true), "the note about what is searched is shown once there is a search")
 
@@ -195,7 +195,7 @@ class WatchScreenTest : AppTestBase() {
         shadowOf(ApplicationProvider.getApplicationContext<Context>() as android.app.Application)
             .grantPermissions(*bluetoothPermissions())
         waitForText("Connect watch")
-        rule.onNodeWithText("Connect watch").performClick()
+        clickText("Connect watch")
 
         clickText("Search for sensors")
         rule.waitUntil(5_000) { ble.onFound != null }
@@ -257,7 +257,7 @@ class WatchScreenTest : AppTestBase() {
         app.container.settings.ringBattery = 64
         app.container.settings.ringBatteryAt = System.currentTimeMillis() - 120 * 60_000
         waitForText("Connect watch")
-        rule.onNodeWithText("Connect watch").performClick()
+        clickText("Connect watch")
 
         waitForText("Battery")
         waitForText("87%")

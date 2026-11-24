@@ -93,9 +93,9 @@ class LookTest : AppTestBase() {
     fun theFirstStartLetsYouPickALookAndKeepsIt() {
         launchFresh(onboarded = false) { app -> app.containerOverride = container(app) }
         waitForText("Choose your look")
-        // Graphite, the cool neutral sport theme, is what a fresh install starts on.
-        assertEquals("graphite", settings().palette)
-        assertEquals("clean", settings().style)
+        // Olive and the editorial style are what a fresh install starts on.
+        assertEquals("olive", settings().palette)
+        assertEquals("editorial", settings().style)
         clickText("Retro")
         rule.waitUntil(5_000) { settings().style == "retro" }
         scenario.onActivity { assertEquals("retro", it.viewModel.look.value.style) }

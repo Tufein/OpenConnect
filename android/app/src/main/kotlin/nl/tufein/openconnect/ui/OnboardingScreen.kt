@@ -59,12 +59,18 @@ fun OnboardingScreen(
             SectionTitle(stringResource(R.string.onboarding_look))
             Text(stringResource(R.string.onboarding_look_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                for ((key, label) in listOf("clean" to R.string.style_clean, "retro" to R.string.style_retro, "classic" to R.string.style_classic)) {
+                for ((key, label) in listOf(
+                    "editorial" to R.string.style_editorial,
+                    "clean" to R.string.style_clean,
+                    "retro" to R.string.style_retro,
+                    "classic" to R.string.style_classic,
+                )) {
                     PixelChip(selected = style == key, onClick = { onStyle(key) }, label = { Text(stringResource(label)) })
                 }
             }
             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 val palettes = buildList {
+                    add("olive" to R.string.palette_olive)
                     add("graphite" to R.string.palette_graphite)
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) add("dynamic" to R.string.palette_dynamic)
                     add("contrast" to R.string.palette_contrast)

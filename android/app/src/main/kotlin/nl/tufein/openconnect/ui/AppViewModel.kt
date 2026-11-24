@@ -254,7 +254,7 @@ const val GARMIN_ROUTE = "garmin"
 const val OURA_ROUTE = "oura"
 
 /** The colour theme ([Palette] key), the letters ([Letters] key) and the style of shapes and lines ([Style] key). */
-data class Look(val palette: String = "graphite", val letters: String = "pixel", val style: String = "clean")
+data class Look(val palette: String = "olive", val letters: String = "clear", val style: String = "editorial")
 
 /** Which devices the person uses. [onboarded] is false until the first-start questions are answered. */
 data class SourcesUi(val onboarded: Boolean = true, val garmin: Boolean = true, val oura: Boolean = false)

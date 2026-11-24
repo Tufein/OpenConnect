@@ -65,7 +65,7 @@ class WatchForwardingScreenTest : AppTestBase() {
 
     private fun openCard() {
         waitForText("Connect watch")
-        rule.onNodeWithText("Connect watch").performClick()
+        clickText("Connect watch")
         // since v1.8.0 the battery card sits above the notification cards, so this one starts below the fold
         scrollToText("Notifications on the watch")
         waitForText("Notifications on the watch")

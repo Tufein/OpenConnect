@@ -82,6 +82,7 @@ class OuraAndTouchScreenTest : AppTestBase() {
         rule.onNode(hasText("Client ID") and hasSetTextAction()).performTextInput("client-1")
         rule.onNode(hasText("Client secret") and hasSetTextAction()).performTextInput("secret-FAKE")
         clickText("Save")
+        scrollToText("3. Log in at Oura")
         waitForText("3. Log in at Oura")
         shot("38-oura-setup")
         // The browser part: what "Log in at Oura" opens, and the address Oura sends the browser back to.

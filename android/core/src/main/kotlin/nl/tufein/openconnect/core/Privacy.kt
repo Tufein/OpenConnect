@@ -20,6 +20,7 @@ object PrivacyStatement {
     val linksOnly: Set<String> = setOf(
         "connect.garmin.com", "apps.garmin.com", "play.google.com", "console.anthropic.com", "aistudio.google.com",
         "developer-dashboard.whoop.com", "api.prod.whoop.com", "codeberg.org", "gadgetbridge.org", "developer.android.com", "kotlinlang.org",
+        "unsplash.com",
     )
 
     /** XML namespace names used when reading GPX and TCX files: they look like addresses and are never opened. */

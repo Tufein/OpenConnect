@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -28,21 +29,28 @@ import androidx.compose.ui.unit.sp
 import nl.tufein.openconnect.R
 
 /*
- * The OpenConnect look (v1.0.0).
+ * The OpenConnect look (v1.9.0).
  *
- * From 1.0 the app is modern by default: readable Plex Sans type, generous rounded cards on softly lifted surfaces, a
- * calm floating navigation bar and the same warm neutral palette as before. The "Handheld" console look is still here
- * as the Retro style and the other 23 colour themes still work in every style; it is just no longer the first thing a
- * new install shows.
- *  - IBM Plex Sans carries headlines and numbers, Plex Mono the small labels. The fonts are bundled (res/font), so the
- *    app looks the same on every phone. Jersey 10 remains for people who choose Retro.
- *  - Modern surfaces use large rounded corners and a soft shadow; Retro keeps its pixel-cut corners and hard shadow.
- *  - Warm cream paper in light mode and warm black in dark mode, with orange as the one signal colour.
+ * From 1.9 the app opens in the editorial style: a calm, paper-like page with Instrument Serif display type, IBM Plex
+ * Sans running text, very large rounded cards, hairline borders and the Olive colour theme (near-black olive and warm
+ * cream in dark, warm paper and deep olive in light). The modern "Sleek" style, the pixel "Retro" style and all 26 older
+ * colour themes remain, and an explicit choice stored by an older version is still honoured.
+ *  - Instrument Serif carries display and section titles; IBM Plex Sans the sentences, numbers and labels; Plex Mono is
+ *    still in the app for people who choose Retro. All fonts are bundled (res/font).
+ *  - Editorial surfaces use very large corners and a thin low-contrast line; Retro keeps its pixel-cut corners and hard
+ *    shadow, Sleek its compact panels.
+ *  - Dark mode is a near-black olive with warm cream text; light mode is warm paper with deep olive text.
  *  - The icons are our own small grid icons (PixelIcons.kt), drawn crisply at every size.
  */
 
 /** Jersey 10: pixel headlines and numbers. It has one weight, so styles using it never ask for bold. */
 internal val Jersey = FontFamily(Font(R.font.jersey_10))
+
+/** Instrument Serif: the editorial display face, in roman and italic (SIL OFL, see licenses/). */
+internal val InstrumentSerif = FontFamily(
+    Font(R.font.instrument_serif_regular, FontWeight.Normal),
+    Font(R.font.instrument_serif_italic, FontWeight.Normal, FontStyle.Italic),
+)
 
 /** IBM Plex Sans: running text. */
 internal val PlexSans = FontFamily(
@@ -55,17 +63,18 @@ internal val PlexMono = FontFamily(Font(R.font.plex_mono_medium, FontWeight.Medi
 
 /** How the themes are grouped in Settings. */
 enum class PaletteGroup(@StringRes val label: Int) {
-    SPORT(R.string.palette_group_sport), RETRO(R.string.palette_group_retro), EYES(R.string.palette_group_eyes),
-    COLOUR(R.string.palette_group_colour), PHONE(R.string.palette_group_phone),
+    EDITORIAL(R.string.palette_group_editorial), SPORT(R.string.palette_group_sport), RETRO(R.string.palette_group_retro),
+    EYES(R.string.palette_group_eyes), COLOUR(R.string.palette_group_colour), PHONE(R.string.palette_group_phone),
 }
 
 /**
- * The colour themes to choose from. "handheld" is the look of the app; the others are screens from the history of gaming
- * and computing, calm and high-contrast ones that are easy on the eyes, and colourful ones. "dynamic" takes the phone's
- * wallpaper colours on Android 12 and newer. Older keys (arcade, clean, midnight) from before v0.31.0 are not themes
- * any more and open as "handheld"; ocean and sunset exist again, with new colours.
+ * The colour themes to choose from. "olive" is the editorial default; the others are cool sport neutrals, screens from
+ * the history of gaming and computing, calm and high-contrast ones that are easy on the eyes, and colourful ones.
+ * "dynamic" takes the phone's wallpaper colours on Android 12 and newer. Older keys (arcade, clean, midnight) from
+ * before v0.31.0 are not themes any more and open as "handheld"; ocean and sunset exist again, with new colours.
  */
 enum class Palette(val key: String, @StringRes val label: Int, val group: PaletteGroup) {
+    OLIVE("olive", R.string.palette_olive, PaletteGroup.EDITORIAL),
     GRAPHITE("graphite", R.string.palette_graphite, PaletteGroup.SPORT),
     TRACK("track", R.string.palette_track, PaletteGroup.SPORT),
     HANDHELD("handheld", R.string.palette_handheld, PaletteGroup.RETRO),
@@ -94,35 +103,38 @@ enum class Palette(val key: String, @StringRes val label: Int, val group: Palett
     DYNAMIC("dynamic", R.string.palette_dynamic, PaletteGroup.PHONE);
 
     companion object {
-        fun of(key: String?): Palette = entries.firstOrNull { it.key == key } ?: HANDHELD
+        // No key at all means a fresh install: Olive. An unknown key is a theme from an older version, and opens as
+        // Handheld, the look those versions had.
+        fun of(key: String?): Palette = if (key == null) OLIVE else entries.firstOrNull { it.key == key } ?: HANDHELD
     }
 }
 
-/** The letters of the app: "pixel" (Jersey for titles and numbers, the look of the app) or "clear" (plain Plex Sans, easier to read). */
+/** The letters of the app: "pixel" (Jersey for titles and numbers, the Retro look) or "clear" (plain Plex Sans, easier to read). */
 enum class Letters(val key: String) {
     PIXEL("pixel"), CLEAR("clear");
 
     companion object {
-        fun of(key: String?): Letters = entries.firstOrNull { it.key == key } ?: PIXEL
+        fun of(key: String?): Letters = entries.firstOrNull { it.key == key } ?: CLEAR
     }
 }
 
-val LocalLetters = staticCompositionLocalOf { Letters.PIXEL }
+val LocalLetters = staticCompositionLocalOf { Letters.CLEAR }
 
 /**
- * The style of the shapes and lines. "clean" is the modern default: big rounded corners, soft shadows, clear letters.
- * "retro" keeps the original Handheld console look (pixel-cut corners, ink outlines, hard shadow, pixel letters by
- * choice) and "classic" is formal (small corners, thin lines, serif titles). The colour themes work in all three.
+ * The style of the shapes and lines. "editorial" is the default: very large corners, hairline borders and serif display
+ * type. "clean" is the modern dashboard, "retro" keeps the original Handheld console look (pixel-cut corners, ink
+ * outlines, hard shadow, pixel letters by choice) and "classic" is formal (small corners, thin lines, serif titles). The
+ * colour themes work in all four.
  */
 enum class Style(val key: String) {
-    RETRO("retro"), CLEAN("clean"), CLASSIC("classic");
+    EDITORIAL("editorial"), RETRO("retro"), CLEAN("clean"), CLASSIC("classic");
 
     companion object {
-        fun of(key: String?): Style = entries.firstOrNull { it.key == key } ?: CLEAN
+        fun of(key: String?): Style = entries.firstOrNull { it.key == key } ?: EDITORIAL
     }
 }
 
-val LocalStyle = staticCompositionLocalOf { Style.CLEAN }
+val LocalStyle = staticCompositionLocalOf { Style.EDITORIAL }
 
 /** The key colours of one theme, for its dark and its light version. [onAccent] is the colour of text on the three accents. */
 private class Keys(
@@ -131,7 +143,11 @@ private class Keys(
 )
 
 private val PaletteKeys: Map<Palette, Pair<Keys, Keys>> = mapOf(
-    // Graphite: cool neutrals and one electric blue, the sporty default. Everything that is not data stays quiet.
+    // Olive: the editorial default. Near-black olive and warm cream in the dark version; warm paper and deep olive in the
+    // light one, with muted sage as the one accent. Text and panel colours are kept above WCAG 7:1 by the theme test.
+    Palette.OLIVE to (Keys(Color(0xFFB7C4A5), Color(0xFFD8C8A4), Color(0xFF87957A), Color(0xFF0E110D), Color(0xFF171B15), Color(0xFFEDE7D7), Color(0xFF131610)) to
+        Keys(Color(0xFF4A573C), Color(0xFF6C5D3F), Color(0xFF526348), Color(0xFFF3EFE4), Color(0xFFE8E3D5), Color(0xFF202719), Color(0xFFF7F3E8))),
+    // Graphite: cool neutrals and one electric blue, the sporty theme. Everything that is not data stays quiet.
     Palette.GRAPHITE to (Keys(Color(0xFF4C9AFF), Color(0xFF93A4B8), Color(0xFF6B7F96), Color(0xFF0E1116), Color(0xFF161A21), Color(0xFFE8EDF3)) to
         Keys(Color(0xFF1D4ED8), Color(0xFF475569), Color(0xFF64748B), Color(0xFFF4F6F8), Color(0xFFFFFFFF), Color(0xFF0F172A))),
     // Track: near-black with a single orange accent, for people who want the app to feel like a training log.
@@ -266,12 +282,56 @@ private val LightMetrics = MetricColors(
     readiness = Color(0xFF4C8A00),
 )
 
+/**
+ * The editorial signals are drawn from the same olive, sage and clay family as the theme, so a row of orbs looks like one
+ * quiet palette instead of a set of traffic lights. They stay distinct enough to tell apart, and are never the only cue:
+ * every orb also has its label and value.
+ */
+private val EditorialDarkMetrics = MetricColors(
+    steps = Color(0xFFA9BD93),
+    heart = Color(0xFFC58F82),
+    stress = Color(0xFFC7A86B),
+    battery = Color(0xFF8FA6B2),
+    sleep = Color(0xFFA79BB8),
+    distance = Color(0xFF8FB8AC),
+    calories = Color(0xFFD6B98C),
+    readiness = Color(0xFFD8D3AF),
+)
+
+private val EditorialLightMetrics = MetricColors(
+    steps = Color(0xFF4E6B3B),
+    heart = Color(0xFF995046),
+    stress = Color(0xFF876424),
+    battery = Color(0xFF3F6476),
+    sleep = Color(0xFF65597A),
+    distance = Color(0xFF3D6E63),
+    calories = Color(0xFF856526),
+    readiness = Color(0xFF5B6539),
+)
+
 val LocalMetricColors = staticCompositionLocalOf { DarkMetrics }
 
-/** The colours of the signals in the current theme. */
+/**
+ * Colours that sit on the hero photograph, where the theme's own surface colours cannot be used: the type is always
+ * warm cream and the scrim always a deep olive-black, in dark mode and in light mode alike.
+ */
+@Immutable
+class PhotoColors(val ink: Color, val dimmedInk: Color, val scrim: Color)
+
+private val PhotoInk = PhotoColors(
+    ink = Color(0xFFF4EFE0),
+    dimmedInk = Color(0xFFF4EFE0).copy(alpha = 0.72f),
+    scrim = Color(0xFF0B0E0A),
+)
+
+val LocalPhotoColors = staticCompositionLocalOf { PhotoInk }
+
+/** The colours of the signals and of the photo header in the current theme. */
 object OpenConnectColors {
     val metrics: MetricColors
         @Composable get() = LocalMetricColors.current
+    val photo: PhotoColors
+        @Composable get() = LocalPhotoColors.current
 }
 
 private fun style(family: FontFamily, size: Int, line: Int, weight: FontWeight = FontWeight.Normal, tracking: Double = 0.0) =
@@ -320,6 +380,29 @@ private val ClearTypography = Typography(
     labelLarge = style(PlexSans, 13, 18, FontWeight.SemiBold, tracking = 0.2),
     labelMedium = style(PlexSans, 12, 16, FontWeight.SemiBold, tracking = 0.4),
     labelSmall = style(PlexSans, 11, 14, FontWeight.SemiBold, tracking = 0.6),
+)
+
+/**
+ * The editorial face: Instrument Serif for display, headlines and large scores, IBM Plex Sans for everything that is
+ * read as a sentence. The score sizes are generous because the serif's thin strokes need room; micro-labels are small,
+ * semi-bold and letter-spaced, and are set in capitals by the components that use them.
+ */
+private val EditorialTypography = Typography(
+    displayLarge = style(InstrumentSerif, 64, 66),
+    displayMedium = style(InstrumentSerif, 52, 54),
+    displaySmall = style(InstrumentSerif, 40, 44),
+    headlineLarge = style(InstrumentSerif, 34, 38),
+    headlineMedium = style(InstrumentSerif, 28, 34),
+    headlineSmall = style(InstrumentSerif, 24, 30),
+    titleLarge = style(InstrumentSerif, 22, 28),
+    titleMedium = style(PlexSans, 16, 22, FontWeight.SemiBold, tracking = 0.1),
+    titleSmall = style(PlexSans, 14, 20, FontWeight.SemiBold),
+    bodyLarge = style(PlexSans, 16, 24),
+    bodyMedium = style(PlexSans, 14, 21),
+    bodySmall = style(PlexSans, 12, 17),
+    labelLarge = style(PlexSans, 13, 18, FontWeight.SemiBold, tracking = 0.6),
+    labelMedium = style(PlexSans, 11, 15, FontWeight.SemiBold, tracking = 1.1),
+    labelSmall = style(PlexSans, 10, 14, FontWeight.SemiBold, tracking = 1.4),
 )
 
 /**
@@ -399,6 +482,18 @@ internal val ModernShapes = Shapes(
     extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
 )
 
+/** Editorial corners: a page of soft, large cards rather than dashboard panels (12 to 36 dp). */
+internal val EditorialShapes = Shapes(
+    extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+    small = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+    medium = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+    large = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
+    extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(36.dp),
+)
+
+/** The pill used by editorial buttons and chips. */
+internal val PillShape = androidx.compose.foundation.shape.RoundedCornerShape(percent = 50)
+
 private val ClassicShapes = Shapes(
     extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(2.dp),
     small = androidx.compose.foundation.shape.RoundedCornerShape(3.dp),
@@ -419,7 +514,7 @@ private val ClassicTypography: androidx.compose.material3.Typography = ClearTypo
 
 /** The colours of a theme in dark or light, as a Material colour scheme. [Palette.DYNAMIC] has no fixed colours and gives Handheld. */
 internal fun colorSchemeFor(palette: Palette, dark: Boolean): androidx.compose.material3.ColorScheme {
-    val (d, l) = PaletteKeys[palette] ?: PaletteKeys.getValue(Palette.HANDHELD)
+    val (d, l) = PaletteKeys[palette] ?: PaletteKeys.getValue(Palette.OLIVE)
     return scheme(if (dark) d else l, dark)
 }
 
@@ -432,7 +527,7 @@ internal fun paletteSwatch(palette: Palette, dark: Boolean): Pair<Color, Color>?
 
 /** [mode] is "system" (follow the phone), "dark" or "light"; [palette] is a key of [Palette]; [letters] a key of [Letters], [style] a key of [Style]. */
 @Composable
-fun OpenConnectTheme(mode: String = "system", palette: String = "handheld", letters: String = "clear", style: String = "clean", content: @Composable () -> Unit) {
+fun OpenConnectTheme(mode: String = "system", palette: String = "olive", letters: String = "clear", style: String = "editorial", content: @Composable () -> Unit) {
     val dark = when (mode) {
         "dark" -> true
         "light" -> false
@@ -440,7 +535,7 @@ fun OpenConnectTheme(mode: String = "system", palette: String = "handheld", lett
     }
     val chosen = Palette.of(palette)
     val chosenStyle = Style.of(style)
-    // Only the retro style has pixel letters; the other two always use the clear ones.
+    // Only the retro style has pixel letters; editorial, sleek and classic always use the clear ones.
     val chosenLetters = if (chosenStyle == Style.RETRO) Letters.of(letters) else Letters.CLEAR
     val context = androidx.compose.ui.platform.LocalContext.current
     val colors = when {
@@ -453,15 +548,22 @@ fun OpenConnectTheme(mode: String = "system", palette: String = "handheld", lett
             }.getOrElse { colorSchemeFor(Palette.HANDHELD, dark) }
         else -> colorSchemeFor(chosen, dark)
     }
-    CompositionLocalProvider(LocalMetricColors provides metricsFor(chosen, colors, dark), LocalLetters provides chosenLetters, LocalStyle provides chosenStyle) {
+    CompositionLocalProvider(
+        LocalMetricColors provides metricsFor(chosen, colors, dark),
+        LocalLetters provides chosenLetters,
+        LocalStyle provides chosenStyle,
+        LocalPhotoColors provides PhotoInk,
+    ) {
         MaterialTheme(
             colorScheme = colors,
             typography = when {
+                chosenStyle == Style.EDITORIAL -> EditorialTypography
                 chosenStyle == Style.CLASSIC -> ClassicTypography
                 chosenLetters == Letters.CLEAR -> ClearTypography
                 else -> HandheldTypography
             },
             shapes = when (chosenStyle) {
+                Style.EDITORIAL -> EditorialShapes
                 Style.RETRO -> HandheldShapes
                 Style.CLEAN -> ModernShapes
                 Style.CLASSIC -> ClassicShapes
@@ -473,10 +575,13 @@ fun OpenConnectTheme(mode: String = "system", palette: String = "handheld", lett
 
 /**
  * The signal colours stay the same in every theme, so a number keeps being recognised by its colour; only steps and
- * readiness follow the theme's main colour. The one-colour screens (Game Boy, Virtual Boy, Terminal) are the exception: shades of their colour, as on the originals.
+ * readiness follow the theme's main colour. Olive has its own muted set of sage, clay, ochre and dust, so the editorial
+ * page reads as one quiet palette. The one-colour screens (Game Boy, Virtual Boy, Terminal) are the exception: shades of
+ * their colour, as on the originals.
  */
 private fun metricsFor(palette: Palette, colors: androidx.compose.material3.ColorScheme, dark: Boolean): MetricColors {
     val base = if (dark) DarkMetrics else LightMetrics
+    if (palette == Palette.OLIVE) return if (dark) EditorialDarkMetrics else EditorialLightMetrics
     if (palette == Palette.HANDHELD) return base
     // The screens that only had one colour keep to its shades, as on the original.
     val shades: List<Color>? = when (palette) {

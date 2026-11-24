@@ -54,7 +54,7 @@ class GarminScreenTest : AppTestBase() {
 
     private fun openGarminScreen() {
         waitForText("Garmin account")
-        rule.onNodeWithText("Garmin account").performClick()
+        clickText("Garmin account")
         waitForText("Your personal key")
     }
 
@@ -130,7 +130,7 @@ class GarminScreenTest : AppTestBase() {
     fun theGarminScreenIsInDutchToo() {
         launchWithGarmin()
         waitForText("Garmin-account")
-        rule.onNodeWithText("Garmin-account").performClick()
+        clickText("Garmin-account")
         waitForText("Je persoonlijke key")
         shot("nl-light-garmin")
         assertTrue(hasText("Garmins key-pagina openen", substring = false))

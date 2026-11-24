@@ -6,6 +6,8 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.test.core.app.ApplicationProvider
 import nl.tufein.openconnect.core.Streaks
 import nl.tufein.openconnect.ui.dayTag
@@ -74,7 +76,7 @@ class CalendarScreenTest : AppTestBase() {
         pageBackTo(YearMonth.from(day))
         waitForText("Tap a day to see its activities.")
 
-        rule.onNodeWithTag(dayTag(day)).performClick()
+        rule.onNodeWithTag(dayTag(day)).performScrollTo().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
         waitForText(latest.name)
         assertTrue(hasText("km", substring = true))
         shot("60-calendar-day")
@@ -83,9 +85,9 @@ class CalendarScreenTest : AppTestBase() {
         val view = Streaks.month(repo().listActivities(limit = 10_000), YearMonth.from(day))
         val rest = (1..view.month.lengthOfMonth()).map { view.month.atDay(it) }.firstOrNull { it !in view.days }
         if (rest != null) {
-            rule.onNodeWithTag(dayTag(rest)).performClick()
+            rule.onNodeWithTag(dayTag(rest)).performScrollTo().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
             waitForText("No activity on this day.")
-            rule.onNodeWithTag(dayTag(day)).performClick()
+            rule.onNodeWithTag(dayTag(day)).performScrollTo().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
             waitForText(latest.name)
         }
 

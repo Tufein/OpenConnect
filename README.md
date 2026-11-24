@@ -7,13 +7,12 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.8.3.** The WHOOP band and the Hume Band are gone: their tabs, settings and network code were removed,
-> while days already saved from them stay readable in your history and backups. The Garmin watch's charge is asked a
-> second time shortly after connecting, so it no longer sits a percent behind. Everything from v1.8.2 stays: every
-> section **folds away under its title**, the battery card **says so when Oura withholds the ring's charge**, and the
-> three buttons at the bottom of the front page are gone. The widget sizes of v1.7.0, distance and pace workouts of
-> v1.8.0, the workout builder of v1.6.0, the manual activity of v1.5.0 and the archive import of v1.3.0 stay.
-> [Release notes](docs/releases/v1.8.3.md).
+> **Status: v1.9.0.** The app opens in the new **editorial** style: a photo header with five metric orbs, an
+> active-calorie arc, serif readiness and sleep cards, a journal check-in and the **Olive** colour theme. **Sleek** is
+> the new name of the sporty look; Retro and Classic stay, and a look you chose before is kept. Everything from v1.8.3
+> stays: WHOOP and Hume are gone while their saved days remain readable, and the Garmin watch is asked for its charge
+> twice so the card no longer sits a percent behind. Folding sections, the honest Oura battery card, distance and pace
+> workouts, the widget sizes and the in-app updater all stay. [Release notes](docs/releases/v1.9.0.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

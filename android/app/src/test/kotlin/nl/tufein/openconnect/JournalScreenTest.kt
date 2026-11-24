@@ -101,6 +101,7 @@ class JournalScreenTest : AppTestBase() {
                 )
             }
         }
+        scrollToText("Heads-up")
         waitForText("Heads-up")
         waitForText("have been off for days", substring = true)
         shot("72-heads-up")

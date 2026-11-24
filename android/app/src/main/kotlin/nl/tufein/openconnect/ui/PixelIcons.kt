@@ -259,6 +259,60 @@ object PixelIcons {
 
     val ChevronUp: PixelArt = ChevronDown.flipped()
 
+    /** A small flame for the active-calorie gauge. */
+    val Flame = PixelArt(
+        listOf(
+            "............",
+            ".....##.....",
+            "....####....",
+            "...######...",
+            "..###.####..",
+            "..#########.",
+            ".##########.",
+            ".#########..",
+            "..########..",
+            "...######...",
+            "....####....",
+            "............",
+        ),
+    )
+
+    /** A check for a quiet status card. */
+    val Check = PixelArt(
+        listOf(
+            "............",
+            "..........#.",
+            ".........##.",
+            "........##..",
+            ".......##...",
+            "..#...##....",
+            ".#.#.##.....",
+            ".######.....",
+            "..####......",
+            "...##.......",
+            "............",
+            "............",
+        ),
+    )
+
+    /** A dismiss mark for a status card. */
+    val Close = PixelArt(
+        listOf(
+            "............",
+            "..#......#..",
+            "..##....##..",
+            "...##..##...",
+            "....####....",
+            ".....##.....",
+            "....####....",
+            "...##..##...",
+            "..##....##..",
+            "..#......#..",
+            "............",
+            "............",
+        ),
+    )
+
     /**
      * The mark of the app: a pixel heart with a pulse through it. `#` is the outline, `o` the fill, `y` the shine and `w` the
      * pulse. The launcher icon (res/drawable/ic_launcher_foreground.xml) is made from the same grid.

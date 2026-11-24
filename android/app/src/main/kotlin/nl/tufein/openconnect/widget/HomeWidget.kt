@@ -70,7 +70,7 @@ object HomeWidgetViews {
             "light" -> false
             else -> context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
         }
-        return colorSchemeFor(Palette.of(settings?.palette ?: "graphite"), dark)
+        return colorSchemeFor(Palette.of(settings?.palette ?: nl.tufein.openconnect.data.defaultPaletteKey()), dark)
     }
 
     fun build(context: Context, summary: WidgetSummary?, format: WidgetFormat = WidgetFormat.MEDIUM): RemoteViews {

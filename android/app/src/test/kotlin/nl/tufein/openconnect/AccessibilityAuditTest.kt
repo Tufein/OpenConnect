@@ -148,7 +148,7 @@ class AccessibilityAuditTest : AppTestBase() {
     @Config(sdk = [34], qualifiers = "w840dp-h1280dp-night-xhdpi", application = OpenConnectApp::class)
     fun theMainScreensOnATabletAreAccessible() {
         launchFresh(prepare = ::seed)
-        waitForText(" highest", substring = true)
+        waitForText("ACTIVE CALORIE BURN", substring = true)
         shot("a11y-tablet-home")
         assertEquals(emptyList(), walkTheMainScreens())
     }

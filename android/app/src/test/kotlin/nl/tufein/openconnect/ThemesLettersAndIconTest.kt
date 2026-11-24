@@ -104,10 +104,10 @@ class ThemesLettersAndIconTest : AppTestBase() {
     fun clearLettersAreChosenAndKept() {
         launchFresh { app -> app.containerOverride = container(app) }
         loadDemo()
-        assertEquals("pixel", settings().letters)
+        assertEquals("clear", settings().letters, "the editorial default uses clear letters")
         tab("Settings").performClick()
         openAppearance()
-        // The modern default already uses clear letters. The choice only shows up in the retro style, so open that first.
+        // The editorial default already uses clear letters. The choice only shows up in the retro style, so open that first.
         clickText("Retro")
         rule.waitUntil(5_000) { settings().style == "retro" }
         waitForText("Clear letters")
@@ -131,7 +131,7 @@ class ThemesLettersAndIconTest : AppTestBase() {
     fun sleekAndClassicStylesAreChosenAndKept() {
         launchFresh { app -> app.containerOverride = container(app) }
         loadDemo()
-        assertEquals("clean", settings().style, "the modern style is the default from v1.0.0")
+        assertEquals("editorial", settings().style, "the editorial style is the default from v1.9.0")
         tab("Settings").performClick()
         openAppearance()
         clickText("Sleek")

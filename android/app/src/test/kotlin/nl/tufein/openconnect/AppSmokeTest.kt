@@ -163,7 +163,7 @@ class AppSmokeTest : AppTestBase() {
     @Test
     fun theWatchScreenExplainsHowToLiveNextToGarminConnect() {
         waitForText("Connect watch")
-        rule.onNodeWithText("Connect watch").performClick()
+        clickText("Connect watch")
         waitForText("Sync a Garmin watch over Bluetooth")
         scrollToText("one phone app at a time", substring = true)
         assertTrue(hasText("Using Garmin Connect too?", substring = false))

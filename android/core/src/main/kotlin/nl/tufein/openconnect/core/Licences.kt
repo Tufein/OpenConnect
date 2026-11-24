@@ -20,6 +20,8 @@ object Licences {
         ),
         Licence("Jersey 10 (typeface)", "SIL Open Font License 1.1", "Copyright 2023 The Soft Type Project Authors.", "https://github.com/scfried/soft-type-jersey"),
         Licence("IBM Plex Sans and IBM Plex Mono (typefaces)", "SIL Open Font License 1.1", "Copyright 2017 IBM Corp.", "https://github.com/IBM/plex"),
+        Licence("Instrument Serif (typeface)", "SIL Open Font License 1.1", "Copyright 2022 The Instrument Serif Project Authors.", "https://github.com/Instrument/instrument-serif"),
+        Licence("Mountain lake at dawn (editorial photo)", "Unsplash License", "Photo by Luca Bravo on Unsplash. Used with attribution; no endorsement implied.", "https://unsplash.com/photos/zAjdgNXsMeg"),
         Licence(
             "AndroidX: Compose, Activity, Lifecycle, Navigation, Security, Core, WorkManager, Health Connect client",
             "Apache-2.0", "Google and the Android Open Source Project.", "https://developer.android.com/jetpack",
