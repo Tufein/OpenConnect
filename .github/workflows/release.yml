@@ -102,6 +102,7 @@ jobs:
           arch: x86_64
           target: google_apis
           disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -memory 2048
           script: python3 android/scripts/emulator_smoke.py apk/openconnect-${{ inputs.tag || github.ref_name }}.apk smoke-out
       - name: Keep the screenshots and the log
         if: always()

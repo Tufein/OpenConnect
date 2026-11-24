@@ -57,6 +57,8 @@ class Node:
 def screen():
     """The nodes on screen now. uiautomator sometimes cannot get an idle state, so it is tried a few times."""
     for _ in range(6):
+        # Remove the old dump first: if the device is briefly offline, cat must not return the previous screen.
+        adb("shell", "rm", "-f", "/sdcard/ui.xml", check=False)
         adb("shell", "uiautomator", "dump", "/sdcard/ui.xml", check=False)
         xml = adb("shell", "cat", "/sdcard/ui.xml", check=False)
         start = xml.find("<?xml")
@@ -141,6 +143,25 @@ class Run:
         adb("shell", "input", "tap", str(x), str(y))
         time.sleep(1.2)
 
+    def swipe(self, width, height, down):
+        """A swipe through adb's input service. The emulator occasionally drops one input command while it is still
+        booting; wait for the device and try the other input syntax before failing a release."""
+        start_y, end_y = (0.7, 0.3) if down else (0.3, 0.7)
+        last = None
+        for args in (
+            ("input", "swipe", str(width // 2), str(int(height * start_y)), str(width // 2), str(int(height * end_y)), "350"),
+            ("input", "touchscreen", "swipe", str(width // 2), str(int(height * start_y)), str(width // 2), str(int(height * end_y)), "350"),
+        ):
+            try:
+                adb("shell", *args, timeout=30)
+                time.sleep(0.8)
+                return
+            except Smoke as problem:
+                last = problem
+                adb("wait-for-device", timeout=30, check=False)
+                time.sleep(1)
+        raise Smoke(f"could not swipe: {last}")
+
     def scroll_to(self, text, contains=False, tries=24):
         """Swipes until [text] is on screen and not behind the bottom bar: down the list first, and back up when the
         end of the list is reached without finding it (a screen that was left scrolled down keeps its place)."""
@@ -162,9 +183,7 @@ class Run:
                     break
                 down, turns = not down, turns + 1
             previous = seen
-            start_y, end_y = (0.7, 0.3) if down else (0.3, 0.7)
-            adb("shell", "input", "swipe", str(width // 2), str(int(height * start_y)), str(width // 2), str(int(height * end_y)), "350")
-            time.sleep(0.8)
+            self.swipe(width, height, down)
         raise Smoke(f"could not scroll to {text!r}; the screen showed: {labels(screen())[:60]}")
 
     def back(self):
@@ -220,6 +239,9 @@ def main(apk, out):
         adb("shell", "settings", "put", "global", "animator_duration_scale", "0", check=False)
         adb("logcat", "-c", check=False)
         print(adb("install", "-r", apk, timeout=300).strip())
+        # The emulator can drop the adb connection for a moment right after a large install.
+        adb("wait-for-device", timeout=60, check=False)
+        time.sleep(2)
         adb("shell", "pm", "grant", PKG, "android.permission.POST_NOTIFICATIONS", check=False)
 
         run.start()
