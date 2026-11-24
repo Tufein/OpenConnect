@@ -376,9 +376,9 @@ class AppViewModelPlanTest {
         loaded(vm)
         val actionId = vm.plan.value.proposalActionId!!
         val before = app.container.settings.trainingPlan
-        val beforeReload = vm.plan.value
+        app.container.settings.workouts = WorkoutBook(listOf(OwnWorkout(id = "reload-check", name = "Reload check"))).encode()
         vm.loadPlan()
-        await("an ordinary reload") { vm.plan.value !== beforeReload }
+        await("an ordinary reload") { vm.plan.value.ownWorkouts.any { it.id == "reload-check" } }
         assertEquals(actionId, vm.plan.value.proposalActionId)
 
         vm.applyPlanChange("not-the-current-action")

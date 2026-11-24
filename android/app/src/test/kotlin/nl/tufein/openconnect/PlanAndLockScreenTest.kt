@@ -196,7 +196,7 @@ class PlanAndLockScreenTest : AppTestBase() {
     }
 
     private fun proposalWeeks(): Pair<Int, Int> {
-        val node = rule.onNode(hasTextMatcher("Week ", substring = true) and hasTextMatcher("→")).fetchSemanticsNode()
+        val node = rule.onNode(hasTextMatcher("Week ", substring = true) and hasTextMatcher("→", substring = true)).fetchSemanticsNode()
         val text = node.config.getOrNull(SemanticsProperties.Text).orEmpty().joinToString(" ") { it.text }
         val match = Regex("Week (\\d+) → week (\\d+)").find(text) ?: error("No source/target weeks in: $text")
         return match.groupValues[1].toInt() to match.groupValues[2].toInt()
