@@ -51,6 +51,8 @@ class WorkoutsScreenTest : AppTestBase() {
         waitForText("Create plan")
         clickText("10K")
         clickText("Create plan")
+        // The new plan is built off the main thread; scroll only once the setup has been replaced by its title.
+        rule.waitUntil(45_000) { !hasText("Create plan", substring = false) }
         scrollToText("10K plan")
         waitForText("10K plan")
 
