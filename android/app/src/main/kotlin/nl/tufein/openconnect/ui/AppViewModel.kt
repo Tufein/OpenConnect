@@ -498,7 +498,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private fun text(id: Int, vararg args: Any) = getApplication<Application>().getString(id, *args)
 
     private fun tell(message: String) {
-        _messages.trySend(message)
+        // A message can be produced on an IO worker; resuming the snackbar collector there would touch the view tree
+        // from the wrong thread (visible under Robolectric). Hand every message to the main thread first.
+        viewModelScope.launch(Dispatchers.Main.immediate) { _messages.send(message) }
     }
 
     private fun io(block: suspend () -> Unit) {
@@ -750,7 +752,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     /** A watch was plugged in: show the watch screen. */
     fun onWatchAttached() {
         container.watch.refreshUsb()
-        _navigation.trySend(WATCH_ROUTE)
+        viewModelScope.launch(Dispatchers.Main.immediate) { _navigation.send(WATCH_ROUTE) }
     }
 
     // ---------------------------------------------------------------------------------- garmin
