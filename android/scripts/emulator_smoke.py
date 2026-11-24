@@ -231,7 +231,8 @@ def main(apk, out):
             run.tap(run.scroll_to("Start"))
         run.tap(run.scroll_to("Load demo data"))
         run.gone("Load demo data")
-        run.wait("Readiness", contains=True)
+        # The editorial front page prints the section labels in capitals ("READINESS"); accept both spellings.
+        run.wait("Readiness", "READINESS", contains=True)
         run.shot("home")
         print("Home with demo data: ok")
 
