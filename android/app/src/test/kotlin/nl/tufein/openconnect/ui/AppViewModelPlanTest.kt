@@ -298,6 +298,7 @@ class AppViewModelPlanTest {
         await("the valid decision to replace the invalid row") {
             PlanConfig.decode(app.container.settings.trainingPlan)?.decisions?.singleOrNull()?.policyVersion == PlanAdaptation.POLICY_VERSION
         }
+        await("the plan action to finish") { !vm.plan.value.actionBusy }
         val persisted = PlanConfig.decode(app.container.settings.trainingPlan)!!
         assertEquals(listOf(decisionFor(proposal)), persisted.decisions)
         assertFalse(vm.plan.value.actionBusy)
@@ -388,7 +389,9 @@ class AppViewModelPlanTest {
         assertEquals(actionId, vm.plan.value.proposalActionId)
 
         vm.applyPlanChange(actionId)
-        await("the subsequent valid action") { PlanConfig.decode(app.container.settings.trainingPlan)?.decisions?.size == 1 }
+        await("the subsequent valid action") {
+            !vm.plan.value.actionBusy && PlanConfig.decode(app.container.settings.trainingPlan)?.decisions?.size == 1
+        }
         assertFalse(vm.plan.value.actionBusy)
         assertFalse(vm.plan.value.actionFailed, "a successful action clears an earlier rejection")
     }
