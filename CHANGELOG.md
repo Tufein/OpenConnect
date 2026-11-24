@@ -4,7 +4,7 @@ Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do
 
 ## v1.9.3: het jaar in twaalf maanden
 
-Het Insights-tabblad heeft er een **Jaar**-tab bij: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar, met dezelfde eerlijke "geen data"-regels. Onder de motorkap staat de app nu op Gradle 9.6, AGP 9.5 en compileSdk 37, met Kotlin 2.4 als ingebouwde taal.
+Het Insights-tabblad heeft er een **Jaaroverzicht**-tab bij: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar, met dezelfde eerlijke "geen data"-regels. Onder de motorkap staat de app nu op Gradle 9.6, AGP 9.5 en compileSdk 37, met Kotlin 2.4 als ingebouwde taal.
 
 [Release notes](docs/releases/v1.9.3.md)
 

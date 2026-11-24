@@ -23,7 +23,7 @@ class YearOverviewScreenTest : AppTestBase() {
         tab("Insights").performClick()
         waitForText("Week of", substring = true)
 
-        clickChip("Year")
+        clickChip("Year overview")
         val year = LocalDate.now(ZoneOffset.UTC).year
         waitForText("YEAR $year")
         scrollToText("Steps in total")

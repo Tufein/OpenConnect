@@ -1011,7 +1011,7 @@
     <string name="season_focus_taper">Less distance, a little speed, and rest: arrive at the start with fresh legs.</string>
     <string name="season_note">Worked back from the race date. The kilometres are around what you run in a week now. A rule of thumb, not a coach and not medical advice.</string>
     <string name="insights_score">Hi-score</string>
-    <string name="insights_year">Year</string>
+    <string name="insights_year">Year overview</string>
     <string name="year_title">YEAR %1$d</string>
     <string name="year_steps">Steps per month</string>
     <string name="year_sleep">Sleep per month</string>
