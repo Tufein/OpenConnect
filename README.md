@@ -7,12 +7,14 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.10.0.** A training plan can now react to a missed closed week: the app offers **one** bounded change
-> to a later training week and you choose *Apply* or *Not now*; both choices are kept, and stale or repeated actions
-> cannot change the plan twice. The coach may discuss that proposal but never edits the schedule. Everything from
-> v1.9.3 stays — the twelve-month Year overview, the AGP 9/compileSdk 37 build, the calm six-theme look, the custom
-> front page, folding sections, in-app updates and the honest Oura battery card.
-> [Release notes](docs/releases/v1.10.0.md).
+> **Status: v1.11.0.** The app now speaks **English, Dutch, German and French**. *Settings → Language* follows the
+> phone or picks one of the four; dates and numbers follow that language, and the widget and notifications use it too.
+> AI reports and the coach stay English or Dutch for now. The Oura tab lost its duplicate score cards, and the photo
+> header now follows the day with a different crop and sky at dawn, day, dusk and night. Everything from v1.10.0
+> stays — the adaptive training week, the twelve-month Year overview, the calm themes, the custom front page, folding
+> sections, in-app updates and the honest Oura battery card. The German and French texts are machine-drafted, not
+> native-reviewed.
+> [Release notes](docs/releases/v1.11.0.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

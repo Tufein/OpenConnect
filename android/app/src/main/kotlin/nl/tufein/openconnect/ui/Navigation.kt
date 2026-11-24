@@ -327,6 +327,7 @@ fun OpenConnectRoot(
     val oura by vm.oura.collectAsState()
     val days by vm.days.collectAsState()
     val theme by vm.theme.collectAsState()
+    val appLanguage by vm.appLanguage.collectAsState()
     val appIcon by vm.appIcon.collectAsState()
     val goals by vm.goals.collectAsState()
     val now by vm.now.collectAsState()
@@ -467,7 +468,7 @@ fun OpenConnectRoot(
             }
             composable(Tab.Settings.route) {
                 SettingsScreen(
-                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources, look = look, appIcon = appIcon, fileImport = importState, home = homePrefs),
+                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources, look = look, appIcon = appIcon, fileImport = importState, home = homePrefs, appLanguage = appLanguage, onAppLanguage = vm::setAppLanguage),
                     onLook = vm::setLook,
                     onHomeMetric = vm::setHomeMetric,
                     onHomeBattery = vm::setHomeBattery,
@@ -515,7 +516,7 @@ fun OpenConnectRoot(
             }
             composable(ABOUT_ROUTE) {
                 AboutScreen(
-                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources, look = look, appIcon = appIcon),
+                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources, look = look, appIcon = appIcon, appLanguage = appLanguage),
                     onBack = { nav.popBackStack() },
                     contentPadding = padding,
                 )

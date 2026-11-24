@@ -17,6 +17,8 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import nl.tufein.openconnect.MainActivity
 import nl.tufein.openconnect.R
+import nl.tufein.openconnect.data.SettingsStore
+import nl.tufein.openconnect.i18n.AppLocale
 
 /**
  * Keeps the Bluetooth connection to the watch alive while notifications are being forwarded: a quiet persistent
@@ -105,14 +107,18 @@ class ForwardingService : Service() {
         fun ensureChannel(context: Context) {
             val manager = context.getSystemService(NotificationManager::class.java) ?: return
             if (manager.getNotificationChannel(CHANNEL) == null) {
+                // The service has no Activity to follow: the channel name follows the saved app language.
+                val localized = AppLocale.wrap(context, SettingsStore(context).appLanguage)
                 manager.createNotificationChannel(
-                    NotificationChannel(CHANNEL, context.getString(R.string.forward_channel), NotificationManager.IMPORTANCE_LOW),
+                    NotificationChannel(CHANNEL, localized.getString(R.string.forward_channel), NotificationManager.IMPORTANCE_LOW),
                 )
             }
         }
 
         fun notification(context: Context, ui: ForwardUi): Notification {
             ensureChannel(context)
+            // Texts follow the saved app language; the tap and "Turn off" still target the original service context.
+            val localized = AppLocale.wrap(context, SettingsStore(context).appLanguage)
             val content = PendingIntent.getActivity(
                 context, 0, Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
@@ -123,18 +129,21 @@ class ForwardingService : Service() {
             )
             return NotificationCompat.Builder(context, CHANNEL)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(context.getString(R.string.forward_notification_title))
-                .setContentText(text(context, ui))
+                .setContentTitle(localized.getString(R.string.forward_notification_title))
+                .setContentText(textIn(localized, ui))
                 .setContentIntent(content)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setShowWhen(false)
-                .addAction(0, context.getString(R.string.forward_turn_off), turnOff)
+                .addAction(0, localized.getString(R.string.forward_turn_off), turnOff)
                 .build()
         }
 
         /** The one line of the notification; a function so a test can check it without building a notification. */
-        fun text(context: Context, ui: ForwardUi): String {
+        fun text(context: Context, ui: ForwardUi): String =
+            textIn(AppLocale.wrap(context, SettingsStore(context).appLanguage), ui)
+
+        private fun textIn(context: Context, ui: ForwardUi): String {
             val watch = ui.watchName ?: context.getString(R.string.forward_watch_fallback)
             return if (ui.phase == ForwardPhase.CONNECTED) {
                 context.resources.getQuantityString(R.plurals.forward_notification_connected, ui.sent, watch, ui.sent)

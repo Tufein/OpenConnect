@@ -302,6 +302,9 @@
     <string name="sort_distance">Longest distance</string>
     <string name="sort_duration">Longest time</string>
     <string name="settings_appearance">Appearance</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_system">Phone language</string>
+    <string name="settings_language_note">The app follows the language you pick here. AI reports and the coach stay in English or Dutch for now.</string>
     <string name="settings_look_preview">Preview</string>
     <string name="theme_system">Follow phone</string>
     <string name="theme_dark">Dark</string>
@@ -437,7 +440,7 @@
     <string name="body_last">%1$s kg</string>
     <string name="body_fat_line">%1$s%% fat</string>
     <string name="body_weight">Weight (kg)</string>
-    <string name="body_fat">Fat % (optional)</string>
+    <string name="body_fat" formatted="false">Fat % (optional)</string>
     <string name="body_save">Save</string>
     <string name="body_none">Enter today\'s weight to start the trend.</string>
     <string name="body_trend_desc">Weight, %1$d days, lowest %2$s kg, highest %3$s kg, latest %4$s kg.</string>
@@ -529,7 +532,7 @@
     <string name="nudge_goal_intensity">Almost there: %1$d more intensity minutes reach your weekly goal.</string>
     <string name="nudge_goal_distance">Almost there: %1$d km more reaches your weekly goal.</string>
     <plurals name="nudge_goal_activities">
-        <item quantity="one">One more activity reaches your weekly goal.</item>
+        <item quantity="one">%1$d more activity reaches your weekly goal.</item>
         <item quantity="other">%1$d more activities reach your weekly goal.</item>
     </plurals>
     <string name="nudge_weekly">Last week: %1$d activities, %2$d km, %3$d of 3 goals reached.</string>
@@ -892,13 +895,13 @@
     <string name="rings_thin">Thin</string>
     <string name="rings_bold">Bold</string>
     <string name="rings_note">The orbs on the front page and the ring tab follow this thickness.</string>
-    <string name="look_hero">Front page photo</string>
-    <string name="hero_auto">With the day</string>
+    <string name="look_hero">Front page wallpaper</string>
+    <string name="hero_auto">Follows the day</string>
     <string name="hero_dawn">Morning</string>
     <string name="hero_day">Day</string>
     <string name="hero_dusk">Evening</string>
     <string name="hero_night">Night</string>
-    <string name="hero_note">With the day, the light on the photo follows the hour: warm at dawn, olive by day, clay in the evening and deep blue at night.</string>
+    <string name="hero_note">The wallpaper follows the hour: warm dawn light, the lake in daylight, a low evening sun and a moonlit night. The words stay readable throughout.</string>
     <string name="settings_home">Front page</string>
     <string name="settings_home_body">Choose the card under the battery and what else the front page shows.</string>
     <string name="settings_home_card">Card</string>

@@ -60,6 +60,13 @@ fun <T> downsample(values: List<T>, max: Int = 300): List<T> {
     return List(max) { values[(it * step).toInt()] }
 }
 
+/** A readout without an explicit format follows the app language, so a German chart says "12,3" instead of "12.3". */
+@Composable
+private fun defaultChartFormat(): (Double) -> String {
+    val locale = currentLocale()
+    return remember(locale) { { value: Double -> Fmt.oneDecimal(value, locale) } }
+}
+
 /** Faint dotted lines behind a chart, like the grid of graph paper. */
 private fun DrawScope.grid(color: Color, lines: Int = 3) {
     val dash = PathEffect.dashPathEffect(floatArrayOf(2.dp.toPx(), 4.dp.toPx()))
@@ -166,7 +173,7 @@ fun LineChart(
     labels: List<String>? = null,
     highlight: Int? = null,
     maxLabels: Int = AxisTicks.DEFAULT_MAX,
-    format: (Double) -> String = { String.format(java.util.Locale.getDefault(), "%.1f", it) },
+    format: (Double) -> String = defaultChartFormat(),
 ) {
     val gridColor = MaterialTheme.colorScheme.outlineVariant
     val cursor = MaterialTheme.colorScheme.onSurface
@@ -240,7 +247,7 @@ fun BarChart(
     labels: List<String>? = null,
     highlight: Int? = null,
     maxLabels: Int = AxisTicks.DEFAULT_MAX,
-    format: (Double) -> String = { String.format(java.util.Locale.getDefault(), "%.1f", it) },
+    format: (Double) -> String = defaultChartFormat(),
 ) {
     val gridColor = MaterialTheme.colorScheme.outlineVariant
     val goalColor = MaterialTheme.colorScheme.secondary

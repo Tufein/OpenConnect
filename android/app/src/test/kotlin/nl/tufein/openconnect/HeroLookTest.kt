@@ -37,6 +37,14 @@ class HeroLookTest {
     }
 
     @Test
+    fun `the four hours have their own crop and sky`() {
+        val tones = listOf("dawn", "day", "dusk", "night").map { heroTone(it, 12) }
+        assertEquals(4, tones.map { it.focus }.toSet().size)
+        assertEquals(4, tones.map { it.zoom }.toSet().size)
+        assertEquals(4, tones.map { it.sky }.toSet().size)
+    }
+
+    @Test
     fun `rings are thin by default and unknown weights keep the thin line`() {
         assertEquals(RingWeight.THIN, RingWeight.of(null))
         assertEquals(RingWeight.THIN, RingWeight.of("huge"))

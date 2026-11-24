@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.11.0: Duits, Frans en een voorblad dat met de dag meegaat
+
+De app heeft nu vier talen: kies in Instellingen tussen *Taal van telefoon*, Engels, Nederlands, Duits of Frans. De keuze geldt voor de hele app, de widget en de meldingen; datums en getallen volgen de taal. De rapporten en de coach blijven voorlopig Engels of Nederlands. De Oura-tab is opgeruimd en de foto boven Home en Oura volgt nu echt de dag met een andere uitsnede en lucht. De Duitse en Franse teksten zijn machine-draft, niet native nagekeken.
+
+[Release notes](docs/releases/v1.11.0.md)
+
 ## v1.10.0: een schema dat meedenkt
 
 Je schema houdt nu rekening met een gemiste week: de app toont één rustig voorstel om het sessiepatroon naar een latere trainingsweek te verplaatsen. Jij kiest **Toepassen** of **Niet nu**; beide keuzes blijven bewaard, en de coach mag dat voorstel bespreken maar verandert nooit iets zelf.

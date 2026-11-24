@@ -16,6 +16,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import nl.tufein.openconnect.OpenConnectApp
 import nl.tufein.openconnect.R
+import nl.tufein.openconnect.i18n.AppLocale
 import nl.tufein.openconnect.core.Achievements
 import nl.tufein.openconnect.core.AchievementsCalculator
 import nl.tufein.openconnect.core.Activity
@@ -340,6 +341,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     /** "system", "dark" or "light". */
     val theme: StateFlow<String> = _theme.asStateFlow()
 
+    private val _appLanguage = MutableStateFlow(container.settings.appLanguage)
+
+    /** The language of the app's own texts: "system" (follow the phone) or "en", "nl", "de" or "fr". */
+    val appLanguage: StateFlow<String> = _appLanguage.asStateFlow()
+
     private val _sources = MutableStateFlow(sourcesNow())
 
     /** Which devices the person uses, as chosen at the first start or later in Settings. */
@@ -495,7 +501,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private var currentActivityId: String? = null
 
-    private fun text(id: Int, vararg args: Any) = getApplication<Application>().getString(id, *args)
+    private fun text(id: Int, vararg args: Any) =
+        AppLocale.wrap(getApplication(), container.settings.appLanguage).getString(id, *args)
 
     private fun tell(message: String) {
         // A message can be produced on an IO worker; resuming the snackbar collector there would touch the view tree
@@ -652,6 +659,18 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun setTheme(mode: String) {
         container.settings.themeMode = mode
         _theme.value = container.settings.themeMode
+        redrawWidget()
+    }
+
+    /**
+     * Switches the app's own language. AppCompat hands it to Android's per-app locale (and reproduces the Activity on
+     * older versions), the choice is stored for the next start, and the widget is repainted now so the home screen
+     * does not keep the old language until the next sync.
+     */
+    fun setAppLanguage(choice: String) {
+        container.settings.appLanguage = choice
+        _appLanguage.value = container.settings.appLanguage
+        AppLocale.apply(_appLanguage.value)
         redrawWidget()
     }
 

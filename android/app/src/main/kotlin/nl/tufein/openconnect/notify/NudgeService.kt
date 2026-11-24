@@ -29,6 +29,8 @@ import nl.tufein.openconnect.core.Repository
 import nl.tufein.openconnect.core.StatsService
 import nl.tufein.openconnect.core.TrainingLoadCalculator
 import nl.tufein.openconnect.core.WeeklyGoals
+import nl.tufein.openconnect.data.SettingsStore
+import nl.tufein.openconnect.i18n.AppLocale
 import nl.tufein.openconnect.sync.BackgroundSync
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -93,16 +95,20 @@ class AndroidNudgeNotifier(private val context: Context) : NudgeNotifier {
             return
         }
         val manager = context.getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(NotificationChannel(CHANNEL, context.getString(R.string.nudge_channel), NotificationManager.IMPORTANCE_DEFAULT))
+        // A worker has no Activity to follow: the channel, title and body use the saved app language. The tap still
+        // opens the app through the original context, so the notification itself stays exactly where it was.
+        val localized = AppLocale.wrap(context, SettingsStore(context).appLanguage)
+        manager.createNotificationChannel(NotificationChannel(CHANNEL, localized.getString(R.string.nudge_channel), NotificationManager.IMPORTANCE_DEFAULT))
         val open = PendingIntent.getActivity(
             context, 0, Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
+        val body = textIn(localized, nudge)
         val notification = NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle(context.getString(R.string.app_name))
-            .setContentText(text(context, nudge))
-            .setStyle(NotificationCompat.BigTextStyle().bigText(text(context, nudge)))
+            .setContentTitle(localized.getString(R.string.app_name))
+            .setContentText(body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setContentIntent(open)
             .setAutoCancel(true)
             .build()
@@ -116,7 +122,11 @@ class AndroidNudgeNotifier(private val context: Context) : NudgeNotifier {
     companion object {
         const val CHANNEL = "nudges"
 
-        fun text(context: Context, n: Nudge): String = when (n.kind) {
+        /** The nudge's line in the app's language, not the phone's when the person chose another one. */
+        fun text(context: Context, n: Nudge): String =
+            textIn(AppLocale.wrap(context, SettingsStore(context).appLanguage), n)
+
+        private fun textIn(context: Context, n: Nudge): String = when (n.kind) {
             NudgeKind.GOAL_CLOSE -> when (n.goal) {
                 "intensity" -> context.getString(R.string.nudge_goal_intensity, n.numbers[0])
                 "distance" -> context.getString(R.string.nudge_goal_distance, n.numbers[0])

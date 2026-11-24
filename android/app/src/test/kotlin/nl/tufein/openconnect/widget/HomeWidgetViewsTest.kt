@@ -8,6 +8,8 @@ import androidx.test.core.app.ApplicationProvider
 import nl.tufein.openconnect.R
 import nl.tufein.openconnect.core.WidgetFormat
 import nl.tufein.openconnect.core.WidgetSummary
+import nl.tufein.openconnect.data.SettingsStore
+import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -20,6 +22,12 @@ import kotlin.test.assertNull
 @Config(sdk = [34])
 class HomeWidgetViewsTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
+
+    /** The saved language lives in the preferences; leave the default behind for the other tests. */
+    @After
+    fun resetLanguage() {
+        SettingsStore(context) { null }.appLanguage = "system"
+    }
 
     private fun view(summary: WidgetSummary?, format: WidgetFormat = WidgetFormat.MEDIUM): View {
         Locale.setDefault(Locale.US)
@@ -76,5 +84,20 @@ class HomeWidgetViewsTest {
         val root = view(WidgetSummary(50, 300, null, 0, 0), WidgetFormat.LARGE)
         assertEquals("No sleep yet", root.text(R.id.widget_sleep))
         assertEquals("No resting heart rate", root.text(R.id.widget_rest))
+    }
+
+    @Test
+    fun `the saved app language, not the phone's, picks the words and the grouping`() {
+        // The helper pins the phone to US English; only the saved app language below is German.
+        SettingsStore(context) { null }.appLanguage = "de"
+        val root = view(
+            WidgetSummary(72, 6500, 10_000, 2, 3, sleepMinutes = 7 * 60 + 8, restingHr = 52),
+            WidgetFormat.LARGE,
+        )
+        assertEquals("72", root.text(R.id.widget_readiness))
+        assertEquals("6.500 von 10.000 Schritten", root.text(R.id.widget_steps))
+        assertEquals("2 von 3 Aktivitäten diese Woche", root.text(R.id.widget_week))
+        assertEquals("7 Std. 8 Min. Schlaf", root.text(R.id.widget_sleep))
+        assertEquals("Ruhepuls 52 bpm", root.text(R.id.widget_rest))
     }
 }

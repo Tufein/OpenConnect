@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The languages the app itself is translated into. Android 13 and newer show this list under
+  Settings > Apps > OpenConnect > Language; the app keeps the choice (AppLocale.kt) so older versions
+  and the home-screen widget follow it too.
+-->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="nl" />
+    <locale android:name="de" />
+    <locale android:name="fr" />
+</locale-config>

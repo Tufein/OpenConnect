@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
@@ -128,17 +129,36 @@ enum class RingWeight(val key: String, val stroke: Dp) {
 val LocalRingWeight = staticCompositionLocalOf { RingWeight.THIN }
 
 /**
- * The light on the photo header: [scrim] darkens it behind the words, [wash] tints the photograph itself. "auto" is not a
- * tone but a choice: [heroTone] turns it into dawn, day, dusk or night from the hour, so the front page changes with the
- * day without the person touching a setting.
+ * The light and the composition of the photo header: [scrim] darkens it behind the words, [wash] tints the photograph,
+ * [focus] decides which part stays in view and [zoom] how close the crop sits. "auto" is not a tone but a choice:
+ * [heroTone] turns it into dawn, day, dusk or night from the hour, so the front page changes with the day without the
+ * person touching a setting.
  */
 @Immutable
-class HeroTone(val key: String, val scrim: Color, val wash: Color)
+class HeroTone(
+    val key: String,
+    val scrim: Color,
+    val wash: Color,
+    val focus: Alignment,
+    val zoom: Float,
+    val sky: HeroSky,
+)
 
-private val DawnTone = HeroTone("dawn", Color(0xFF1A120C), Color(0xFFE9B98A))
-private val DayTone = HeroTone("day", Color(0xFF0B0E0A), Color(0xFF9AA76B))
-private val DuskTone = HeroTone("dusk", Color(0xFF160F11), Color(0xFFC8826A))
-private val NightTone = HeroTone("night", Color(0xFF070A12), Color(0xFF5C6E96))
+/** The four skies the header draws over the same photograph; each one has its own crop and light. */
+enum class HeroSky { DAWN, DAY, DUSK, NIGHT }
+
+private val DawnTone = HeroTone(
+    "dawn", Color(0xFF1A120C), Color(0xFFE9B98A), Alignment.TopStart, 1.07f, HeroSky.DAWN,
+)
+private val DayTone = HeroTone(
+    "day", Color(0xFF0B0E0A), Color(0xFF9AA76B), Alignment.Center, 1.00f, HeroSky.DAY,
+)
+private val DuskTone = HeroTone(
+    "dusk", Color(0xFF160F11), Color(0xFFC8826A), Alignment.CenterEnd, 1.12f, HeroSky.DUSK,
+)
+private val NightTone = HeroTone(
+    "night", Color(0xFF070A12), Color(0xFF5C6E96), Alignment.TopCenter, 1.17f, HeroSky.NIGHT,
+)
 
 /** The tone for a stored choice and the local hour; an unknown key falls back to the automatic one. */
 fun heroTone(choice: String?, hour: Int): HeroTone {

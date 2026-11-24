@@ -6,6 +6,7 @@ import nl.tufein.openconnect.ui.downsample
 import nl.tufein.openconnect.ui.inlineMarkdown
 import java.time.Instant
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 import java.util.Locale
 import kotlin.test.Test
@@ -55,6 +56,44 @@ class FmtTest {
         assertEquals("Tuesday 17 November 2026", Fmt.longDate(day, Locale.US))
         // In Dutch the weekday starts with a small letter; the title makes it a capital.
         assertEquals("Dinsdag 17 november 2026", Fmt.longDate(day, Locale("nl", "NL")))
+    }
+
+    @Test
+    fun germanDatesAndNumbers() {
+        val day = LocalDate.parse("2026-11-24")
+        assertEquals("24.11.2026", Fmt.date(day, Locale.GERMANY))
+        assertEquals("24. Nov.", Fmt.shortDate(day, Locale.GERMANY))
+        assertEquals("Di., 24. Nov.", Fmt.dayLabel(day, Locale.GERMANY))
+        assertEquals("Dienstag, 24. November 2026", Fmt.longDate(day, Locale.GERMANY))
+        assertEquals("November 2026", Fmt.monthYear(YearMonth.from(day), Locale.GERMANY))
+
+        val dateTime = Fmt.dateTime(Instant.parse("2026-11-24T07:30:00Z"), ZoneId.of("Europe/Berlin"), Locale.GERMANY)
+        assertTrue("24.11.2026" in dateTime, dateTime)
+        assertTrue("08:30" in dateTime, dateTime)
+
+        assertEquals("9,5", Fmt.oneDecimal(9.46, Locale.GERMANY))
+        assertEquals("10.432", Fmt.thousands(10_432, Locale.GERMANY))
+        assertEquals("25,9", Fmt.speedKmh(7.2, Locale.GERMANY))
+    }
+
+    @Test
+    fun frenchDatesAndNumbers() {
+        val day = LocalDate.parse("2026-11-24")
+        assertEquals("24/11/2026", Fmt.date(day, Locale.FRANCE))
+        assertEquals("24 nov.", Fmt.shortDate(day, Locale.FRANCE))
+        assertEquals("mar. 24 nov.", Fmt.dayLabel(day, Locale.FRANCE))
+        assertEquals("Mardi 24 novembre 2026", Fmt.longDate(day, Locale.FRANCE))
+        assertEquals("novembre 2026", Fmt.monthYear(YearMonth.from(day), Locale.FRANCE))
+
+        val dateTime = Fmt.dateTime(Instant.parse("2026-11-24T07:30:00Z"), ZoneId.of("Europe/Berlin"), Locale.FRANCE)
+        assertTrue("24 nov. 2026" in dateTime, dateTime)
+        assertTrue("08:30" in dateTime, dateTime)
+
+        assertEquals("9,5", Fmt.oneDecimal(9.46, Locale.FRANCE))
+        assertEquals("12,35", Fmt.km(12_345.0, Locale.FRANCE))
+        // French groups thousands with a narrow no-break space (U+202F), not a comma or a full stop.
+        assertEquals("10\u202F432", Fmt.thousands(10_432, Locale.FRANCE))
+        assertEquals("25,9", Fmt.speedKmh(7.2, Locale.FRANCE))
     }
 
     @Test

@@ -1,9 +1,11 @@
 package nl.tufein.openconnect.watch
 
+import android.app.Notification
 import android.app.NotificationManager
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import nl.tufein.openconnect.OpenConnectApp
+import nl.tufein.openconnect.data.SettingsStore
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -11,6 +13,7 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import java.util.Locale
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -24,7 +27,11 @@ class LiveRecordingServiceTest {
 
     /** The service keeps its Stop callback in a static; leave none behind for the next test. */
     @After
-    fun forgetTheStopCallback() = LiveRecordingService.stop(context)
+    fun forgetTheStopCallback() {
+        LiveRecordingService.stop(context)
+        SettingsStore(context) { null }.appLanguage = "system"
+        Locale.setDefault(Locale.ENGLISH)
+    }
 
     @Test
     fun `the notification line shows the heart rate and the elapsed time`() {
@@ -36,6 +43,16 @@ class LiveRecordingServiceTest {
     fun `without a reading yet the heart rate is a dash`() {
         val live = LiveUi(phase = LivePhase.CONNECTING)
         assertEquals("– bpm · 0:00", LiveRecordingService.text(context, live))
+    }
+
+    @Test
+    fun `the channel, title and stop action follow the saved app language`() {
+        SettingsStore(context) { null }.appLanguage = "de"
+        Locale.setDefault(Locale.US)
+        val notification = LiveRecordingService.notification(context, LiveUi(phase = LivePhase.STREAMING, bpm = 132, seconds = 10))
+        assertEquals("Live-Puls", notification.extras.getCharSequence(Notification.EXTRA_TITLE).toString())
+        assertEquals("Stopp", notification.actions.single().title.toString())
+        assertEquals("Live-Puls", manager.getNotificationChannel(notification.channelId).name.toString())
     }
 
     @Test

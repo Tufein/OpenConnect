@@ -11,6 +11,8 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.printToString
@@ -96,6 +98,13 @@ class OuraAndTouchScreenTest : AppTestBase() {
         scrollToTop() // the setup list left the dashboard scrolled to the bottom
         // The ring's own dashboard on top of the tab, the link and what the sync brought below it.
         waitForText("Readiness")
+        // The day's three scores live in the hero's orbs; the duplicate tile row under it is gone.
+        rule.onNodeWithTag("oura-hero-orbs").assertIsDisplayed()
+        rule.onNodeWithTag("oura-section-night").assertIsDisplayed()
+        assertTrue(
+            rule.onAllNodes(hasTestTag("oura-section-scores")).fetchSemanticsNodes().isEmpty(),
+            "the duplicate score row is gone",
+        )
         scrollToText("7:13 asleep", substring = true)
         shot("39-oura-tab")
         scrollToText("1 days, 1 nights and 1 workouts updated")

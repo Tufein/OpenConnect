@@ -1,5 +1,6 @@
 package nl.tufein.openconnect
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.hardware.usb.UsbManager
@@ -7,13 +8,13 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
-import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -22,13 +23,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import nl.tufein.openconnect.data.SettingsStore
+import nl.tufein.openconnect.i18n.AppLocale
 import nl.tufein.openconnect.ui.AppViewModel
 import nl.tufein.openconnect.ui.LockScreen
 import nl.tufein.openconnect.ui.OpenConnectRoot
 import nl.tufein.openconnect.ui.OpenConnectTheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     internal val viewModel: AppViewModel by viewModels()
+
+    /**
+     * The stored app language is applied to the Activity's own context as well as to AppCompat's per-app locale.
+     * AppCompat handles the platform side on Android 13 and newer; wrapping here makes the very first frames (and
+     * a test runner that does not apply per-app locales) use the chosen resources immediately.
+     */
+    override fun attachBaseContext(newBase: Context) {
+        val choice = SettingsStore(newBase).appLanguage
+        super.attachBaseContext(if (choice == AppLocale.SYSTEM) newBase else AppLocale.wrap(newBase, choice))
+    }
 
     /** Android's fingerprint / face / screen-lock check; built in onCreate because it registers for a result. */
     private lateinit var unlocker: nl.tufein.openconnect.lock.Unlocker
@@ -41,6 +54,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             val mode by viewModel.theme.collectAsState()
             val look by viewModel.look.collectAsState()
+            val appLanguage by viewModel.appLanguage.collectAsState()
+            // AppCompat recreates the Activity for a new per-app locale on a real phone. Doing it explicitly as
+            // well keeps the first frame in the chosen language on test runners and older vendor builds.
+            val startLanguage = remember { appLanguage }
+            LaunchedEffect(appLanguage) {
+                if (appLanguage != startLanguage) recreate()
+            }
             val systemDark = isSystemInDarkTheme()
             val dark = when (mode) {
                 "dark" -> true

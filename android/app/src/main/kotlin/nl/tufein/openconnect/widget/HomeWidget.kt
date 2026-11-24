@@ -19,6 +19,8 @@ import nl.tufein.openconnect.R
 import nl.tufein.openconnect.core.WidgetFormat
 import nl.tufein.openconnect.core.WidgetFormats
 import nl.tufein.openconnect.core.WidgetSummary
+import nl.tufein.openconnect.data.SettingsStore
+import nl.tufein.openconnect.i18n.AppLocale
 import java.text.NumberFormat
 import java.time.LocalDate
 
@@ -81,22 +83,25 @@ object HomeWidgetViews {
         }
         val views = RemoteViews(context.packageName, layout)
         val colors = schemeFor(context)
+        // The widget has no Activity to follow, so its texts and number grouping come from the saved app language.
+        val localized = AppLocale.wrap(context, SettingsStore(context).appLanguage)
+        val numbers = NumberFormat.getIntegerInstance(localized.resources.configuration.locales[0])
         views.setInt(R.id.widget_root, "setBackgroundColor", colors.background.toArgb())
         views.setInt(R.id.widget_readiness_label, "setTextColor", colors.onSurfaceVariant.toArgb())
         views.setInt(R.id.widget_readiness, "setTextColor", colors.primary.toArgb())
         views.setInt(R.id.widget_steps, "setTextColor", colors.onBackground.toArgb())
-        val dash = context.getString(R.string.widget_none)
+        val dash = localized.getString(R.string.widget_none)
         views.setTextViewText(R.id.widget_readiness, summary?.readiness?.toString() ?: dash)
         views.setTextViewText(
             R.id.widget_steps,
             if (summary?.steps == null) {
-                context.getString(R.string.widget_steps_none)
+                localized.getString(R.string.widget_steps_none)
             } else {
-                val steps = NumberFormat.getIntegerInstance().format(summary.steps)
+                val steps = numbers.format(summary.steps)
                 if (summary.stepsGoal != null) {
-                    context.getString(R.string.widget_steps_goal, steps, NumberFormat.getIntegerInstance().format(summary.stepsGoal))
+                    localized.getString(R.string.widget_steps_goal, steps, numbers.format(summary.stepsGoal))
                 } else {
-                    context.getString(R.string.widget_steps, steps)
+                    localized.getString(R.string.widget_steps, steps)
                 }
             },
         )
@@ -105,9 +110,9 @@ object HomeWidgetViews {
             views.setTextViewText(
                 R.id.widget_week,
                 if (summary == null || summary.weekActivityGoal == 0) {
-                    context.getString(R.string.widget_week_free, summary?.weekActivities ?: 0)
+                    localized.getString(R.string.widget_week_free, summary?.weekActivities ?: 0)
                 } else {
-                    context.getString(R.string.widget_week, summary.weekActivities, summary.weekActivityGoal)
+                    localized.getString(R.string.widget_week, summary.weekActivities, summary.weekActivityGoal)
                 },
             )
         }
@@ -117,11 +122,11 @@ object HomeWidgetViews {
             val sleep = summary?.sleepMinutes
             views.setTextViewText(
                 R.id.widget_sleep,
-                if (sleep == null) context.getString(R.string.widget_sleep_none) else context.getString(R.string.widget_sleep, sleep / 60, sleep % 60),
+                if (sleep == null) localized.getString(R.string.widget_sleep_none) else localized.getString(R.string.widget_sleep, sleep / 60, sleep % 60),
             )
             views.setTextViewText(
                 R.id.widget_rest,
-                summary?.restingHr?.let { context.getString(R.string.widget_rest, it) } ?: context.getString(R.string.widget_rest_none),
+                summary?.restingHr?.let { localized.getString(R.string.widget_rest, it) } ?: localized.getString(R.string.widget_rest_none),
             )
         }
         val open = PendingIntent.getActivity(

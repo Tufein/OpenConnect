@@ -1,6 +1,7 @@
 package nl.tufein.openconnect
 
 import android.app.Application
+import androidx.appcompat.app.AppCompatDelegate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -43,6 +44,7 @@ import nl.tufein.openconnect.sync.WorkManagerBackgroundSync
 import nl.tufein.openconnect.sync.WorkManagerBleBackgroundSync
 import nl.tufein.openconnect.data.SettingsStore
 import nl.tufein.openconnect.data.SqliteRepository
+import nl.tufein.openconnect.i18n.AppLocale
 import nl.tufein.openconnect.core.garmin.GarminHttp
 import nl.tufein.openconnect.core.garmin.UrlConnectionGarminHttp
 import nl.tufein.openconnect.core.updates.UpdateHttp
@@ -350,7 +352,7 @@ class OpenConnectApp : Application() {
             forwardAccess = { ForwardAccess.hasNotificationAccess(this) },
             forwardBluetooth = { ForwardAccess.bluetoothAllowed(this) },
             forwardScreenOn = { ForwardAccess.screenOn(this) },
-            forwardHiddenBody = { getString(R.string.forward_hidden_body) },
+            forwardHiddenBody = { AppLocale.wrap(this, SettingsStore(this).appLanguage).getString(R.string.forward_hidden_body) },
             forwardDismiss = PhoneNotificationListener::cancel,
             installedApps = apps,
             liveRegistry = registry,
@@ -361,5 +363,38 @@ class OpenConnectApp : Application() {
             updateDir = File(cacheDir, "updates"),
             updateSigner = { apk -> nl.tufein.openconnect.updates.ApkSigners.sameAsInstalled(this, apk) },
         ) }
+    }
+
+    /**
+     * Android 13 and newer keep a language for this app alone (Settings > Apps > OpenConnect > Language). That choice
+     * is the one to keep: it is stored and applied, so the widget, notifications and the next start agree with it.
+     * Without one, the language stored in Settings is applied. Only a small [SettingsStore] is read here on purpose:
+     * touching [container] this early would build the database, the Bluetooth link and every controller before the
+     * first screen even exists.
+     */
+    override fun onCreate() {
+        super.onCreate()
+        reconcileAppLanguage()
+    }
+
+    private var languageReconciled = false
+
+    private fun reconcileAppLanguage() {
+        if (languageReconciled) return
+        languageReconciled = true
+        try {
+            val settings = SettingsStore(this)
+            val installed = AppCompatDelegate.getApplicationLocales()
+            // A per-app locale such as "de-AT" counts as German. One we have no texts for is left to the stored choice.
+            val chosen = if (installed.isEmpty) null else AppLocale.supportedPrefix(installed.toLanguageTags())
+            if (chosen != null) {
+                settings.appLanguage = chosen
+                AppLocale.apply(chosen)
+            } else {
+                AppLocale.apply(settings.appLanguage)
+            }
+        } catch (_: Throwable) {
+            // A language that cannot be applied must never keep the app from starting.
+        }
     }
 }

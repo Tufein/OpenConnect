@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
@@ -89,6 +90,10 @@ data class SettingsUi(
     val appIcon: AppIcon = AppIcon.HANDHELD,
     /** The file import: its progress while it runs and the report of the last one (v1.3.0). */
     val fileImport: ImportUi = ImportUi(),
+    /** The language of the app itself: "system" follows the phone, or "en", "nl", "de" or "fr". */
+    val appLanguage: String = "system",
+    /** A language was picked: "system", "en", "nl", "de" or "fr". */
+    val onAppLanguage: (String) -> Unit = {},
 )
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -163,6 +168,37 @@ fun SettingsScreen(
     ) {
         item {
             Text(stringResource(R.string.tab_settings), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
+        }
+        // The app's own language sits right at the top: it changes every other screen. Reports and the coach keep their
+        // own language choice further down for now.
+        item {
+            FoldableCard("settings-language", stringResource(R.string.settings_language), modifier = Modifier.testTag("language-card")) {
+                FlowRow(
+                    modifier = Modifier.selectableGroup(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    for ((code, label) in listOf(
+                        "system" to stringResource(R.string.settings_language_system),
+                        "en" to "English",
+                        "nl" to "Nederlands",
+                        "de" to "Deutsch",
+                        "fr" to "Français",
+                    )) {
+                        PixelChip(
+                            selected = ui.appLanguage == code,
+                            onClick = { ui.onAppLanguage(code) },
+                            modifier = Modifier.testTag("language-$code"),
+                            label = { Text(label) },
+                        )
+                    }
+                }
+                Text(
+                    stringResource(R.string.settings_language_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
         // Everything about the look (dark or light, style, letters, colours and the launcher icon) sits in one section that
         // is folded away until it is tapped, so the settings people come for more often are not three screens down.

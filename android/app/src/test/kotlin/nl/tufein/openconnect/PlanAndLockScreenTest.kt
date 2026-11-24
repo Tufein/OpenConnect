@@ -74,6 +74,7 @@ class PlanAndLockScreenTest : AppTestBase() {
         shot("33-plan-setup")
         clickText("10K")
         clickText("Create plan")
+        rule.waitUntil(45_000) { !hasText("Create plan", substring = false) }
         scrollToText("10K plan")
         waitForText("10K plan")
         // Since v1.6.0 the own-workout builder sits above the plan, so the next run can start below the fold.
@@ -148,7 +149,11 @@ class PlanAndLockScreenTest : AppTestBase() {
         tab("Insights").performClick()
         clickChip("More")
         clickChip("Plan")
+        scrollToText("Create plan")
+        waitForText("Create plan")
         clickText("Create plan")
+        // The plan is built off the main thread; the setup disappears when its title has replaced it.
+        rule.waitUntil(45_000) { !hasText("Create plan", substring = false) }
         scrollToText("Plan adjustment")
         waitForText("Plan adjustment")
         scrollToText("No missed weeks.", substring = true)

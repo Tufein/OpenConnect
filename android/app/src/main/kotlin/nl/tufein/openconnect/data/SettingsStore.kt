@@ -9,6 +9,7 @@ import nl.tufein.openconnect.core.WeeklyGoals
 import nl.tufein.openconnect.core.reports.AiVendor
 import nl.tufein.openconnect.garmin.GarminSettings
 import nl.tufein.openconnect.health.HealthSettings
+import nl.tufein.openconnect.i18n.AppLocale
 import nl.tufein.openconnect.notify.NudgeSettings
 import nl.tufein.openconnect.watch.GarminBleOptions
 import nl.tufein.openconnect.watch.GarminBleWatch
@@ -35,9 +36,9 @@ class SettingsStore(
 
     private val securePrefs: SharedPreferences? by lazy(secure)
 
-    /** Language of generated reports and coach answers: "en" or "nl". Defaults to the phone's language. */
+    /** Language of generated reports and coach answers: "en" or "nl". Defaults to the phone's language, not the app's own language choice. */
     override var language: String
-        get() = prefs.getString(KEY_LANGUAGE, null) ?: if (Locale.getDefault().language == "nl") "nl" else "en"
+        get() = prefs.getString(KEY_LANGUAGE, null) ?: if (AppLocale.systemLanguage() == "nl") "nl" else "en"
         set(value) = prefs.edit().putString(KEY_LANGUAGE, value).apply()
 
     /** "auto" (Claude, else Gemini, else the offline template), "template", "anthropic" or "gemini". */
@@ -83,6 +84,14 @@ class SettingsStore(
     var themeMode: String
         get() = prefs.getString(KEY_THEME, "system")?.takeIf { it in THEMES } ?: "system"
         set(value) = prefs.edit().putString(KEY_THEME, value.takeIf { it in THEMES } ?: "system").apply()
+
+    /**
+     * The app's own language: "system" (follow the phone) or one of [AppLocale.SUPPORTED]. A value this version does
+     * not know, from a newer version or a hand-edited file, opens as "system" rather than in a language we cannot show.
+     */
+    var appLanguage: String
+        get() = AppLocale.normalize(prefs.getString(KEY_APP_LANGUAGE, null))
+        set(value) = prefs.edit().putString(KEY_APP_LANGUAGE, AppLocale.normalize(value)).apply()
 
     /**
      * The colour theme, a key of [nl.tufein.openconnect.ui.Palette]. A fresh install starts on Olive; a key of a theme
@@ -429,6 +438,7 @@ class SettingsStore(
         private const val KEY_LANGUAGE = "report_language"
         private const val KEY_PROVIDER = "provider"
         private const val KEY_THEME = "theme_mode"
+        private const val KEY_APP_LANGUAGE = "app_language"
         private const val KEY_PALETTE = "theme_palette"
         private const val KEY_LETTERS = "theme_letters"
         private const val KEY_STYLE = "theme_style"

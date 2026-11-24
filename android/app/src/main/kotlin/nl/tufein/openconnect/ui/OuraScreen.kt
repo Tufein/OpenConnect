@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -71,7 +72,7 @@ fun OuraScreen(
         fun section(key: String, content: @Composable () -> Unit) {
             positions[key] = index++
             item(key = key) {
-                Box(Modifier.fillMaxWidth().padding(horizontal = gutter)) { content() }
+                Box(Modifier.fillMaxWidth().padding(horizontal = gutter).testTag("oura-section-$key")) { content() }
             }
         }
         fun scrollTo(key: String) {
@@ -87,7 +88,7 @@ fun OuraScreen(
             }
         }
         if (ui.days.isNotEmpty()) {
-            ouraDashboard(ui.days, ::section, ::scrollTo, metrics)
+            ouraDashboard(ui.days, ::section, metrics)
         } else {
             section("intro") { Text(stringResource(if (ui.connected) R.string.oura_no_days else R.string.oura_intro), style = MaterialTheme.typography.bodyMedium) }
         }
@@ -199,7 +200,11 @@ private fun OuraEditorialHero(last: OuraDay?, metrics: MetricColors, scrollTo: (
         title = stringResource(R.string.oura_title),
         subtitle = last?.let { stringResource(R.string.oura_today, Fmt.date(it.date)) } ?: stringResource(R.string.editorial_oura_subtitle),
         height = if (last != null) 300.dp else 220.dp,
-        footer = { if (last != null) MetricOrbRow(orbs, onPhoto = true, spread = false) },
+        footer = {
+            if (last != null) {
+                MetricOrbRow(orbs, modifier = Modifier.testTag("oura-hero-orbs"), onPhoto = true, spread = false)
+            }
+        },
     )
 }
 
@@ -207,7 +212,6 @@ private fun OuraEditorialHero(last: OuraDay?, metrics: MetricColors, scrollTo: (
 private fun LazyListScope.ouraDashboard(
     days: List<OuraDay>,
     section: (String, @Composable () -> Unit) -> Unit,
-    scrollTo: (String) -> Unit,
     metrics: MetricColors,
 ) {
     val last = days.last()
@@ -215,14 +219,7 @@ private fun LazyListScope.ouraDashboard(
     val dates = (29 downTo 0).map { last.date.minusDays(it.toLong()) }
     val labels = dates.map { Fmt.shortDate(it) }
     fun series(pick: (OuraDay) -> Number?): List<Double?> = dates.map { d -> byDate[d]?.let(pick)?.toDouble() }
-    section("scores") {
-        SectionTitle(stringResource(R.string.oura_today, Fmt.date(last.date)))
-        Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            ScoreTile(stringResource(R.string.oura_readiness), last.readiness, metrics.readiness, Modifier.weight(1f), onClick = { scrollTo("readiness") })
-            ScoreTile(stringResource(R.string.oura_sleep), last.sleepScore, metrics.sleep, Modifier.weight(1f), onClick = { scrollTo("sleep") })
-            ScoreTile(stringResource(R.string.oura_activity), last.activityScore, metrics.steps, Modifier.weight(1f), onClick = { scrollTo("steps") })
-        }
-    }
+    // The day's three scores already sit in the hero's orbs; a second tile row under it only repeated them.
     section("night") {
         SurfaceCard {
             Text(stringResource(R.string.oura_last_night), style = MaterialTheme.typography.titleMedium)

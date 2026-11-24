@@ -17,6 +17,8 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import nl.tufein.openconnect.MainActivity
 import nl.tufein.openconnect.R
+import nl.tufein.openconnect.data.SettingsStore
+import nl.tufein.openconnect.i18n.AppLocale
 import nl.tufein.openconnect.ui.Fmt
 
 /**
@@ -107,14 +109,18 @@ class LiveRecordingService : Service() {
             val manager = context.getSystemService(NotificationManager::class.java) ?: return
             // The notification is refreshed every second; only ask the system when the channel is not there yet.
             if (manager.getNotificationChannel(CHANNEL) == null) {
+                // The service has no Activity to follow: the channel name follows the saved app language.
+                val localized = AppLocale.wrap(context, SettingsStore(context).appLanguage)
                 manager.createNotificationChannel(
-                    NotificationChannel(CHANNEL, context.getString(R.string.watch_live_title), NotificationManager.IMPORTANCE_LOW),
+                    NotificationChannel(CHANNEL, localized.getString(R.string.watch_live_title), NotificationManager.IMPORTANCE_LOW),
                 )
             }
         }
 
         fun notification(context: Context, live: LiveUi): Notification {
             ensureChannel(context)
+            // Texts follow the saved app language; the tap and Stop still target the original service context.
+            val localized = AppLocale.wrap(context, SettingsStore(context).appLanguage)
             val content = PendingIntent.getActivity(
                 context, 0, Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
@@ -125,18 +131,21 @@ class LiveRecordingService : Service() {
             )
             return NotificationCompat.Builder(context, CHANNEL)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(context.getString(R.string.watch_live_title))
-                .setContentText(text(context, live))
+                .setContentTitle(localized.getString(R.string.watch_live_title))
+                .setContentText(textIn(localized, live))
                 .setContentIntent(content)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .setShowWhen(false)
-                .addAction(0, context.getString(R.string.watch_live_stop), stop)
+                .addAction(0, localized.getString(R.string.watch_live_stop), stop)
                 .build()
         }
 
         /** The one line of the notification; a function so a test can check it without building a notification. */
         fun text(context: Context, live: LiveUi): String =
+            textIn(AppLocale.wrap(context, SettingsStore(context).appLanguage), live)
+
+        private fun textIn(context: Context, live: LiveUi): String =
             context.getString(R.string.live_notification_text, live.bpm?.toString() ?: "–", Fmt.duration(live.seconds.toDouble()))
     }
 }

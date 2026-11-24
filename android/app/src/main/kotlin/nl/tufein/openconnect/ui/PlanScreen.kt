@@ -47,8 +47,6 @@ import nl.tufein.openconnect.core.Reliability
 import nl.tufein.openconnect.core.SessionType
 import nl.tufein.openconnect.core.WeekProgress
 import nl.tufein.openconnect.core.WeekState
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /** The Plan tab: choose a 5K or 10K plan, or follow the one you made. */
@@ -67,6 +65,7 @@ fun PlanContent(
 ) {
     // Creating or deleting the plan changes the list a lot: start from the top again instead of landing somewhere in the middle.
     val listState = remember(state.plan == null) { LazyListState() }
+    val locale = currentLocale()
     LazyColumn(
         state = listState,
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = contentPadding.calculateBottomPadding() + 16.dp),
@@ -87,12 +86,12 @@ fun PlanContent(
                 val title = stringResource(if (plan.config.goal == PlanGoal.FIVE_K) R.string.plan_title_5k else R.string.plan_title_10k)
                 Text(title, style = MaterialTheme.typography.titleMedium)
                 val status = when {
-                    progress.finished -> stringResource(R.string.plan_finished, Fmt.date(plan.raceDate))
-                    progress.notStarted -> stringResource(R.string.plan_not_started, Fmt.date(plan.start))
+                    progress.finished -> stringResource(R.string.plan_finished, Fmt.date(plan.raceDate, locale))
+                    progress.notStarted -> stringResource(R.string.plan_not_started, Fmt.date(plan.start, locale))
                     else -> progress.current?.let { stringResource(R.string.plan_week_x_of_y, it.week.number, plan.weeks.size) }.orEmpty()
                 }
                 Text(status, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(stringResource(R.string.plan_race_on, Fmt.date(plan.raceDate)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.plan_race_on, Fmt.date(plan.raceDate, locale)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         item { PlanAdjustmentCard(state, onApplyPlanChange, onDismissPlanChange) }
@@ -107,7 +106,7 @@ fun PlanContent(
                 FoldableCard("plan-week", stringResource(R.string.plan_this_week)) {
                     for (s in current.week.sessions) SessionRow(s, detailed = false)
                     Text(
-                        stringResource(R.string.plan_km_of, Fmt.oneDecimal(current.doneKm), Fmt.oneDecimal(current.week.volumeKm)),
+                        stringResource(R.string.plan_km_of, Fmt.oneDecimal(current.doneKm, locale), Fmt.oneDecimal(current.week.volumeKm, locale)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -239,10 +238,11 @@ private fun PlanAdjustmentCard(
 
 @Composable
 private fun PlanAdherenceLine(label: String, progress: WeekProgress) {
+    val locale = currentLocale()
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(label, style = MaterialTheme.typography.bodyMedium)
         Text(
-            stringResource(R.string.plan_adjustment_adherence, Fmt.oneDecimal(progress.week.volumeKm), Fmt.oneDecimal(progress.doneKm)),
+            stringResource(R.string.plan_adjustment_adherence, Fmt.oneDecimal(progress.week.volumeKm, locale), Fmt.oneDecimal(progress.doneKm, locale)),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -317,15 +317,16 @@ private fun OwnWorkoutsCard(workouts: List<OwnWorkout>, onSave: (OwnWorkout) -> 
     var distanceText by rememberSaveable { mutableStateOf("") }
     var paceText by rememberSaveable { mutableStateOf("") }
     var tried by rememberSaveable { mutableStateOf(false) }
+    val locale = currentLocale()
 
     fun open(workout: OwnWorkout) {
         editingId = workout.id
         name = workout.name
         repeatsText = workout.repeats.toString()
-        fastText = minutesText(workout.fastS)
+        fastText = minutesText(workout.fastS, locale)
         recoveryText = workout.recoveryS.toString()
-        warmupText = minutesText(workout.warmupS)
-        cooldownText = minutesText(workout.cooldownS)
+        warmupText = minutesText(workout.warmupS, locale)
+        cooldownText = minutesText(workout.cooldownS, locale)
         distanceText = workout.fastMeters?.toString().orEmpty()
         paceText = if (workout.paceFastS != null && workout.paceSlowS != null) {
             if (workout.paceFastS == workout.paceSlowS) "${workout.paceFastS}" else "${workout.paceFastS}-${workout.paceSlowS}"
@@ -504,9 +505,9 @@ private fun parsePace(text: String): Pair<Int, Int>? {
     }
 }
 
-/** Minutes as the form shows them: "10", or "3.5" when it is not a whole minute. */
-private fun minutesText(seconds: Int): String =
-    if (seconds % 60 == 0) (seconds / 60).toString() else "%.1f".format(seconds / 60.0)
+/** Minutes as the form shows them: "10", or "3.5" ("3,5" in German and French) when it is not a whole minute. */
+private fun minutesText(seconds: Int, locale: Locale): String =
+    if (seconds % 60 == 0) (seconds / 60).toString() else Fmt.oneDecimal(seconds / 60.0, locale)
 
 /** What the last weeks of running say: the shape for each distance and the VO2max. They come after the plan, which is the main thing here. */
 private fun LazyListScope.analysisItems(state: PlanState) {
@@ -521,11 +522,12 @@ private fun PlanSetup(state: PlanState, onCreate: (PlanGoal, Int, Int) -> Unit) 
     var goal by rememberSaveable { mutableStateOf(PlanGoal.FIVE_K) }
     var runs by rememberSaveable { mutableIntStateOf(3) }
     var weeks by rememberSaveable { mutableIntStateOf(8) }
+    val locale = currentLocale()
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         SurfaceCard {
             Text(stringResource(R.string.plan_intro), style = MaterialTheme.typography.bodyMedium)
             Text(
-                stringResource(R.string.plan_baseline, Fmt.oneDecimal(state.baselineKm)),
+                stringResource(R.string.plan_baseline, Fmt.oneDecimal(state.baselineKm, locale)),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -544,7 +546,7 @@ private fun PlanSetup(state: PlanState, onCreate: (PlanGoal, Int, Int) -> Unit) 
             for (n in listOf(6, 8, 10, 12)) PixelChip(selected = weeks == n, onClick = { weeks = n }, label = { Text("$n") })
         }
         Text(
-            stringResource(R.string.plan_starts, Fmt.date(nl.tufein.openconnect.core.TrainingPlans.nextMonday(state.today))),
+            stringResource(R.string.plan_starts, Fmt.date(nl.tufein.openconnect.core.TrainingPlans.nextMonday(state.today), locale)),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -555,10 +557,11 @@ private fun PlanSetup(state: PlanState, onCreate: (PlanGoal, Int, Int) -> Unit) 
 @Composable
 private fun SessionRow(s: PlannedSession, detailed: Boolean) {
     val (name, hint) = sessionText(s.type)
+    val locale = currentLocale()
     Column(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(dayLabel(s.date) + " · " + stringResource(name), style = MaterialTheme.typography.bodyMedium)
-            Text(Fmt.oneDecimal(s.distanceKm) + " km", style = MaterialTheme.typography.bodyMedium)
+            Text(Fmt.dayLabel(s.date, locale) + " · " + stringResource(name), style = MaterialTheme.typography.bodyMedium)
+            Text(Fmt.oneDecimal(s.distanceKm, locale) + " km", style = MaterialTheme.typography.bodyMedium)
         }
         if (detailed) Text(stringResource(hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
@@ -567,6 +570,7 @@ private fun SessionRow(s: PlannedSession, detailed: Boolean) {
 @Composable
 private fun WeekRow(w: WeekProgress) {
     val colors = OpenConnectColors.metrics
+    val locale = currentLocale()
     val color = when (w.state) {
         WeekState.DONE -> colors.steps
         WeekState.CURRENT -> colors.distance
@@ -584,8 +588,8 @@ private fun WeekRow(w: WeekProgress) {
         R.string.plan_adjustment_week_description,
         w.week.number,
         stateName,
-        Fmt.oneDecimal(w.week.volumeKm),
-        Fmt.oneDecimal(w.doneKm),
+        Fmt.oneDecimal(w.week.volumeKm, locale),
+        Fmt.oneDecimal(w.doneKm, locale),
         sessionPattern(w.week.sessions.map { it.type }),
     )
     SurfaceCard(
@@ -604,7 +608,7 @@ private fun WeekRow(w: WeekProgress) {
         }
         SegmentBar(fraction = if (w.week.volumeKm <= 0) 0f else (w.doneKm / w.week.volumeKm).coerceIn(0.0, 1.0).toFloat(), color = color, modifier = Modifier.fillMaxWidth().height(10.dp))
         Text(
-            stringResource(R.string.plan_km_of, Fmt.oneDecimal(w.doneKm), Fmt.oneDecimal(w.week.volumeKm)),
+            stringResource(R.string.plan_km_of, Fmt.oneDecimal(w.doneKm, locale), Fmt.oneDecimal(w.week.volumeKm, locale)),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -625,9 +629,6 @@ private fun sessionPattern(types: List<SessionType>): String {
     val names = types.map { stringResource(sessionText(it).first) }
     return names.joinToString(" → ")
 }
-
-private fun dayLabel(date: LocalDate): String =
-    date.format(DateTimeFormatter.ofPattern("EEE d MMM", Locale.getDefault()))
 
 /** What the person can change about the race goal on the Plan tab. */
 sealed interface RaceAction {
@@ -670,6 +671,7 @@ private fun PredictionRow(p: RacePrediction) {
 @Composable
 private fun RaceCard(race: RaceState, onRace: (RaceAction) -> Unit) {
     var distance by rememberSaveable { mutableStateOf(RaceDistance.K10.key) }
+    val locale = currentLocale()
     FoldableCard("plan-race", stringResource(R.string.race_title)) {
         val outlook = race.outlook
         if (outlook == null) {
@@ -689,7 +691,7 @@ private fun RaceCard(race: RaceState, onRace: (RaceAction) -> Unit) {
         } else {
             val goal = outlook.goal
             Text(
-                stringResource(R.string.race_goal_line, stringResource(raceDistanceName(goal.distance)), Fmt.date(goal.date)),
+                stringResource(R.string.race_goal_line, stringResource(raceDistanceName(goal.distance)), Fmt.date(goal.date, locale)),
                 style = MaterialTheme.typography.titleMedium,
             )
             val days = outlook.daysLeft

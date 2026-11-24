@@ -17,6 +17,7 @@ import nl.tufein.openconnect.core.ChartMetric
 import nl.tufein.openconnect.core.InsightSource
 import nl.tufein.openconnect.core.Trend
 import nl.tufein.openconnect.core.Verdict
+import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -67,19 +68,19 @@ fun metricName(metric: ChartMetric): String = stringResource(
     },
 )
 
-/** A value in the unit people expect for that chart. */
-fun insightValue(metric: ChartMetric, v: Double): String = when (metric) {
-    ChartMetric.STEPS -> Fmt.thousands(v.roundToInt())
-    ChartMetric.SLEEP -> Fmt.oneDecimal(v) + " h"
+/** A value in the unit people expect for that chart, with numbers in the language of [locale]. */
+fun insightValue(metric: ChartMetric, v: Double, locale: Locale = Locale.getDefault()): String = when (metric) {
+    ChartMetric.STEPS -> Fmt.thousands(v.roundToInt(), locale)
+    ChartMetric.SLEEP -> Fmt.oneDecimal(v, locale) + " h"
     ChartMetric.RESTING_HR -> "${v.roundToInt()} bpm"
     ChartMetric.HRV -> "${v.roundToInt()} ms"
     ChartMetric.SPO2 -> "${v.roundToInt()}%"
-    ChartMetric.RESPIRATION -> Fmt.oneDecimal(v) + "/min"
+    ChartMetric.RESPIRATION -> Fmt.oneDecimal(v, locale) + "/min"
     ChartMetric.BODY_BATTERY, ChartMetric.STRESS, ChartMetric.READINESS, ChartMetric.SLEEP_SCORE, ChartMetric.ACTIVITY_SCORE -> v.roundToInt().toString()
-    ChartMetric.STRAIN -> Fmt.oneDecimal(v)
+    ChartMetric.STRAIN -> Fmt.oneDecimal(v, locale)
     ChartMetric.LOWEST_HR -> "${v.roundToInt()} bpm"
     // A difference of under 0.05 would print as "-0.0"; it is zero.
-    ChartMetric.TEMPERATURE -> String.format(java.util.Locale.getDefault(), "%+.1f °C", if (abs(v) < 0.05) 0.0 else v)
+    ChartMetric.TEMPERATURE -> String.format(locale, "%+.1f °C", if (abs(v) < 0.05) 0.0 else v)
 }
 
 /** Plain-language reading of a chart: where it stands, how it moved, what the number means. */
@@ -90,6 +91,7 @@ fun InsightCaption(
     modifier: Modifier = Modifier,
     source: InsightSource = InsightSource.GARMIN,
 ) {
+    val locale = currentLocale()
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         if (insight != null) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -113,14 +115,14 @@ fun InsightCaption(
             Text(
                 stringResource(
                     R.string.insight_range,
-                    insightValue(metric, insight.average),
-                    insightValue(metric, insight.lowest), Fmt.shortDate(insight.lowestDate),
-                    insightValue(metric, insight.highest), Fmt.shortDate(insight.highestDate),
+                    insightValue(metric, insight.average, locale),
+                    insightValue(metric, insight.lowest, locale), Fmt.shortDate(insight.lowestDate, locale),
+                    insightValue(metric, insight.highest, locale), Fmt.shortDate(insight.highestDate, locale),
                 ),
                 style = MaterialTheme.typography.bodySmall,
             )
             insight.trend?.let { trend ->
-                val pct = Fmt.oneDecimal(abs(insight.changePct ?: 0.0))
+                val pct = Fmt.oneDecimal(abs(insight.changePct ?: 0.0), locale)
                 val base = when (trend) {
                     Trend.UP -> stringResource(R.string.insight_trend_up, pct)
                     Trend.DOWN -> stringResource(R.string.insight_trend_down, pct)

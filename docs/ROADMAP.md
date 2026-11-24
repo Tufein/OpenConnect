@@ -2,7 +2,7 @@
 
 Waar OpenConnect staat en hoe het verder groeit. Opnieuw geschreven op 2026-11-20, na v1.0.4, op 2026-11-22 (na
 v1.2.0) met een **thematische koerswissel** (paragraaf 4b, "Je geschiedenis is van jou") en op **2026-11-24 (na
-v1.10.0)** met een nieuwe **koers naar 2.0** in paragraaf 6b: geen lijst met losse ideeën, maar vier fasen en vijf
+v1.11.0)** met een nieuwe **koers naar 2.0** in paragraaf 6b: geen lijst met losse ideeën, maar vier fasen en vijf
 poorten. 1.0 is uitgebracht; dit plan zegt wat de volgorde is. Alles is **test-first** gebouwd: eerst de test, dan de
 code, en niets gaat uit zonder dat CI groen is. Wat zonder horloge, ring of telefoon niet te controleren is, staat er
 eerlijk bij.
@@ -12,11 +12,12 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
 
 **Legenda:** ✅ klaar · 🔜 volgende · 🧪 gebouwd en getest met nepgegevens, nog nooit op echte hardware of tegen de echte dienst · ❓ heeft iets nodig dat alleen de eigenaar kan geven · **S/M/L** = klein (een sessie), middel, groot (meerdere releases)
 
-## 1. Waar we staan (v1.10.0, 2026-11-24)
+## 1. Waar we staan (v1.11.0, 2026-11-24)
 
-- **Tien releases sinds 1.0** (v1.0.0 tot en met v1.10.0, met tientallen kandidaten daartussen), ruim 1.300 tests
+- **Elf releases sinds 1.0** (v1.0.0 tot en met v1.11.0, met tientallen kandidaten daartussen), ruim 1.300 tests
   (Python, `core` en de app), AGPL-3.0, openbare repository, een Android-app die zonder server werkt en een
-  Python-server voor wie die liever zelf draait. Nederlands en Engels.
+  Python-server voor wie die liever zelf draait. Nederlands, Engels, Duits en Frans; de laatste twee zijn
+  machine-draft en nog niet native nagekeken.
 - **Bronnen:** Garmin-horloge (USB, Bluetooth, map met bestanden), Garmin-account met een eigen sleutel, Oura Ring,
   Health Connect (sinds v1.2.0 ook op de achtergrond aangevuld), bestanden (FIT, GPX, TCX), Claude en Gemini voor de
   coach. Sinds v1.8.3 zijn de WHOOP- en Hume Band eruit; hun geschiedenis blijft leesbaar.
@@ -29,6 +30,10 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   **schema dat meedenkt** (v1.10.0): één voorstel na een gemiste afgesloten week, jij kiest Toepassen of Niet nu, en
   de coach bespreekt dat voorstel maar verandert niets. In v1.9.3 is ook de gereedschapsketen naar Gradle 9.6, AGP 9.5
   en compileSdk 37 gegaan.
+- **Sinds v1.11.0:** vier talen met een taalkeuze in Instellingen, lokale datums en getallen, en Duitse/Franse
+  widget- en meldingsteksten. De Oura-tab is opgeruimd en de voorbladfoto volgt de dag met vier composities.
+  De Duitse en Franse teksten zijn automatisch opgesteld en niet native nagekeken; dat staat ook in de app en
+  in [LANGUAGES.md](LANGUAGES.md).
 - **Zwak voor het verdere verhaal:**
   1. Op één bron na (de Garmin-account, die live is geprobeerd) is **niets op een echte telefoon, horloge of ring geproefd**. Zie het register in paragraaf 7; M9 is dat spoor.
   2. Of de meldingen op de fenix 8 nu bij elk bericht trillen, wacht op een nieuw logboek; v1.0.1 pakte de meest waarschijnlijke oorzaak aan.
@@ -305,7 +310,7 @@ en zonder abonnement. Drie dingen moeten dan waar zijn:
 |-------|----|----------------|
 | **P1 Geschiedenis** | 🧪 | Elke bron die de app noemt importeert zonder verlies, een tweede import verdubbelt niets, en alles komt terug uit een back-up |
 | **P2 Echt** | 🧪 | Elke bron is op echte hardware geprobeerd en gedateerd, of draagt in de app het label *Experimenteel* |
-| **P3 Talen** | 🔜 | Nederlands, Engels, Duits en Frans zijn volledig; de taaltest faalt op een ontbrekende regel |
+| **P3 Talen** | 🧪 | Nederlands, Engels, Duits en Frans zijn volledig; de taaltest faalt op een ontbrekende regel. De Duitse en Franse teksten zijn machine-draft en niet native nagekeken |
 | **P4 Uitleg** | 🧪 | Elke tegel noemt zijn bron en berekening; *Wat verlaat je telefoon* klopt met de code en met de netwerktest |
 | **P5 Bereik** | 🧪 | De app installeert en werkt zonder server, zonder netwerk en zonder updater; een winkelversie en de GitHub-versie botsen niet |
 
@@ -331,7 +336,7 @@ echte hardware daarom vraagt. **S/M/L/XL** zoals in de legenda.
 |--------|------|--------------|------|
 | **v1.9.3** ✅ | 1 | Jaaroverzicht, en de gereedschapsketen naar Gradle 9.6, AGP 9.5 en compileSdk 37 | M |
 | **v1.10.0** ✅ | 2 | Het schema past zich aan: een gemiste afgesloten week levert één voorstel met Toepassen/Niet nu; de coach bespreekt alleen dat voorstel en verandert niets | L |
-| **v1.11.0** | 3 | Duits en Frans, met een taaltest die elke tekst dekt en een keuze in de instellingen | M |
+| **v1.11.0** ✅ | 3 | Duits en Frans, met een taaltest die elke tekst dekt en een keuze in de instellingen; de teksten zijn machine-draft en niet native nagekeken | M |
 | **v1.12.0** | 3 | *Wat verlaat je telefoon*: één pagina per bron met wat er wel en niet weggaat, plus een test die elk veld dekt | M |
 | **v1.13.0** | 4 | Garmin's protobuf-sync en de rest van de archiefvelden, zodat een tweede import geen gat meer laat | L ❓ |
 | **v1.14.0** | 4 | Training Effect, hersteltijd en Performance Condition uit FIT, met een register dat zegt wanneer het op echte data is bevestigd | L ❓ |
@@ -461,6 +466,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.9.2 | Vloeiende lijniconen in de onderbalk, zes rustige thema's rond Olive, opnieuw getekende launcher-iconen en een voorblad dat je zelf samenstelt: de meetkaart onder de batterij plus schakelaars voor batterij, journaal en de laatste 7 dagen |
 | v1.9.3 | Jaaroverzicht: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar met eerlijke "geen data"-regels; tegelijk de gereedschapsketen naar Gradle 9.6, AGP 9.5 en compileSdk 37, met Kotlin 2.4 als ingebouwde taal |
 | v1.10.0 | Een schema dat meedenkt: de nieuwste afgesloten gemiste week wordt één bron voor een begrensd sessiepatroon in een latere trainingsweek; Toepassen/Niet nu blijven bewaard, dubbele of oude acties doen niets, en de coach krijgt alleen die plan- en voorstelfacts om read-only te bespreken |
+| v1.11.0 | Vier talen: Engels, Nederlands, Duits en Frans, met een taalkeuze los van de rapporttaal, lokale datums/getallen, Duitse/Franse widget- en meldingsteksten, een opgeruimde Oura-tab en een voorblad dat de dag volgt; de nieuwe talen zijn machine-draft zonder native review |
 
 ## 9. Hoe releases werken
 

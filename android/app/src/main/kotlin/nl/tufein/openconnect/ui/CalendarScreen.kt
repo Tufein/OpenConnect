@@ -39,13 +39,12 @@ import nl.tufein.openconnect.core.StreakSummary
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
 /** "November 2026", in the language of the phone. */
 fun monthTitle(month: YearMonth, locale: Locale = Locale.getDefault()): String =
-    DateTimeFormatter.ofPattern("LLLL yyyy", locale).format(month)
+    Fmt.monthYear(month, locale).replaceFirstChar { it.uppercase() }
 
 /** The tag of one day's cell, for tests: `day-2026-11-14`. */
 fun dayTag(day: LocalDate): String = "day-$day"
@@ -57,6 +56,7 @@ fun CalendarContent(
     onOpenActivity: (String) -> Unit,
     contentPadding: PaddingValues,
 ) {
+    val locale = currentLocale()
     LazyColumn(
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = contentPadding.calculateBottomPadding() + 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -69,7 +69,7 @@ fun CalendarContent(
                 PixelIconButton(onClick = { onShift(-1) }, enabled = state.canGoPrevious) {
                     PixelIcon(PixelIcons.ChevronLeft, contentDescription = stringResource(R.string.calendar_prev))
                 }
-                Text(monthTitle(view.month), style = MaterialTheme.typography.titleMedium)
+                Text(monthTitle(view.month, locale), style = MaterialTheme.typography.titleMedium)
                 PixelIconButton(onClick = { onShift(1) }, enabled = state.canGoNext) {
                     PixelIcon(PixelIcons.ChevronRight, contentDescription = stringResource(R.string.calendar_next))
                 }
@@ -108,9 +108,10 @@ private fun StreakTiles(s: StreakSummary) {
 private fun MonthCard(view: MonthView, onOpenActivity: (String) -> Unit) {
     var selectedDay by rememberSaveable { mutableStateOf<Long?>(null) }
     val selected = selectedDay?.let { LocalDate.ofEpochDay(it) }?.takeIf { YearMonth.from(it) == view.month }
+    val locale = currentLocale()
     SurfaceCard {
         Text(
-            stringResource(R.string.calendar_month_summary, view.totalCount, view.activeDays, Fmt.oneDecimal(view.totalDistanceM / 1000.0)),
+            stringResource(R.string.calendar_month_summary, view.totalCount, view.activeDays, Fmt.oneDecimal(view.totalDistanceM / 1000.0, locale)),
             style = MaterialTheme.typography.bodyMedium,
         )
         MonthGrid(view, selected) { selectedDay = it.toEpochDay() }
@@ -154,6 +155,7 @@ private fun DayCell(day: LocalDate?, totals: DayTotals?, longestM: Double, selec
         return
     }
     val primary = MaterialTheme.colorScheme.primary
+    val locale = currentLocale()
     val share = if (totals == null || longestM <= 0.0) 0f else (totals.distanceM / longestM).coerceIn(0.0, 1.0).toFloat()
     val background = if (totals == null) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f) else primary.copy(alpha = 0.25f + 0.55f * share)
     val shape = MaterialTheme.shapes.extraSmall
@@ -172,7 +174,7 @@ private fun DayCell(day: LocalDate?, totals: DayTotals?, longestM: Double, selec
     ) {
         Text(day.dayOfMonth.toString(), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
         if (totals != null) {
-            val label = if (totals.distanceM > 0) Fmt.oneDecimal(totals.distanceM / 1000.0) else "${totals.count}×"
+            val label = if (totals.distanceM > 0) Fmt.oneDecimal(totals.distanceM / 1000.0, locale) else "${totals.count}×"
             Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurface)
         }
     }
@@ -183,14 +185,15 @@ private val CELL_HEIGHT = 48.dp
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DayDetail(day: LocalDate, totals: DayTotals?, onOpenActivity: (String) -> Unit) {
-    Text(Fmt.date(day), style = MaterialTheme.typography.titleSmall)
+    val locale = currentLocale()
+    Text(Fmt.date(day, locale), style = MaterialTheme.typography.titleSmall)
     if (totals == null) {
         Text(stringResource(R.string.calendar_rest_day), style = MaterialTheme.typography.bodyMedium)
         return
     }
     val resources = LocalContext.current.resources
     Text(
-        resources.getQuantityString(R.plurals.calendar_day_summary, totals.count, totals.count, Fmt.oneDecimal(totals.distanceM / 1000.0)),
+        resources.getQuantityString(R.plurals.calendar_day_summary, totals.count, totals.count, Fmt.oneDecimal(totals.distanceM / 1000.0, locale)),
         style = MaterialTheme.typography.bodyMedium,
     )
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {

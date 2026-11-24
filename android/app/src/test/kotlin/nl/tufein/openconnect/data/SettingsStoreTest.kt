@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.test.core.app.ApplicationProvider
 import nl.tufein.openconnect.core.WeeklyGoals
 import nl.tufein.openconnect.core.reports.AiVendor
+import nl.tufein.openconnect.i18n.AppLocale
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -153,6 +154,39 @@ class SettingsStoreTest {
         assertEquals("light", s.themeMode)
         s.themeMode = "neon"
         assertEquals("system", s.themeMode, "an unknown value is not kept")
+    }
+
+    @Test
+    fun `the app language starts on system, is kept, and an unknown value falls back to system`() {
+        val s = store()
+        assertEquals(AppLocale.SYSTEM, s.appLanguage, "a fresh install follows the phone")
+        s.appLanguage = "de"
+        assertEquals("de", s.appLanguage)
+        assertEquals("de", store().appLanguage, "kept for the next start")
+        s.appLanguage = "FR"
+        assertEquals("fr", s.appLanguage, "a capital is normalised")
+        s.appLanguage = "de-AT"
+        assertEquals(AppLocale.SYSTEM, s.appLanguage, "a full tag is not a choice the screen offers")
+        s.appLanguage = "it"
+        assertEquals(AppLocale.SYSTEM, s.appLanguage, "a language we do not have falls back to the phone")
+        assertEquals(
+            "system",
+            context.getSharedPreferences("settings", Context.MODE_PRIVATE).getString("app_language", null),
+            "the normalised choice is what is stored",
+        )
+    }
+
+    @Test
+    fun `an install from before the language choice opens on the phone's language`() {
+        // Preferences written by v1.10.0: no app_language key at all.
+        context.getSharedPreferences("settings", Context.MODE_PRIVATE).edit()
+            .putString("theme_mode", "dark")
+            .putString("report_language", "nl")
+            .commit()
+        val s = store()
+        assertEquals("dark", s.themeMode, "the older settings still decode")
+        assertEquals("nl", s.language)
+        assertEquals(AppLocale.SYSTEM, s.appLanguage)
     }
 
     @Test

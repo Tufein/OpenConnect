@@ -302,6 +302,9 @@
     <string name="sort_distance">Langste afstand</string>
     <string name="sort_duration">Langste tijd</string>
     <string name="settings_appearance">Uiterlijk</string>
+    <string name="settings_language">Taal</string>
+    <string name="settings_language_system">Taal van telefoon</string>
+    <string name="settings_language_note">De app volgt de taal die je hier kiest. AI-rapporten en de coach blijven voorlopig in het Engels of Nederlands.</string>
     <string name="settings_look_preview">Voorbeeld</string>
     <string name="theme_system">Volg telefoon</string>
     <string name="theme_dark">Donker</string>
@@ -437,7 +440,7 @@
     <string name="body_last">%1$s kg</string>
     <string name="body_fat_line">%1$s%% vet</string>
     <string name="body_weight">Gewicht (kg)</string>
-    <string name="body_fat">Vet % (optioneel)</string>
+    <string name="body_fat" formatted="false">Vet % (optioneel)</string>
     <string name="body_save">Opslaan</string>
     <string name="body_none">Voer je gewicht van vandaag in om de trend te starten.</string>
     <string name="body_trend_desc">Gewicht, %1$d dagen, laagste %2$s kg, hoogste %3$s kg, laatste %4$s kg.</string>
@@ -529,7 +532,7 @@
     <string name="nudge_goal_intensity">Bijna: nog %1$d intensiteitsminuten en je weekdoel is gehaald.</string>
     <string name="nudge_goal_distance">Bijna: nog %1$d km en je weekdoel is gehaald.</string>
     <plurals name="nudge_goal_activities">
-        <item quantity="one">Nog één activiteit en je weekdoel is gehaald.</item>
+        <item quantity="one">Nog %1$d activiteit en je weekdoel is gehaald.</item>
         <item quantity="other">Nog %1$d activiteiten en je weekdoel is gehaald.</item>
     </plurals>
     <string name="nudge_weekly">Vorige week: %1$d activiteiten, %2$d km, %3$d van 3 doelen gehaald.</string>
@@ -892,13 +895,13 @@
     <string name="rings_thin">Dun</string>
     <string name="rings_bold">Vet</string>
     <string name="rings_note">De bollen op het voorblad en het ringtabblad volgen deze dikte.</string>
-    <string name="look_hero">Foto voorblad</string>
-    <string name="hero_auto">Met de dag mee</string>
+    <string name="look_hero">Achtergrondfoto</string>
+    <string name="hero_auto">Volgt de dag</string>
     <string name="hero_dawn">Ochtend</string>
     <string name="hero_day">Dag</string>
     <string name="hero_dusk">Avond</string>
     <string name="hero_night">Nacht</string>
-    <string name="hero_note">Met de dag mee volgt het licht op de foto het uur: warm in de ochtend, olijf overdag, klei in de avond en diepblauw in de nacht.</string>
+    <string name="hero_note">De achtergrondfoto volgt het uur: warm ochtendlicht, het meer in daglicht, een lage avondzon en een maanverlichte nacht. De tekst blijft goed leesbaar.</string>
     <string name="settings_home">Voorblad</string>
     <string name="settings_home_body">Kies de kaart onder de batterij en wat het voorblad verder toont.</string>
     <string name="settings_home_card">Kaart</string>

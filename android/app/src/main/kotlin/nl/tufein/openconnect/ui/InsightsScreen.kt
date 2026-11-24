@@ -161,6 +161,7 @@ private fun WeekContent(
     onOpenActivities: () -> Unit,
 ) {
     val colors = OpenConnectColors.metrics
+    val locale = currentLocale()
     LazyColumn(
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = contentPadding.calculateBottomPadding() + 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -189,18 +190,18 @@ private fun WeekContent(
             item {
                 TileRow(
                     { StatTile(stringResource(R.string.activities), week.activityCount.toString(), it, color = MaterialTheme.colorScheme.primary, onClick = onOpenActivities) },
-                    { StatTile(stringResource(R.string.distance), Fmt.km(week.totalDistanceM), it, unit = "km", color = colors.distance, onClick = onOpenActivities) },
+                    { StatTile(stringResource(R.string.distance), Fmt.km(week.totalDistanceM, locale), it, unit = "km", color = colors.distance, onClick = onOpenActivities) },
                 )
             }
             item {
                 TileRow(
                     { StatTile(stringResource(R.string.duration), Fmt.duration(week.totalDurationS), it, color = colors.calories, onClick = onOpenActivities) },
-                    { StatTile(stringResource(R.string.avg_steps), week.avgSteps?.let { s -> Fmt.thousands(Math.rint(s).toInt()) } ?: "–", it, color = colors.steps, onClick = { onOpenHealth(nl.tufein.openconnect.core.ChartMetric.STEPS) }) },
+                    { StatTile(stringResource(R.string.avg_steps), week.avgSteps?.let { s -> Fmt.thousands(Math.rint(s).toInt(), locale) } ?: "–", it, color = colors.steps, onClick = { onOpenHealth(nl.tufein.openconnect.core.ChartMetric.STEPS) }) },
                 )
             }
             item {
                 TileRow(
-                    { StatTile(stringResource(R.string.sleep), week.avgSleepHours?.let { h -> Fmt.oneDecimal(h) } ?: "–", it, unit = "h", color = colors.sleep, onClick = { onOpenHealth(nl.tufein.openconnect.core.ChartMetric.SLEEP) }) },
+                    { StatTile(stringResource(R.string.sleep), week.avgSleepHours?.let { h -> Fmt.oneDecimal(h, locale) } ?: "–", it, unit = "h", color = colors.sleep, onClick = { onOpenHealth(nl.tufein.openconnect.core.ChartMetric.SLEEP) }) },
                     { StatTile(stringResource(R.string.intensity_minutes), week.intensityMinutes.toString(), it, color = colors.stress, onClick = onOpenActivities) },
                 )
             }
@@ -214,7 +215,7 @@ private fun WeekContent(
                             Modifier.fillMaxWidth().clickable(enabled = e.activityId != null, role = Role.Button) { e.activityId?.let(onOpenActivity) },
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
-                            Text(effortLabel(e.distanceM) + (e.date?.let { " · " + Fmt.date(it) } ?: ""), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(effortLabel(e.distanceM) + (e.date?.let { " · " + Fmt.date(it, locale) } ?: ""), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Text(Fmt.duration(e.seconds), style = MaterialTheme.typography.bodyMedium)
                         }
                     }
@@ -232,6 +233,7 @@ private fun WeekContent(
 
 @Composable
 private fun RecordsCard(sport: Sport, entries: Map<String, RecordEntry>, onOpenActivity: (String) -> Unit) {
+    val locale = currentLocale()
     SurfaceCard(Modifier) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             SportBadge(sport)
@@ -239,7 +241,7 @@ private fun RecordsCard(sport: Sport, entries: Map<String, RecordEntry>, onOpenA
         }
         for ((key, entry) in entries) {
             val (label, value) = when (key) {
-                "longest_distance" -> R.string.record_longest_distance to Fmt.km(entry.value) + " km"
+                "longest_distance" -> R.string.record_longest_distance to Fmt.km(entry.value, locale) + " km"
                 "longest_duration" -> R.string.record_longest_duration to Fmt.duration(entry.value)
                 "most_elevation" -> R.string.record_most_elevation to Math.rint(entry.value).toInt().toString() + " m"
                 else -> R.string.record_fastest_pace to Fmt.pace(entry.value) + " /km"
@@ -251,7 +253,7 @@ private fun RecordsCard(sport: Sport, entries: Map<String, RecordEntry>, onOpenA
                     .clickable(role = Role.Button) { onOpenActivity(entry.activityId) },
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text(stringResource(label) + " · " + Fmt.date(entry.date), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(label) + " · " + Fmt.date(entry.date, locale), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(value, style = MaterialTheme.typography.bodyMedium)
             }
         }
@@ -259,10 +261,13 @@ private fun RecordsCard(sport: Sport, entries: Map<String, RecordEntry>, onOpenA
 }
 
 @Composable
-private fun periodTitle(state: ReportsState): String = when (state.period) {
-    ReportPeriod.WEEK -> stringResource(R.string.week_of, Fmt.date(state.weekStart))
-    ReportPeriod.MONTH -> state.weekStart.format(java.time.format.DateTimeFormatter.ofPattern("LLLL yyyy", currentLocale())).replaceFirstChar { it.uppercase() }
-    ReportPeriod.YEAR -> state.weekStart.year.toString()
+private fun periodTitle(state: ReportsState): String {
+    val locale = currentLocale()
+    return when (state.period) {
+        ReportPeriod.WEEK -> stringResource(R.string.week_of, Fmt.date(state.weekStart, locale))
+        ReportPeriod.MONTH -> Fmt.monthYear(state.weekStart, locale).replaceFirstChar { it.uppercase() }
+        ReportPeriod.YEAR -> state.weekStart.year.toString()
+    }
 }
 
 @Composable
@@ -272,5 +277,5 @@ internal fun effortLabel(distanceM: Double): String = when (distanceM) {
     10_000.0 -> "10 km"
     21_097.5 -> stringResource(R.string.effort_half)
     42_195.0 -> stringResource(R.string.effort_marathon)
-    else -> Fmt.km(distanceM) + " km"
+    else -> Fmt.km(distanceM, currentLocale()) + " km"
 }
