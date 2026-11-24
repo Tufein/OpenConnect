@@ -327,7 +327,7 @@ class AppViewModelPlanTest {
         assertEquals(proposal.proposalId, vm.plan.value.proposal!!.proposalId)
         vm.applyPlanChange(vm.plan.value.proposalActionId!!)
         await("the valid decision to replace the semantically stale row") {
-            PlanConfig.decode(app.container.settings.trainingPlan)?.decisions?.size == 1
+            PlanConfig.decode(app.container.settings.trainingPlan)?.decisions == listOf(decisionFor(proposal))
         }
         val persisted = PlanConfig.decode(app.container.settings.trainingPlan)!!
         assertEquals(listOf(decisionFor(proposal)), persisted.decisions)

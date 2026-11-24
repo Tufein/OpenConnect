@@ -96,7 +96,7 @@ class PlanAndLockScreenTest : AppTestBase() {
         assertTrue(source < target, "a missed week is moved forward, not back")
         assertTrue(hasText("Missed week", substring = true))
         assertTrue(hasText("Current pattern in week", substring = true))
-        assertTrue(hasText("New pattern:", substring = false))
+        assertTrue(hasText("New pattern:", substring = true))
         assertTrue(hasText("Dates, distances, weekly volume and race week stay unchanged.", substring = false))
         assertEquals(1, rule.onAllNodesWithText("Apply").fetchSemanticsNodes().size)
         assertEquals(1, rule.onAllNodesWithText("Not now").fetchSemanticsNodes().size)
