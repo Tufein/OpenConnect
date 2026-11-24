@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.9.3: het jaar in twaalf maanden
+
+Het Insights-tabblad heeft er een **Jaar**-tab bij: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar, met dezelfde eerlijke "geen data"-regels. Onder de motorkap staat de app nu op Gradle 9.6, AGP 9.5 en compileSdk 37, met Kotlin 2.4 als ingebouwde taal.
+
+[Release notes](docs/releases/v1.9.3.md)
+
 ## v1.9.2: rustige lijnen, zes tinten en een voorblad van jou
 
 De onderbalk tekent geen pixels meer maar rustige lijnen, de thema's zijn teruggebracht tot zes tinten rond het Olijfgroen, en het voorblad stel je zelf samen: welke meetkaart onder de batterij staat en welke kaarten je ziet. Ook de launcher-iconen zijn opnieuw getekend.

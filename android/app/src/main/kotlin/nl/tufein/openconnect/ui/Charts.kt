@@ -74,8 +74,8 @@ private fun DrawScope.grid(color: Color, lines: Int = 3) {
  * is one text per point; [bars] says whether the points sit in the middle of equal slots (a bar chart) or on the edges (a line).
  */
 @Composable
-fun DateAxis(labels: List<String>, bars: Boolean, modifier: Modifier = Modifier, inset: Dp = 0.dp) {
-    val ticks = remember(labels.size) { AxisTicks.indices(labels.size) }
+fun DateAxis(labels: List<String>, bars: Boolean, modifier: Modifier = Modifier, inset: Dp = 0.dp, maxLabels: Int = AxisTicks.DEFAULT_MAX) {
+    val ticks = remember(labels.size, maxLabels) { AxisTicks.indices(labels.size, maxLabels) }
     if (ticks.isEmpty()) return
     val color = MaterialTheme.colorScheme.onSurfaceVariant
     val style = MaterialTheme.typography.labelSmall
@@ -112,6 +112,7 @@ private fun Inspectable(
     axisInset: Dp,
     highlight: Int?,
     indexAt: (x: Float, width: Float) -> Int,
+    maxLabels: Int = AxisTicks.DEFAULT_MAX,
     chart: @Composable (Modifier, selected: Int?) -> Unit,
 ) {
     if (labels == null || labels.size != values.size || values.isEmpty()) {
@@ -139,7 +140,7 @@ private fun Inspectable(
                 },
             i,
         )
-        DateAxis(labels, bars, Modifier.padding(top = 4.dp), axisInset)
+        DateAxis(labels, bars, Modifier.padding(top = 4.dp), axisInset, maxLabels)
     }
 }
 
@@ -164,6 +165,7 @@ fun LineChart(
     includeZero: Boolean = false,
     labels: List<String>? = null,
     highlight: Int? = null,
+    maxLabels: Int = AxisTicks.DEFAULT_MAX,
     format: (Double) -> String = { String.format(java.util.Locale.getDefault(), "%.1f", it) },
 ) {
     val gridColor = MaterialTheme.colorScheme.outlineVariant
@@ -172,7 +174,7 @@ fun LineChart(
     val inset = with(density) { 4.dp.toPx() }
     val reveal = rememberReveal(values)
     val spokenDescription = spoken(description, values, format)
-    Inspectable(values, labels, format, modifier, bars = false, axisInset = 4.dp, highlight = highlight, indexAt = { x, w ->
+    Inspectable(values, labels, format, modifier, bars = false, axisInset = 4.dp, highlight = highlight, maxLabels = maxLabels, indexAt = { x, w ->
         if (values.size < 2) 0 else Math.round((x - inset) / (w - 2 * inset) * (values.size - 1))
     }) { extra, selected ->
     Canvas(Modifier.fillMaxWidth().height(height).then(extra).semantics { contentDescription = spokenDescription }) {
@@ -237,6 +239,7 @@ fun BarChart(
     height: Dp = 120.dp,
     labels: List<String>? = null,
     highlight: Int? = null,
+    maxLabels: Int = AxisTicks.DEFAULT_MAX,
     format: (Double) -> String = { String.format(java.util.Locale.getDefault(), "%.1f", it) },
 ) {
     val gridColor = MaterialTheme.colorScheme.outlineVariant
@@ -244,7 +247,7 @@ fun BarChart(
     val cursor = MaterialTheme.colorScheme.onSurface
     val reveal = rememberReveal(values)
     val spokenDescription = spoken(description, values, format)
-    Inspectable(values, labels, format, modifier, bars = true, axisInset = 0.dp, highlight = highlight, indexAt = { x, w -> (x / (w / values.size)).toInt() }) { extra, selected ->
+    Inspectable(values, labels, format, modifier, bars = true, axisInset = 0.dp, highlight = highlight, maxLabels = maxLabels, indexAt = { x, w -> (x / (w / values.size)).toInt() }) { extra, selected ->
     Canvas(Modifier.fillMaxWidth().height(height).then(extra).semantics { contentDescription = spokenDescription }) {
         grid(gridColor)
         val present = values.filterNotNull()

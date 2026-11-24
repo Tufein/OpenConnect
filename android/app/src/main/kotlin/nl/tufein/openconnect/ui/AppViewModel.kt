@@ -103,6 +103,8 @@ import nl.tufein.openconnect.core.SeasonPlan
 import nl.tufein.openconnect.core.SeasonPlanner
 import nl.tufein.openconnect.core.YearScore
 import nl.tufein.openconnect.core.YearScoreCalculator
+import nl.tufein.openconnect.core.YearOverview
+import nl.tufein.openconnect.core.YearOverviewCalculator
 import nl.tufein.openconnect.core.RouteMatcher
 import nl.tufein.openconnect.core.TagEffect
 import nl.tufein.openconnect.core.TodayAdvice
@@ -537,6 +539,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     /** The hi-score card of one year. */
     val score: StateFlow<ScoreState> = _score.asStateFlow()
 
+    private val _year = MutableStateFlow(YearState())
+
+    /** The year in twelve months: steps, sleep, resting heart rate and trainings. */
+    val year: StateFlow<YearState> = _year.asStateFlow()
+
     private val _map = MutableStateFlow(MapState())
 
     /** The heatmap of all routes. Worked out when the Map tab is opened, and again after the data changes. */
@@ -781,6 +788,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadCalendar()
         loadJournal()
         loadScore(_score.value.selected)
+        loadYear(_year.value.selected)
         loadTrophies()
         container.oura.refreshDays()
         currentActivityId?.let { openActivity(it) }
@@ -1034,6 +1042,21 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             years = years,
             selected = selected,
             score = selected?.let { YearScoreCalculator.compute(activities, dailies, it) },
+        )
+    }
+
+    /** The twelve months of [year], or of the newest year with data when [year] is null or has none. */
+    fun loadYear(year: Int? = null) = io {
+        val activities = repo.listActivities(limit = 100_000)
+        val dailies = repo.listDaily(LocalDate.of(2000, 1, 1), LocalDate.now().plusDays(1))
+        val sleeps = repo.listSleep(LocalDate.of(2000, 1, 1), LocalDate.now().plusDays(1))
+        val years = YearOverviewCalculator.years(dailies, sleeps, activities)
+        val selected = year?.takeIf { it in years } ?: years.firstOrNull()
+        _year.value = YearState(
+            loaded = true,
+            years = years,
+            selected = selected,
+            overview = selected?.let { YearOverviewCalculator.compute(dailies, sleeps, activities, it) },
         )
     }
 
@@ -1464,6 +1487,8 @@ data class CalendarState(
 
 /** The Shoes tab: every pair with what it has done so far. */
 data class ScoreState(val loaded: Boolean = false, val years: List<Int> = emptyList(), val selected: Int? = null, val score: YearScore? = null)
+
+data class YearState(val loaded: Boolean = false, val years: List<Int> = emptyList(), val selected: Int? = null, val overview: YearOverview? = null)
 
 data class MapState(val loaded: Boolean = false, val grid: HeatGrid? = null)
 

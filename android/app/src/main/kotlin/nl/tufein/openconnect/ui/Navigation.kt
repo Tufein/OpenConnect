@@ -315,6 +315,7 @@ fun OpenConnectRoot(
     val journal by vm.journal.collectAsState()
     val map by vm.map.collectAsState()
     val score by vm.score.collectAsState()
+    val year by vm.year.collectAsState()
     val lock by vm.lock.collectAsState()
     val healthConnect by vm.healthConnect.collectAsState()
     val importState by vm.importState.collectAsState()
@@ -340,6 +341,7 @@ fun OpenConnectRoot(
     var insightsTab by rememberSaveable { mutableStateOf(InsightsTab.Week) }
     // The heatmap reads many tracks: it is only worked out while the Map tab is open (and again after the data changed).
     LaunchedEffect(insightsTab, map.loaded) { if (insightsTab == InsightsTab.HeatMap && !map.loaded) vm.loadMap() }
+    LaunchedEffect(insightsTab, year.loaded) { if (insightsTab == InsightsTab.Year && !year.loaded) vm.loadYear() }
     var healthFocus by remember { mutableStateOf<nl.tufein.openconnect.core.ChartMetric?>(null) }
 
     fun openTab(tab: Tab) {
@@ -446,6 +448,8 @@ fun OpenConnectRoot(
                     map = map,
                     score = score,
                     onScoreYear = vm::loadScore,
+                    year = year,
+                    onYear = vm::loadYear,
                     day = days,
                     onShiftWeek = vm::shiftWeek,
                     onPeriod = vm::setReportPeriod,

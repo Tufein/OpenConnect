@@ -7,14 +7,12 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.9.2.** The look has been pulled further toward Oura: the bottom bar now uses **smooth line icons**
-> instead of pixel art, the colour themes are cut to **six** calm ones (Olive rebuilt around warm cream and deep
-> olive, plus Sand, Forest, Graphite, High contrast and Wallpaper), and the launcher icons are redrawn as soft
-> vectors. The **front page is yours**: pick what the card under the battery shows (calories, steps, resting heart
-> rate, stress, sleep, readiness or activity) and switch the battery card, journal and *Last 7 days* on or off in
-> *Settings → Appearance*. Everything from v1.9.1 stays — signal colours, ring weight, the photo that follows the
-> hour — as do the editorial front page, in-app updater, folding sections and the honest Oura battery card.
-> [Release notes](docs/releases/v1.9.2.md).
+> **Status: v1.9.3.** Insights now has a **Year** tab: twelve months of steps, sleep, resting heart rate and
+> trainings side by side, with the same honest "no data" rules. Under the hood the app moved to **Gradle 9.6,
+> AGP 9.5 and compileSdk 37**, with Kotlin 2.4 built in; Health Connect is now 1.2 and Navigation 2.10.
+> Everything from v1.9.2 stays — smooth line icons, six calm themes, redrawn launcher icons and the front page you
+> compose yourself — as do the editorial look, in-app updater, folding sections and the honest Oura battery card.
+> [Release notes](docs/releases/v1.9.3.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

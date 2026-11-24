@@ -29,7 +29,7 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   2. Of de meldingen op de fenix 8 nu bij elk bericht trillen, wacht op een nieuw logboek; v1.0.1 pakte de meest waarschijnlijke oorzaak aan.
   3. De naam: er bestaat al een bekende VPN-client die OpenConnect heet; het besluit staat nog open (G6).
   4. **De geschiedenis zit nog in Garmin Connect en Strava.** De app importeert één bestand tegelijk en haalt via de eigen sleutel een beperkt stuk terug, terwijl elk inzicht (vorm, VO2max, racevoorspelling, heatmap, seizoen) zo goed is als de geschiedenis eronder. Dat is het thema van 4b.
-  5. Twee Dependabot-voorstellen (#86 en #89) liggen open; ze wachten op één bewuste compileSdk-37/AGP-9-stap, en de grote gereedschapssprong (M12) op een CI-only debugronde.
+  5. De twee Dependabot-voorstellen (#86 en #89) zijn in v1.9.3 opgelost met de bewuste compileSdk-37/AGP-9-stap (Gradle 9.6, AGP 9.5.2, Kotlin 2.4.21, Health Connect 1.2.0-alpha06).
   6. De in-app-updater past niet in Google Play of F-Droid; winkels komen als `store`-variant in M10.
 
 ## 2. Wat "1.0" betekent
@@ -315,7 +315,7 @@ echte hardware daarom vraagt. **S/M/L/XL** zoals in de legenda.
 | **v1.9.0** ✅ | Bereik | De editorial-look: foto-kop, vijf metrische ringen, calorie-boog, serif readiness- en slaapkaarten, journaal-check-in en het Olive-palet als nieuwe standaard; Sleek, Retro en Classic blijven | M |
 | **v1.9.1** ✅ | Bereik | Signaalkleuren zacht of helder, ringen dun of dik, en een voorbladfoto die het uur volgt of op één licht blijft; de keuze werkt meteen overal in de app, ook op de Oura-tab | S |
 | **v1.9.2** ✅ | Bereik | Vloeiende lijniconen in de onderbalk, zes rustige thema's rond Olive, opnieuw getekende launcher-iconen en een voorblad dat je zelf samenstelt: de meetkaart onder de batterij plus schakelaars voor batterij, journaal en de laatste 7 dagen | M |
-| **v1.9.3** | Analyse | Jaaroverzicht: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar, met dezelfde eerlijke "geen data"-regels | M |
+| **v1.9.3** ✅ | Analyse | Jaaroverzicht: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar, met dezelfde eerlijke "geen data"-regels; tegelijk de gereedschapsketen naar Gradle 9.6, AGP 9.5 en compileSdk 37, met Kotlin 2.4 als ingebouwde taal | M |
 | **v1.10.0** | Training | Het schema past zich aan: een gemiste week schuift niet stil door, maar vraagt en stelt voor; de coach gebruikt die cijfers | L |
 | **v1.11.0** | Bereik | Duits en Frans, met een taaltest die elke tekst dekt en een keuze in de instellingen | M |
 | **v1.12.0** | Geschiedenis | Garmin's protobuf-sync en de rest van de archiefvelden, zodat een tweede import geen gat meer laat | L ❓ |

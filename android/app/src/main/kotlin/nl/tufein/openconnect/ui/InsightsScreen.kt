@@ -46,6 +46,7 @@ enum class InsightsTab(val label: Int) {
     Journal(R.string.insights_journal),
     HeatMap(R.string.insights_map),
     Score(R.string.insights_score),
+    Year(R.string.insights_year),
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -89,6 +90,8 @@ fun InsightsScreen(
     map: MapState = MapState(),
     score: ScoreState = ScoreState(),
     onScoreYear: (Int) -> Unit = {},
+    year: YearState = YearState(),
+    onYear: (Int) -> Unit = {},
     day: DayState = DayState(),
 ) {
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
@@ -96,7 +99,7 @@ fun InsightsScreen(
             Text(stringResource(R.string.tab_insights), style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
             // The daily reports stay one tap away; the planning and deep-dive reports sit behind "More" so the screen
             // does not open with three rows of chips. A tab that is already open keeps its section visible.
-            val primary = listOf(InsightsTab.Week, InsightsTab.Day, InsightsTab.Trophies, InsightsTab.Coach, InsightsTab.Form, InsightsTab.Score)
+            val primary = listOf(InsightsTab.Week, InsightsTab.Day, InsightsTab.Trophies, InsightsTab.Coach, InsightsTab.Form, InsightsTab.Score, InsightsTab.Year)
             val secondary = listOf(InsightsTab.Plan, InsightsTab.Zones, InsightsTab.Shoes, InsightsTab.Calendar, InsightsTab.Journal, InsightsTab.HeatMap)
             var moreOpen by rememberSaveable(tab) { mutableStateOf(tab in secondary) }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -126,6 +129,7 @@ fun InsightsScreen(
             InsightsTab.Journal -> JournalContent(journal, contentPadding)
             InsightsTab.HeatMap -> MapContent(map, contentPadding)
             InsightsTab.Score -> ScoreContent(score, onScoreYear, contentPadding)
+            InsightsTab.Year -> YearOverviewContent(year, onYear, contentPadding)
         }
     }
 }

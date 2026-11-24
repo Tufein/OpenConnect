@@ -2,7 +2,7 @@
 # behind androidx.security, Compose); these are the project's own, and the choices that keep a shrunk app readable.
 
 # Shrink only: no renaming (a stack trace in Settings, Share diagnostics or an issue stays readable, the source is open
-# anyway) and no optimisation (the default proguard-android.txt already says -dontoptimize, repeated here so it stays so).
+# anyway). AGP 9 requires the optimize default file; -dontoptimize is repeated here so the output stays as readable as before.
 -dontobfuscate
 -dontoptimize
 

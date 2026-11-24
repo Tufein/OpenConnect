@@ -11,6 +11,7 @@ import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.records.TotalCaloriesBurnedRecord
 import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.records.metadata.Device
 import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
@@ -95,26 +96,28 @@ class AndroidHealthConnectGateway(private val context: Context, private val zone
         // Health Connect only replaces a record with the same client id when the version is higher (an edited activity
         // would otherwise be ignored); Android's own guide suggests the time as the version of data that has none.
         val version = System.currentTimeMillis()
+        // Health Connect 1.2 wants to know which device measured the record; these sessions come from the watch.
+        val device = Device(type = Device.TYPE_WATCH, manufacturer = "Garmin", model = "Garmin watch")
         val records = ArrayList<androidx.health.connect.client.records.Record>()
         for (s in sessions) {
             val startOffset = z.rules.getOffset(s.start)
             val endOffset = z.rules.getOffset(s.end)
             records += ExerciseSessionRecord(
                 startTime = s.start, startZoneOffset = startOffset, endTime = s.end, endZoneOffset = endOffset,
-                metadata = Metadata(clientRecordId = s.clientId, clientRecordVersion = version),
+                metadata = Metadata.autoRecorded(device = device, clientRecordId = s.clientId, clientRecordVersion = version),
                 exerciseType = exerciseType(s.sportKey), title = s.name.ifBlank { null },
             )
             if (s.distanceM > 0) {
                 records += DistanceRecord(
                     startTime = s.start, startZoneOffset = startOffset, endTime = s.end, endZoneOffset = endOffset,
-                    distance = Length.meters(s.distanceM), metadata = Metadata(clientRecordId = s.clientId + "-distance", clientRecordVersion = version),
+                    distance = Length.meters(s.distanceM), metadata = Metadata.autoRecorded(device = device, clientRecordId = s.clientId + "-distance", clientRecordVersion = version),
                 )
             }
             val kcal = s.calories
             if (kcal != null && kcal > 0) {
                 records += TotalCaloriesBurnedRecord(
                     startTime = s.start, startZoneOffset = startOffset, endTime = s.end, endZoneOffset = endOffset,
-                    energy = Energy.kilocalories(kcal.toDouble()), metadata = Metadata(clientRecordId = s.clientId + "-energy", clientRecordVersion = version),
+                    energy = Energy.kilocalories(kcal.toDouble()), metadata = Metadata.autoRecorded(device = device, clientRecordId = s.clientId + "-energy", clientRecordVersion = version),
                 )
             }
         }
