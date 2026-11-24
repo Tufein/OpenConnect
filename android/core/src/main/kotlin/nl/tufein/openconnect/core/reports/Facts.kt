@@ -4,7 +4,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import nl.tufein.openconnect.core.Activity
-import nl.tufein.openconnect.core.ReadinessCalculator
+import nl.tufein.openconnect.core.PlanProgress
+import nl.tufein.openconnect.core.PlanProposal
 import nl.tufein.openconnect.core.Repository
 import nl.tufein.openconnect.core.Sport
 import nl.tufein.openconnect.core.SportTotals
@@ -115,37 +116,32 @@ data class PeriodFacts(
 
 const val PERIOD_ACTIVITIES = 15
 
+/** One plan week: only its number, planned and recorded distance, and state. */
 @Serializable
-data class CoachDay(
-    val date: String,
-    val steps: Int?,
-    @SerialName("steps_goal") val stepsGoal: Int?,
-    @SerialName("resting_hr") val restingHr: Int?,
-    @SerialName("avg_stress") val avgStress: Int?,
-    @SerialName("body_battery_high") val bodyBatteryHigh: Int?,
-    @SerialName("body_battery_low") val bodyBatteryLow: Int?,
-    @SerialName("hrv_ms") val hrvMs: Int?,
-    @SerialName("sleep_hours") val sleepHours: Double?,
-    @SerialName("sleep_score") val sleepScore: Int?,
+data class CoachWeekFacts(
+    val week: Int,
+    @SerialName("planned_km") val plannedKm: Double,
+    @SerialName("actual_km") val actualKm: Double,
+    val state: String,
 )
 
+/** The one unresolved plan proposal the coach may discuss; never the decision history. */
 @Serializable
-data class ReadinessFacts(
-    val score: Int,
-    val level: String,
-    val strongest: String,
-    val weakest: String,
+data class CoachProposalFacts(
+    @SerialName("source_week") val sourceWeek: Int,
+    @SerialName("target_week") val targetWeek: Int,
+    @SerialName("session_types") val sessionTypes: List<String>,
+    val text: String,
 )
 
-/** What the coach answers from: four weeks of day values, the recent activities and two week totals. */
+/**
+ * The coach's complete, read-only digest. It deliberately has no dates, activity names, tracks, journal tags,
+ * own-workout text or accepted/dismissed decisions: at most twelve plan weeks and one current proposal.
+ */
 @Serializable
 data class CoachFacts(
-    val today: String,
-    val days: List<CoachDay>,
-    val activities: List<WeekActivity>,
-    @SerialName("last_7_days") val last7Days: WeekTotals,
-    @SerialName("previous_7_days") val previous7Days: WeekTotals,
-    val readiness: ReadinessFacts?,
+    val weeks: List<CoachWeekFacts> = emptyList(),
+    val proposal: CoachProposalFacts? = null,
 ) : ReportFacts
 
 val FactsJson = Json {
@@ -336,57 +332,26 @@ fun periodFacts(repo: Repository, stats: StatsService, period: ReportPeriod, any
     )
 }
 
-/** The coach's digest: the last [COACH_DAYS] days that have data, at most [COACH_ACTIVITIES] activities, never raw rows. */
-fun coachFacts(repo: Repository, stats: StatsService, today: LocalDate): CoachFacts {
-    val first = today.minusDays((COACH_DAYS - 1).toLong())
-    val dailies = repo.listDaily(first, today).associateBy { it.date }
-    val sleeps = repo.listSleep(first, today).associateBy { it.date }
-    val days = generateSequence(first) { it.plusDays(1) }.takeWhile { !it.isAfter(today) }.mapNotNull { date ->
-        val d = dailies[date]
-        val s = sleeps[date]?.takeIf { it.durationS != 0 }
-        if (d == null && s == null) return@mapNotNull null
-        CoachDay(
-            date = date.toString(),
-            steps = d?.steps,
-            stepsGoal = d?.stepsGoal,
-            restingHr = d?.restingHr?.takeIf { it != 0 },
-            avgStress = d?.avgStress,
-            bodyBatteryHigh = d?.bodyBatteryHigh,
-            bodyBatteryLow = d?.bodyBatteryLow,
-            hrvMs = d?.hrvMs,
-            sleepHours = s?.let { round(it.hours, 2) },
-            sleepScore = s?.score,
+/** Builds the coach's bounded digest from already-computed plan state; it never reads activities or settings. */
+fun coachFacts(progress: PlanProgress?, proposal: PlanProposal?): CoachFacts = CoachFacts(
+    weeks = progress?.weeks.orEmpty().take(COACH_PLAN_WEEKS).map {
+        CoachWeekFacts(
+            week = it.week.number,
+            plannedKm = round(it.week.volumeKm, 2),
+            actualKm = round(it.doneKm, 2),
+            state = it.state.name.lowercase(),
         )
-    }.toList()
+    },
+    proposal = proposal?.let {
+        val pattern = it.sessionTypes.joinToString(", ") { type -> type.name.lowercase() }
+        CoachProposalFacts(
+            sourceWeek = it.source.week.number,
+            targetWeek = it.target.number,
+            sessionTypes = it.sessionTypes.map { type -> type.name.lowercase() },
+            text = "Copy the ordered $pattern session pattern from week ${it.source.week.number} to week ${it.target.number}. " +
+                "Keep the target week's dates, distances, volume and recovery/race flags.",
+        )
+    },
+)
 
-    val lo = first.atStartOfDay().toInstant(ZoneOffset.UTC)
-    val hi = today.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
-    val activities = repo.listActivities(start = lo, end = hi, limit = 10_000).sortedBy { it.startTime }.takeLast(COACH_ACTIVITIES)
-
-    val latestDaily = dailies.values.maxByOrNull { it.date }
-    val history = repo.listDaily(today.minusDays(60), today)
-    val readiness = latestDaily?.let { ReadinessCalculator.compute(it, sleeps[it.date], history) }
-
-    return CoachFacts(
-        today = today.toString(),
-        days = days,
-        activities = activities.map {
-            WeekActivity(
-                name = it.name,
-                sport = it.sport.key,
-                date = it.startTime.atZone(ZoneOffset.UTC).toLocalDate().toString(),
-                distanceKm = round(it.distanceM / 1000, 2),
-                durationMin = round(it.durationS / 60, 1),
-                avgHr = it.avgHr,
-            )
-        },
-        last7Days = stats.summary(today.minusDays(6), today).toTotals(),
-        previous7Days = stats.summary(today.minusDays(13), today.minusDays(7)).toTotals(),
-        readiness = readiness?.let {
-            ReadinessFacts(it.score, it.level.name.lowercase(), it.strongest.part.name.lowercase(), it.weakest.part.name.lowercase())
-        },
-    )
-}
-
-private const val COACH_DAYS = 28
-private const val COACH_ACTIVITIES = 30
+private const val COACH_PLAN_WEEKS = 12

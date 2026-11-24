@@ -23,12 +23,14 @@ pasted somewhere it should not be, delete it at the provider and make a new one.
 
 ## What is sent
 
-Reports and the Coach send **numbers, not tracks**: a JSON digest of the activity or of the last four weeks (daily
-steps, sleep, resting heart rate, Body Battery, stress, HRV, the readiness score, the week totals, and a list of at most
-30 recent activities with name, sport, distance, duration and heart rate). There is **no GPS** and no coordinates.
-The digest is put in a block marked as data, and the instructions tell the model to treat anything in it (such as an
-activity name from an imported file) as data and never as instructions. The coach is told to give general guidance, to
-say when the data is too thin to answer, and not to give medical advice or diagnoses.
+Reports and the Coach send **numbers, not tracks**. A report may contain a JSON digest of an activity or of the last four
+weeks: daily steps, sleep, resting heart rate, Body Battery, stress, HRV, readiness, week totals and at most 30 recent
+activities with name, sport, distance, duration and heart rate. The Coach gets a smaller, read-only digest: at most 12
+plan weeks with their number, planned and actual distance and state, plus at most one current plan proposal with its
+source and target week, session types and fixed explanatory text. The coach may discuss that proposal, but may not apply,
+dismiss or edit it, or invent a different schedule. There is **no GPS**, no coordinates, journal, notes, own-workout text
+or decision history. The digest is marked as data; the model is told that names and proposal text are data, never
+instructions. The coach gives general guidance, says when the data is too thin, and does not give medical advice.
 
 ## Models
 

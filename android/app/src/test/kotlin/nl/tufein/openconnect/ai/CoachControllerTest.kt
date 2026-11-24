@@ -6,34 +6,38 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import nl.tufein.openconnect.core.InMemoryRepository
-import nl.tufein.openconnect.core.StatsService
-import nl.tufein.openconnect.core.TrackPoint
+import nl.tufein.openconnect.core.PlanConfig
+import nl.tufein.openconnect.core.PlanGoal
+import nl.tufein.openconnect.core.PlanProposal
+import nl.tufein.openconnect.core.TrainingPlans
 import nl.tufein.openconnect.core.reports.AiVendor
-import java.time.Instant
+import nl.tufein.openconnect.core.reports.coachFacts
 import java.time.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class CoachControllerTest {
     private val settings = FakeAiSettings().also { it.setKey(AiVendor.GEMINI, "AIzaSyA-0123456789abcdefghijklmnopqrstu") }
     private val transport = FakeAiTransport { FakeAiTransport.gemini("You are doing fine.") }
-    private val repo = InMemoryRepository().also {
-        it.upsertDaily(nl.tufein.openconnect.core.DailySummary(date = LocalDate.parse("2026-11-12"), steps = 9000, restingHr = 52))
-    }
     private val ai = AiController(settings, transport, CoroutineScope(Dispatchers.Unconfined), Dispatchers.Unconfined)
+    private val plan = TrainingPlans.build(PlanConfig(PlanGoal.FIVE_K, 3, 12, "2026-11-02", 15.0))
+    private val progress = TrainingPlans.progress(plan, emptyList(), LocalDate.parse("2026-11-12"))
+    private val proposal = PlanProposal(
+        proposalId = "v1:1:5:EASY,TEMPO,LONG",
+        source = progress.weeks[0],
+        target = plan.weeks[4],
+        sessionTypes = progress.weeks[0].week.sessions.map { it.type },
+    )
+    private val facts = coachFacts(progress, proposal)
 
     private fun coach() = CoachController(
-        repo = repo,
-        stats = StatsService(repo),
         ai = ai,
         scope = CoroutineScope(Dispatchers.Unconfined),
         io = Dispatchers.Unconfined,
-        clock = { Instant.parse("2026-11-12T10:00:00Z") },
+        facts = { facts },
     )
 
     @Test
@@ -63,7 +67,10 @@ class CoachControllerTest {
         val body = Json.parseToJsonElement(transport.calls.single().body).jsonObject
         val last = body.getValue("contents").jsonArray.last().jsonObject.getValue("parts").jsonArray[0].jsonObject.getValue("text").jsonPrimitive.content
         assertTrue("How am I doing?" in last)
-        assertTrue("\"steps\": 9000" in last)
+        assertTrue("\"planned_km\"" in last)
+        assertTrue("\"actual_km\"" in last)
+        assertTrue("\"proposal\"" in last)
+        assertTrue("Copy the ordered easy, tempo, long session pattern" in last)
     }
 
     @Test
@@ -147,17 +154,25 @@ class CoachControllerTest {
     }
 
     @Test
-    fun `nothing about tracks or files is sent, only the digest`() {
-        repo.upsertActivity(
-            nl.tufein.openconnect.core.Activity(
-                id = "a:1", name = "Evening run", startTime = Instant.parse("2026-11-11T17:00:00Z"), distanceM = 5000.0, durationS = 1500.0,
-                track = listOf(TrackPoint(Instant.parse("2026-11-11T17:00:00Z"), lat = 52.123456, lon = 4.654321)),
-            ),
-        )
-        coach().ask("How was my run?")
-        val sent = transport.calls.single().body
-        assertTrue("Evening run" in sent)
-        assertFalse("52.123456" in sent, "GPS positions never leave the phone")
-        assertNotNull(sent)
+    fun `the request contains only bounded plan facts and a read-only prompt`() {
+        coach().ask("What does the proposal do?")
+        val body = Json.parseToJsonElement(transport.calls.single().body).jsonObject
+        val system = body.getValue("system_instruction").jsonObject.getValue("parts").jsonArray[0].jsonObject.getValue("text").jsonPrimitive.content
+        val last = body.getValue("contents").jsonArray.last().jsonObject.getValue("parts").jsonArray[0].jsonObject.getValue("text").jsonPrimitive.content
+        assertTrue("cannot apply, dismiss or edit" in system)
+        assertTrue("Do not invent alternative schedule changes" in system)
+        assertTrue("only the current proposal" in system)
+
+        val data = last.substringAfter("```json\n").substringBefore("\n```")
+        val factsJson = Json.parseToJsonElement(data).jsonObject
+        assertEquals(setOf("weeks", "proposal"), factsJson.keys)
+        assertTrue(factsJson.getValue("weeks").jsonArray.size <= 12)
+        for (week in factsJson.getValue("weeks").jsonArray) {
+            assertEquals(setOf("week", "planned_km", "actual_km", "state"), week.jsonObject.keys)
+        }
+        assertEquals(setOf("source_week", "target_week", "session_types", "text"), factsJson.getValue("proposal").jsonObject.keys)
+        for (forbidden in listOf("52.123456", "activities", "journal", "own_workout", "decisions", "accepted", "dismissed")) {
+            assertFalse(forbidden in transport.calls.single().body, "$forbidden must never enter the coach request")
+        }
     }
 }

@@ -35,15 +35,15 @@ import nl.tufein.openconnect.ai.CoachMessage
 import nl.tufein.openconnect.ai.CoachUi
 
 private val SUGGESTIONS = listOf(
-    R.string.coach_suggest_sleep,
-    R.string.coach_suggest_recovery,
-    R.string.coach_suggest_training,
-    R.string.coach_suggest_tomorrow,
+    R.string.coach_suggest_adherence,
+    R.string.coach_suggest_missed_week,
+    R.string.coach_suggest_proposal,
+    R.string.coach_suggest_current_week,
 )
 
 /**
- * A chat with an AI coach that sees a digest of your last four weeks (numbers, no GPS), through the Claude or Gemini
- * key you saved. Without a key there is nothing to ask, and the screen says how to add one.
+ * A chat with an AI coach that sees only the current plan adherence and proposal (numbers, no GPS), through the Claude
+ * or Gemini key you saved. Without a key there is nothing to ask, and the screen says how to add one.
  */
 @Composable
 fun CoachContent(

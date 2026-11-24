@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import nl.tufein.openconnect.OpenConnectApp
 import nl.tufein.openconnect.R
 import nl.tufein.openconnect.core.Achievements
@@ -31,9 +33,13 @@ import nl.tufein.openconnect.core.Effort
 import nl.tufein.openconnect.core.Lap
 import nl.tufein.openconnect.core.OwnWorkout
 import nl.tufein.openconnect.core.fitFile
+import nl.tufein.openconnect.core.PlanAdaptation
+import nl.tufein.openconnect.core.PlanAssessment
 import nl.tufein.openconnect.core.PlanConfig
+import nl.tufein.openconnect.core.PlanDecision
 import nl.tufein.openconnect.core.PlanGoal
 import nl.tufein.openconnect.core.PlanProgress
+import nl.tufein.openconnect.core.PlanProposal
 import nl.tufein.openconnect.core.RaceGoal
 import nl.tufein.openconnect.core.RaceState
 import nl.tufein.openconnect.core.Races
@@ -126,6 +132,7 @@ import nl.tufein.openconnect.core.formats.FormatError
 import nl.tufein.openconnect.core.formats.Formats
 import nl.tufein.openconnect.core.personalRecords
 import nl.tufein.openconnect.core.reports.AiVendor
+import nl.tufein.openconnect.core.reports.coachFacts
 import nl.tufein.openconnect.core.reports.ReportError
 import nl.tufein.openconnect.core.reports.ReportPeriod
 import nl.tufein.openconnect.core.weekStart
@@ -549,9 +556,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     /** The heatmap of all routes. Worked out when the Map tab is opened, and again after the data changes. */
     val map: StateFlow<MapState> = _map.asStateFlow()
 
+    /** Every plan read/recompute/mutation runs inside this lock and re-reads persisted settings after acquiring it. */
+    private val planMutex = Mutex()
+    private var planActionToken: String? = null
+    private var planActionProposalId: String? = null
+
     private val _plan = MutableStateFlow(PlanState())
 
-    /** The training plan and how far it has got. */
+    /** The training plan, adherence and the one current adaptation proposal. */
     val plan: StateFlow<PlanState> = _plan.asStateFlow()
 
     init {
@@ -1104,30 +1116,78 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         currentActivityId?.let { openActivity(it) }
     }
 
-    fun loadPlan() = io {
-        val today = LocalDate.now(ZoneOffset.UTC)
-        val config = PlanConfig.decode(container.settings.trainingPlan)
-        val built = config?.let(TrainingPlans::build)
-        val progress = built?.let {
+    private data class PlanSnapshot(
+        val plan: TrainingPlan?,
+        val progress: PlanProgress?,
+        val assessment: PlanAssessment,
+        val proposal: PlanProposal?,
+        val runs: List<Activity>,
+    )
+
+    /** Called only with [planMutex] held, so the config, decisions and runs belong to the same current reload. */
+    private fun planSnapshot(config: PlanConfig?, today: LocalDate): PlanSnapshot {
+        val plan = config?.let(TrainingPlans::build)
+        val runs = repo.listActivities(sport = Sport.RUNNING, limit = 10_000)
+        val progress = plan?.let {
             val from = it.start.atStartOfDay().toInstant(ZoneOffset.UTC)
             val to = it.weeks.last().end.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
-            TrainingPlans.progress(it, repo.listActivities(sport = Sport.RUNNING, start = from, end = to, limit = 500), today)
+            TrainingPlans.progress(it, runs.filter { run -> run.startTime >= from && run.startTime < to }, today)
         }
+        val assessment = if (plan != null && progress != null) PlanAdaptation.assess(plan, progress.weeks) else PlanAssessment(emptyList())
+        val proposal = if (plan != null) {
+            PlanAdaptation.propose(plan, assessment, PlanAdaptation.effectiveDecisions(plan, plan.config.decisions), today)
+        } else {
+            null
+        }
+        return PlanSnapshot(plan, progress, assessment, proposal, runs)
+    }
+
+    /**
+     * UI tokens identify the displayed proposal, not a persisted core id. The same proposal keeps its token across
+     * ordinary reloads; every proposal transition and create/delete/restore rotates it.
+     */
+    private fun actionTokenFor(proposalId: String?, forceRotate: Boolean): String {
+        if (forceRotate || planActionToken == null || planActionProposalId != proposalId) {
+            planActionToken = java.util.UUID.randomUUID().toString()
+        }
+        planActionProposalId = proposalId
+        return checkNotNull(planActionToken)
+    }
+
+    /** Decision snapshots read the already-published token; they never rotate it. */
+    private fun currentActionToken(): String? = planActionToken
+
+    fun loadPlan() = io {
+        planMutex.withLock { loadPlanLocked() }
+    }
+
+    /** The caller holds [planMutex]; this always decodes the latest persisted config rather than a captured state. */
+    private fun loadPlanLocked(rotateActionToken: Boolean = false, resetActionState: Boolean = false) {
+        val today = LocalDate.now(ZoneOffset.UTC)
+        val snapshot = planSnapshot(PlanConfig.decode(container.settings.trainingPlan), today)
+        val proposalActionId = actionTokenFor(snapshot.proposal?.proposalId, rotateActionToken)
         val baseline = TrainingPlans.baselineKm(repo, today)
-        val runs = repo.listActivities(sport = Sport.RUNNING, limit = 10_000)
         val maxHr = HeartZones.maxHr(container.settings.maxHr, repo.listActivities(limit = 10_000)).bpm
-        _plan.value = PlanState(
+        val previous = _plan.value
+        val state = PlanState(
             loaded = true,
-            plan = built,
-            progress = progress,
+            plan = snapshot.plan,
+            progress = snapshot.progress,
+            assessment = snapshot.assessment,
+            proposal = snapshot.proposal,
+            proposalActionId = proposalActionId,
+            actionBusy = if (resetActionState) false else previous.actionBusy,
+            actionFailed = if (resetActionState) false else previous.actionFailed,
             baselineKm = baseline,
             today = today,
             race = raceState(today),
-            shapes = RaceDistance.entries.mapNotNull { RaceShapeCalculator.compute(runs, it, today) },
-            vo2 = Vo2Max.summary(runs, maxHr, today),
+            shapes = RaceDistance.entries.mapNotNull { RaceShapeCalculator.compute(snapshot.runs, it, today) },
+            vo2 = Vo2Max.summary(snapshot.runs, maxHr, today),
             season = seasonFor(today),
             ownWorkouts = WorkoutBook.decode(container.settings.workouts).workouts,
         )
+        _plan.value = state
+        container.updateCoachFacts(coachFacts(state.progress, state.proposal))
     }
 
     private fun seasonFor(today: LocalDate): SeasonPlan? =
@@ -1159,16 +1219,70 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /** Builds a plan that starts next Monday from what you run now. */
-    fun createPlan(goal: PlanGoal, runsPerWeek: Int, weeks: Int) {
-        val today = LocalDate.now(ZoneOffset.UTC)
-        val config = PlanConfig(goal, runsPerWeek, weeks, TrainingPlans.nextMonday(today).toString(), TrainingPlans.baselineKm(repo, today))
-        container.settings.trainingPlan = config.coerced().encode()
-        loadPlan()
+    fun createPlan(goal: PlanGoal, runsPerWeek: Int, weeks: Int) = io {
+        planMutex.withLock {
+            val today = LocalDate.now(ZoneOffset.UTC)
+            val config = PlanConfig(goal, runsPerWeek, weeks, TrainingPlans.nextMonday(today).toString(), TrainingPlans.baselineKm(repo, today))
+            container.settings.trainingPlan = config.coerced().encode()
+            loadPlanLocked(rotateActionToken = true, resetActionState = true)
+        }
     }
 
-    fun deletePlan() {
-        container.settings.trainingPlan = ""
-        loadPlan()
+    fun deletePlan() = io {
+        planMutex.withLock {
+            container.settings.trainingPlan = ""
+            loadPlanLocked(rotateActionToken = true, resetActionState = true)
+        }
+    }
+
+    /** Accepts exactly the proposal identified by the current UI action token. */
+    fun applyPlanChange(actionId: String) = decidePlanChange(actionId, accepted = true)
+
+    /** Resolves exactly the proposal identified by the current UI action token without changing the schedule. */
+    fun dismissPlanChange(actionId: String) = decidePlanChange(actionId, accepted = false)
+
+    private fun decidePlanChange(actionId: String, accepted: Boolean) {
+        if (_plan.value.actionBusy) return
+        val expectedProposalId = _plan.value.proposal?.proposalId
+        _plan.update { it.copy(actionBusy = true, actionFailed = false) }
+        io {
+            var failed = false
+            planMutex.withLock {
+                try {
+                    val today = LocalDate.now(ZoneOffset.UTC)
+                    val snapshot = planSnapshot(PlanConfig.decode(container.settings.trainingPlan), today)
+                    val plan = snapshot.plan
+                    val proposal = snapshot.proposal
+                    if (actionId.isBlank() || plan == null || actionId != currentActionToken()) {
+                        failed = true
+                        return@withLock
+                    }
+                    val effective = PlanAdaptation.effectiveDecisions(plan, plan.config.decisions)
+                    if (expectedProposalId != null && effective.any { it.proposalId == expectedProposalId }) return@withLock
+                    if (proposal == null || expectedProposalId != proposal.proposalId) {
+                        failed = true
+                        return@withLock
+                    }
+                    val decision = PlanDecision(
+                        policyVersion = PlanAdaptation.POLICY_VERSION,
+                        proposalId = proposal.proposalId,
+                        accepted = accepted,
+                        sourceWeek = proposal.source.week.number,
+                        targetWeek = proposal.target.number,
+                        sessionTypes = ArrayList(proposal.sessionTypes),
+                    )
+                    val next = effective + decision
+                    val applied = PlanAdaptation.apply(plan, next)
+                    container.settings.trainingPlan = applied.config.copy(decisions = next).coerced().encode()
+                    loadPlanLocked()
+                } catch (e: Exception) {
+                    failed = true
+                    throw e
+                } finally {
+                    _plan.update { it.copy(actionBusy = false, actionFailed = failed) }
+                }
+            }
+        }
     }
 
     private val _lock = MutableStateFlow(LockUi(container.lockGate.enabled, container.lockGate.locked))
@@ -1359,11 +1473,15 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun restore(source: Uri) = io {
         val bytes = getApplication<Application>().contentResolver.openInputStream(source)?.use { readLimited(it, BACKUP_MAX_BYTES) } ?: throw IOException("unreadable")
         try {
-            val report = Backup.restore(bytes, repo, container.settings.userData())
-            // Only after the whole file was read and checked: the journal, shoes, plan and goals of the backup are added
-            // to this phone's own, never over them.
-            container.settings.applyUserData(report.userData)
-            _goals.value = container.settings.weeklyGoals
+            val report = planMutex.withLock {
+                // Merge against the settings that are current after acquiring the plan lock, then publish the restored
+                // plan and rotate its UI token before any queued proposal callback can run.
+                Backup.restore(bytes, repo, container.settings.userData()).also { restored ->
+                    container.settings.applyUserData(restored.userData)
+                    _goals.value = container.settings.weeklyGoals
+                    loadPlanLocked(rotateActionToken = true, resetActionState = true)
+                }
+            }
             tell(text(R.string.backup_restored, report.activities, report.days + report.nights))
             refreshAll()
         } catch (e: BackupException) {
@@ -1377,15 +1495,21 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
      * there is one.
      */
     fun sendPlanToWatch() = io {
-        val state = _plan.value
-        val sessions = state.plan?.let { Workouts.upcoming(it, LocalDate.now(ZoneOffset.UTC)) } ?: emptyList()
-        val message = if (sessions.isEmpty() && state.ownWorkouts.isEmpty()) {
+        val today = LocalDate.now(ZoneOffset.UTC)
+        // Export re-reads persisted settings under the same lock; a loaded PlanState may be one decision behind.
+        val (sessions, ownWorkouts) = planMutex.withLock {
+            val plan = PlanConfig.decode(container.settings.trainingPlan)?.let(TrainingPlans::build)
+            val planned = plan?.let { Workouts.upcoming(it, today) }.orEmpty()
+            val own = WorkoutBook.decode(container.settings.workouts).workouts
+            planned to own
+        }
+        val message = if (sessions.isEmpty() && ownWorkouts.isEmpty()) {
             text(R.string.workouts_none)
         } else {
             try {
                 val created = java.time.Instant.now()
-                val files = Workouts.files(sessions, TrainingPaces.from(state.race.predictions), created) +
-                    state.ownWorkouts.map { it.fitFile(created) }
+                val files = Workouts.files(sessions, TrainingPaces.from(_plan.value.race.predictions), created) +
+                    ownWorkouts.map { it.fitFile(created) }
                 val watch = container.usb.attached().firstOrNull()
                     ?: throw nl.tufein.openconnect.core.watch.WatchWriteException(nl.tufein.openconnect.core.watch.WatchWriteException.Kind.NO_USB_WATCH)
                 val result = container.usb.open(watch).use { Workouts.send(it.source, files) }
@@ -1507,6 +1631,12 @@ data class PlanState(
     val loaded: Boolean = false,
     val plan: TrainingPlan? = null,
     val progress: PlanProgress? = null,
+    val assessment: PlanAssessment = PlanAssessment(emptyList()),
+    val proposal: PlanProposal? = null,
+    /** UI-only identity for this plan proposal; never the persisted core proposal id. */
+    val proposalActionId: String? = null,
+    val actionBusy: Boolean = false,
+    val actionFailed: Boolean = false,
     /** What you run in a week now, which the next plan starts from. */
     val baselineKm: Double = 0.0,
     val today: LocalDate = LocalDate.now(ZoneOffset.UTC),

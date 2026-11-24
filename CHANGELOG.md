@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.10.0: een schema dat meedenkt
+
+Je schema houdt nu rekening met een gemiste week: de app toont één rustig voorstel om het sessiepatroon naar een latere trainingsweek te verplaatsen. Jij kiest **Toepassen** of **Niet nu**; beide keuzes blijven bewaard, en de coach mag dat voorstel bespreken maar verandert nooit iets zelf.
+
+[Release notes](docs/releases/v1.10.0.md)
+
 ## v1.9.3: het jaar in twaalf maanden
 
 Het Insights-tabblad heeft er een **Jaaroverzicht**-tab bij: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar, met dezelfde eerlijke "geen data"-regels. Onder de motorkap staat de app nu op Gradle 9.6, AGP 9.5 en compileSdk 37, met Kotlin 2.4 als ingebouwde taal.

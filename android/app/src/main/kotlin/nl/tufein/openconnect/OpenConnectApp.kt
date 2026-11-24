@@ -9,6 +9,7 @@ import nl.tufein.openconnect.ai.AiController
 import nl.tufein.openconnect.ai.AiSettings
 import nl.tufein.openconnect.ai.CoachController
 import nl.tufein.openconnect.core.StatsService
+import nl.tufein.openconnect.core.reports.CoachFacts
 import nl.tufein.openconnect.core.reports.HttpTransport
 import nl.tufein.openconnect.core.reports.ReportService
 import nl.tufein.openconnect.core.reports.UrlConnectionTransport
@@ -285,14 +286,21 @@ class AppContainer(
         io = Dispatchers.IO,
     )
 
-    /** The conversation on the Coach screen. */
+    /** The latest bounded plan digest, replaced after every serialized plan reload. */
+    private val currentCoachFacts = java.util.concurrent.atomic.AtomicReference(CoachFacts())
+
+    /** The read-only conversation on the Coach screen. */
     val coach = CoachController(
-        repo = repository,
-        stats = stats,
         ai = ai,
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
         io = Dispatchers.IO,
+        facts = currentCoachFacts::get,
     )
+
+    /** Publishes only week/proposal facts; activities, journal and own workouts never enter the coach digest. */
+    fun updateCoachFacts(facts: CoachFacts) {
+        currentCoachFacts.set(facts)
+    }
 }
 
 class OpenConnectApp : Application() {

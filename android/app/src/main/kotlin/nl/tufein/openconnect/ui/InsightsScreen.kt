@@ -76,6 +76,8 @@ fun InsightsScreen(
     onSendWorkouts: () -> Unit = {},
     onSaveWorkout: (nl.tufein.openconnect.core.OwnWorkout) -> Unit = {},
     onDeleteWorkout: (String) -> Unit = {},
+    onApplyPlanChange: (String) -> Unit = {},
+    onDismissPlanChange: (String) -> Unit = {},
     zones: ZonesState = ZonesState(),
     onZones: (ZonesAction) -> Unit = {},
     gear: GearState = GearState(),
@@ -121,7 +123,18 @@ fun InsightsScreen(
             InsightsTab.Day -> DayContent(day, contentPadding, onOpenActivity)
             InsightsTab.Trophies -> TrophiesContent(trophies, contentPadding)
             InsightsTab.Coach -> CoachContent(coach, active, onAsk, onClearCoach, onOpenAiSettings, contentPadding)
-            InsightsTab.Plan -> PlanContent(plan, onCreatePlan, onDeletePlan, onRace, onSendWorkouts, onSaveWorkout, onDeleteWorkout, contentPadding)
+            InsightsTab.Plan -> PlanContent(
+                state = plan,
+                onCreate = onCreatePlan,
+                onDelete = onDeletePlan,
+                onRace = onRace,
+                onSendWorkouts = onSendWorkouts,
+                onSaveWorkout = onSaveWorkout,
+                onDeleteWorkout = onDeleteWorkout,
+                contentPadding = contentPadding,
+                onApplyPlanChange = onApplyPlanChange,
+                onDismissPlanChange = onDismissPlanChange,
+            )
             InsightsTab.Zones -> ZonesContent(zones, onZones, contentPadding)
             InsightsTab.Shoes -> GearContent(gear, onGear, contentPadding)
             InsightsTab.Calendar -> CalendarContent(calendar, onShiftCalendar, onOpenActivity, contentPadding)

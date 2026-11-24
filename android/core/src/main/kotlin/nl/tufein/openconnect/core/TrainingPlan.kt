@@ -2,6 +2,8 @@ package nl.tufein.openconnect.core
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
@@ -26,6 +28,7 @@ data class PlanConfig(
     val weeks: Int = 8,
     val start: String,
     val baselineKm: Double = 0.0,
+    val decisions: List<PlanDecision> = emptyList(),
 ) {
     fun coerced() = copy(
         runsPerWeek = runsPerWeek.coerceIn(2, 4),
@@ -38,7 +41,18 @@ data class PlanConfig(
     companion object {
         private val JSON = Json { ignoreUnknownKeys = true }
         fun decode(text: String): PlanConfig? = try {
-            JSON.decodeFromString(serializer(), text).also { LocalDate.parse(it.start) }.coerced()
+            val root = JSON.parseToJsonElement(text) as? JsonObject ?: return null
+            val decisions = (root["decisions"] as? JsonArray).orEmpty().mapNotNull { decision ->
+                try {
+                    JSON.decodeFromJsonElement(PlanDecision.serializer(), decision)
+                } catch (_: Exception) {
+                    null
+                }
+            }
+            JSON.decodeFromJsonElement(serializer(), JsonObject(root - "decisions"))
+                .copy(decisions = decisions)
+                .also { LocalDate.parse(it.start) }
+                .coerced()
         } catch (_: Exception) {
             null
         }
@@ -46,6 +60,16 @@ data class PlanConfig(
 }
 
 enum class SessionType { EASY, LONG, TEMPO, INTERVALS, RACE }
+
+@Serializable
+data class PlanDecision(
+    val policyVersion: Int,
+    val proposalId: String,
+    val accepted: Boolean,
+    val sourceWeek: Int,
+    val targetWeek: Int,
+    val sessionTypes: List<SessionType>,
+)
 
 data class PlannedSession(val date: LocalDate, val type: SessionType, val distanceKm: Double)
 
@@ -122,7 +146,7 @@ object TrainingPlans {
             }
             weeks += PlanWeek(n, monday, round(volume), recovery, race, sessions(config, n, monday, volume, race, recovery))
         }
-        return TrainingPlan(config, weeks)
+        return PlanAdaptation.apply(TrainingPlan(config, weeks), config.decisions)
     }
 
     private fun sessions(config: PlanConfig, n: Int, monday: LocalDate, volume: Double, race: Boolean, recovery: Boolean): List<PlannedSession> {

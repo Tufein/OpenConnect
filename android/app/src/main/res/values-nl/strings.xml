@@ -355,10 +355,10 @@
     <string name="trophy_consistent_4">Streakmodus</string>
     <string name="trophy_consistent_4_body">Train minstens 3 keer per week, 4 weken op rij.</string>
     <string name="coach_title">Coach</string>
-    <string name="coach_intro">Vraag alles over je slaap, herstel en training. De coach ziet de cijfers van de afgelopen vier weken.</string>
+    <string name="coach_intro">Vraag naar je trainingsplan: de geplande en werkelijk gelopen afstand, gemiste weken of het huidige voorstel. De coach ziet alleen die plangegevens.</string>
     <string name="coach_via_claude">Antwoorden komen van Claude.</string>
     <string name="coach_via_gemini">Antwoorden komen van Gemini.</string>
-    <string name="coach_disclaimer">Algemene begeleiding op basis van je eigen cijfers, geen medisch advies. Je dagcijfers en namen van activiteiten gaan naar de AI-aanbieder, nooit gps-routes.</string>
+    <string name="coach_disclaimer">Algemene begeleiding op basis van je eigen cijfers, geen medisch advies. Als je de coach gebruikt, gaan je planweken, hun geplande en werkelijk gelopen afstand en het huidige schema-voorstel naar de AI-aanbieder, nooit GPS-routes, notities of werk-outteksten.</string>
     <string name="coach_needs_key">De coach heeft een AI nodig. Voeg bij Instellingen je eigen Claude- of Gemini-key toe en stel je vraag.</string>
     <string name="coach_open_settings">Instellingen openen</string>
     <string name="coach_hint">Vraag het de coach…</string>
@@ -366,10 +366,10 @@
     <string name="coach_new_chat">Nieuw gesprek</string>
     <string name="coach_thinking">Aan het denken…</string>
     <string name="coach_footer">%1$s · %2$s</string>
-    <string name="coach_suggest_sleep">Hoe heb ik deze week geslapen?</string>
-    <string name="coach_suggest_recovery">Herstel ik goed?</string>
-    <string name="coach_suggest_training">Hoe gaat het met mijn hardlopen?</string>
-    <string name="coach_suggest_tomorrow">Wat kan ik morgen het beste doen?</string>
+    <string name="coach_suggest_adherence">Hoe verhoudt mijn geplande afstand zich tot wat ik werkelijk liep?</string>
+    <string name="coach_suggest_missed_week">Waarom werd mijn week als achterstand aangemerkt?</string>
+    <string name="coach_suggest_proposal">Wat zou het huidige planvoorstel veranderen?</string>
+    <string name="coach_suggest_current_week">Wat laat mijn huidige planweek zien?</string>
     <string name="provider_gemini">Gemini</string>
     <string name="report_via_gemini">Geschreven door Gemini op basis van een samenvatting van deze gegevens.</string>
     <string name="vendor_title">%1$s-key</string>
@@ -586,6 +586,26 @@
     <string name="plan_state_current">Nu</string>
     <string name="plan_state_behind">Achter</string>
     <string name="plan_state_upcoming">Komt nog</string>
+
+    <string name="plan_adjustment_title">Schema bijstellen</string>
+    <string name="plan_adjustment_intro">Bekijk hoe het plan gaat. Als je een week hebt gemist, kan de app één kleine aanpassing voorstellen.</string>
+    <string name="plan_adjustment_current_week">Huidige week %1$d</string>
+    <string name="plan_adjustment_missed_week">Gemiste week %1$d</string>
+    <string name="plan_adjustment_adherence">%1$s km gepland · %2$s km gelopen</string>
+    <string name="plan_adjustment_on_track">Geen gemiste weken. Volg het plan zoals het is.</string>
+    <string name="plan_adjustment_no_proposal">Nu geen aanpassing beschikbaar: er is geen geschikte toekomstige week, of deze gemiste week is al aangepast of ongemoeid gelaten.</string>
+    <string name="plan_adjustment_weeks">Week %1$d → week %2$d</string>
+    <string name="plan_adjustment_change">Gebruik het patroon van de gemiste week in de toekomstige week.</string>
+    <string name="plan_adjustment_old_pattern">Huidig patroon in week %1$d: %2$s</string>
+    <string name="plan_adjustment_new_pattern">Nieuw patroon: %1$s</string>
+    <string name="plan_adjustment_unchanged">Datums, afstanden, weekvolume en wedstrijdweek blijven ongewijzigd.</string>
+    <string name="plan_adjustment_apply">Toepassen</string>
+    <string name="plan_adjustment_not_now">Niet nu</string>
+    <string name="plan_adjustment_busy">Je keuze wordt bewaard…</string>
+    <string name="plan_adjustment_busy_state">Je keuze wordt bewaard</string>
+    <string name="plan_adjustment_failed">Die plankeuze is niet meer actueel. Bekijk het nieuwste voorstel.</string>
+    <string name="plan_adjustment_week_description">Week %1$d, %2$s. %3$s km gepland, %4$s km gelopen. Sessies: %5$s.</string>
+
     <string name="plan_note">De weekafstand groeit met hooguit 10 procent per week, elke vierde week is rustiger en de laatste week loop je af. Luister naar je lichaam en sla een run over of kort hem in als je ziek of stijf bent.</string>
     <string name="session_easy">Rustige run</string>
     <string name="session_easy_hint">Zo langzaam dat je kunt praten.</string>

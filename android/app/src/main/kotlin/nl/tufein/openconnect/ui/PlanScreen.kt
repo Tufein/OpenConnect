@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -16,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -24,11 +26,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import nl.tufein.openconnect.R
 import nl.tufein.openconnect.core.OwnWorkout
 import nl.tufein.openconnect.core.PlanGoal
+import nl.tufein.openconnect.core.PlanProposal
 import nl.tufein.openconnect.core.PlannedSession
 import nl.tufein.openconnect.core.RaceDistance
 import nl.tufein.openconnect.core.RacePrediction
@@ -53,6 +62,8 @@ fun PlanContent(
     onSaveWorkout: (OwnWorkout) -> Unit,
     onDeleteWorkout: (String) -> Unit,
     contentPadding: PaddingValues,
+    onApplyPlanChange: (String) -> Unit = {},
+    onDismissPlanChange: (String) -> Unit = {},
 ) {
     // Creating or deleting the plan changes the list a lot: start from the top again instead of landing somewhere in the middle.
     val listState = remember(state.plan == null) { LazyListState() }
@@ -84,6 +95,7 @@ fun PlanContent(
                 Text(stringResource(R.string.plan_race_on, Fmt.date(plan.raceDate)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
+        item { PlanAdjustmentCard(state, onApplyPlanChange, onDismissPlanChange) }
         item {
             FoldableCard("plan-next", stringResource(R.string.plan_next)) {
                 val next = progress.next
@@ -115,6 +127,179 @@ fun PlanContent(
             SecondaryButton(onClick = onDelete, modifier = Modifier.padding(top = 8.dp)) { Text(stringResource(R.string.plan_delete)) }
         }
         analysisItems(state)
+    }
+}
+
+private data class PendingPlanAction(
+    val actionId: String,
+    val proposalId: String,
+    val decisionIds: List<String>,
+)
+
+/**
+ * The honest adherence check and, when the app has one, a single suggested pattern change. Nothing is applied here:
+ * the action token goes back to the app, which stores the choice and reloads this card with the new assessment.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun PlanAdjustmentCard(
+    state: PlanState,
+    onApply: (String) -> Unit,
+    onDismiss: (String) -> Unit,
+) {
+    val proposal = state.proposal
+    val decisionIds = state.plan?.config?.decisions.orEmpty().map { it.proposalId }
+    var pending by remember { mutableStateOf<PendingPlanAction?>(null) }
+    var observedBusy by remember { mutableStateOf(false) }
+    // A rejected/stale action reports actionFailed; a successful decision changes the proposal or decision list.
+    // Either outcome releases the local guard. A rotated action token also means the old request is no longer valid.
+    LaunchedEffect(state.actionBusy, state.actionFailed, state.proposalActionId, proposal?.proposalId, decisionIds) {
+        if (state.actionBusy) {
+            observedBusy = true
+        } else if (pending != null && (
+            observedBusy || state.actionFailed || state.proposalActionId != pending?.actionId ||
+            decisionIds != pending?.decisionIds || proposal?.proposalId != pending?.proposalId
+        )) {
+            pending = null
+            observedBusy = false
+        }
+    }
+    val actionId = state.proposalActionId
+    val busyState = stringResource(R.string.plan_adjustment_busy_state)
+    FoldableCard(
+        "plan-adjustment",
+        stringResource(R.string.plan_adjustment_title),
+        modifier = Modifier.testTag("plan-adjustment-card"),
+        accent = MaterialTheme.colorScheme.primary,
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(stringResource(R.string.plan_adjustment_intro), style = MaterialTheme.typography.bodyMedium)
+            state.progress?.current?.let { current ->
+                PlanAdherenceLine(stringResource(R.string.plan_adjustment_current_week, current.week.number), current)
+            }
+            for (missed in state.assessment.behind) {
+                PlanAdherenceLine(stringResource(R.string.plan_adjustment_missed_week, missed.week.number), missed)
+            }
+            if (state.actionBusy) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    PixelSpinner(Modifier.size(18.dp))
+                    Text(
+                        stringResource(R.string.plan_adjustment_busy),
+                        modifier = Modifier.semantics {
+                            stateDescription = busyState
+                            liveRegion = LiveRegionMode.Polite
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+            when {
+                proposal != null -> PlanProposalCard(
+                    proposal = proposal,
+                    actionId = actionId,
+                    busy = state.actionBusy,
+                    pending = pending != null,
+                    busyState = busyState,
+                    onApply = { id ->
+                        if (!state.actionBusy && pending == null) {
+                            pending = PendingPlanAction(id, proposal.proposalId, decisionIds)
+                            onApply(id)
+                        }
+                    },
+                    onDismiss = { id ->
+                        if (!state.actionBusy && pending == null) {
+                            pending = PendingPlanAction(id, proposal.proposalId, decisionIds)
+                            onDismiss(id)
+                        }
+                    },
+                )
+                state.assessment.behind.isEmpty() -> Text(
+                    stringResource(R.string.plan_adjustment_on_track),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                else -> Text(
+                    stringResource(R.string.plan_adjustment_no_proposal),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (state.actionFailed && !state.actionBusy) {
+                Text(
+                    stringResource(R.string.plan_adjustment_failed),
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Assertive },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlanAdherenceLine(label: String, progress: WeekProgress) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(label, style = MaterialTheme.typography.bodyMedium)
+        Text(
+            stringResource(R.string.plan_adjustment_adherence, Fmt.oneDecimal(progress.week.volumeKm), Fmt.oneDecimal(progress.doneKm)),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun PlanProposalCard(
+    proposal: PlanProposal,
+    actionId: String?,
+    busy: Boolean,
+    pending: Boolean,
+    busyState: String,
+    onApply: (String) -> Unit,
+    onDismiss: (String) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(
+            stringResource(R.string.plan_adjustment_weeks, proposal.source.week.number, proposal.target.number),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(stringResource(R.string.plan_adjustment_change), style = MaterialTheme.typography.bodyMedium)
+        Text(
+            stringResource(
+                R.string.plan_adjustment_old_pattern,
+                proposal.target.number,
+                sessionPattern(proposal.target.sessions.map { it.type }),
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            stringResource(R.string.plan_adjustment_new_pattern, sessionPattern(proposal.sessionTypes)),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        Text(
+            stringResource(R.string.plan_adjustment_unchanged),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            PrimaryButton(
+                onClick = { actionId?.let(onApply) },
+                enabled = !busy && !pending && actionId != null,
+                modifier = Modifier.semantics { if (busy) stateDescription = busyState },
+            ) {
+                Text(stringResource(R.string.plan_adjustment_apply))
+            }
+            SecondaryButton(
+                onClick = { actionId?.let(onDismiss) },
+                enabled = !busy && !pending && actionId != null,
+                modifier = Modifier.semantics { if (busy) stateDescription = busyState },
+            ) {
+                Text(stringResource(R.string.plan_adjustment_not_now))
+            }
+        }
     }
 }
 
@@ -394,7 +579,20 @@ private fun WeekRow(w: WeekProgress) {
         WeekState.BEHIND -> R.string.plan_state_behind
         WeekState.UPCOMING -> R.string.plan_state_upcoming
     }
-    SurfaceCard {
+    val stateName = stringResource(state)
+    val description = stringResource(
+        R.string.plan_adjustment_week_description,
+        w.week.number,
+        stateName,
+        Fmt.oneDecimal(w.week.volumeKm),
+        Fmt.oneDecimal(w.doneKm),
+        sessionPattern(w.week.sessions.map { it.type }),
+    )
+    SurfaceCard(
+        modifier = Modifier
+            .testTag("plan-week-${w.week.number}")
+            .semantics(mergeDescendants = true) { contentDescription = description },
+    ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             val tag = when {
                 w.week.race -> " · " + stringResource(R.string.plan_race_week)
@@ -402,7 +600,7 @@ private fun WeekRow(w: WeekProgress) {
                 else -> ""
             }
             Text(stringResource(R.string.plan_week_row, w.week.number) + tag, style = MaterialTheme.typography.bodyMedium)
-            Text(stringResource(state), style = MaterialTheme.typography.labelMedium, color = color)
+            Text(stateName, style = MaterialTheme.typography.labelMedium, color = color)
         }
         SegmentBar(fraction = if (w.week.volumeKm <= 0) 0f else (w.doneKm / w.week.volumeKm).coerceIn(0.0, 1.0).toFloat(), color = color, modifier = Modifier.fillMaxWidth().height(10.dp))
         Text(
@@ -419,6 +617,13 @@ private fun sessionText(type: SessionType): Pair<Int, Int> = when (type) {
     SessionType.TEMPO -> R.string.session_tempo to R.string.session_tempo_hint
     SessionType.INTERVALS -> R.string.session_intervals to R.string.session_intervals_hint
     SessionType.RACE -> R.string.session_race to R.string.session_race_hint
+}
+
+/** The order is part of the suggestion: the first type belongs to the first session, and so on. */
+@Composable
+private fun sessionPattern(types: List<SessionType>): String {
+    val names = types.map { stringResource(sessionText(it).first) }
+    return names.joinToString(" → ")
 }
 
 private fun dayLabel(date: LocalDate): String =

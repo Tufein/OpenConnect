@@ -355,10 +355,10 @@
     <string name="trophy_consistent_4">Streak Mode</string>
     <string name="trophy_consistent_4_body">Train at least 3 times a week, 4 weeks in a row.</string>
     <string name="coach_title">Coach</string>
-    <string name="coach_intro">Ask anything about your sleep, recovery and training. The coach sees the last four weeks of your numbers.</string>
+    <string name="coach_intro">Ask about your training plan: planned and actual distance, missed weeks, or the current proposal. The coach sees only those plan facts.</string>
     <string name="coach_via_claude">Answers come from Claude.</string>
     <string name="coach_via_gemini">Answers come from Gemini.</string>
-    <string name="coach_disclaimer">General guidance from your own numbers, not medical advice. Your daily numbers and activity names go to the AI provider, never GPS routes.</string>
+    <string name="coach_disclaimer">General guidance from your own numbers, not medical advice. When you use the coach, your plan weeks, their planned and actual distance, and the current plan proposal go to the AI provider, never GPS routes, notes or workout text.</string>
     <string name="coach_needs_key">The coach needs an AI. Add your own Claude or Gemini key in Settings and ask away.</string>
     <string name="coach_open_settings">Open Settings</string>
     <string name="coach_hint">Ask the coach…</string>
@@ -366,10 +366,10 @@
     <string name="coach_new_chat">New chat</string>
     <string name="coach_thinking">Thinking…</string>
     <string name="coach_footer">%1$s · %2$s</string>
-    <string name="coach_suggest_sleep">How did I sleep this week?</string>
-    <string name="coach_suggest_recovery">Am I recovering well?</string>
-    <string name="coach_suggest_training">How is my running going?</string>
-    <string name="coach_suggest_tomorrow">What should I do tomorrow?</string>
+    <string name="coach_suggest_adherence">How does my planned distance compare with what I actually ran?</string>
+    <string name="coach_suggest_missed_week">Why was my week marked as behind?</string>
+    <string name="coach_suggest_proposal">What would the current plan proposal change?</string>
+    <string name="coach_suggest_current_week">What does my current plan week show?</string>
     <string name="provider_gemini">Gemini</string>
     <string name="report_via_gemini">Written by Gemini from a summary of this data.</string>
     <string name="vendor_title">%1$s key</string>
@@ -586,6 +586,26 @@
     <string name="plan_state_current">Now</string>
     <string name="plan_state_behind">Behind</string>
     <string name="plan_state_upcoming">Ahead</string>
+
+    <string name="plan_adjustment_title">Plan adjustment</string>
+    <string name="plan_adjustment_intro">See how the plan is going. If a week was missed, the app can suggest one small change.</string>
+    <string name="plan_adjustment_current_week">Current week %1$d</string>
+    <string name="plan_adjustment_missed_week">Missed week %1$d</string>
+    <string name="plan_adjustment_adherence">%1$s km planned · %2$s km actual</string>
+    <string name="plan_adjustment_on_track">No missed weeks. Keep following the plan as it is.</string>
+    <string name="plan_adjustment_no_proposal">No adjustment is available right now: there is no suitable future week, or this missed week has already been adjusted or left unchanged.</string>
+    <string name="plan_adjustment_weeks">Week %1$d → week %2$d</string>
+    <string name="plan_adjustment_change">Use the missed week’s pattern in the future week.</string>
+    <string name="plan_adjustment_old_pattern">Current pattern in week %1$d: %2$s</string>
+    <string name="plan_adjustment_new_pattern">New pattern: %1$s</string>
+    <string name="plan_adjustment_unchanged">Dates, distances, weekly volume and race week stay unchanged.</string>
+    <string name="plan_adjustment_apply">Apply</string>
+    <string name="plan_adjustment_not_now">Not now</string>
+    <string name="plan_adjustment_busy">Saving your choice…</string>
+    <string name="plan_adjustment_busy_state">Saving your choice</string>
+    <string name="plan_adjustment_failed">That plan choice is no longer current. Check the newest proposal.</string>
+    <string name="plan_adjustment_week_description">Week %1$d, %2$s. %3$s km planned, %4$s km actual. Sessions: %5$s.</string>
+
     <string name="plan_note">The weekly distance grows by at most 10 percent a week, every fourth week is lighter and the last week tapers. Listen to your body and skip or shorten a run when you are ill or sore.</string>
     <string name="session_easy">Easy run</string>
     <string name="session_easy_hint">Slow enough to hold a conversation.</string>

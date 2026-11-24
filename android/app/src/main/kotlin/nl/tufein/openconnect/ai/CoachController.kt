@@ -8,12 +8,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import nl.tufein.openconnect.core.Repository
-import nl.tufein.openconnect.core.StatsService
 import nl.tufein.openconnect.core.reports.ChatTurn
+import nl.tufein.openconnect.core.reports.CoachFacts
 import nl.tufein.openconnect.core.reports.CoachService
 import nl.tufein.openconnect.core.reports.ReportError
-import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -28,18 +26,16 @@ data class CoachUi(
 )
 
 /**
- * The conversation on the Coach screen. It lives only in memory: closing the app ends it. Each question goes to the
- * active AI provider with a digest of the person's own data (see [CoachService]); one question at a time.
+ * The read-only conversation on the Coach screen. It lives only in memory: closing the app ends it. Each question
+ * goes to the active AI provider with the current bounded plan facts supplied by the app; one question at a time.
  */
 class CoachController(
-    repo: Repository,
-    stats: StatsService,
     private val ai: AiController,
     private val scope: CoroutineScope,
     private val io: CoroutineDispatcher,
-    clock: () -> Instant = Instant::now,
+    private val facts: () -> CoachFacts = { CoachFacts() },
 ) {
-    private val service = CoachService(repo, stats, clock)
+    private val service = CoachService(facts)
     private val busy = AtomicBoolean(false)
 
     /** Bumped by [clear] so an answer that arrives afterwards is dropped. */

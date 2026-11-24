@@ -2,7 +2,7 @@
 
 Waar OpenConnect staat en hoe het verder groeit. Opnieuw geschreven op 2026-11-20, na v1.0.4, op 2026-11-22 (na
 v1.2.0) met een **thematische koerswissel** (paragraaf 4b, "Je geschiedenis is van jou") en op **2026-11-24 (na
-v1.9.3)** met een nieuwe **koers naar 2.0** in paragraaf 6b: geen lijst met losse ideeën, maar vier fasen en vijf
+v1.10.0)** met een nieuwe **koers naar 2.0** in paragraaf 6b: geen lijst met losse ideeën, maar vier fasen en vijf
 poorten. 1.0 is uitgebracht; dit plan zegt wat de volgorde is. Alles is **test-first** gebouwd: eerst de test, dan de
 code, en niets gaat uit zonder dat CI groen is. Wat zonder horloge, ring of telefoon niet te controleren is, staat er
 eerlijk bij.
@@ -12,9 +12,9 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
 
 **Legenda:** ✅ klaar · 🔜 volgende · 🧪 gebouwd en getest met nepgegevens, nog nooit op echte hardware of tegen de echte dienst · ❓ heeft iets nodig dat alleen de eigenaar kan geven · **S/M/L** = klein (een sessie), middel, groot (meerdere releases)
 
-## 1. Waar we staan (v1.9.3, 2026-11-24)
+## 1. Waar we staan (v1.10.0, 2026-11-24)
 
-- **Negen releases sinds 1.0** (v1.0.0 tot en met v1.9.3, met tientallen kandidaten daartussen), ruim 1.300 tests
+- **Tien releases sinds 1.0** (v1.0.0 tot en met v1.10.0, met tientallen kandidaten daartussen), ruim 1.300 tests
   (Python, `core` en de app), AGPL-3.0, openbare repository, een Android-app die zonder server werkt en een
   Python-server voor wie die liever zelf draait. Nederlands en Engels.
 - **Bronnen:** Garmin-horloge (USB, Bluetooth, map met bestanden), Garmin-account met een eigen sleutel, Oura Ring,
@@ -22,11 +22,13 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   coach. Sinds v1.8.3 zijn de WHOOP- en Hume Band eruit; hun geschiedenis blijft leesbaar.
 - **Sterk:** alles is test-first, gegevens blijven op de telefoon, horloge en ring worden nooit door elkaar gemengd, elke release zegt eerlijk
   wat niet is gecontroleerd, en de app is met een in-app-updater te bijwerken met SHA-256-controle.
-- **Sinds 1.0** gingen de releases over vijf dingen: meldingen op het horloge (v1.0.1), het uiterlijk (van Graphite
+- **Sinds 1.0** gingen de releases over zes dingen: meldingen op het horloge (v1.0.1), het uiterlijk (van Graphite
   naar de **editorial**-look in v1.9.0, met signaalkleuren, ringdikte en een voorbladfoto die je zelf kiest), kleine
   slices op Health (HRV-status, slaapfases, gewicht, water, Health Connect op de achtergrond), je eigen geschiedenis
-  (archief-import, namen, zelf een training en work-out invoeren) en **terugkijken** (het jaaroverzicht in v1.9.3).
-  In v1.9.3 is ook de gereedschapsketen naar Gradle 9.6, AGP 9.5 en compileSdk 37 gegaan.
+  (archief-import, namen, zelf een training en work-out invoeren), **terugkijken** (het jaaroverzicht in v1.9.3) en een
+  **schema dat meedenkt** (v1.10.0): één voorstel na een gemiste afgesloten week, jij kiest Toepassen of Niet nu, en
+  de coach bespreekt dat voorstel maar verandert niets. In v1.9.3 is ook de gereedschapsketen naar Gradle 9.6, AGP 9.5
+  en compileSdk 37 gegaan.
 - **Zwak voor het verdere verhaal:**
   1. Op één bron na (de Garmin-account, die live is geprobeerd) is **niets op een echte telefoon, horloge of ring geproefd**. Zie het register in paragraaf 7; M9 is dat spoor.
   2. Of de meldingen op de fenix 8 nu bij elk bericht trillen, wacht op een nieuw logboek; v1.0.1 pakte de meest waarschijnlijke oorzaak aan.
@@ -315,7 +317,7 @@ proef), niet omdat het idee goed klinkt.
 | Fase | Uitkomst | Releases | Maat | Wacht op |
 |------|----------|----------|------|----------|
 | **1. Zichtbaar en eigen** ✅ | De app voelt als één rustig geheel en jij bepaalt hoe hij eruitziet: editorial-look, signaalkleuren, ringen, foto, thema's, iconen en een voorblad dat je zelf samenstelt | v1.9.0 – v1.9.3 | M | — |
-| **2. Het denkt mee** | Het schema past zich aan als je week anders liep; de coach gebruikt die cijfers en stelt één wijziging voor | v1.10.0 | L | niets |
+| **2. Het denkt mee** ✅ | Het schema past zich aan als je week anders liep: één voorstel met Toepassen/Niet nu; de coach bespreekt alleen dat voorstel en verandert niets | v1.10.0 | L | niets |
 | **3. Bereik en uitleg** | Duits en Frans, één pagina *Wat verlaat je telefoon* per bron, en een winkelversie die naast de GitHub-versie kan staan | v1.11.0, v1.12.0, v1.15.0 | M | niets |
 | **4. Geschiedenis en analyse** | Garmin's protobuf-sync en de rest van de exportvelden; Training Effect, hersteltijd en Performance Condition uit je eigen FIT | v1.13.0, v1.14.0 | L ❓ | een echte Garmin-export en één fenix 8-opname van Stefan |
 | **Sluiten** | Alle vijf poorten groen; geen nieuwe functie, alleen bewijs en reparaties | v2.0.0 | XL | de vier fasen |
@@ -328,7 +330,7 @@ echte hardware daarom vraagt. **S/M/L/XL** zoals in de legenda.
 | Versie | Fase | Wat erin zit | Maat |
 |--------|------|--------------|------|
 | **v1.9.3** ✅ | 1 | Jaaroverzicht, en de gereedschapsketen naar Gradle 9.6, AGP 9.5 en compileSdk 37 | M |
-| **v1.10.0** | 2 | Het schema past zich aan: een gemiste week schuift niet stil door, maar vraagt en stelt voor; de coach gebruikt die cijfers | L |
+| **v1.10.0** ✅ | 2 | Het schema past zich aan: een gemiste afgesloten week levert één voorstel met Toepassen/Niet nu; de coach bespreekt alleen dat voorstel en verandert niets | L |
 | **v1.11.0** | 3 | Duits en Frans, met een taaltest die elke tekst dekt en een keuze in de instellingen | M |
 | **v1.12.0** | 3 | *Wat verlaat je telefoon*: één pagina per bron met wat er wel en niet weggaat, plus een test die elk veld dekt | M |
 | **v1.13.0** | 4 | Garmin's protobuf-sync en de rest van de archiefvelden, zodat een tweede import geen gat meer laat | L ❓ |
@@ -458,6 +460,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.9.1 | Signaalkleuren zacht of helder, ringen dun of dik, en een voorbladfoto die het uur volgt of op één licht blijft; de keuze geldt meteen overal, ook op de Oura-tab |
 | v1.9.2 | Vloeiende lijniconen in de onderbalk, zes rustige thema's rond Olive, opnieuw getekende launcher-iconen en een voorblad dat je zelf samenstelt: de meetkaart onder de batterij plus schakelaars voor batterij, journaal en de laatste 7 dagen |
 | v1.9.3 | Jaaroverzicht: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar met eerlijke "geen data"-regels; tegelijk de gereedschapsketen naar Gradle 9.6, AGP 9.5 en compileSdk 37, met Kotlin 2.4 als ingebouwde taal |
+| v1.10.0 | Een schema dat meedenkt: de nieuwste afgesloten gemiste week wordt één bron voor een begrensd sessiepatroon in een latere trainingsweek; Toepassen/Niet nu blijven bewaard, dubbele of oude acties doen niets, en de coach krijgt alleen die plan- en voorstelfacts om read-only te bespreken |
 
 ## 9. Hoe releases werken
 

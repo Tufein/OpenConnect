@@ -29,7 +29,7 @@ Only to the services below, only when you use them, and only over HTTPS:
 |---------|------|--------------|
 | `personal.connectapi.garmin.com` | you use your own Garmin key | the key (to this address only), the dates you ask for; you get your daily data and activities back |
 | `cloud.ouraring.com`, `api.ouraring.com` | you connect an Oura Ring | the Oura sign-in (your own Oura app's client id and secret), the dates you ask for |
-| `api.anthropic.com` | you add a Claude key and ask for a report or use the coach | a short JSON summary of your numbers and activity names, never the GPS track, and what you type to the coach; your key |
+| `api.anthropic.com` | you add a Claude key and ask for a report or use the coach | a short JSON summary of your numbers and, for the coach, your plan weeks with planned/actual distance and the current proposal; never GPS tracks, notes or workout text, plus what you type to the coach; your key |
 | `generativelanguage.googleapis.com` | you add a Gemini key and ask for a report or use the coach | the same, with your Gemini key |
 | `api.github.com`, `github.com` | you open *Settings, Updates* | a request for the newest release and then the download of the APK; nothing about you, but GitHub sees your network address like any website does |
 
@@ -98,7 +98,7 @@ Alleen naar de diensten hieronder, alleen als je ze gebruikt, en alleen via HTTP
 |-------|---------|------------------|
 | `personal.connectapi.garmin.com` | je gebruikt je eigen Garmin-sleutel | de sleutel (alleen naar dit adres), de data die je opvraagt; je krijgt je dagcijfers en activiteiten terug |
 | `cloud.ouraring.com`, `api.ouraring.com` | je koppelt een Oura Ring | het inloggen bij Oura (met de client-id en het geheim van je eigen Oura-toepassing), de data die je opvraagt |
-| `api.anthropic.com` | je voegt een Claude-sleutel toe en vraagt een verslag of gebruikt de coach | een korte JSON-samenvatting van je cijfers en activiteitsnamen, nooit de gps-route, en wat je aan de coach typt; je sleutel |
+| `api.anthropic.com` | je voegt een Claude-sleutel toe en vraagt een verslag of gebruikt de coach | een korte JSON-samenvatting van je cijfers en, voor de coach, je planweken met geplande/werkelijk gelopen afstand en het huidige voorstel; nooit gps-routes, notities of werk-outteksten, plus wat je aan de coach typt; je sleutel |
 | `generativelanguage.googleapis.com` | je voegt een Gemini-sleutel toe en vraagt een verslag of gebruikt de coach | hetzelfde, met je Gemini-sleutel |
 | `api.github.com`, `github.com` | je opent *Instellingen, Updates* | een vraag om de nieuwste release en daarna het binnenhalen van de APK; niets over jou, maar GitHub ziet je netwerkadres zoals elke website |
 

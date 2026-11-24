@@ -7,12 +7,12 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.9.3.** Insights now has a **Year** tab: twelve months of steps, sleep, resting heart rate and
-> trainings side by side, with the same honest "no data" rules. Under the hood the app moved to **Gradle 9.6,
-> AGP 9.5 and compileSdk 37**, with Kotlin 2.4 built in; Health Connect is now 1.2 and Navigation 2.10.
-> Everything from v1.9.2 stays — smooth line icons, six calm themes, redrawn launcher icons and the front page you
-> compose yourself — as do the editorial look, in-app updater, folding sections and the honest Oura battery card.
-> [Release notes](docs/releases/v1.9.3.md).
+> **Status: v1.10.0.** A training plan can now react to a missed closed week: the app offers **one** bounded change
+> to a later training week and you choose *Apply* or *Not now*; both choices are kept, and stale or repeated actions
+> cannot change the plan twice. The coach may discuss that proposal but never edits the schedule. Everything from
+> v1.9.3 stays — the twelve-month Year overview, the AGP 9/compileSdk 37 build, the calm six-theme look, the custom
+> front page, folding sections, in-app updates and the honest Oura battery card.
+> [Release notes](docs/releases/v1.10.0.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

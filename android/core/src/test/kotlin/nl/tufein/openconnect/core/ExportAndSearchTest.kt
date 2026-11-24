@@ -16,7 +16,6 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -128,50 +127,66 @@ class ExportAndSearchTest {
 
     // ----------------------------------------------------------------------------- coach facts
 
-    private fun repoForCoach(): InMemoryRepository {
-        val repo = InMemoryRepository()
-        val today = LocalDate.parse("2026-05-30")
-        for (i in 0 until 40) repo.upsertDaily(TestData.daily(today.minusDays(i.toLong()), steps = 5000 + i))
-        for (i in 0 until 40) repo.upsertSleep(TestData.sleep(today.minusDays(i.toLong()), hours = 7.0, score = 70))
-        for (i in 0 until 45) {
-            repo.upsertActivity(
-                TestData.activity(
-                    "a:$i", start = Instant.parse("2026-05-30T07:00:00Z").minusSeconds(86_400L * i),
-                    name = "Run $i", distanceM = 5000.0 + i,
-                ),
+    private data class CoachFixture(val plan: TrainingPlan, val progress: PlanProgress, val proposal: PlanProposal)
+
+    private fun coachFixture(): CoachFixture {
+        val plan = TrainingPlans.build(PlanConfig(PlanGoal.FIVE_K, 3, 12, "2026-11-02", 15.0))
+        val weeks = plan.weeks.mapIndexed { index, week ->
+            WeekProgress(
+                week = week,
+                doneKm = if (index == 1) 3.456 else 0.0,
+                doneRuns = if (index == 1) 1 else 0,
+                state = if (index == 1) WeekState.BEHIND else WeekState.UPCOMING,
             )
         }
-        return repo
+        val progress = PlanProgress(weeks, current = null, next = null, finished = false, notStarted = false)
+        val proposal = PlanProposal(
+            proposalId = "v1:2:5:EASY,INTERVALS,LONG",
+            source = weeks[1],
+            target = plan.weeks[4],
+            sessionTypes = weeks[1].week.sessions.map { it.type },
+        )
+        return CoachFixture(plan, progress, proposal)
     }
 
     @Test
-    fun coachFactsCoverTheLastFourWeeksAndAreSmall() {
-        val repo = repoForCoach()
-        val facts = coachFacts(repo, StatsService(repo), LocalDate.parse("2026-05-30"))
-        assertEquals("2026-05-30", facts.today)
-        assertEquals(28, facts.days.size)
-        assertEquals("2026-05-03", facts.days.first().date)
-        assertEquals("2026-05-30", facts.days.last().date)
-        assertEquals(5000, facts.days.last().steps)
-        assertEquals(7.0, facts.days.last().sleepHours)
-        assertEquals(70, facts.days.last().sleepScore)
-        assertTrue(facts.activities.size <= 30, "at most 30 activities: ${facts.activities.size}")
-        assertTrue(facts.activities.all { it.date >= "2026-05-03" })
-        assertNotNull(facts.readiness)
-        assertEquals(7, facts.last7Days.daysWithData)
-        assertEquals(7, facts.previous7Days.daysWithData)
-        assertContains(facts.toJson(), "\"last_7_days\"")
-        assertTrue(facts.toJson().length < 30_000, "a prompt-sized digest, not the database")
+    fun coachFactsAreBoundedToPlanWeeksAndOneProposal() {
+        val f = coachFixture()
+        val facts = coachFacts(f.progress, f.proposal)
+        assertEquals(12, facts.weeks.size)
+        assertEquals(2, facts.weeks[1].week)
+        assertEquals(f.plan.weeks[1].volumeKm, facts.weeks[1].plannedKm)
+        assertEquals(3.46, facts.weeks[1].actualKm)
+        assertEquals("behind", facts.weeks[1].state)
+        val proposalFacts = checkNotNull(facts.proposal)
+        assertEquals(2, proposalFacts.sourceWeek)
+        assertEquals(5, proposalFacts.targetWeek)
+        assertEquals(listOf("easy", "intervals", "long"), proposalFacts.sessionTypes)
+        assertTrue(facts.toJson().length < 5_000, "a prompt-sized digest, not the database")
+
+        val oversized = f.progress.copy(weeks = List(20) { f.progress.weeks[it % 12] })
+        assertEquals(12, coachFacts(oversized, null).weeks.size)
+    }
+
+    @Test
+    fun coachFactsNeverSerializeRawOrHistoricalData() {
+        val facts = coachFacts(coachFixture().progress, coachFixture().proposal)
+        val json = facts.toJson()
+        assertContains(json, "\"planned_km\"")
+        assertContains(json, "\"actual_km\"")
+        assertContains(json, "\"proposal\"")
+        for (forbidden in listOf("activities", "days", "today", "readiness", "decisions", "accepted", "dismissed", "track", "journal", "own_workout", "name")) {
+            assertFalse(forbidden in json, "$forbidden must not leave the phone in coach facts")
+        }
     }
 
     @Test
     fun coachFactsOfAnEmptyAppAreStillValid() {
-        val repo = InMemoryRepository()
-        val facts = coachFacts(repo, StatsService(repo), LocalDate.parse("2026-05-30"))
-        assertTrue(facts.days.isEmpty())
-        assertTrue(facts.activities.isEmpty())
-        assertNull(facts.readiness)
-        assertContains(facts.toJson(), "\"days\": []")
+        val facts = coachFacts(null, null)
+        assertTrue(facts.weeks.isEmpty())
+        assertNull(facts.proposal)
+        assertContains(facts.toJson(), "\"weeks\": []")
+        assertContains(facts.toJson(), "\"proposal\": null")
     }
 
     // ----------------------------------------------------------------------------- coach service
@@ -190,28 +205,29 @@ class ExportAndSearchTest {
     }
 
     @Test
-    fun theCoachServiceBuildsFactsAndPassesTheConversation() {
-        val repo = repoForCoach()
-        val provider = RecordingProvider("Sleep is fine.")
-        val service = CoachService(repo, StatsService(repo)) { Instant.parse("2026-05-30T12:00:00Z") }
+    fun theCoachServiceInjectsTheCurrentFactsAndPassesTheConversation() {
+        val f = coachFixture()
+        val facts = coachFacts(f.progress, f.proposal)
+        val provider = RecordingProvider("The proposal copies the missed week's pattern.")
+        val service = CoachService { facts }
         val history = listOf(ChatTurn("user", "hi"), ChatTurn("assistant", "hello"))
 
-        val result = service.ask("  How is my sleep?  ", history, provider, "nl")
+        val result = service.ask("  What does the proposal change?  ", history, provider, "nl")
 
-        assertEquals("Sleep is fine.", result.text)
+        assertEquals("The proposal copies the missed week's pattern.", result.text)
         val sent = provider.request!!
-        assertEquals("How is my sleep?", sent.question, "the question is trimmed")
+        assertEquals("What does the proposal change?", sent.question, "the question is trimmed")
         assertEquals(history, sent.history)
         assertEquals("nl", sent.language)
-        assertEquals("2026-05-30", sent.facts.today)
-        assertEquals(28, sent.facts.days.size)
+        assertEquals(facts, sent.facts)
+        assertEquals(12, sent.facts.weeks.size)
+        assertEquals(5, sent.facts.proposal!!.targetWeek)
     }
 
     @Test
     fun anEmptyQuestionNeverReachesTheProvider() {
-        val repo = InMemoryRepository()
         val provider = RecordingProvider()
-        val service = CoachService(repo, StatsService(repo))
+        val service = CoachService()
         assertFailsWith<ReportError> { service.ask("   ", emptyList(), provider, "en") }
         assertNull(provider.request)
     }
