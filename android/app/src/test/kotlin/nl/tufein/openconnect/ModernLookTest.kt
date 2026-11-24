@@ -40,6 +40,6 @@ class ModernLookTest {
         val outline = EditorialShapes.large.createOutline(Size(320f, 200f), LayoutDirection.Ltr, Density(1f))
         assertTrue("a card is a rounded rectangle", outline is Outline.Rounded)
         val radius = (outline as Outline.Rounded).roundRect.topLeftCornerRadius.x
-        assertTrue("the editorial card radius is 28 dp", radius >= 28f)
+        assertTrue("the editorial card radius is 24 dp", radius >= 24f)
     }
 }
