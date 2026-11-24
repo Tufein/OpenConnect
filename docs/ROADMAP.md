@@ -314,7 +314,8 @@ echte hardware daarom vraagt. **S/M/L/XL** zoals in de legenda.
 | **v1.8.0** ✅ | Training | Work-outs met afstandsstappen, tempo-doelen en bewerken; dezelfde builder, dezelfde verzendknop | M |
 | **v1.9.0** ✅ | Bereik | De editorial-look: foto-kop, vijf metrische ringen, calorie-boog, serif readiness- en slaapkaarten, journaal-check-in en het Olive-palet als nieuwe standaard; Sleek, Retro en Classic blijven | M |
 | **v1.9.1** ✅ | Bereik | Signaalkleuren zacht of helder, ringen dun of dik, en een voorbladfoto die het uur volgt of op één licht blijft; de keuze werkt meteen overal in de app, ook op de Oura-tab | S |
-| **v1.9.2** | Analyse | Jaaroverzicht: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar, met dezelfde eerlijke "geen data"-regels | M |
+| **v1.9.2** ✅ | Bereik | Vloeiende lijniconen in de onderbalk, zes rustige thema's rond Olive, opnieuw getekende launcher-iconen en een voorblad dat je zelf samenstelt: de meetkaart onder de batterij plus schakelaars voor batterij, journaal en de laatste 7 dagen | M |
+| **v1.9.3** | Analyse | Jaaroverzicht: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar, met dezelfde eerlijke "geen data"-regels | M |
 | **v1.10.0** | Training | Het schema past zich aan: een gemiste week schuift niet stil door, maar vraagt en stelt voor; de coach gebruikt die cijfers | L |
 | **v1.11.0** | Bereik | Duits en Frans, met een taaltest die elke tekst dekt en een keuze in de instellingen | M |
 | **v1.12.0** | Geschiedenis | Garmin's protobuf-sync en de rest van de archiefvelden, zodat een tweede import geen gat meer laat | L ❓ |

@@ -7,14 +7,14 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.9.1.** The editorial front page is now yours to adjust: **signal colours** switch from the soft theme
-> tints to a clear colour per signal across orbs, tiles, charts and legends, **rings** can stay thin or turn bold, and
-> the **front-page photo** follows the hour (morning, day, evening, night) or stays on one light. The choice applies
-> immediately and everywhere, including the Oura tab. Everything from v1.9.0 stays: the editorial style with its photo
-> header, five metric orbs, calorie arc, serif readiness and sleep cards and the **Olive** theme; Sleek, Retro and
-> Classic remain, and a look you chose before is kept. WHOOP and Hume are gone while their saved days remain readable,
-> and the Garmin watch is asked for its charge twice. Folding sections, the honest Oura battery card, distance and pace
-> workouts, the widget sizes and the in-app updater all stay. [Release notes](docs/releases/v1.9.1.md).
+> **Status: v1.9.2.** The look has been pulled further toward Oura: the bottom bar now uses **smooth line icons**
+> instead of pixel art, the colour themes are cut to **six** calm ones (Olive rebuilt around warm cream and deep
+> olive, plus Sand, Forest, Graphite, High contrast and Wallpaper), and the launcher icons are redrawn as soft
+> vectors. The **front page is yours**: pick what the card under the battery shows (calories, steps, resting heart
+> rate, stress, sleep, readiness or activity) and switch the battery card, journal and *Last 7 days* on or off in
+> *Settings → Appearance*. Everything from v1.9.1 stays — signal colours, ring weight, the photo that follows the
+> hour — as do the editorial front page, in-app updater, folding sections and the honest Oura battery card.
+> [Release notes](docs/releases/v1.9.2.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

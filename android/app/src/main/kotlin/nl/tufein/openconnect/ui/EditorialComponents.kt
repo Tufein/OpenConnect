@@ -49,7 +49,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import nl.tufein.openconnect.R
-import kotlin.math.min
 
 /*
  * The building blocks of the editorial look: the photo header, metric orbs, the calorie arc, large quiet cards, the
@@ -88,7 +87,7 @@ fun EditorialHero(
         modifier
             .fillMaxWidth()
             .height(height)
-            .clip(RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)),
+            .clip(RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp)),
     ) {
         Image(
             painter = painterResource(R.drawable.hero_editorial),
@@ -231,67 +230,6 @@ fun MetricOrbRow(orbs: List<OrbValue>, modifier: Modifier = Modifier, onPhoto: B
     }
 }
 
-/**
- * The editorial semicircular gauge: a thin arc from left to right, the value in large serif type and a small flame in a
- * circle. [startLabel] and [endLabel] sit at the two ends; [value] never has to fit the arc exactly.
- */
-@Composable
-fun ArcGauge(
-    value: Int,
-    max: Int,
-    label: String,
-    modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.primary,
-    startLabel: String = "0",
-    endLabel: String = max.toString(),
-    icon: PixelArt = PixelIcons.Flame,
-) {
-    val track = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f)
-    Column(modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            label.uppercase(),
-            style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.4.sp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
-        Box(Modifier.fillMaxWidth().height(190.dp)) {
-            Canvas(Modifier.fillMaxSize()) {
-                val stroke = 6.dp.toPx()
-                val diameter = minOf(this.size.width - stroke * 2f, (this.size.height - stroke) * 2f)
-                val centre = Offset(this.size.width / 2f, this.size.height - stroke)
-                val topLeft = Offset(centre.x - diameter / 2f, centre.y - diameter / 2f)
-                val arc = Size(diameter, diameter)
-                drawArc(track, 180f, 180f, false, topLeft, arc, style = Stroke(stroke, cap = StrokeCap.Round))
-                val fraction = (value.toFloat() / max.coerceAtLeast(1)).coerceIn(0f, 1f)
-                if (fraction > 0f) {
-                    drawArc(color, 180f, 180f * fraction, false, topLeft, arc, style = Stroke(stroke, cap = StrokeCap.Round))
-                }
-            }
-            Column(
-                Modifier.align(Alignment.BottomCenter).padding(bottom = 22.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Box(Modifier.size(34.dp).background(color.copy(alpha = 0.14f), CircleShape), contentAlignment = Alignment.Center) {
-                    PixelIcon(icon, size = 16.dp, tint = color)
-                }
-                Text(value.toString(), style = MaterialTheme.typography.displayMedium, color = MaterialTheme.colorScheme.onSurface)
-            }
-            Text(
-                startLabel,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.align(Alignment.BottomStart).padding(start = 28.dp, bottom = 4.dp),
-            )
-            Text(
-                endLabel,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.align(Alignment.BottomEnd).padding(end = 28.dp, bottom = 4.dp),
-            )
-        }
-    }
-}
-
 /** A large, quiet card with the editorial radius, a hairline border and generous padding. */
 @Composable
 fun EditorialCard(
@@ -353,15 +291,15 @@ fun StatusToast(
                 Modifier.size(34.dp).background(tint.copy(alpha = 0.16f), CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
-                PixelIcon(PixelIcons.Check, size = 17.dp, tint = tint)
+                LineIcon(LineGlyph.Check, size = 17.dp, tint = tint)
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(title, style = MaterialTheme.typography.titleMedium)
                 Text(body, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             PixelIconButton(onClick = onDismiss) {
-                PixelIcon(
-                    PixelIcons.Close,
+                LineIcon(
+                    LineGlyph.Close,
                     size = 16.dp,
                     contentDescription = stringResource(R.string.manual_close),
                 )
@@ -442,6 +380,6 @@ fun EditorialTextAction(text: String, onClick: () -> Unit, modifier: Modifier = 
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Text(text, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
-        PixelIcon(PixelIcons.ChevronRight, size = 12.dp, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        LineIcon(LineGlyph.ChevronRight, size = 13.dp, tint = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

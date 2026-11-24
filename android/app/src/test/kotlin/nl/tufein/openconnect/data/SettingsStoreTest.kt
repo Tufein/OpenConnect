@@ -62,6 +62,30 @@ class SettingsStoreTest {
     }
 
     @Test
+    fun `the front page starts on calories with every card on, keeps a known choice and ignores an unknown one`() {
+        val s = store()
+        assertEquals("calories", s.homeMetric)
+        assertTrue(s.homeBattery, "the battery card is on by default")
+        assertTrue(s.homeJournal, "the journal is on by default")
+        assertTrue(s.homeLast7, "Last 7 days is on by default")
+
+        s.homeMetric = "sleep"
+        s.homeBattery = false
+        s.homeJournal = false
+        s.homeLast7 = false
+        val again = store() // the app was restarted
+        assertEquals("sleep", again.homeMetric)
+        assertFalse(again.homeBattery)
+        assertFalse(again.homeJournal)
+        assertFalse(again.homeLast7)
+
+        // A key from a newer version, or a typo, falls back to the card a fresh install has; it never breaks the page.
+        s.homeMetric = "blood_oxygen"
+        assertEquals("calories", s.homeMetric)
+        assertEquals("calories", store().homeMetric)
+    }
+
+    @Test
     fun `what was sent to Health Connect is remembered between runs and adds up`() {
         store().healthLedger.remember(mapOf("openconnect-a1" to "f1"))
         val again = store().healthLedger // a new store: the app was restarted

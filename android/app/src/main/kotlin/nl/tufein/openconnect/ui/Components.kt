@@ -170,7 +170,7 @@ fun FoldSection(
                 )
                 Text(summary, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            PixelIcon(if (open) PixelIcons.ChevronUp else PixelIcons.ChevronDown, size = 18.dp, tint = MaterialTheme.colorScheme.onSurface)
+            FoldChevron(open, size = 18.dp)
         }
         if (open) {
             DottedRule(Modifier.fillMaxWidth())
@@ -279,11 +279,10 @@ fun Foldable(
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            PixelIcon(
-                if (open) PixelIcons.ChevronUp else PixelIcons.ChevronDown,
-                size = 16.dp,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            FoldChevron(
+                open,
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                size = 16.dp,
             )
         }
         if (open) content()
@@ -314,11 +313,10 @@ fun CollapsibleSection(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             SectionTitle(title, Modifier.weight(1f))
-            PixelIcon(
-                if (open) PixelIcons.ChevronUp else PixelIcons.ChevronDown,
-                size = 18.dp,
-                tint = MaterialTheme.colorScheme.onBackground,
+            FoldChevron(
+                open,
                 modifier = Modifier.padding(start = 8.dp, top = 8.dp),
+                size = 18.dp,
             )
         }
         if (open) content()

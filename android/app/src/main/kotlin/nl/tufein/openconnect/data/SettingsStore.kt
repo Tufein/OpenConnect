@@ -85,8 +85,9 @@ class SettingsStore(
         set(value) = prefs.edit().putString(KEY_THEME, value.takeIf { it in THEMES } ?: "system").apply()
 
     /**
-     * The colour theme, a key of [nl.tufein.openconnect.ui.Palette]. A fresh install starts on Olive; a key that is no
-     * theme any more (arcade, clean, midnight, from before v0.31.0) opens as "handheld", and a stored key always wins.
+     * The colour theme, a key of [nl.tufein.openconnect.ui.Palette]. A fresh install starts on Olive; a key of a theme
+     * that is no longer offered (arcade, gameboy, synthwave and the other older screens) opens as "olive", because the
+     * user interface falls back to the calm default and never crashes on an old setting.
      */
     var palette: String
         get() = prefs.getString(KEY_PALETTE, null) ?: defaultPaletteKey()
@@ -119,6 +120,26 @@ class SettingsStore(
     var hero: String
         get() = prefs.getString(KEY_HERO, "auto")?.takeIf { it in HERO_TONES } ?: "auto"
         set(value) = prefs.edit().putString(KEY_HERO, value.takeIf { it in HERO_TONES } ?: "auto").apply()
+
+    /** The card under the battery on the front page, a [HOME_METRICS] key; calories keep the old page. */
+    var homeMetric: String
+        get() = prefs.getString(KEY_HOME_METRIC, "calories")?.takeIf { it in HOME_METRICS } ?: "calories"
+        set(value) = prefs.edit().putString(KEY_HOME_METRIC, value.takeIf { it in HOME_METRICS } ?: "calories").apply()
+
+    /** Whether the battery card is drawn on the front page. On by default. */
+    var homeBattery: Boolean
+        get() = prefs.getBoolean(KEY_HOME_BATTERY, true)
+        set(value) = prefs.edit().putBoolean(KEY_HOME_BATTERY, value).apply()
+
+    /** Whether the journal (the check-in card and the journal card) is drawn on the front page. On by default. */
+    var homeJournal: Boolean
+        get() = prefs.getBoolean(KEY_HOME_JOURNAL, true)
+        set(value) = prefs.edit().putBoolean(KEY_HOME_JOURNAL, value).apply()
+
+    /** Whether the "Last 7 days" section is drawn on the front page. On by default. */
+    var homeLast7: Boolean
+        get() = prefs.getBoolean(KEY_HOME_LAST7, true)
+        set(value) = prefs.edit().putBoolean(KEY_HOME_LAST7, value).apply()
 
     /** The record of the last syncs, as the text [nl.tufein.openconnect.core.SyncLog] writes. */
     var syncLogText: String
@@ -402,6 +423,9 @@ class SettingsStore(
         /** The tones the photo header can take; "auto" picks one from the hour. */
         val HERO_TONES = listOf("auto", "dawn", "day", "dusk", "night")
 
+        /** The cards the front page can show under the battery; "calories" is the default and the old page. */
+        val HOME_METRICS = listOf("calories", "steps", "resting_hr", "stress", "sleep", "readiness", "activity")
+
         private const val KEY_LANGUAGE = "report_language"
         private const val KEY_PROVIDER = "provider"
         private const val KEY_THEME = "theme_mode"
@@ -411,6 +435,10 @@ class SettingsStore(
         private const val KEY_SIGNALS = "theme_signals"
         private const val KEY_RINGS = "theme_rings"
         private const val KEY_HERO = "theme_hero"
+        private const val KEY_HOME_METRIC = "home_metric"
+        private const val KEY_HOME_BATTERY = "home_battery"
+        private const val KEY_HOME_JOURNAL = "home_journal"
+        private const val KEY_HOME_LAST7 = "home_last7"
         private const val KEY_OURA_CLIENT = "oura_client_id"
         private const val KEY_OURA_SECRET = "oura_client_secret"
         private const val KEY_OURA_REDIRECT = "oura_redirect"

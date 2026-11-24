@@ -694,6 +694,8 @@
     <string name="palette_group_eyes">Easy on the eyes</string>
     <string name="palette_group_colour">Colourful</string>
     <string name="palette_group_phone">Phone</string>
+    <string name="palette_group_calm">Calm</string>
+    <string name="palette_group_neutral">Neutral</string>
     <string name="palette_virtualboy">Virtual Boy</string>
     <string name="palette_famicom">Famicom</string>
     <string name="palette_c64">Commodore 64</string>
@@ -877,6 +879,18 @@
     <string name="hero_dusk">Evening</string>
     <string name="hero_night">Night</string>
     <string name="hero_note">With the day, the light on the photo follows the hour: warm at dawn, olive by day, clay in the evening and deep blue at night.</string>
+    <string name="settings_home">Front page</string>
+    <string name="settings_home_body">Choose the card under the battery and what else the front page shows.</string>
+    <string name="settings_home_card">Card</string>
+    <string name="home_switch_battery">Battery card</string>
+    <string name="home_switch_journal">Journal</string>
+    <string name="home_metric_change">Change</string>
+    <string name="home_choose_title">Front page card</string>
+    <string name="home_choose_body">Pick the card that sits under the battery.</string>
+    <string name="home_metric_empty">No reading yet. Sync your watch or ring and this card fills in.</string>
+    <string name="home_metric_resting_hr_body">Your resting heart rate today. A lower rate usually means more recovery.</string>
+    <string name="home_metric_stress_body">The day\'s average stress. Lower is calmer.</string>
+    <string name="home_metric_sleep_body">Last night\'s sleep, as your watch or ring recorded it.</string>
     <string name="insights_form">Form</string>
     <string name="advice_title">Training advice</string>
     <string name="advice_rest">Take a rest day</string>

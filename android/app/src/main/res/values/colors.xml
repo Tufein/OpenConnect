@@ -2,6 +2,4 @@
 <resources>
     <!-- Behind the app while it starts; the app then paints its own light or dark theme over it. -->
     <color name="window_background">#FFF4F6F8</color>
-    <color name="ic_launcher_background">#FFECE5D0</color>
-    <color name="ic_launcher_dots">#FFDDD4B8</color>
 </resources>

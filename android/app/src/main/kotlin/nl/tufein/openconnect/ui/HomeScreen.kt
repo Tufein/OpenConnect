@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -89,15 +90,22 @@ fun HomeScreen(
     useGarmin: Boolean = true,
     /** Opens the Oura tab; null for someone without a ring. */
     onOura: (() -> Unit)? = null,
+    /** The card under the battery and the optional cards, as chosen in Settings. */
+    homePrefs: HomePrefs = HomePrefs(),
+    /** The card under the battery was picked in the sheet on this screen. */
+    onHomeMetric: (String) -> Unit = {},
 ) {
     val editorial = LocalStyle.current == Style.EDITORIAL
     val badge = syncBadge(garmin).takeIf { useGarmin }
     val metrics = OpenConnectColors.metrics
+    val colors = MaterialTheme.colorScheme
     val gutter = if (editorial) 20.dp else 16.dp
     // The day itself stays open; the month chart and the activity list are one tap away, which keeps the first screen calm.
     var showMonth by rememberSaveable { mutableStateOf(false) }
     var showRecent by rememberSaveable { mutableStateOf(false) }
     var showTrends by rememberSaveable { mutableStateOf(false) }
+    // Tapping the card under the battery opens the same choice as the Front page section in Settings.
+    var choosingMetric by rememberSaveable { mutableStateOf(false) }
     // Remembered per sync, not forever: after the next successful sync the card is worth seeing again.
     var syncToastHiddenFor by rememberSaveable { mutableStateOf(0L) }
 
@@ -219,7 +227,7 @@ fun HomeScreen(
             val noData = state.loaded && (!state.hasData || state.overview == null)
             if (editorial && noData) block("home-empty-early") { EmptyState(onDemo, onImport) }
             // The charge of the devices themselves, high on the front page: a dead watch or ring is worth noticing early.
-            if (useGarmin || onOura != null) block("home-battery") {
+            if (homePrefs.battery && (useGarmin || onOura != null)) block("home-battery") {
                 BatteryCard(battery, showWatch = useGarmin, showRing = onOura != null, onOpenOura = onOura)
             }
             if (!state.loaded) return@LazyColumn
@@ -286,10 +294,19 @@ fun HomeScreen(
             // One order: how ready you are, today's four signals, the day so far, then the week.
             if (freshness.isStale) block("home-stale") { StaleDayNotice(freshness) }
             if (editorial) {
-                block("home-calories") { EditorialCaloriesCard(today) }
+                block("home-calories") {
+                    EditorialMetricCard(
+                        metric = HomeMetric.of(homePrefs.metric),
+                        today = today,
+                        sleep = state.sleep,
+                        readiness = state.readiness,
+                        activityPct = activityPct,
+                        onChange = { choosingMetric = true },
+                    )
+                }
                 block("home-readiness-summary") { EditorialReadinessCard(state.readiness) { onOpenHealth(ChartMetric.READINESS) } }
                 block("home-sleep-summary") { EditorialSleepCard(state.sleep, today) { onOpenHealth(ChartMetric.SLEEP) } }
-                block("home-checkin") {
+                if (homePrefs.journal) block("home-checkin") {
                     EditorialCheckInCard(state.journal, now.atZone(zone).toLocalDate(), onToggleJournal)
                 }
             }
@@ -322,9 +339,11 @@ fun HomeScreen(
             goalsAndLoad()
             state.sleepNeed?.let { need -> block("home-sleep-need") { Foldable("home-sleep-need") { SleepNeedCard(need) } } }
             state.sleepConsistency?.let { c -> block("home-sleep-consistency") { Foldable("home-sleep-consistency") { SleepConsistencyCard(c) } } }
-            block("home-journal") { Foldable("home-journal") { JournalCard(state.journal, now.atZone(zone).toLocalDate(), onToggleJournal) } }
+            if (homePrefs.journal) block("home-journal") {
+                Foldable("home-journal") { JournalCard(state.journal, now.atZone(zone).toLocalDate(), onToggleJournal) }
+            }
 
-            block("home-last7") {
+            if (homePrefs.last7) block("home-last7") {
                 val week = overview.last7
                 CollapsibleSection("home-last7", stringResource(R.string.last_7_days)) {
                     Spacer(Modifier.padding(top = 8.dp))
@@ -379,6 +398,44 @@ fun HomeScreen(
             }
         }
     }
+    if (choosingMetric) {
+        AlertDialog(
+            onDismissRequest = { choosingMetric = false },
+            shape = MaterialTheme.shapes.large,
+            containerColor = colors.surface,
+            tonalElevation = 0.dp,
+            titleContentColor = colors.onSurface,
+            textContentColor = colors.onSurfaceVariant,
+            title = { Text(stringResource(R.string.home_choose_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        stringResource(R.string.home_choose_body),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant,
+                    )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        for (metric in HomeMetric.entries) {
+                            PixelChip(
+                                selected = metric.key == HomeMetric.of(homePrefs.metric).key,
+                                onClick = {
+                                    onHomeMetric(metric.key)
+                                    choosingMetric = false
+                                },
+                                label = { Text(stringResource(metric.label)) },
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                QuietButton(onClick = { choosingMetric = false }) { Text(stringResource(R.string.manual_close)) }
+            },
+        )
+    }
 }
 
 /** The greeting that goes with the hour, shared by the editorial header and the older one. */
@@ -389,25 +446,146 @@ private fun greetingFor(now: Instant, zone: ZoneId): Int = when (now.atZone(zone
     else -> R.string.greeting_night
 }
 
-/** The large arc on Home: today's active calories, with no invented goal, just a round reference that leaves room above. */
+/**
+ * The one card on Home that a person can choose: active calories by default, or steps, resting heart rate, stress,
+ * sleep, readiness or activity. The tap opens the picker; the card itself shows the same quiet ring, value, colour and
+ * sentence for every choice, so the page keeps its rhythm.
+ */
 @Composable
-private fun EditorialCaloriesCard(today: DailySummary?) {
-    val kcal = today?.activeKcal ?: 0
-    val max = maxOf(120, ((kcal + 119) / 120) * 120)
-    EditorialCard {
-        ArcGauge(
-            value = kcal,
-            max = max,
-            label = stringResource(R.string.editorial_active_calories),
-            color = OpenConnectColors.metrics.calories,
+private fun EditorialMetricCard(
+    metric: HomeMetric,
+    today: DailySummary?,
+    sleep: nl.tufein.openconnect.core.SleepSummary?,
+    readiness: Readiness?,
+    activityPct: Int?,
+    onChange: () -> Unit,
+) {
+    val colors = MaterialTheme.colorScheme
+    val metrics = OpenConnectColors.metrics
+    val tint = when (metric) {
+        HomeMetric.CALORIES -> metrics.calories
+        HomeMetric.STEPS -> metrics.steps
+        HomeMetric.RESTING_HR -> metrics.heart
+        HomeMetric.STRESS -> metrics.stress
+        HomeMetric.SLEEP -> metrics.sleep
+        HomeMetric.READINESS -> metrics.readiness
+        HomeMetric.ACTIVITY -> metrics.distance
+    }
+    val goal = (today?.stepsGoal ?: 10_000).coerceAtLeast(1)
+    val steps = today?.steps
+    val kcal = today?.activeKcal
+    val hr = today?.restingHr?.takeIf { it > 0 }
+    val stress = today?.avgStress?.takeIf { it > 0 }
+    val sleepSeconds = sleep?.durationS?.takeIf { it > 0 }
+    val sleepScore = sleep?.score?.takeIf { it > 0 }
+    val readinessScore = readiness?.score
+    val value: String
+    val unit: String?
+    val progress: Float
+    when (metric) {
+        HomeMetric.CALORIES -> {
+            val max = maxOf(120, (((kcal ?: 0) + 119) / 120) * 120)
+            value = kcal?.toString() ?: "–"
+            unit = "kcal"
+            progress = (kcal ?: 0).toFloat() / max
+        }
+        HomeMetric.STEPS -> {
+            value = steps?.let { Fmt.thousands(it) } ?: "–"
+            unit = null
+            progress = (steps ?: 0).toFloat() / goal
+        }
+        HomeMetric.RESTING_HR -> {
+            value = hr?.toString() ?: "–"
+            unit = "bpm"
+            progress = hr?.let { ((100 - it) / 60f).coerceIn(0f, 1f) } ?: 0f
+        }
+        HomeMetric.STRESS -> {
+            value = stress?.toString() ?: "–"
+            unit = null
+            progress = stress?.let { ((100 - it) / 100f).coerceIn(0f, 1f) } ?: 0f
+        }
+        HomeMetric.SLEEP -> {
+            value = when {
+                sleepScore != null -> sleepScore.toString()
+                sleepSeconds != null -> Fmt.oneDecimal(sleepSeconds / 3600.0)
+                else -> "–"
+            }
+            unit = if (sleepScore == null && sleepSeconds != null) "h" else null
+            progress = when {
+                sleepScore != null -> sleepScore / 100f
+                sleepSeconds != null -> sleepSeconds / (8f * 3600f)
+                else -> 0f
+            }
+        }
+        HomeMetric.READINESS -> {
+            value = readinessScore?.toString() ?: "–"
+            unit = null
+            progress = (readinessScore ?: 0) / 100f
+        }
+        HomeMetric.ACTIVITY -> {
+            value = activityPct?.toString() ?: "–"
+            unit = "%"
+            progress = (activityPct ?: 0) / 100f
+        }
+    }
+    val title = stringResource(if (metric == HomeMetric.CALORIES) R.string.editorial_active_calories else metric.label)
+    val caption = when (metric) {
+        HomeMetric.CALORIES -> stringResource(R.string.editorial_active_calories_body)
+        HomeMetric.STEPS ->
+            if (steps != null) stringResource(R.string.steps_of_goal, Fmt.thousands(steps), Fmt.thousands(goal))
+            else stringResource(R.string.home_metric_empty)
+        HomeMetric.RESTING_HR ->
+            if (hr != null) stringResource(R.string.home_metric_resting_hr_body) else stringResource(R.string.home_metric_empty)
+        HomeMetric.STRESS ->
+            if (stress != null) stringResource(R.string.home_metric_stress_body) else stringResource(R.string.home_metric_empty)
+        HomeMetric.SLEEP ->
+            if (sleepSeconds != null || sleepScore != null) stringResource(R.string.home_metric_sleep_body) else stringResource(R.string.home_metric_empty)
+        HomeMetric.READINESS ->
+            if (readinessScore != null) stringResource(R.string.readiness_description, readinessScore) else stringResource(R.string.readiness_missing)
+        HomeMetric.ACTIVITY ->
+            if (activityPct != null) stringResource(R.string.editorial_orb_activity_desc, activityPct) else stringResource(R.string.home_metric_empty)
+    }
+    val spoken = "$title $value${unit?.let { " $it" }.orEmpty()}. $caption"
+    EditorialCard(accent = tint, onClick = onChange) {
+        EditorialSectionTitle(
+            title,
+            trailing = {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        stringResource(R.string.home_metric_change),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colors.onSurfaceVariant,
+                    )
+                    LineIcon(LineGlyph.Pencil, size = 14.dp, tint = colors.onSurfaceVariant)
+                }
+            },
         )
-        Text(
-            stringResource(R.string.editorial_active_calories_body),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-        )
+        Row(
+            Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
+            RingGauge(
+                progress = progress,
+                color = tint,
+                size = 112.dp,
+                stroke = 5.dp,
+                description = spoken,
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                    Text(value, style = MaterialTheme.typography.titleLarge, color = colors.onSurface, maxLines = 1)
+                    if (unit != null) {
+                        Text(unit, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
+                    }
+                }
+            }
+            Text(
+                caption,
+                style = MaterialTheme.typography.bodyMedium,
+                color = colors.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+        }
     }
 }
 

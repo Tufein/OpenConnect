@@ -83,6 +83,8 @@ data class SettingsUi(
     val lockAvailable: Boolean = false,
     val sources: SourcesUi = SourcesUi(),
     val look: Look = Look(),
+    /** The card under the battery and the optional cards on the front page. */
+    val home: HomePrefs = HomePrefs(),
     /** The icon on the launcher. */
     val appIcon: AppIcon = AppIcon.HANDHELD,
     /** The file import: its progress while it runs and the report of the last one (v1.3.0). */
@@ -125,6 +127,12 @@ fun SettingsScreen(
     onRings: (rings: String) -> Unit = {},
     /** The photo header was set to follow the hour or to hold one light. */
     onHero: (hero: String) -> Unit = {},
+    /** The card under the battery on the front page was picked. */
+    onHomeMetric: (metric: String) -> Unit = {},
+    /** The battery card, the journal or the "Last 7 days" section was switched on or off. */
+    onHomeBattery: (Boolean) -> Unit = {},
+    onHomeJournal: (Boolean) -> Unit = {},
+    onHomeLast7: (Boolean) -> Unit = {},
     /** A launcher icon was picked. */
     onAppIcon: (AppIcon) -> Unit = {},
     onBackup: () -> Unit = {},
@@ -229,6 +237,28 @@ fun SettingsScreen(
                     }
                 }
                 Text(stringResource(R.string.hero_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                // The front page itself: the card under the battery and which of its cards are drawn.
+                Text(stringResource(R.string.settings_home), style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.settings_home_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.settings_home_card), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    for (metric in HomeMetric.entries) {
+                        PixelChip(
+                            selected = ui.home.metric == metric.key,
+                            onClick = { onHomeMetric(metric.key) },
+                            label = { Text(stringResource(metric.label)) },
+                        )
+                    }
+                }
+                SwitchRow(checked = ui.home.battery, onCheckedChange = onHomeBattery) {
+                    Text(stringResource(R.string.home_switch_battery), style = MaterialTheme.typography.bodyMedium)
+                }
+                SwitchRow(checked = ui.home.journal, onCheckedChange = onHomeJournal) {
+                    Text(stringResource(R.string.home_switch_journal), style = MaterialTheme.typography.bodyMedium)
+                }
+                SwitchRow(checked = ui.home.last7, onCheckedChange = onHomeLast7) {
+                    Text(stringResource(R.string.last_7_days), style = MaterialTheme.typography.bodyMedium)
+                }
                 Text(stringResource(R.string.look_colours), style = MaterialTheme.typography.titleMedium)
                 val darkNow = MaterialTheme.colorScheme.background.luminance() < 0.5f
                 for (group in PaletteGroup.entries) {

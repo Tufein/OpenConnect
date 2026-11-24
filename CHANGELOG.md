@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.9.2: rustige lijnen, zes tinten en een voorblad van jou
+
+De onderbalk tekent geen pixels meer maar rustige lijnen, de thema's zijn teruggebracht tot zes tinten rond het Olijfgroen, en het voorblad stel je zelf samen: welke meetkaart onder de batterij staat en welke kaarten je ziet. Ook de launcher-iconen zijn opnieuw getekend.
+
+[Release notes](docs/releases/v1.9.2.md)
+
 ## v1.9.1: je eigen kleuren, ringen en licht
 
 De editorial-look is nu aan te passen: heldere signaalkleuren in plaats van de zachte tinten, dikkere ringen als je die wilt, en een voorbladfoto die met het uur meegaat of op één licht blijft staan. De keuze geldt meteen overal in de app.

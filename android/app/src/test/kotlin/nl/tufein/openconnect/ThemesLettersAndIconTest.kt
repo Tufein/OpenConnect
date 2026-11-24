@@ -34,7 +34,8 @@ private fun contrast(a: Color, b: Color): Double {
 }
 
 /**
- * v0.32.0: more than twenty colour themes, a choice between pixel and clear letters, and a choice of launcher icon.
+ * v0.32.0: a choice of colour themes, between pixel and clear letters, and of launcher icon; since the Oura-inspired
+ * palette there are six calm themes instead of many screens.
  * The first test is plain arithmetic over every theme; the others walk through Settings.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -59,7 +60,7 @@ class ThemesLettersAndIconTest : AppTestBase() {
     @Test
     fun everyThemeIsReadableInDarkAndInLight() {
         val themes = Palette.entries.filter { it != Palette.DYNAMIC }
-        assertTrue(themes.size >= 20, "there are plenty of themes to choose from")
+        assertTrue(themes.size >= 5, "there are still several calm themes to choose from")
         for (palette in themes) {
             for (dark in listOf(true, false)) {
                 val c = colorSchemeFor(palette, dark)
@@ -82,7 +83,7 @@ class ThemesLettersAndIconTest : AppTestBase() {
         tab("Settings").performClick()
         openAppearance()
         shot("62-settings-many-themes")
-        for ((name, key) in listOf("Virtual Boy" to "virtualboy", "Terminal" to "terminal", "High contrast" to "contrast", "Dracula" to "dracula", "Candy" to "candy")) {
+        for ((name, key) in listOf("Sand" to "sand", "Forest" to "forest", "Graphite" to "graphite", "High contrast" to "contrast")) {
             clickText(name)
             rule.waitUntil(5_000) { settings().palette == key }
         }
@@ -93,11 +94,11 @@ class ThemesLettersAndIconTest : AppTestBase() {
         shot("63-home-high-contrast")
         tab("Settings").performClick()
         openAppearance()
-        clickText("Terminal")
-        rule.waitUntil(5_000) { settings().palette == "terminal" }
+        clickText("Forest")
+        rule.waitUntil(5_000) { settings().palette == "forest" }
         tab("Health").performClick()
         waitForText("Scores")
-        shot("64-health-terminal")
+        shot("64-health-forest")
     }
 
     @Test

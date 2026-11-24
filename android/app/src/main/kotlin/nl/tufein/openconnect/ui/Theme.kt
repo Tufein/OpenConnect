@@ -32,15 +32,17 @@ import nl.tufein.openconnect.R
  * The OpenConnect look (v1.9.0).
  *
  * From 1.9 the app opens in the editorial style: a calm, paper-like page with Instrument Serif display type, IBM Plex
- * Sans running text, very large rounded cards, hairline borders and the Olive colour theme (near-black olive and warm
- * cream in dark, warm paper and deep olive in light). The modern "Sleek" style, the pixel "Retro" style and all 26 older
- * colour themes remain, and an explicit choice stored by an older version is still honoured.
+ * Sans running text, large rounded cards, hairline borders and the Olive colour theme. Olive follows the quiet, natural
+ * palette of the Oura app: warm cream paper and deep olive in light, a deep warm charcoal-green and soft sage in dark.
+ * Five more themes are offered next to it (Sand, Graphite, Forest, High contrast and the phone's wallpaper); every older
+ * key from before this change opens as Olive instead of crashing or showing a theme that no longer exists.
  *  - Instrument Serif carries display and section titles; IBM Plex Sans the sentences, numbers and labels; Plex Mono is
  *    still in the app for people who choose Retro. All fonts are bundled (res/font).
- *  - Editorial surfaces use very large corners and a thin low-contrast line; Retro keeps its pixel-cut corners and hard
+ *  - Editorial surfaces use generous corners and a thin low-contrast line; Retro keeps its pixel-cut corners and hard
  *    shadow, Sleek its compact panels.
- *  - Dark mode is a near-black olive with warm cream text; light mode is warm paper with deep olive text.
- *  - The icons are our own small grid icons (PixelIcons.kt), drawn crisply at every size.
+ *  - Dark mode is a deep charcoal-green with warm cream text; light mode is warm paper with deep olive text.
+ *  - The tab bar and the quiet editorial controls use smooth line icons (LineIcons.kt); the rest of the app keeps the
+ *    small grid icons (PixelIcons.kt) that belong to the retro look.
  */
 
 /** Jersey 10: pixel headlines and numbers. It has one weight, so styles using it never ask for bold. */
@@ -63,49 +65,27 @@ internal val PlexMono = FontFamily(Font(R.font.plex_mono_medium, FontWeight.Medi
 
 /** How the themes are grouped in Settings. */
 enum class PaletteGroup(@StringRes val label: Int) {
-    EDITORIAL(R.string.palette_group_editorial), SPORT(R.string.palette_group_sport), RETRO(R.string.palette_group_retro),
-    EYES(R.string.palette_group_eyes), COLOUR(R.string.palette_group_colour), PHONE(R.string.palette_group_phone),
+    CALM(R.string.palette_group_calm), NEUTRAL(R.string.palette_group_neutral), PHONE(R.string.palette_group_phone),
 }
 
 /**
- * The colour themes to choose from. "olive" is the editorial default; the others are cool sport neutrals, screens from
- * the history of gaming and computing, calm and high-contrast ones that are easy on the eyes, and colourful ones.
- * "dynamic" takes the phone's wallpaper colours on Android 12 and newer. Older keys (arcade, clean, midnight) from
- * before v0.31.0 are not themes any more and open as "handheld"; ocean and sunset exist again, with new colours.
+ * The colour themes to choose from. "olive" is the Oura-inspired editorial default; Sand is the same warmth with clay
+ * and straw, Forest goes a shade deeper green, Graphite is the dark neutral, High contrast is there for readability and
+ * "dynamic" takes the phone's wallpaper colours on Android 12 and newer. The many older screens and bright colour
+ * themes are gone, so the picker stays calm. A key from an older version that is no theme any more opens as Olive.
  */
 enum class Palette(val key: String, @StringRes val label: Int, val group: PaletteGroup) {
-    OLIVE("olive", R.string.palette_olive, PaletteGroup.EDITORIAL),
-    GRAPHITE("graphite", R.string.palette_graphite, PaletteGroup.SPORT),
-    TRACK("track", R.string.palette_track, PaletteGroup.SPORT),
-    HANDHELD("handheld", R.string.palette_handheld, PaletteGroup.RETRO),
-    GAMEBOY("gameboy", R.string.palette_gameboy, PaletteGroup.RETRO),
-    VIRTUALBOY("virtualboy", R.string.palette_virtualboy, PaletteGroup.RETRO),
-    FAMICOM("famicom", R.string.palette_famicom, PaletteGroup.RETRO),
-    C64("c64", R.string.palette_c64, PaletteGroup.RETRO),
-    ATARI("atari", R.string.palette_atari, PaletteGroup.RETRO),
-    AMBER("amber", R.string.palette_amber, PaletteGroup.RETRO),
-    TERMINAL("terminal", R.string.palette_terminal, PaletteGroup.RETRO),
-    SYNTHWAVE("synthwave", R.string.palette_synthwave, PaletteGroup.RETRO),
-    CONTRAST("contrast", R.string.palette_contrast, PaletteGroup.EYES),
-    MONO("mono", R.string.palette_mono, PaletteGroup.EYES),
-    SLATE("slate", R.string.palette_slate, PaletteGroup.EYES),
-    SAND("sand", R.string.palette_sand, PaletteGroup.EYES),
-    NORD("nord", R.string.palette_nord, PaletteGroup.EYES),
-    SOLARIZED("solarized", R.string.palette_solarized, PaletteGroup.EYES),
-    GRUVBOX("gruvbox", R.string.palette_gruvbox, PaletteGroup.EYES),
-    DRACULA("dracula", R.string.palette_dracula, PaletteGroup.EYES),
-    OCEAN("ocean", R.string.palette_ocean, PaletteGroup.COLOUR),
-    FOREST("forest", R.string.palette_forest, PaletteGroup.COLOUR),
-    SUNSET("sunset", R.string.palette_sunset, PaletteGroup.COLOUR),
-    CANDY("candy", R.string.palette_candy, PaletteGroup.COLOUR),
-    VIOLET("violet", R.string.palette_violet, PaletteGroup.COLOUR),
-    CHERRY("cherry", R.string.palette_cherry, PaletteGroup.COLOUR),
+    OLIVE("olive", R.string.palette_olive, PaletteGroup.CALM),
+    SAND("sand", R.string.palette_sand, PaletteGroup.CALM),
+    FOREST("forest", R.string.palette_forest, PaletteGroup.CALM),
+    GRAPHITE("graphite", R.string.palette_graphite, PaletteGroup.NEUTRAL),
+    CONTRAST("contrast", R.string.palette_contrast, PaletteGroup.NEUTRAL),
     DYNAMIC("dynamic", R.string.palette_dynamic, PaletteGroup.PHONE);
 
     companion object {
-        // No key at all means a fresh install: Olive. An unknown key is a theme from an older version, and opens as
-        // Handheld, the look those versions had.
-        fun of(key: String?): Palette = if (key == null) OLIVE else entries.firstOrNull { it.key == key } ?: HANDHELD
+        // No key at all means a fresh install: Olive. A key of a theme that no longer exists is not an error: it opens
+        // as Olive, the calm default, so an old setting never crashes and never shows a theme that is not offered.
+        fun of(key: String?): Palette = if (key == null) OLIVE else entries.firstOrNull { it.key == key } ?: OLIVE
     }
 }
 
@@ -188,85 +168,22 @@ private class Keys(
 )
 
 private val PaletteKeys: Map<Palette, Pair<Keys, Keys>> = mapOf(
-    // Olive: the editorial default. Near-black olive and warm cream in the dark version; warm paper and deep olive in the
-    // light one, with muted sage as the one accent. Text and panel colours are kept above WCAG 7:1 by the theme test.
-    Palette.OLIVE to (Keys(Color(0xFFB7C4A5), Color(0xFFD8C8A4), Color(0xFF87957A), Color(0xFF0E110D), Color(0xFF171B15), Color(0xFFEDE7D7), Color(0xFF131610)) to
-        Keys(Color(0xFF4A573C), Color(0xFF6C5D3F), Color(0xFF526348), Color(0xFFF3EFE4), Color(0xFFE8E3D5), Color(0xFF202719), Color(0xFFF7F3E8))),
-    // Graphite: cool neutrals and one electric blue, the sporty theme. Everything that is not data stays quiet.
-    Palette.GRAPHITE to (Keys(Color(0xFF4C9AFF), Color(0xFF93A4B8), Color(0xFF6B7F96), Color(0xFF0E1116), Color(0xFF161A21), Color(0xFFE8EDF3)) to
-        Keys(Color(0xFF1D4ED8), Color(0xFF475569), Color(0xFF64748B), Color(0xFFF4F6F8), Color(0xFFFFFFFF), Color(0xFF0F172A))),
-    // Track: near-black with a single orange accent, for people who want the app to feel like a training log.
-    Palette.TRACK to (Keys(Color(0xFFFF7A1A), Color(0xFFC9A227), Color(0xFF7E8B99), Color(0xFF0B0C0E), Color(0xFF15171A), Color(0xFFEDEFF2)) to
-        Keys(Color(0xFFC2410C), Color(0xFF8A6A12), Color(0xFF475569), Color(0xFFF5F5F3), Color(0xFFFFFFFF), Color(0xFF141414))),
-    // Handheld: warm black and warm paper, orange as the signal, ink-coloured text on every accent.
-    Palette.HANDHELD to (Keys(Color(0xFFFF7A3D), Color(0xFFFFD23F), Color(0xFF5BC8F5), Color(0xFF131210), Color(0xFF1F1D19), Color(0xFFF0E9D6), Color(0xFF15110C)) to
-        Keys(Color(0xFFDB5614), Color(0xFFC98F00), Color(0xFF2080E8), Color(0xFFECE5D0), Color(0xFFF7F2E2), Color(0xFF17150F), Color(0xFF17150F))),
-    // The four greens of the 1989 handheld's screen.
-    Palette.GAMEBOY to (Keys(Color(0xFF9BBC0F), Color(0xFF8BAC0F), Color(0xFFC4DE5A), Color(0xFF0F380F), Color(0xFF1B451B), Color(0xFFD7EFA0)) to
-        Keys(Color(0xFF306230), Color(0xFF4F7A1E), Color(0xFF0C300C), Color(0xFFCADC9F), Color(0xFFE0EDBE), Color(0xFF0C300C))),
-    // Red on black, the one colour of the 1995 headset's screen.
-    Palette.VIRTUALBOY to (Keys(Color(0xFFFF3B3B), Color(0xFFFF8080), Color(0xFFE83A3A), Color(0xFF000000), Color(0xFF1C0505), Color(0xFFFFB3B3)) to
-        Keys(Color(0xFFB30000), Color(0xFFC23030), Color(0xFF7A0000), Color(0xFFFFEFEF), Color(0xFFFFFFFF), Color(0xFF3A0000))),
-    // Famicom red and cream on charcoal and paper.
-    Palette.FAMICOM to (Keys(Color(0xFFF0263F), Color(0xFFF2E3C4), Color(0xFFA8A8A8), Color(0xFF1A1414), Color(0xFF2A2020), Color(0xFFF2E8D5)) to
-        Keys(Color(0xFFB80F27), Color(0xFF5E5E5E), Color(0xFF7A5A12), Color(0xFFE9E1CF), Color(0xFFF6F0E0), Color(0xFF2B2118))),
-    // The blue screen and light-blue border of the 1982 home computer.
-    Palette.C64 to (Keys(Color(0xFF8E84E8), Color(0xFFFFFFFF), Color(0xFFC8C0FF), Color(0xFF2B2064), Color(0xFF3A2D82), Color(0xFFE4E0FF)) to
-        Keys(Color(0xFF4B3FB0), Color(0xFF6A5ACD), Color(0xFF2B2064), Color(0xFFE8E6FF), Color(0xFFFFFFFF), Color(0xFF1E1750))),
-    // Wood-grain brown and orange, like the 2600 console.
-    Palette.ATARI to (Keys(Color(0xFFFF8C1A), Color(0xFFE9C46A), Color(0xFFE07A3E), Color(0xFF1B0F05), Color(0xFF2B1A0B), Color(0xFFF5E1C8)) to
-        Keys(Color(0xFFA84A00), Color(0xFF7A5A12), Color(0xFF8C3B12), Color(0xFFF3E2C7), Color(0xFFFBF0DC), Color(0xFF2B1708))),
-    // An amber phosphor terminal.
-    Palette.AMBER to (Keys(Color(0xFFFFB000), Color(0xFFFF7A00), Color(0xFFFFD45C), Color(0xFF0D0900), Color(0xFF1A1206), Color(0xFFFFE2A8)) to
-        Keys(Color(0xFF8A5A00), Color(0xFFB34700), Color(0xFF6B4A00), Color(0xFFFFF6E5), Color(0xFFFFFFFF), Color(0xFF2B1D00))),
-    // A green phosphor terminal.
-    Palette.TERMINAL to (Keys(Color(0xFF33FF66), Color(0xFF9CFFAD), Color(0xFF00D4A8), Color(0xFF000A02), Color(0xFF04180A), Color(0xFFBFFFCC)) to
-        Keys(Color(0xFF007A2E), Color(0xFF3B7A00), Color(0xFF00796B), Color(0xFFECFFF1), Color(0xFFFFFFFF), Color(0xFF00300F))),
-    // Neon pink and cyan over deep purple, like an eighties album cover.
-    Palette.SYNTHWAVE to (Keys(Color(0xFFFF4FB8), Color(0xFF00E5FF), Color(0xFFFFD166), Color(0xFF14061F), Color(0xFF221033), Color(0xFFF5E6FF)) to
-        Keys(Color(0xFFB0187A), Color(0xFF007A8C), Color(0xFF8C5A00), Color(0xFFFBF2FF), Color(0xFFFFFFFF), Color(0xFF2A0E3A))),
+    // Olive: the Oura-inspired default. A deep warm charcoal-green and soft sage in the dark version; warm cream paper,
+    // deep olive text and sage as the one accent in the light one. Text and panels stay above WCAG 7:1 (theme tests).
+    Palette.OLIVE to (Keys(Color(0xFFB9C7A9), Color(0xFFD6C5A0), Color(0xFF9CB0B5), Color(0xFF10120E), Color(0xFF191C16), Color(0xFFF1ECE0), Color(0xFF10120E)) to
+        Keys(Color(0xFF4C5D3F), Color(0xFF6E5F42), Color(0xFF4F6A64), Color(0xFFF2EFE6), Color(0xFFFAF7EF), Color(0xFF23281F))),
+    // Sand: the same warmth without the green, like a linen page with clay and straw.
+    Palette.SAND to (Keys(Color(0xFFD8B98C), Color(0xFFB3C0A3), Color(0xFFC7A6A0), Color(0xFF16120C), Color(0xFF211B13), Color(0xFFF3E8D7), Color(0xFF17120C)) to
+        Keys(Color(0xFF7A5B34), Color(0xFF586A48), Color(0xFF7A4C48), Color(0xFFF5EFE3), Color(0xFFFCF7ED), Color(0xFF2B2116))),
+    // Forest: a deeper green version of the calm default.
+    Palette.FOREST to (Keys(Color(0xFF94AF88), Color(0xFFCDBD90), Color(0xFF86ADA6), Color(0xFF0D130E), Color(0xFF121A14), Color(0xFFE8F0E4), Color(0xFF0D130E)) to
+        Keys(Color(0xFF3C5740), Color(0xFF6B5D3B), Color(0xFF35655E), Color(0xFFEDF2E9), Color(0xFFF7FAF4), Color(0xFF1A281C))),
+    // Graphite: the quiet dark neutral, with a soft sage-grey main colour instead of an electric sports blue.
+    Palette.GRAPHITE to (Keys(Color(0xFF9FB9B2), Color(0xFFC0B39E), Color(0xFFA6A9C2), Color(0xFF111315), Color(0xFF1A1D1F), Color(0xFFECEFEE), Color(0xFF111315)) to
+        Keys(Color(0xFF4E6059), Color(0xFF665D4E), Color(0xFF565A78), Color(0xFFF0F1EF), Color(0xFFFAFAF8), Color(0xFF1D2220))),
     // The most readable one: pure black and white with a yellow (dark) or blue (light) accent.
     Palette.CONTRAST to (Keys(Color(0xFFFFD60A), Color(0xFF5EEBFF), Color(0xFFFF9EC4), Color(0xFF000000), Color(0xFF141414), Color(0xFFFFFFFF)) to
         Keys(Color(0xFF0033CC), Color(0xFF7A3E00), Color(0xFF006B3C), Color(0xFFFFFFFF), Color(0xFFF2F2F2), Color(0xFF000000))),
-    // Greys only, calm like an e-ink screen.
-    Palette.MONO to (Keys(Color(0xFFE0E0E0), Color(0xFFB8B8B8), Color(0xFF9C9C9C), Color(0xFF121212), Color(0xFF1E1E1E), Color(0xFFEBEBEB)) to
-        Keys(Color(0xFF2E2E2E), Color(0xFF555555), Color(0xFF6B6B6B), Color(0xFFEDEDED), Color(0xFFFAFAFA), Color(0xFF161616))),
-    // Cool blue-grey with sky blue.
-    Palette.SLATE to (Keys(Color(0xFF38BDF8), Color(0xFFA5B4FC), Color(0xFF5EEAD4), Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFFE2E8F0)) to
-        Keys(Color(0xFF0369A1), Color(0xFF4338CA), Color(0xFF0F766E), Color(0xFFF1F5F9), Color(0xFFFFFFFF), Color(0xFF0F172A))),
-    // Warm sand tones, soft on tired eyes.
-    Palette.SAND to (Keys(Color(0xFFDDA845), Color(0xFFCF8F63), Color(0xFF98C29F), Color(0xFF1E1B16), Color(0xFF2A261F), Color(0xFFEFE6D6)) to
-        Keys(Color(0xFF8A5A12), Color(0xFF9A4A22), Color(0xFF3F6B4A), Color(0xFFF4EBDD), Color(0xFFFBF6EC), Color(0xFF2E2418))),
-    // The Nord palette: frosty blue-greys.
-    Palette.NORD to (Keys(Color(0xFF88C0D0), Color(0xFFA3BE8C), Color(0xFFEBCB8B), Color(0xFF2E3440), Color(0xFF3B4252), Color(0xFFECEFF4)) to
-        Keys(Color(0xFF2E6F8E), Color(0xFF4C7A34), Color(0xFF8A6A12), Color(0xFFECEFF4), Color(0xFFFFFFFF), Color(0xFF2E3440))),
-    // Solarized, the classic low-glare editor palette.
-    Palette.SOLARIZED to (Keys(Color(0xFF3CA0E8), Color(0xFFCDA000), Color(0xFF2AB5A9), Color(0xFF002B36), Color(0xFF073642), Color(0xFFEEE8D5)) to
-        Keys(Color(0xFF1F6FA8), Color(0xFF8A6700), Color(0xFF1F7A72), Color(0xFFFDF6E3), Color(0xFFEEE8D5), Color(0xFF073642))),
-    // Gruvbox: warm retro-groove browns and yellows.
-    Palette.GRUVBOX to (Keys(Color(0xFFFABD2F), Color(0xFF8EC07C), Color(0xFF83A598), Color(0xFF282828), Color(0xFF353230), Color(0xFFEBDBB2)) to
-        Keys(Color(0xFFAF3A03), Color(0xFF79740E), Color(0xFF076678), Color(0xFFFBF1C7), Color(0xFFF6EBC3), Color(0xFF2E2A28))),
-    // Dracula: purple and pink on indigo.
-    Palette.DRACULA to (Keys(Color(0xFFBD93F9), Color(0xFFFF79C6), Color(0xFF50FA7B), Color(0xFF282A36), Color(0xFF343746), Color(0xFFF8F8F2)) to
-        Keys(Color(0xFF6B3FC4), Color(0xFFB3236E), Color(0xFF1F7A3A), Color(0xFFF8F8F2), Color(0xFFFFFFFF), Color(0xFF282A36))),
-    // Deep sea blue and teal.
-    Palette.OCEAN to (Keys(Color(0xFF29B6F6), Color(0xFF26D0CE), Color(0xFFFFD54F), Color(0xFF06141F), Color(0xFF0D2233), Color(0xFFDCEFFB)) to
-        Keys(Color(0xFF0277BD), Color(0xFF00796B), Color(0xFF8A6A00), Color(0xFFE6F4FB), Color(0xFFFFFFFF), Color(0xFF06283D))),
-    // Forest greens.
-    Palette.FOREST to (Keys(Color(0xFF66D17A), Color(0xFFC5E063), Color(0xFFE0B56B), Color(0xFF0B1710), Color(0xFF14261A), Color(0xFFE3F2E1)) to
-        Keys(Color(0xFF2E7D32), Color(0xFF6A7F00), Color(0xFF8D5A1C), Color(0xFFE9F3E6), Color(0xFFF9FDF7), Color(0xFF12261A))),
-    // Orange and rose over a dusk-red black.
-    Palette.SUNSET to (Keys(Color(0xFFFF7043), Color(0xFFFFB74D), Color(0xFFF06292), Color(0xFF1C0F12), Color(0xFF2B1A1F), Color(0xFFFFE8DC)) to
-        Keys(Color(0xFFC2410C), Color(0xFF9A5B00), Color(0xFFB0305F), Color(0xFFFFF1E8), Color(0xFFFFFFFF), Color(0xFF3A1410))),
-    // Bubblegum pink and mint.
-    Palette.CANDY to (Keys(Color(0xFFFF7EB6), Color(0xFF7DF2D0), Color(0xFFFFD66B), Color(0xFF1D1226), Color(0xFF2C1C3A), Color(0xFFFFEAF6)) to
-        Keys(Color(0xFFC2185B), Color(0xFF00796B), Color(0xFF8A6A00), Color(0xFFFFEFF8), Color(0xFFFFFFFF), Color(0xFF3A1030))),
-    // Violet and sky blue.
-    Palette.VIOLET to (Keys(Color(0xFFB388FF), Color(0xFF80D8FF), Color(0xFFFFAB91), Color(0xFF140F26), Color(0xFF211A3D), Color(0xFFEEE8FF)) to
-        Keys(Color(0xFF5B2EC9), Color(0xFF00668A), Color(0xFFA33F1B), Color(0xFFF3EEFF), Color(0xFFFFFFFF), Color(0xFF21134A))),
-    // Cherry red and blush.
-    Palette.CHERRY to (Keys(Color(0xFFFF5A6E), Color(0xFFFFB3BC), Color(0xFFFFD58A), Color(0xFF1A0D10), Color(0xFF2A1519), Color(0xFFFBE6E8)) to
-        Keys(Color(0xFFC01F3D), Color(0xFF8A3A48), Color(0xFF8A6A12), Color(0xFFFDEEF0), Color(0xFFFFFFFF), Color(0xFF3A0F17))),
 )
 
 /** A full colour scheme from a few key colours: containers are the key colour mixed into the background. */
@@ -306,52 +223,52 @@ class MetricColors(
 )
 
 private val DarkMetrics = MetricColors(
-    steps = Color(0xFF5DD97A),
-    heart = Color(0xFFFF5470),
-    stress = Color(0xFFFFA23A),
-    battery = Color(0xFF4DA3FF),
-    sleep = Color(0xFFA98BFF),
-    distance = Color(0xFF3FD6CF),
-    calories = Color(0xFFFFD23F),
-    readiness = Color(0xFFB8E64B),
+    steps = Color(0xFF7FCB8B),
+    heart = Color(0xFFFF7C8C),
+    stress = Color(0xFFF2B76B),
+    battery = Color(0xFF82B6E8),
+    sleep = Color(0xFFB8A6E8),
+    distance = Color(0xFF63C9C1),
+    calories = Color(0xFFE8C97A),
+    readiness = Color(0xFFB7CF7F),
 )
 
 private val LightMetrics = MetricColors(
-    steps = Color(0xFF1E8B45),
-    heart = Color(0xFFD2203F),
-    stress = Color(0xFFC46A00),
-    battery = Color(0xFF1F65CF),
-    sleep = Color(0xFF6A4DDB),
-    distance = Color(0xFF08847F),
-    calories = Color(0xFFA97C00),
-    readiness = Color(0xFF4C8A00),
+    steps = Color(0xFF2E7D4F),
+    heart = Color(0xFFC23A53),
+    stress = Color(0xFFA86112),
+    battery = Color(0xFF2A5EA8),
+    sleep = Color(0xFF5F46B8),
+    distance = Color(0xFF0C6F6A),
+    calories = Color(0xFF8A6500),
+    readiness = Color(0xFF4F7A22),
 )
 
 /**
- * The editorial signals are drawn from the same olive, sage and clay family as the theme, so a row of orbs looks like one
- * quiet palette instead of a set of traffic lights. They stay distinct enough to tell apart, and are never the only cue:
- * every orb also has its label and value.
+ * The Oura-like signals: muted sage, lavender, teal, soft coral, amber and sand. Every calm theme shares this family, so
+ * a row of orbs looks like one quiet palette instead of a set of traffic lights. They stay distinct enough to tell apart,
+ * and are never the only cue: every orb also has its label and value.
  */
 private val EditorialDarkMetrics = MetricColors(
-    steps = Color(0xFFA9BD93),
-    heart = Color(0xFFC58F82),
-    stress = Color(0xFFC7A86B),
-    battery = Color(0xFF8FA6B2),
-    sleep = Color(0xFFA79BB8),
+    steps = Color(0xFFA8BE91),
+    heart = Color(0xFFCF9C92),
+    stress = Color(0xFFD2B073),
+    battery = Color(0xFF9BAFBF),
+    sleep = Color(0xFFB0A3C9),
     distance = Color(0xFF8FB8AC),
-    calories = Color(0xFFD6B98C),
-    readiness = Color(0xFFD8D3AF),
+    calories = Color(0xFFD8BE93),
+    readiness = Color(0xFFC3D3A3),
 )
 
 private val EditorialLightMetrics = MetricColors(
     steps = Color(0xFF4E6B3B),
-    heart = Color(0xFF995046),
-    stress = Color(0xFF876424),
+    heart = Color(0xFF9A5047),
+    stress = Color(0xFF8A6523),
     battery = Color(0xFF3F6476),
-    sleep = Color(0xFF65597A),
+    sleep = Color(0xFF5E5478),
     distance = Color(0xFF3D6E63),
-    calories = Color(0xFF856526),
-    readiness = Color(0xFF5B6539),
+    calories = Color(0xFF7E6128),
+    readiness = Color(0xFF4F6B3A),
 )
 
 val LocalMetricColors = staticCompositionLocalOf { DarkMetrics }
@@ -364,9 +281,9 @@ val LocalMetricColors = staticCompositionLocalOf { DarkMetrics }
 class PhotoColors(val ink: Color, val dimmedInk: Color, val scrim: Color)
 
 private val PhotoInk = PhotoColors(
-    ink = Color(0xFFF4EFE0),
-    dimmedInk = Color(0xFFF4EFE0).copy(alpha = 0.72f),
-    scrim = Color(0xFF0B0E0A),
+    ink = Color(0xFFF6F1E5),
+    dimmedInk = Color(0xFFF6F1E5).copy(alpha = 0.72f),
+    scrim = Color(0xFF0E110D),
 )
 
 val LocalPhotoColors = staticCompositionLocalOf { PhotoInk }
@@ -527,13 +444,13 @@ internal val ModernShapes = Shapes(
     extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
 )
 
-/** Editorial corners: a page of soft, large cards rather than dashboard panels (12 to 36 dp). */
+/** Editorial corners: a page of calm, generous cards rather than dashboard panels (10 to 28 dp). */
 internal val EditorialShapes = Shapes(
-    extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-    small = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-    medium = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
-    large = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
-    extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(36.dp),
+    extraSmall = androidx.compose.foundation.shape.RoundedCornerShape(10.dp),
+    small = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+    medium = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
+    large = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+    extraLarge = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
 )
 
 /** The pill used by editorial buttons and chips. */
@@ -557,7 +474,7 @@ private val ClassicTypography: androidx.compose.material3.Typography = ClearTypo
     )
 }
 
-/** The colours of a theme in dark or light, as a Material colour scheme. [Palette.DYNAMIC] has no fixed colours and gives Handheld. */
+/** The colours of a theme in dark or light, as a Material colour scheme. [Palette.DYNAMIC] has no fixed colours and gives Olive. */
 internal fun colorSchemeFor(palette: Palette, dark: Boolean): androidx.compose.material3.ColorScheme {
     val (d, l) = PaletteKeys[palette] ?: PaletteKeys.getValue(Palette.OLIVE)
     return scheme(if (dark) d else l, dark)
@@ -594,16 +511,16 @@ fun OpenConnectTheme(
     val context = androidx.compose.ui.platform.LocalContext.current
     val colors = when {
         chosen == Palette.DYNAMIC && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S ->
-            // A phone that cannot give its wallpaper colours (an odd build, a test runner) falls back to Handheld rather
+            // A phone that cannot give its wallpaper colours (an odd build, a test runner) falls back to Olive rather
             // than taking the screen down.
             runCatching {
                 if (dark) androidx.compose.material3.dynamicDarkColorScheme(context)
                 else androidx.compose.material3.dynamicLightColorScheme(context)
-            }.getOrElse { colorSchemeFor(Palette.HANDHELD, dark) }
+            }.getOrElse { colorSchemeFor(Palette.OLIVE, dark) }
         else -> colorSchemeFor(chosen, dark)
     }
     CompositionLocalProvider(
-        LocalMetricColors provides metricsFor(chosen, colors, dark, signals),
+        LocalMetricColors provides metricsFor(chosen, dark, signals),
         LocalLetters provides chosenLetters,
         LocalStyle provides chosenStyle,
         LocalPhotoColors provides PhotoInk,
@@ -630,31 +547,12 @@ fun OpenConnectTheme(
 }
 
 /**
- * The signal colours stay the same in every theme, so a number keeps being recognised by its colour; only steps and
- * readiness follow the theme's main colour. Olive has its own muted set of sage, clay, ochre and dust, so the editorial
- * page reads as one quiet palette. The one-colour screens (Game Boy, Virtual Boy, Terminal) are the exception: shades of
- * their colour, as on the originals.
+ * The signal colours stay the same in every calm theme, so a number keeps being recognised by its colour. Olive, Sand,
+ * Forest, Graphite and the wallpaper theme share the muted Oura-like family of sage, lavender, teal, coral and amber.
+ * "Clear" signals and the high-contrast theme get one strong colour each, because there readability wins over quiet.
  */
-private fun metricsFor(palette: Palette, colors: androidx.compose.material3.ColorScheme, dark: Boolean, signals: String): MetricColors {
-    val base = if (dark) DarkMetrics else LightMetrics
-    // Clear signals get one strong colour each in every theme that has more than one colour.
+private fun metricsFor(palette: Palette, dark: Boolean, signals: String): MetricColors {
     val clear = signals == "clear"
-    if (palette == Palette.OLIVE && !clear) return if (dark) EditorialDarkMetrics else EditorialLightMetrics
-    if (palette == Palette.HANDHELD) return base
-    // The screens that only had one colour keep to its shades, as on the original.
-    val shades: List<Color>? = when (palette) {
-        Palette.GAMEBOY -> if (dark) listOf(Color(0xFF9BBC0F), Color(0xFF8BAC0F), Color(0xFFC4DE5A), Color(0xFF6FA02A))
-        else listOf(Color(0xFF306230), Color(0xFF0F380F), Color(0xFF4F7A1E), Color(0xFF5E8C31))
-        Palette.VIRTUALBOY -> if (dark) listOf(Color(0xFFFF3B3B), Color(0xFFFF8080), Color(0xFFFFB3B3), Color(0xFFE83A3A))
-        else listOf(Color(0xFFB30000), Color(0xFFC23030), Color(0xFF7A0000), Color(0xFF990000))
-        Palette.TERMINAL -> if (dark) listOf(Color(0xFF33FF66), Color(0xFF9CFFAD), Color(0xFF00D4A8), Color(0xFF66E08A))
-        else listOf(Color(0xFF007A2E), Color(0xFF3B7A00), Color(0xFF00796B), Color(0xFF2E7D32))
-        else -> null
-    }
-    if (shades != null) return MetricColors(shades[0], shades[1], shades[2], shades[3], shades[1], shades[2], shades[3], shades[0])
-    if (clear) return base
-    return MetricColors(
-        steps = colors.primary, heart = base.heart, stress = base.stress, battery = base.battery, sleep = base.sleep,
-        distance = base.distance, calories = base.calories, readiness = colors.primary,
-    )
+    if (clear || palette == Palette.CONTRAST) return if (dark) DarkMetrics else LightMetrics
+    return if (dark) EditorialDarkMetrics else EditorialLightMetrics
 }

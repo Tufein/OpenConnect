@@ -1,6 +1,8 @@
 package nl.tufein.openconnect.ui
 
 import android.net.Uri
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -37,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
@@ -56,15 +59,15 @@ import nl.tufein.openconnect.BuildConfig
 import nl.tufein.openconnect.R
 
 /** [compact] is the label when more than five tabs share the bar (with the Oura tab), so long Dutch words still fit. */
-private enum class Tab(val route: String, val label: Int, val icon: PixelArt, val compact: Int = label) {
-    Home("home", R.string.tab_home, PixelIcons.Home),
-    Activities("activities", R.string.tab_activities, PixelIcons.Stopwatch, R.string.tab_activities_compact),
-    Health("health", R.string.tab_health, PixelIcons.Heart, R.string.tab_health_compact),
-    Insights("insights", R.string.tab_insights, PixelIcons.Star),
+private enum class Tab(val route: String, val label: Int, val icon: LineGlyph, val compact: Int = label) {
+    Home("home", R.string.tab_home, LineGlyph.Home),
+    Activities("activities", R.string.tab_activities, LineGlyph.Activities, R.string.tab_activities_compact),
+    Health("health", R.string.tab_health, LineGlyph.Health, R.string.tab_health_compact),
+    Insights("insights", R.string.tab_insights, LineGlyph.Insights),
     /** Only for someone who chose the Oura Ring. */
-    Oura(OURA_ROUTE, R.string.tab_oura, PixelIcons.Ring),
+    Oura(OURA_ROUTE, R.string.tab_oura, LineGlyph.Ring),
 
-    Settings("settings", R.string.tab_settings, PixelIcons.Sliders, R.string.tab_settings_compact),
+    Settings("settings", R.string.tab_settings, LineGlyph.Sliders, R.string.tab_settings_compact),
 }
 
 private const val DETAIL = "activity/{id}"
@@ -106,7 +109,7 @@ private fun RetroBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                PixelIcon(tab.icon, size = 24.dp, tint = content)
+                PixelIcon(tab.icon.pixelArt(), size = 24.dp, tint = content)
                 Text(
                     labels[index],
                     modifier = Modifier.fillMaxWidth(),
@@ -123,9 +126,9 @@ private fun RetroBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
 }
 
 /**
- * The modern tab bar: one softly lifted strip with a pill behind the open tab, so the bottom of the screen looks like a
- * current Android app rather than a game menu. Labels, roles and the auto-shrink rule are the same as in [RetroBar], so
- * Dutch words fit at any font scale and TalkBack still hears a tab.
+ * The modern tab bar: one softly lifted strip with a small rounded marker under the open tab and smooth line icons, so
+ * the bottom of the screen looks like a current Android app rather than a game menu. Labels, roles and the auto-shrink
+ * rule are the same as in [RetroBar], so Dutch words fit at any font scale and TalkBack still hears a tab.
  */
 @Composable
 private fun ModernBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
@@ -144,7 +147,11 @@ private fun ModernBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
             for ((index, tab) in tabs.withIndex()) {
                 val selected = route == tab.route
-                val content = if (selected) colors.primary else colors.onSurfaceVariant
+                val content by animateColorAsState(
+                    if (selected) colors.primary else colors.onSurfaceVariant,
+                    tween(200),
+                    label = "tabContent",
+                )
                 Column(
                     Modifier
                         .weight(1f)
@@ -155,7 +162,7 @@ private fun ModernBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(2.dp),
                 ) {
-                    PixelIcon(tab.icon, size = 22.dp, tint = content)
+                    LineIcon(tab.icon, size = 24.dp, tint = content)
                     Text(
                         labels[index],
                         modifier = Modifier.fillMaxWidth(),
@@ -171,6 +178,7 @@ private fun ModernBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
                             .padding(top = 2.dp)
                             .width(18.dp)
                             .height(2.dp)
+                            .clip(PillShape)
                             .background(if (selected) colors.primary else Color.Transparent),
                     )
                 }
@@ -180,8 +188,9 @@ private fun ModernBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
 }
 
 /**
- * The editorial tab bar: a floating pill with a hairline, the open tab in a soft sage pill. It keeps the labels and the
- * auto-shrink rule of the other bars, so every translation fits and every tab stays at least 56 dp high.
+ * The editorial tab bar: a floating pill with a hairline and a filled sage pill behind the open tab. The icons are
+ * smooth line drawings at 24 dp, not pixel art, so the bottom of the screen reads as a quiet modern app. It keeps the
+ * labels and the auto-shrink rule of the other bars, so every translation fits and every tab stays at least 56 dp high.
  */
 @Composable
 private fun EditorialBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit) {
@@ -193,34 +202,44 @@ private fun EditorialBar(tabs: List<Tab>, route: String?, onOpen: (Tab) -> Unit)
             .fillMaxWidth()
             .background(colors.background)
             .windowInsetsPadding(WindowInsets.navigationBars)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 8.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
         Row(
             Modifier
                 .fillMaxWidth()
+                .shadow(8.dp, PillShape)
                 .clip(PillShape)
                 .background(colors.surface)
                 .border(1.dp, colors.outlineVariant, PillShape)
-                .padding(4.dp),
+                .padding(3.dp),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             for ((index, tab) in tabs.withIndex()) {
                 val selected = route == tab.route
-                val content = if (selected) colors.primary else colors.onSurfaceVariant
+                val fill by animateColorAsState(
+                    if (selected) colors.primary else Color.Transparent,
+                    tween(220),
+                    label = "tabFill",
+                )
+                val content by animateColorAsState(
+                    if (selected) colors.onPrimary else colors.onSurfaceVariant,
+                    tween(220),
+                    label = "tabContent",
+                )
                 Column(
                     Modifier
                         .weight(1f)
                         .heightIn(min = 56.dp)
                         .clip(PillShape)
-                        .background(if (selected) colors.primary.copy(alpha = 0.14f) else Color.Transparent, PillShape)
+                        .background(fill, PillShape)
                         .selectable(selected = selected, role = Role.Tab, onClick = { onOpen(tab) })
                     .semantics(mergeDescendants = true) {}
                         .padding(horizontal = 2.dp, vertical = 7.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(3.dp),
                 ) {
-                    PixelIcon(tab.icon, size = 21.dp, tint = content)
+                    LineIcon(tab.icon, size = 24.dp, tint = content)
                     Text(
                         labels[index],
                         modifier = Modifier.fillMaxWidth(),
@@ -263,6 +282,7 @@ fun OpenConnectRoot(
 ) {
     val sources by vm.sources.collectAsState()
     val look by vm.look.collectAsState()
+    val homePrefs by vm.homePrefs.collectAsState()
     if (!sources.onboarded) {
         OnboardingScreen(sources, look.style, look.palette, vm::setStyle, vm::setLook, vm::setSources)
         return
@@ -388,6 +408,8 @@ fun OpenConnectRoot(
                     onToggleJournal = vm::toggleJournal,
                     useGarmin = sources.garmin,
                     onOura = if (sources.oura) ::openOura else null,
+                    homePrefs = homePrefs,
+                    onHomeMetric = vm::setHomeMetric,
                 )
             }
             composable(Tab.Activities.route) {
@@ -439,8 +461,12 @@ fun OpenConnectRoot(
             }
             composable(Tab.Settings.route) {
                 SettingsScreen(
-                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources, look = look, appIcon = appIcon, fileImport = importState),
+                    ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources, look = look, appIcon = appIcon, fileImport = importState, home = homePrefs),
                     onLook = vm::setLook,
+                    onHomeMetric = vm::setHomeMetric,
+                    onHomeBattery = vm::setHomeBattery,
+                    onHomeJournal = vm::setHomeJournal,
+                    onHomeLast7 = vm::setHomeLast7,
                     onLetters = vm::setLetters,
                     onStyle = vm::setStyle,
                     onSignals = vm::setSignals,

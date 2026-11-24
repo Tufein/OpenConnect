@@ -694,6 +694,8 @@
     <string name="palette_group_eyes">Prettig voor de ogen</string>
     <string name="palette_group_colour">Kleurrijk</string>
     <string name="palette_group_phone">Telefoon</string>
+    <string name="palette_group_calm">Rustig</string>
+    <string name="palette_group_neutral">Neutraal</string>
     <string name="palette_virtualboy">Virtual Boy</string>
     <string name="palette_famicom">Famicom</string>
     <string name="palette_c64">Commodore 64</string>
@@ -877,6 +879,18 @@
     <string name="hero_dusk">Avond</string>
     <string name="hero_night">Nacht</string>
     <string name="hero_note">Met de dag mee volgt het licht op de foto het uur: warm in de ochtend, olijf overdag, klei in de avond en diepblauw in de nacht.</string>
+    <string name="settings_home">Voorblad</string>
+    <string name="settings_home_body">Kies de kaart onder de batterij en wat het voorblad verder toont.</string>
+    <string name="settings_home_card">Kaart</string>
+    <string name="home_switch_battery">Batterijkaart</string>
+    <string name="home_switch_journal">Journaal</string>
+    <string name="home_metric_change">Wijzigen</string>
+    <string name="home_choose_title">Kaart voor het voorblad</string>
+    <string name="home_choose_body">Kies de kaart die onder de batterij staat.</string>
+    <string name="home_metric_empty">Nog geen meting. Synchroniseer je horloge of ring en deze kaart vult zich.</string>
+    <string name="home_metric_resting_hr_body">Je rusthartslag van vandaag. Lager betekent meestal meer herstel.</string>
+    <string name="home_metric_stress_body">De gemiddelde stress van vandaag. Lager is rustiger.</string>
+    <string name="home_metric_sleep_body">De slaap van afgelopen nacht, zoals je horloge of ring die vastlegde.</string>
     <string name="insights_form">Vorm</string>
     <string name="advice_title">Trainingsadvies</string>
     <string name="advice_rest">Neem een rustdag</string>

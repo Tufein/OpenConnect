@@ -14,9 +14,9 @@ import org.robolectric.annotation.Config
 import kotlin.test.assertEquals
 
 /**
- * v0.31.0: the app has one look of its own (pixel type, pixel-cut corners, flat panels, pixel icons) instead of three
- * designs to pick from. These tests walk through the main screens in dark and light mode, which also writes the
- * screenshots, and prove that a colour theme from before v0.31.0 opens as the new default.
+ * v0.31.0: the app has one look of its own instead of three designs to pick from. These tests walk through the main
+ * screens in dark and light mode, which also writes the screenshots, and prove that a colour theme from before v0.31.0
+ * opens as the calm Olive default instead of crashing or showing a theme that is no longer offered.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], qualifiers = "w411dp-h891dp-night-xxhdpi", application = OpenConnectApp::class)
@@ -38,32 +38,32 @@ class LookTest : AppTestBase() {
     }
 
     @Test
-    fun anOldColourThemeOpensAsHandheldAndTheMainScreensDrawInIt() {
+    fun anOldColourThemeOpensAsOliveAndTheMainScreensDrawInIt() {
         launchFresh { app ->
             val container = container(app)
             // Up to v0.29.0 the default was "arcade", next to a design and a style: none of them exist any more.
             container.settings.palette = "arcade"
             app.containerOverride = container
         }
-        scenario.onActivity { assertEquals("handheld", it.viewModel.look.value.palette) }
+        scenario.onActivity { assertEquals("olive", it.viewModel.look.value.palette) }
         loadDemo()
         waitForText("Readiness")
-        shot("53-home-handheld-dark")
+        shot("53-home-olive-dark")
         tab("Activities").performClick()
         waitForText("Activities")
-        shot("54-activities-handheld-dark")
+        shot("54-activities-olive-dark")
         tab("Health").performClick()
         waitForText("Scores")
-        shot("55-health-handheld-dark")
+        shot("55-health-olive-dark")
         tab("Insights").performClick()
         rule.waitForIdle()
-        shot("56-insights-handheld-dark")
+        shot("56-insights-olive-dark")
         tab("Settings").performClick()
         openAppearance()
         // The old three designs are gone from Settings; the colours are left, and since v0.33.0 a style (Retro, Sleek, Classic).
         assertEquals(true, hasText("Style", substring = false))
         assertEquals(false, hasText("Dashboard Dark", substring = false))
-        shot("57-settings-handheld-dark")
+        shot("57-settings-olive-dark")
     }
 
     @Test

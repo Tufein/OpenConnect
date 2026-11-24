@@ -263,6 +263,17 @@ data class Look(
     val hero: String = "auto",
 )
 
+/**
+ * What the front page shows: the card under the battery ([metric], a [HomeMetric] key) and whether the battery card,
+ * the journal and the "Last 7 days" section are drawn. Everything is on by default, and calories keep the old page.
+ */
+data class HomePrefs(
+    val metric: String = HomeMetric.DEFAULT,
+    val battery: Boolean = true,
+    val journal: Boolean = true,
+    val last7: Boolean = true,
+)
+
 /** Which devices the person uses. [onboarded] is false until the first-start questions are answered. */
 data class SourcesUi(val onboarded: Boolean = true, val garmin: Boolean = true, val oura: Boolean = false)
 const val CSV_DAILY = "daily"
@@ -352,6 +363,39 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     /** The colour theme. */
     val look: StateFlow<Look> = _look.asStateFlow()
+
+    private fun homePrefsNow() = HomePrefs(
+        HomeMetric.of(container.settings.homeMetric).key,
+        container.settings.homeBattery,
+        container.settings.homeJournal,
+        container.settings.homeLast7,
+    )
+
+    private val _homePrefs = MutableStateFlow(homePrefsNow())
+
+    /** The card under the battery and the optional cards on the front page. */
+    val homePrefs: StateFlow<HomePrefs> = _homePrefs.asStateFlow()
+
+    /** The card under the battery: any [HomeMetric] key; an unknown key falls back to calories. */
+    fun setHomeMetric(metric: String) {
+        container.settings.homeMetric = HomeMetric.of(metric).key
+        _homePrefs.value = homePrefsNow()
+    }
+
+    fun setHomeBattery(show: Boolean) {
+        container.settings.homeBattery = show
+        _homePrefs.value = homePrefsNow()
+    }
+
+    fun setHomeJournal(show: Boolean) {
+        container.settings.homeJournal = show
+        _homePrefs.value = homePrefsNow()
+    }
+
+    fun setHomeLast7(show: Boolean) {
+        container.settings.homeLast7 = show
+        _homePrefs.value = homePrefsNow()
+    }
 
     fun setLook(palette: String) {
         container.settings.palette = Palette.of(palette).key
