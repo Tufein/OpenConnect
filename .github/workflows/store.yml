@@ -1,0 +1,81 @@
+name: Store build (no publish)
+
+# Builds the `store` flavor and proves that the upload candidates contain neither the in-app updater's
+# REQUEST_INSTALL_PACKAGES permission nor its FileProvider. Nothing here talks to Google Play or F-Droid:
+# there is no service account, no supply/fastlane upload and no signing-key step. Artifacts are debug-signed
+# when no release key is supplied (the same fallback as the existing local/PR build); they are for review and
+# testing, not for publication. A real upload needs the Play/F-Droid upload key outside this workflow.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "android/**"
+      - "fastlane/**"
+      - ".github/workflows/store.yml"
+  push:
+    branches: [main]
+    paths:
+      - "android/**"
+      - "fastlane/**"
+      - ".github/workflows/store.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: store-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  store:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Build the store AAB and APK
+        run: ./gradlew :app:bundleStoreRelease :app:assembleStoreRelease --console=plain
+
+      - name: Verify the store artifacts have no updater permission or FileProvider
+        run: |
+          set -euo pipefail
+          bash scripts/verify-store-aab.sh \
+            app/build/outputs/bundle/storeRelease/app-store-release.aab
+          bash scripts/verify-store-aab.sh \
+            app/build/outputs/apk/store/release/app-store-release.apk
+
+      - name: Collect the artifacts and their checksums
+        run: |
+          set -euo pipefail
+          mkdir -p ../store-artifacts
+          cp app/build/outputs/bundle/storeRelease/app-store-release.aab ../store-artifacts/
+          cp app/build/outputs/apk/store/release/app-store-release.apk ../store-artifacts/
+          (cd ../store-artifacts && sha256sum *.aab *.apk > SHA256SUMS)
+          ls -lh ../store-artifacts
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: openconnect-store-aab
+          path: store-artifacts/app-store-release.aab
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v7
+        with:
+          name: openconnect-store-apk
+          path: store-artifacts/app-store-release.apk
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v7
+        with:
+          name: openconnect-store-checksums
+          path: store-artifacts/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 14

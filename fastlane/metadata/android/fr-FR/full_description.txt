@@ -1,0 +1,28 @@
+OpenConnect est une application Android indépendante et open source qui réunit vos données Garmin et Oura sur votre téléphone. C'est un tableau de bord de fitness et de santé, pas le client VPN OpenConnect. OpenConnect est un nom provisoire et sera renommé avant la publication.
+
+LOCAL D'ABORD
+Vos données restent sur votre téléphone. L'application n'a besoin d'aucun serveur OpenConnect ni d'aucun compte OpenConnect ; il n'y a ni publicité, ni analytics, ni rapport de crash. Tout ce que l'application stocke fonctionne sans réseau ; seules les sources facultatives ci-dessous utilisent Internet, et seulement si vous les activez.
+
+CE QUE VOUS OBTENEZ
+- Accueil : préparation, pas, fréquence cardiaque au repos, Body Battery, stress, sommeil et activités récentes.
+- Santé : scores et tendances pour les pas, le sommeil, la fréquence cardiaque au repos, Body Battery, la VFC, l'oxygène sanguin et la respiration ; une carte Corps et un journal de l'eau.
+- Activités : liste, détail, parcours, graphiques, splits, records personnels et meilleures performances.
+- Analyses : semaine, jour, année, trophées, un plan d'entraînement, vos propres séances et un coach.
+- Montre : lire une montre Garmin par USB ou un dossier de fichiers de montre, suivre la fréquence cardiaque en direct par Bluetooth et envoyer des notifications ou des séances à la montre.
+- Widgets, thèmes, verrouillage de l'application, export CSV, sauvegarde et restauration, et choix de la langue (anglais, néerlandais, allemand, français).
+
+SOURCES FACULTATIVES
+- Compte Garmin : utilisez votre propre clé Garmin pour récupérer les pas, la fréquence cardiaque, le stress, Body Battery, le sommeil, la VFC et les activités. Garmin n'est contacté que lors de la synchronisation.
+- Bague Oura : connectez votre propre application Oura pour le sommeil, la préparation, l'activité et la batterie de la bague.
+- Claude ou Gemini : ajoutez votre propre clé API pour rédiger des rapports et des réponses de coach. Sans clé, l'application rédige les rapports sur le téléphone avec un modèle.
+- Health Connect : lire les pas, le sommeil et éventuellement le poids, et écrire exercice, distance et calories lorsque vous le demandez.
+- Mises à jour GitHub : la version GitHub cherche une APK plus récente sur GitHub, vérifie son SHA-256 et demande à Android de l'installer. La version magasin n'a pas de mise à jour intégrée, pas d'autorisation d'installation et pas de FileProvider ; elle est mise à jour par le magasin.
+
+CONFIDENTIALITÉ ET AUTORISATIONS
+L'application ne demande que ce dont une fonction a besoin et explique chaque autorisation dans les réglages. Health Connect et l'accès aux notifications sont facultatifs. Vous pouvez supprimer toutes les données dans l'application. Déclaration de confidentialité complète : https://github.com/Tufein/OpenConnect/blob/main/docs/PRIVACY.md
+
+OPEN SOURCE
+OpenConnect est sous licence AGPL-3.0-or-later. Code source, tickets et notes de version : https://github.com/Tufein/OpenConnect
+L'application n'est ni affiliée à Garmin, Oura, Anthropic ou Google, ni approuvée par eux. Garmin, Garmin Connect et Body Battery sont des marques de Garmin Ltd.
+
+Android 9 ou plus récent. Le cadran et le widget Garmin sont des fiches Connect IQ distinctes et ne font pas partie de cette application Android.

@@ -1,0 +1,28 @@
+OpenConnect is een onafhankelijke, open-source Android-app die je Garmin- en Oura-gegevens op één plek op je telefoon zet. Het is een fitness- en gezondheidsdashboard, niet de OpenConnect-VPN-client. OpenConnect is een werknaam en krijgt voor de release een andere naam.
+
+LOKAAL EERST
+Je gegevens blijven op je telefoon. De app heeft geen OpenConnect-server en geen OpenConnect-account nodig, en er is geen reclame, analytics of crashrapportage. Alles wat de app opslaat werkt zonder netwerk; alleen de optionele bronnen hieronder gebruiken internet, en alleen als je ze aanzet.
+
+WAT JE KRIJGT
+- Voorblad: gereedheid, stappen, rusthartslag, Body Battery, stress, slaap en recente activiteiten.
+- Gezondheid: scores en trends voor stappen, slaap, rusthartslag, Body Battery, HRV, bloedzuurstof en ademhaling; een Lichaam-kaart en een waterlog.
+- Activiteiten: lijst, detail, route, grafieken, splits, persoonlijke records en beste prestaties.
+- Inzichten: week, dag, jaar, trofeeën, een trainingsschema, je eigen work-outs en een coach.
+- Horloge: lees een Garmin-horloge via USB of een map met horlogebestanden, volg live hartslag via Bluetooth en stuur meldingen of work-outs naar het horloge.
+- Widgets, thema's, app-vergrendeling, CSV-export, back-up en herstel, en een taalkeuze (Engels, Nederlands, Duits, Frans).
+
+OPTIONELE BRONNEN
+- Garmin-account: gebruik je eigen Garmin-sleutel voor stappen, hartslag, stress, Body Battery, slaap, HRV en activiteiten. Garmin wordt alleen benaderd als je synchroniseert.
+- Oura Ring: koppel je eigen Oura-toepassing voor slaap, gereedheid, activiteit en ringbatterij.
+- Claude of Gemini: voeg je eigen API-sleutel toe voor rapporten en coachantwoorden. Zonder sleutel schrijft de app rapporten op de telefoon met een template.
+- Health Connect: lees stappen, slaap en optioneel gewicht, en schrijf beweging, afstand en calorieën als je daarom vraagt.
+- GitHub-updates: de GitHub-build zoekt op GitHub naar een nieuwere APK, controleert de SHA-256 en vraagt Android hem te installeren. De winkelversie heeft geen updater, geen installatiepermissie en geen FileProvider; die wordt door de winkel bijgewerkt.
+
+PRIVACY EN RECHTEN
+De app vraagt alleen wat een functie nodig heeft en legt elke toestemming uit in Instellingen. Health Connect en toegang tot meldingen zijn optioneel. Je kunt alle gegevens in de app wissen. Lees de volledige privacyverklaring: https://github.com/Tufein/OpenConnect/blob/main/docs/PRIVACY.md
+
+OPEN SOURCE
+OpenConnect is gelicentieerd onder AGPL-3.0-or-later. Broncode, meldingen en release-opmerkingen: https://github.com/Tufein/OpenConnect
+De app is niet verbonden aan of goedgekeurd door Garmin, Oura, Anthropic of Google. Garmin, Garmin Connect en Body Battery zijn handelsmerken van Garmin Ltd.
+
+Android 9 of nieuwer. De Garmin-watchface en -widget zijn aparte Connect IQ-vermeldingen en horen niet bij deze Android-app.

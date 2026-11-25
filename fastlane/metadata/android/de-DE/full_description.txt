@@ -1,0 +1,28 @@
+OpenConnect ist eine unabhängige Open-Source-Android-App, die deine Garmin- und Oura-Daten auf deinem Telefon zusammenführt. Sie ist ein Fitness- und Gesundheitsdashboard, nicht der OpenConnect-VPN-Client. OpenConnect ist ein Arbeitstitel und wird vor der Veröffentlichung umbenannt.
+
+LOKAL ZUERST
+Deine Daten bleiben auf deinem Telefon. Die App braucht keinen OpenConnect-Server und kein OpenConnect-Konto; es gibt keine Werbung, kein Analytics und keine Absturzberichte. Alles, was die App speichert, funktioniert ohne Netzwerk; nur die optionalen Quellen unten nutzen das Internet, und nur wenn du sie einschaltest.
+
+WAS DU BEKOMMST
+- Startseite: Bereitschaft, Schritte, Ruheherzfrequenz, Body Battery, Stress, Schlaf und letzte Aktivitäten.
+- Gesundheit: Werte und Trends für Schritte, Schlaf, Ruheherzfrequenz, Body Battery, HRV, Blutsauerstoff und Atmung; eine Körper-Karte und ein Wasser-Log.
+- Aktivitäten: Liste, Detail, Route, Diagramme, Splits, persönliche Rekorde und Bestleistungen.
+- Einblicke: Woche, Tag, Jahr, Trophäen, ein Trainingsplan, eigene Work-outs und ein Coach.
+- Uhr: ein Garmin-Gerät per USB oder einen Ordner mit Uhrdateien lesen, Herzfrequenz live per Bluetooth verfolgen und Benachrichtigungen oder Work-outs an die Uhr senden.
+- Widgets, Designs, App-Sperre, CSV-Export, Backup und Wiederherstellung sowie eine Sprachauswahl (Englisch, Niederländisch, Deutsch, Französisch).
+
+OPTIONALE QUELLEN
+- Garmin-Konto: Mit deinem eigenen Garmin-Schlüssel Schritte, Herzfrequenz, Stress, Body Battery, Schlaf, HRV und Aktivitäten abrufen. Garmin wird nur beim Synchronisieren kontaktiert.
+- Oura Ring: Deine eigene Oura-Anwendung für Schlaf, Bereitschaft, Aktivität und Ringakku verbinden.
+- Claude oder Gemini: Mit deinem eigenen API-Schlüssel Berichte und Coach-Antworten erzeugen. Ohne Schlüssel schreibt die App Berichte auf dem Telefon mit einer Vorlage.
+- Health Connect: Schritte, Schlaf und optional Gewicht lesen sowie Bewegung, Distanz und Kalorien schreiben, wenn du es auslöst.
+- GitHub-Updates: Der GitHub-Build sucht auf GitHub nach einer neueren APK, prüft die SHA-256 und bittet Android um die Installation. Der Store-Build hat keinen Updater, keine Installationsberechtigung und keinen FileProvider; er wird über den Store aktualisiert.
+
+DATENSCHUTZ UND BERECHTIGUNGEN
+Die App fragt nur, was eine Funktion braucht, und erklärt jede Berechtigung in den Einstellungen. Health Connect und Benachrichtigungszugriff sind optional. Du kannst alle Daten in der App löschen. Vollständige Datenschutzerklärung: https://github.com/Tufein/OpenConnect/blob/main/docs/PRIVACY.md
+
+OPEN SOURCE
+OpenConnect steht unter AGPL-3.0-or-later. Quellcode, Issues und Versionshinweise: https://github.com/Tufein/OpenConnect
+Die App ist nicht mit Garmin, Oura, Anthropic oder Google verbunden und wird von ihnen nicht empfohlen. Garmin, Garmin Connect und Body Battery sind Marken von Garmin Ltd.
+
+Android 9 oder neuer. Das Garmin-Watchface und das Widget sind separate Connect IQ-Einträge und nicht Teil dieser Android-App.
