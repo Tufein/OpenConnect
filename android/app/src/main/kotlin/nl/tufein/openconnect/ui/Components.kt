@@ -33,14 +33,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
@@ -181,8 +184,9 @@ fun FoldSection(
 }
 
 /**
- * A score like a game HUD: a big pixel number, its name, and a bar of 20 blocks that fills with the score.
- * A null [value] shows a dash.
+ * A score as a quiet ring: its name, an arc that fills to the score out of 100, and the number in the middle.
+ * A null [value] leaves the ring empty and shows a dash. [tag] marks the ring for tests, while the number and label
+ * stay ordinary text that TalkBack can read.
  */
 @Composable
 fun ScoreTile(
@@ -192,6 +196,7 @@ fun ScoreTile(
     modifier: Modifier = Modifier,
     detail: String? = null,
     onClick: (() -> Unit)? = null,
+    tag: String? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     Panel(modifier.tappable(onClick), tint = color, padding = 14.dp, spacing = 4.dp) {
@@ -199,15 +204,56 @@ fun ScoreTile(
             Text(label, style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant, modifier = Modifier.weight(1f))
             if (onClick != null) OpenHint()
         }
-        Text(
-            value?.toString() ?: "–",
-            style = MaterialTheme.typography.displayMedium,
-            color = if (value == null) colors.onSurfaceVariant else color,
+        ScoreRing(
+            value = value,
+            color = color,
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            tag = tag,
         )
-        SegmentBar(fraction = (value ?: 0) / 100f, color = color, Modifier.fillMaxWidth().height(10.dp))
         if (detail != null) {
             Text(detail, style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant)
         }
+    }
+}
+
+/**
+ * A ring that shows [value] out of 100, with the number in its centre. The ring itself is decoration: the number
+ * stays readable text, and the arc carries a progress description for TalkBack. Missing values stay an empty ring
+ * with a dash and no progress.
+ */
+@Composable
+fun ScoreRing(
+    value: Int?,
+    color: Color,
+    modifier: Modifier = Modifier,
+    tag: String? = null,
+) {
+    val shown = value?.coerceIn(0, 100)
+    val progress = (shown ?: 0) / 100f
+    val description = if (shown == null) "" else "$shown ${stringResource(R.string.score_out_of)}"
+    RingGauge(
+        progress = progress,
+        color = color,
+        modifier = modifier
+            .then(if (tag != null) Modifier.testTag(tag) else Modifier)
+            .semantics { if (shown != null) progressBarRangeInfo = ProgressBarRangeInfo(progress, 0f..1f) },
+        size = 100.dp,
+        stroke = 9.dp,
+        description = description,
+    ) {
+        // The serif score sizes are generous; at the largest system text a smaller style keeps three digits inside the ring.
+        val style = if (LocalDensity.current.fontScale > 1.5f) {
+            MaterialTheme.typography.headlineSmall
+        } else {
+            MaterialTheme.typography.displaySmall
+        }
+        Text(
+            shown?.toString() ?: "–",
+            style = style,
+            color = if (shown == null) MaterialTheme.colorScheme.onSurfaceVariant else color,
+            maxLines = 1,
+            softWrap = false,
+        )
     }
 }
 

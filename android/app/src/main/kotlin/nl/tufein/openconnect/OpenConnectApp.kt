@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import nl.tufein.openconnect.ai.AiController
 import nl.tufein.openconnect.ai.AiSettings
 import nl.tufein.openconnect.ai.CoachController
@@ -90,6 +91,8 @@ class AppContainer(
     backgroundSync: BackgroundSync = BackgroundSync { },
     /** Garmin's own Bluetooth protocol. Tests pass a fake; the app passes [AndroidGarminBleLink]. */
     garminBle: GarminBleLink = NoGarminBleLink,
+    /** Bumped by the Bluetooth link when the watch reports a new charge, so the battery card can re-read it. */
+    val batteryChanges: MutableStateFlow<Int> = MutableStateFlow(0),
     /** Starts and stops the experimental background Bluetooth job. Tests pass a fake; the app passes WorkManager. */
     bleBackgroundSync: BackgroundSync = BackgroundSync { },
     bleOptions: nl.tufein.openconnect.watch.GarminBleOptions = settings.garminBle,
@@ -317,6 +320,7 @@ class OpenConnectApp : Application() {
             val registry = LiveWatchRegistry()
             val apps = AndroidInstalledApps(this)
             val trail = nl.tufein.openconnect.notify.ForwardTrail()
+            val batteryChanges = MutableStateFlow(0)
             AppContainer(
             SqliteRepository(this),
             settingsStore,
@@ -338,8 +342,10 @@ class OpenConnectApp : Application() {
                 onBattery = { level ->
                     settingsStore.watchBattery = level
                     settingsStore.watchBatteryAt = System.currentTimeMillis()
+                    batteryChanges.value++
                 },
             ),
+            batteryChanges = batteryChanges,
             bleBackgroundSync = WorkManagerBleBackgroundSync(this),
             nudgeNotifier = AndroidNudgeNotifier(this),
             nudgeSync = WorkManagerNudgeSync(this),

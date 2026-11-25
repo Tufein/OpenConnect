@@ -1,5 +1,6 @@
 package nl.tufein.openconnect
 
+import androidx.test.core.app.ApplicationProvider
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -30,6 +31,24 @@ class HomeBatteryTest : AppTestBase() {
         // the ring last reported two hours ago; the watch five minutes ago
         assertTrue(hasText("updated", substring = true))
         shot("17-home-batteries")
+    }
+
+    @Test
+    fun aChargeThatArrivesAfterTheSyncIsShownImmediately() {
+        launchFresh(oura = true, prepare = { app ->
+            with(app.container.settings) {
+                watchBattery = 87
+                watchBatteryAt = System.currentTimeMillis() - 5 * 60_000
+            }
+        })
+        waitForText("87%")
+
+        val app = ApplicationProvider.getApplicationContext<OpenConnectApp>()
+        app.container.settings.watchBattery = 42
+        app.container.settings.watchBatteryAt = System.currentTimeMillis()
+        app.container.batteryChanges.value++
+
+        waitForText("42%")
     }
 
     @Test

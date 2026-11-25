@@ -7,7 +7,10 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.13.3.** The screens are drawn with Jetpack Compose 1.13 (BOM 2026.11.01, compiled against Android
+> **Status: v1.13.4.** **New in v1.13.4:** the four scores on Health are now the same quiet ring instead of separate
+> horizontal bars, and the watch’s charge on the battery card updates as soon as the watch answers, not only when the
+> sync status changes.
+> **Since v1.13.3:** the screens are drawn with Jetpack Compose 1.13 (BOM 2026.11.01, compiled against Android
 > 37.1; targetSdk 36 and minSdk 28 stay). With it, the screen tests hung at random on an empty Home; the cause was the
 > old Compose test rule running the screens' coroutines on background threads, so the tests now use the v2 rule, which
 > runs them on the main thread as a phone does. Nothing in the app was changed on purpose.
@@ -16,12 +19,12 @@ Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 > **Since v1.13.1:** the app is called **Cercis**, so it no longer shares its name with the OpenConnect VPN
 > client. Only the display name changed: the Android package id `nl.tufein.openconnect`, the GitHub repository and the
 > release asset names (`openconnect-vX.Y.Z.apk`) stay the same, and the GitHub build keeps its updater. A phone on
-> v1.13.0 therefore updates to v1.13.1 normally, with the same signing key and no data migration. The two channels from
-> v1.13.0 stay; the **store build is not published**: Google Play and F-Droid remain blocked until the name is legally
-> cleared, and an account, testers, real screenshots and store declarations are still missing. Everything from v1.12.0
-> stays, including the privacy register and the four languages; the German and French texts remain machine-drafted,
-> not native-reviewed.
-> [Release notes](docs/releases/v1.13.3.md).
+> v1.13.0 therefore updates to later releases normally, with the same signing key and no data migration. The two
+> channels from v1.13.0 stay; the **store build is not published**: Google Play and F-Droid remain blocked until the
+> name is legally cleared, and an account, testers, real screenshots and store declarations are still missing.
+> Everything from v1.12.0 stays, including the privacy register and the four languages; the German and French texts
+> remain machine-drafted, not native-reviewed.
+> [Release notes](docs/releases/v1.13.4.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

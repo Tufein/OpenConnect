@@ -583,6 +583,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { container.garmin.state.collect { _now.value = Instant.now() } }
         // A key added or removed changes whether the coach can answer.
         viewModelScope.launch { container.ai.state.collect { container.coach.refresh() } }
+        // The watch may answer its battery question after the sync has already finished; re-read it then too.
+        viewModelScope.launch { container.batteryChanges.collect { refreshBattery() } }
         container.garmin.autoSyncIfDue()
     }
 

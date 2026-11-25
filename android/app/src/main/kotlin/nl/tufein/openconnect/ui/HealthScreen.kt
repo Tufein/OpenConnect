@@ -117,12 +117,12 @@ fun HealthScreen(
             val stress = trend.mapNotNull { it.avgStress }.lastOrNull()
             Column(Modifier.fillMaxWidth().padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    ScoreTile(stringResource(R.string.readiness_title), readiness, metrics.readiness, Modifier.weight(1f), onClick = { selected = ChartMetric.READINESS })
-                    ScoreTile(stringResource(R.string.score_sleep), sleepScore, metrics.sleep, Modifier.weight(1f), onClick = { selected = ChartMetric.SLEEP_SCORE })
+                    ScoreTile(stringResource(R.string.readiness_title), readiness, metrics.readiness, Modifier.weight(1f), onClick = { selected = ChartMetric.READINESS }, tag = "score-ring-readiness")
+                    ScoreTile(stringResource(R.string.score_sleep), sleepScore, metrics.sleep, Modifier.weight(1f), onClick = { selected = ChartMetric.SLEEP_SCORE }, tag = "score-ring-sleep")
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    ScoreTile(stringResource(R.string.body_battery), battery, metrics.battery, Modifier.weight(1f), onClick = { selected = ChartMetric.BODY_BATTERY })
-                    ScoreTile(stringResource(R.string.stress), stress, metrics.stress, Modifier.weight(1f), onClick = { selected = ChartMetric.STRESS })
+                    ScoreTile(stringResource(R.string.body_battery), battery, metrics.battery, Modifier.weight(1f), onClick = { selected = ChartMetric.BODY_BATTERY }, tag = "score-ring-battery")
+                    ScoreTile(stringResource(R.string.stress), stress, metrics.stress, Modifier.weight(1f), onClick = { selected = ChartMetric.STRESS }, tag = "score-ring-stress")
                 }
                 val hrv = nl.tufein.openconnect.core.HrvStatusCalculator.compute(state.dailies, LocalDate.now())
                 if (hrv != null) {
