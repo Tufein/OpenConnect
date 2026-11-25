@@ -21,7 +21,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -49,10 +48,9 @@ import nl.tufein.openconnect.R
 /** Jersey 10: pixel headlines and numbers. It has one weight, so styles using it never ask for bold. */
 internal val Jersey = FontFamily(Font(R.font.jersey_10))
 
-/** Instrument Serif: the editorial display face, in roman and italic (SIL OFL, see licenses/). */
+/** Instrument Serif: the editorial display face (SIL OFL, see licenses/). */
 internal val InstrumentSerif = FontFamily(
     Font(R.font.instrument_serif_regular, FontWeight.Normal),
-    Font(R.font.instrument_serif_italic, FontWeight.Normal, FontStyle.Italic),
 )
 
 /** IBM Plex Sans: running text. */
