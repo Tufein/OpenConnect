@@ -149,8 +149,8 @@ class PlanAndLockScreenTest : AppTestBase() {
         tab("Insights").performClick()
         clickChip("More")
         clickChip("Plan")
-        // The plan loads off the main thread; wait for its first control before looking for the button below the fold.
-        waitForText("5K")
+        // The plan loads off the main thread; wait for its first card before looking for the button below the fold.
+        waitForText("Race goal")
         scrollToText("Create plan")
         waitForText("Create plan")
         clickText("Create plan")
