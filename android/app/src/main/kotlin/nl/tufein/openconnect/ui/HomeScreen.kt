@@ -898,7 +898,7 @@ private fun readinessPartLabel(part: ReadinessPart): Int = when (part) {
 
 @Composable
 fun ActivityRow(activity: Activity, onOpen: (String) -> Unit, modifier: Modifier = Modifier) {
-    SurfaceCard(modifier.clickable(role = Role.Button) { onOpen(activity.id) }) {
+    SurfaceCard(modifier.testTag("activity-row").clickable(role = Role.Button) { onOpen(activity.id) }) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             SportBadge(activity.sport)
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {

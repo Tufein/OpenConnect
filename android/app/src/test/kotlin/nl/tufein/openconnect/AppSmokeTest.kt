@@ -1,7 +1,6 @@
 package nl.tufein.openconnect
 
-import androidx.compose.ui.test.hasClickAction
-import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -40,7 +39,7 @@ class AppSmokeTest : AppTestBase() {
         rule.waitForIdle()
         shot("03-activities")
 
-        rule.onAllNodes(hasText("Easy Run") and hasClickAction())[0].performClick()
+        rule.onAllNodesWithTag("activity-row")[0].performClick()
         waitForText("Distance")
         shot("04-activity-detail")
         clickText("Write report")
