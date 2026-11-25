@@ -48,16 +48,23 @@ through its repository search. Re-check before printing anything.
 
 | Candidate | Play exact search | F-Droid | GitHub | Domains | Note |
 |---|---|---|---|---|---|
-| **Tufein Health** | no exact result | no app | 0 repos for the phrase | `tufein.health`, `tufeinhealth.com`, `tufeinhealth.app` NXDOMAIN | Recommended working title: short, descriptive, owner namespace; trademark not checked |
-| **Tufein** | no exact result | no app | 10 repos, all under the owner's `Tufein` account | `tufein.com/.app/.nl/.io` NXDOMAIN | Short brand, but close to **Tufin** (network-security company) and not descriptive |
+| **Tufein Health** | no exact result | no app | 0 repos for the phrase | `tufein.health`, `tufeinhealth.com`, `tufeinhealth.app` NXDOMAIN | Clear, descriptive, owner namespace; close to **Tufin**; trademark not checked |
+| **Tufein Pulse** | no exact result | no app | 0 repos for the phrase | `tufeinpulse.com/.app/.health` NXDOMAIN | Brandable and health-adjacent; same Tufin caveat; “Pulse” is generic |
+| **Cercis** | no exact result | no app | 37 repos, none an Android health app | `cercis.health` free; `.com` registered | Redbud tree: growth/resilience; short, distinctive, obscure; trademark not checked |
 | **Ownbeat** | no exact result parsed | no app | 2 repos | `ownbeat.app` free; `ownbeat.com` registered | “Own your data + heartbeat”; `.com` unavailable |
-| **Tilth** | not checked | no app | 101 repos | `.com`/`.app` registered | Soil/growth metaphor; obscure and crowded |
+| **Alnus** | **collision**: Turkish investment app, 10,000+ installs | no app | 37 repos | `.app`/`.health` free, `.com` registered | Alder tree, but the Play collision rules it out |
+| **Sorbus** | **collision**: Sorbus Arbor Consulting | no app | 63 repos | `.health` free; `.com`/`.app` registered | Rowan tree; not clean enough |
 | **OpenConnect Health** | not checked | no app | phrase not checked | not checked | Still carries the VPN collision; not recommended |
 
-**Recommendation for the decision:** `Tufein Health` if a low-risk, descriptive display name is wanted. It keeps the
-existing package id and signing key, avoids the exact VPN name, and has no exact Play/F-Droid listing in this check.
-`Tufein` alone is shorter but needs a trademark look because of **Tufin**. This is not a legal opinion and the final
-choice remains Stefan's.
+**Recommendation for the decision:** two directions:
+- **Cercis** if the app should get its own distinctive product name. It is short, botanical (redbud; growth and
+  resilience), has no exact Play/F-Droid listing in this check, and `cercis.health` is free. It is obscure and
+  `cercis.com` is taken, so a trademark check is still needed.
+- **Tufein Health** if continuity with the existing owner namespace matters more. It is clearer and has free
+  `tufein.health`/`tufeinhealth.com` domains, but is close to **Tufin** (network security) and longer.
+
+`Tufein Pulse` is the middle option: product-like and all three domains are free, but it shares the Tufin caveat.
+This is not a legal opinion and the final choice remains Stefan's.
 
 ## Decision list (for Stefan)
 
