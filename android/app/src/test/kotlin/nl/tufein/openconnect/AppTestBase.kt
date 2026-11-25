@@ -175,8 +175,8 @@ abstract class AppTestBase {
             rule.onNode(clickable).performScrollTo().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
             return
         }
-        // The button's own click action, not a touch at its centre: after scrolling, a button can sit just behind the
-        // navigation bar, and a touch there would open a tab instead.
-        rule.onNodeWithText(text).performScrollTo().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
+        // A tile can keep its click on the panel while the text lives in a child without an OnClick action. Scroll the
+        // label into view and tap it: the pointer event reaches the tappable parent.
+        rule.onNodeWithText(text).performScrollTo().performClick()
     }
 }
