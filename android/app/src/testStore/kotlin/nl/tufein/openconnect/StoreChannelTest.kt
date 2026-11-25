@@ -27,7 +27,7 @@ class StoreChannelTest : AppTestBase() {
 
         // The updater card sits before the About card. Reach the end of Settings first, so an absence is not just
         // an item that was never composed.
-        scrollToText("About")
+        scrollToText("About and licences")
         assertFalse(hasText("Updates", substring = false), "the store build has no updater section")
         assertFalse(hasText("Check for updates", substring = false), "the store build must not offer an in-app update")
         assertFalse(hasText("Current version:", substring = true), "the update card's version line is absent too")
