@@ -5,13 +5,12 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.os.LocaleList
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.compose.ui.platform.findViewTreeCompositionContext
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
@@ -37,6 +36,12 @@ import java.util.Locale
  */
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 abstract class AppTestBase {
+    /**
+     * The v2 rule runs the app's coroutines (collectAsState, LaunchedEffect) on the test's main thread, as a phone does.
+     * The old rule ran them "unconfined", on whatever thread produced a value: since Compose 1.13 a Home state written
+     * from a background thread while the screen was being built could be lost, and 4 to 18 screen tests a run then
+     * waited on an empty Home for ever.
+     */
     @get:Rule
     val rule = createEmptyComposeRule()
 
@@ -82,19 +87,10 @@ abstract class AppTestBase {
         LocaleList.setDefault(LocaleList.forLanguageTags("en"))
     }
 
-    @get:Rule
-    val testName = org.junit.rules.TestName()
-
     @After
     fun close() {
         if (::scenario.isInitialized) scenario.close()
         resetLocales()
-        previousTest = "${javaClass.simpleName}.${testName.methodName}"
-    }
-
-    private companion object {
-        /** DIAGNOSTIC: the test that ran before this one in the same sandbox. */
-        var previousTest: String = "(none)"
     }
 
     /**
@@ -143,64 +139,7 @@ abstract class AppTestBase {
             rule.waitUntil(45_000) { hasText(text, substring) }
         } catch (e: Throwable) {
             println("--- screen when waiting for \"$text\" ---\n" + rule.onRoot().printToString(maxDepth = 100))
-            dumpState()
-            // DIAGNOSTIC: does handing the snapshot changes to the recomposer by hand bring the text?
-            scenario.onActivity { androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications() }
-            val rescued = runCatching { rule.waitUntil(5_000) { hasText(text, substring) } }.isSuccess
-            println("--- rescued by sendApplyNotifications: $rescued")
-            if (!rescued) {
-                org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(100))
-                val rescued2 = runCatching { rule.waitUntil(5_000) { hasText(text, substring) } }.isSuccess
-                println("--- rescued by moving the looper clock 100 ms: $rescued2")
-            }
             throw e
-        }
-    }
-
-    /** DIAGNOSTIC: what the view model, the UI dispatcher and every thread hold when a wait times out. */
-    private fun dumpState() {
-        try {
-            scenario.onActivity { a ->
-                val vm = a.viewModel
-                println("--- previous test in this sandbox: $previousTest")
-                println("--- vm: home.loaded=${vm.home.value.loaded} hasData=${vm.home.value.hasData} sameApp=${vm.getApplication<OpenConnectApp>() === ApplicationProvider.getApplicationContext<Context>()} lifecycle=${a.lifecycle.currentState}")
-                val ui = androidx.compose.ui.platform.AndroidUiDispatcher.Main[kotlin.coroutines.ContinuationInterceptor]
-                    as androidx.compose.ui.platform.AndroidUiDispatcher
-                val fields = listOf("scheduledTrampolineDispatch", "scheduledFrameDispatch", "toRunTrampolined", "toRunOnFrame").joinToString(" ") { name ->
-                    val f = ui.javaClass.getDeclaredField(name).also { it.isAccessible = true }
-                    val v = f.get(ui)
-                    "$name=" + if (v is Collection<*>) "size ${v.size}" else v.toString()
-                }
-                println("--- ui dispatcher: $fields sameChoreographer=${ui.choreographer === android.view.Choreographer.getInstance()}")
-                val looper = org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper())
-                println("--- main looper: idle=${looper.isIdle} next=${looper.nextScheduledTaskTime} paused=${looper.isPaused}")
-                println("--- snapshot: pending=${androidx.compose.runtime.snapshots.Snapshot.current.hasPendingChanges()}")
-                // Which recomposer drives the activity's content, and is it the one the test rule runs?
-                val content = a.findViewById<android.view.ViewGroup>(android.R.id.content)
-                val composeView = (0 until content.childCount).map { content.getChildAt(it) }
-                    .firstOrNull { it is androidx.compose.ui.platform.AbstractComposeView }
-                val ctx = composeView?.findViewTreeCompositionContext()
-                val screenRecomposer = ctx as? androidx.compose.runtime.Recomposer
-                println("--- screen recomposer: ${ctx?.javaClass?.name}@${System.identityHashCode(ctx)} state=${screenRecomposer?.currentState?.value} pendingWork=${screenRecomposer?.hasPendingWork} running=${androidx.compose.runtime.Recomposer.runningRecomposers.value.size}")
-                val env = rule.javaClass.getDeclaredField("environment").also { it.isAccessible = true }.get(rule)
-                var cls: Class<*>? = env.javaClass
-                var testRecomposer: Any? = null
-                while (cls != null && testRecomposer == null) {
-                    testRecomposer = runCatching { cls!!.getDeclaredField("recomposer").also { it.isAccessible = true }.get(env) }.getOrNull()
-                    cls = cls.superclass
-                }
-                val tr = testRecomposer as? androidx.compose.runtime.Recomposer
-                println("--- rule recomposer: @${System.identityHashCode(tr)} state=${tr?.currentState?.value} same=${tr === screenRecomposer} activity=${System.identityHashCode(a)} created=${a.lifecycle.currentState}")
-            }
-        } catch (t: Throwable) {
-            println("--- state: could not read: $t")
-        }
-        val threads = Thread.getAllStackTraces()
-        println("--- threads: ${threads.size}")
-        for ((thread, stack) in threads) {
-            if (stack.isEmpty()) continue
-            val top = stack.take(12).joinToString("\n        ") { it.toString() }
-            println("  [${thread.name}] ${thread.state}\n        $top")
         }
     }
 
