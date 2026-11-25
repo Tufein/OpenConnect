@@ -184,8 +184,9 @@ class OuraAndTouchScreenTest : AppTestBase() {
         rule.onNodeWithText("Load demo data").performClick()
         rule.waitUntil(45_000) { !hasText("Load demo data", substring = false) }
         rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
-        // The tile can end up behind the navigation bar after the battery card; invoke its action instead of a touch.
-        scrollToText("Resting heart rate")
+        // Scroll to the adjacent Body Battery tile: "Resting heart rate" also appears in the metric chooser, which is
+        // not the tile. The two tiles share a row, so this composes the tagged tile.
+        scrollToText("Body Battery")
         clickTag("metric-resting-hr")
         scrollToText("Latest:", substring = true) // the card now sits further down, so scroll to it
         waitForText("Latest:", substring = true) // the resting heart rate chart on the Health screen
