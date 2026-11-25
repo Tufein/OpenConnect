@@ -168,6 +168,13 @@ abstract class AppTestBase {
         if (!hasText(text, substring = false)) {
             rule.onAllNodes(hasScrollAction())[0].performScrollToNode(hasText(text))
         }
+        // A title and its tappable card can both carry the same words; prefer the node with the click action instead of
+        // whichever text node happens to be first in the semantics tree.
+        val clickable = hasText(text) and hasClickAction()
+        if (rule.onAllNodes(clickable).fetchSemanticsNodes().isNotEmpty()) {
+            rule.onNode(clickable).performScrollTo().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
+            return
+        }
         // The button's own click action, not a touch at its centre: after scrolling, a button can sit just behind the
         // navigation bar, and a touch there would open a tab instead.
         rule.onNodeWithText(text).performScrollTo().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
