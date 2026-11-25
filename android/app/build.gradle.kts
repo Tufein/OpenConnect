@@ -5,14 +5,18 @@ plugins {
 
 android {
     namespace = "nl.tufein.openconnect"
-    compileSdk = 37
+    // Compose 1.13 (BOM 2026.11.01) asks to be compiled against Android 37.1 or newer. Only the compile SDK moves:
+    // targetSdk (runtime behaviour) and minSdk (which phones can install it) stay where they are.
+    compileSdk {
+        version = release(37) { minorApiLevel = 1 }
+    }
 
     defaultConfig {
         applicationId = "nl.tufein.openconnect"
         minSdk = 28
         targetSdk = 36
-        versionCode = 95
-        versionName = "1.13.2"
+        versionCode = 96
+        versionName = "1.13.3"
     }
 
     // Two channels from one code base. The GitHub build keeps the in-app updater (the install permission and the
@@ -102,7 +106,7 @@ kotlin {
 dependencies {
     implementation(project(":core"))
 
-    val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
+    val composeBom = platform("androidx.compose:compose-bom:2026.11.01")
     implementation(composeBom)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")

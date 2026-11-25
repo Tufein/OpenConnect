@@ -55,6 +55,9 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   was sinds v1.11.0 rood omdat de standaardweergave van de emulator (`swiftshader_indirect`) wegviel bij de eerste
   veeg op Home; met `swangle_indirect` loopt dezelfde APK de hele app door. De APK heeft een budget van 13 MiB dat
   ook elk pull request controleert.
+- **Sinds v1.13.3:** de app staat op Compose 1.13 (BOM 2026.11.01, compileSdk 37.1). De schermtests liepen daarmee
+  wisselend vast omdat de oude Compose-testregel de coroutines van de schermen op achtergrondthreads liet lopen; ze
+  gebruiken nu de v2-testregel, die dat net als een telefoon op de hoofdthread doet.
 - **Zwak voor het verdere verhaal:**
   1. Op één bron na (de Garmin-account, die live is geprobeerd) is **niets op een echte telefoon, horloge of ring geproefd**. Zie het register in paragraaf 7; M9 is dat spoor.
   2. Of de meldingen op de fenix 8 nu bij elk bericht trillen, wacht op een nieuw logboek; v1.0.1 pakte de meest waarschijnlijke oorzaak aan.
@@ -114,7 +117,7 @@ Doel: een opgeruimde basis waarop de rest veilig gebouwd kan worden.
 
 Klaar als: alle voorstellen zijn samengevoegd of met reden gesloten, CI is groen zonder opnieuw starten, de README past op één scherm.
 
-**Besluit over de afhankelijkheden (2026-11-18, v0.58.0):** samengevoegd zijn de GitHub Actions (setup-java 6, download-artifact 8) en Robolectric 4.18. Uit de Android-bibliotheken is het deel genomen dat op de huidige gereedschapsketen past (AGP 8.7.3, Kotlin 2.0.21, compileSdk 35): `security-crypto` 1.1.0 (stabiel, de sleutelkluis), `work-runtime` 2.12.0, `core-ktx` 1.16.0. **Met reden gesloten** (Dependabot stelt die versies niet opnieuw voor): de Compose-BOM 2026 en navigation 2.10 (vijf schermtests faalden op de eerste proef met de nieuwe BOM, en de nieuwste versies vragen compileSdk 37), Health Connect 1.1.0-beta01 (de API verandert: `Metadata` krijgt fabrieksmethoden), Kotlin 2.4 met serialization 1.13 en coroutines 1.11 (een hele gereedschapssprong, en dan is lokaal testen zonder Maven-toegang niet meer mogelijk), Gradle 9.9 en AGP 9.5 (migratie), en het Python 3.15-image (de server wordt alleen op 3.11 tot 3.13 getest). **Die sprong is één aparte klus voor na 1.0** (AGP 9, Gradle 9, Kotlin 2.4, compileSdk 37, Compose-BOM 2026, Health Connect 1.1), met een eigen release en een volledige proefronde. **Die sprong is in v1.9.3 gedaan** (Gradle 9.6, AGP 9.5.2, compileSdk 37, Kotlin 2.4.21); de Compose-BOM 2026 staat nog open als #92.
+**Besluit over de afhankelijkheden (2026-11-18, v0.58.0):** samengevoegd zijn de GitHub Actions (setup-java 6, download-artifact 8) en Robolectric 4.18. Uit de Android-bibliotheken is het deel genomen dat op de huidige gereedschapsketen past (AGP 8.7.3, Kotlin 2.0.21, compileSdk 35): `security-crypto` 1.1.0 (stabiel, de sleutelkluis), `work-runtime` 2.12.0, `core-ktx` 1.16.0. **Met reden gesloten** (Dependabot stelt die versies niet opnieuw voor): de Compose-BOM 2026 en navigation 2.10 (vijf schermtests faalden op de eerste proef met de nieuwe BOM, en de nieuwste versies vragen compileSdk 37), Health Connect 1.1.0-beta01 (de API verandert: `Metadata` krijgt fabrieksmethoden), Kotlin 2.4 met serialization 1.13 en coroutines 1.11 (een hele gereedschapssprong, en dan is lokaal testen zonder Maven-toegang niet meer mogelijk), Gradle 9.9 en AGP 9.5 (migratie), en het Python 3.15-image (de server wordt alleen op 3.11 tot 3.13 getest). **Die sprong is één aparte klus voor na 1.0** (AGP 9, Gradle 9, Kotlin 2.4, compileSdk 37, Compose-BOM 2026, Health Connect 1.1), met een eigen release en een volledige proefronde. **Die sprong is in v1.9.3 gedaan** (Gradle 9.6, AGP 9.5.2, compileSdk 37, Kotlin 2.4.21); de Compose-BOM 2026 (Compose 1.13, compileSdk 37.1) volgde in v1.13.3 en verving #92.
 
 ### M2: "Eerlijk en te diagnosticeren" ✅ v0.55.0 (M)
 
@@ -148,7 +151,7 @@ Klaar als: de toegankelijkheidstests en taalpariteit in CI staan en groen zijn.
 
 - **Prestatiebudget:** een gegenereerde historie van vijf jaar (ongeveer 1800 activiteiten met tracks en dagrijen) en een test op de openingstijd van elk tabblad en op het geheugen van de heatmap; opstarttijd gemeten.
 - **Verkleinen:** R8 en het verkleinen van resources beoordeeld. De APK was 30 MB (niet 11: dat was nooit gemeten), nu 9,8 MB. De test dat serialisatie, WorkManager en de sleutelkluis nog werken is een **rooktest op een echte Android** (emulator) die ook vóór elke release draait.
-- **targetSdk bijhouden:** nu 36 (sinds v1.13.0; compileSdk 37). Zonder Google Play is er geen verplichte datum; omhoog alleen als een nieuwe Android-versie het vraagt, met de lijst van gedragswijzigingen afgewerkt.
+- **targetSdk bijhouden:** nu 36 (sinds v1.13.0; compileSdk 37.1 sinds v1.13.3, omdat Compose 1.13 dat vraagt). Zonder Google Play is er geen verplichte datum; omhoog alleen als een nieuwe Android-versie het vraagt, met de lijst van gedragswijzigingen afgewerkt.
 - **Batterij:** niet te meten zonder telefoon. Wat er op de achtergrond draait staat met zijn frequentie in `docs/PERFORMANCE.md`; het cijfer van Android na een dag is proefstap T16 voor Stefan.
 
 Klaar als: het budget in CI staat en de APK niet groter is geworden dan 12 MiB (`release.yml` faalde erop; sinds v1.13.1 is het budget 13 MiB en staat het in `android/scripts/check_apk_size.py`, zie [PERFORMANCE.md](PERFORMANCE.md)).

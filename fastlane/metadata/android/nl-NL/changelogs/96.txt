@@ -1,0 +1,1 @@
+De schermen van de app worden getekend met een nieuwere versie van Jetpack Compose (1.13). Aan wat je ziet en doet, is niets bewust veranderd; zie je toch iets vreemds in een lijst of knop, meld het dan.

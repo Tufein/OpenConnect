@@ -33,6 +33,7 @@ the newest 300 routes and thins each to 500 positions, however much history ther
 | v0.58.0 (shrunk with R8) | 9.8 MB |
 | v1.4.0 | 9.9 MB |
 | v1.12.0 and v1.13.0 | 12.56 MB (12,562,016 bytes), 20 KB under the old 12 MiB limit |
+| v1.13.3 (Compose 1.13) | 13.10 MB (13,097,301 bytes in the pull request build), 96 percent of the 13 MiB budget |
 
 The earlier statement in the roadmap that the APK was 11 MB was wrong; it had never been measured. The budget is now
 **13 MiB** (13,631,488 bytes), kept in one place, `android/scripts/check_apk_size.py`. Both the *Release* workflow and the
@@ -46,6 +47,10 @@ strings of four languages and the layouts), 0.48 MB is `res/` (five fonts of abo
 0.04 MB is the native `libandroidx.graphics.path.so` for four ABIs. The code grew by about 2.6 MB over the eight releases
 from v1.4.0 to v1.12.0 (the editorial look, the privacy register, plan adaptation, two more languages), roughly 0.3 MB a
 release, so 13 MiB is about three releases of room, not a permanent answer.
+
+v1.13.3 used most of that room in one go: Compose 1.13 (with material3 1.5) added about 0.54 MB, almost all of it code
+(`classes.dex` 8.4 MB and `classes2.dex` 2.8 MB, 11.26 MB together). That leaves about 0.53 MB, so the check now warns on
+every build, and the next release that adds a feature of any size will need one of the two ways below first.
 
 Two ways to get a lot back when it is needed, neither taken yet because they cannot be tried on a real phone from here:
 compress the dex files in the APK (`useLegacyPackaging` for dex: the APK would be about 6 MB smaller, at the price of the

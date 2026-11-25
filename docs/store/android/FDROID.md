@@ -78,8 +78,8 @@ Notes on the fields:
 - The local AAB has fixed ZIP timestamps (entries show 1981-01-01), and R8 is used for release. That is a good start,
   not proof. F-Droid verifies reproducibility independently (`fdroid build --test` / the reproducibility badge), and
   the result is **UNVERIFIED** for this app.
-- Toolchain in the repository: JDK 17, Gradle 9.6.0 (wrapper), AGP 9.5.2, compileSdk 37, build-tools 36. F-Droid's
-  buildserver must have platform 37 and a compatible JDK. This is a likely **blocker**: the public F-Droid buildserver
+- Toolchain in the repository: JDK 17, Gradle 9.6.0 (wrapper), AGP 9.5.2, compileSdk 37.1, build-tools 36. F-Droid's
+  buildserver must have platform 37.1 and a compatible JDK. This is a likely **blocker**: the public F-Droid buildserver
   may lag behind compileSdk 37. Confirm before submitting; if it lags, either wait for the buildserver or lower
   compileSdk (a build change, not part of this preparation).
 - Dependencies come from `google()` and `mavenCentral()`; F-Droid allows these, but it scans for binary blobs. The

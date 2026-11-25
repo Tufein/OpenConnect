@@ -1,0 +1,1 @@
+Les écrans de l'application sont dessinés avec une version plus récente de Jetpack Compose (1.13). Rien de ce que vous voyez ou faites n'a été modifié volontairement ; si une liste ou un bouton paraît étrange, signalez-le.

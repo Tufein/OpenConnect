@@ -10,7 +10,7 @@ import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
@@ -36,6 +36,12 @@ import java.util.Locale
  */
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 abstract class AppTestBase {
+    /**
+     * The v2 rule runs the app's coroutines (collectAsState, LaunchedEffect) on the test's main thread, as a phone does.
+     * The old rule ran them "unconfined", on whatever thread produced a value: since Compose 1.13 a Home state written
+     * from a background thread while the screen was being built could be lost, and 4 to 18 screen tests a run then
+     * waited on an empty Home for ever.
+     */
     @get:Rule
     val rule = createEmptyComposeRule()
 
