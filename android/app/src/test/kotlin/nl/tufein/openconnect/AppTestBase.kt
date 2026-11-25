@@ -150,7 +150,7 @@ abstract class AppTestBase {
     /** The main vertical list, not a small horizontal row that happens to be first in the tree. */
     private fun mainScrollable(): SemanticsNodeInteraction {
         val nodes = rule.onAllNodes(hasScrollAction()).fetchSemanticsNodes()
-        val index = nodes.indices.maxByOrNull { nodes[it].bounds.height } ?: 0
+        val index = nodes.indices.maxByOrNull { nodes[it].boundsInRoot.height } ?: 0
         return rule.onAllNodes(hasScrollAction())[index]
     }
 
