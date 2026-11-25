@@ -168,15 +168,17 @@ abstract class AppTestBase {
         if (!hasText(text, substring = false)) {
             rule.onAllNodes(hasScrollAction())[0].performScrollToNode(hasText(text))
         }
-        // A title and its tappable card can both carry the same words; prefer the node with the click action instead of
-        // whichever text node happens to be first in the semantics tree.
-        val clickable = hasText(text) and hasClickAction()
-        if (rule.onAllNodes(clickable).fetchSemanticsNodes().isNotEmpty()) {
-            rule.onNode(clickable).performScrollTo().performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
-            return
+        // A tile or button can keep its click on a parent while its text is a child without an OnClick action: walk up
+        // and invoke the nearest click action, so a tile behind the navigation bar is clicked through semantics too.
+        var node: androidx.compose.ui.semantics.SemanticsNode? = rule.onNodeWithText(text).fetchSemanticsNode()
+        while (node != null) {
+            if (node.config.contains(androidx.compose.ui.semantics.SemanticsActions.OnClick)) {
+                node.config[androidx.compose.ui.semantics.SemanticsActions.OnClick].action?.invoke()
+                return
+            }
+            node = node.parent
         }
-        // A tile can keep its click on the panel while the text lives in a child without an OnClick action. Scroll the
-        // label into view and tap it: the pointer event reaches the tappable parent.
+        // No click action anywhere above the label: tap the label itself.
         rule.onNodeWithText(text).performScrollTo().performClick()
     }
 }
