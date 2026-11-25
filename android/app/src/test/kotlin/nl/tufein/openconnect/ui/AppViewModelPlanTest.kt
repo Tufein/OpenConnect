@@ -90,7 +90,10 @@ class AppViewModelPlanTest {
     }
 
     private fun await(message: String, condition: () -> Boolean) {
-        val deadline = System.nanoTime() + 15_000_000_000L
+        // Plan reloads do a database read and a fresh assessment. A loaded CI runner can pause an IO worker for
+        // several seconds; 15 s occasionally timed out on exactly that, while the same test passed locally and on
+        // the Android workflow. The longer deadline only matters when something is actually wrong.
+        val deadline = System.nanoTime() + 45_000_000_000L
         while (!condition()) {
             shadowOf(Looper.getMainLooper()).idle()
             if (System.nanoTime() >= deadline) fail("Timed out waiting for $message")
