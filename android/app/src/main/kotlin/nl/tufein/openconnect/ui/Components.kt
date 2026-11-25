@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
@@ -368,8 +369,10 @@ fun MetricTile(
     series: List<Double?> = emptyList(),
     onClick: (() -> Unit)? = null,
     showSeries: Boolean = true,
+    tag: String? = null,
 ) {
-    Panel(modifier.heightIn(min = 48.dp).tappable(onClick), tint = color, padding = 14.dp, spacing = 2.dp) {
+    val tappable = modifier.heightIn(min = 48.dp).tappable(onClick).let { if (tag != null) it.testTag(tag) else it }
+    Panel(tappable, tint = color, padding = 14.dp, spacing = 2.dp) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             ColorDot(color)
             Spacer(Modifier.width(6.dp))
