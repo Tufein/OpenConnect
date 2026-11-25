@@ -1,0 +1,1 @@
+Die Bildschirme der App werden mit einer neueren Version von Jetpack Compose (1.13) gezeichnet. An dem, was du siehst und tust, wurde nichts absichtlich geändert; wenn eine Liste oder Schaltfläche seltsam aussieht, melde es bitte.

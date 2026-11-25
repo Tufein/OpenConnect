@@ -140,7 +140,7 @@ android/
 
 ## Build it
 
-Requirements: JDK 17 or newer and an Android SDK with **platform 37** (compileSdk 37; targetSdk 36, minSdk 28). Set
+Requirements: JDK 17 or newer and an Android SDK with **platform 37.1** (compileSdk 37.1, which Compose 1.13 asks for; targetSdk 36, minSdk 28). Set
 `ANDROID_HOME`.
 
 The app has two channels from one code base: `github` keeps the updater, the install permission and the FileProvider;

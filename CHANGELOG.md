@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.13.3: Compose 1.13 en schermtests die niet meer vastlopen
+
+Deze release zet de bibliotheek waarmee de app zijn schermen tekent (Jetpack Compose) van 1.11 naar 1.13, de update die Dependabot in #92 voorstelde. Aan wat je ziet en doet, is niets bewust veranderd. Daarnaast is gevonden waarom de schermtests met Compose 1.13 bij elke run op andere plekken vastliepen: het lag aan de testopstelling, niet aan de app. De tests gebruiken nu de nieuwe …
+
+[Release notes](docs/releases/v1.13.3.md)
+
 ## v1.13.2: de release-controles weer streng
 
 Deze release verandert **niets aan wat de app doet**; de APK is dezelfde app als v1.13.1 met een nieuw versienummer. Wat verandert is het vangnet eromheen: de emulator-rooktest houdt een release weer tegen als hij faalt, de APK heeft een budget met ruimte (13 MiB, in plaats van 20 KB onder de oude grens) dat bij elke wijziging wordt gecontroleerd, en de release notes van vier eerdere versies …
