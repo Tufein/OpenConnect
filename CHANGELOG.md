@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.12.0: wat je telefoon verlaat
+
+Deze release maakt privacy concreet: **Instellingen → Over en licenties → Wat je telefoon verlaat** opent een index met twaalf onderwerpen. Elk onderwerp heeft een eigen pagina met wat er wel weggaat, wat er terugkomt, wat nooit meegaat, waar het bewaard blijft, wanneer het gebeurt en welke toestemming je ervoor geeft. De pagina is opgebouwd uit dezelfde `PrivacyRegister` als de statische controle en de documentatie; hij is geen live verkeersmonitor en toont geen namen, meldingsteksten of gezondheidswaarden.
+
+[Release notes](docs/releases/v1.12.0.md)
+
 ## v1.11.0: Duits, Frans en een voorblad dat met de dag meegaat
 
 De app heeft nu vier talen. Kies in **Instellingen → Taal** voor *Taal van telefoon*, Engels, Nederlands, Duits of Frans; de keuze geldt voor de hele app, de widget en de meldingen. De rapporten en de coach blijven voorlopig Engels of Nederlands, en de app zegt dat er eerlijk bij. Op een Duitse of Franse telefoon opent de app na deze update meteen in die taal.

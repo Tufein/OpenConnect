@@ -22,7 +22,7 @@ personal health data in an issue.
 
 What is covered:
 
-- Every resource string, plural and string array: 1,361 entries in each language, the same keys and placeholders as
+- Every resource string, plural and string array: 1,439 entries in each language, the same keys and placeholders as
   English. `LanguageParityTest` fails when a key, placeholder, plural shape or array length differs.
 - Dates and numbers through the app's own formatter: German `24.11.2026` and a decimal comma, French `24/11/2026` and
   French grouping.

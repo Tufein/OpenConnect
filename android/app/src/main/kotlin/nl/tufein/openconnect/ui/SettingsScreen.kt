@@ -118,6 +118,8 @@ fun SettingsScreen(
     onGarmin: () -> Unit,
     onOura: () -> Unit = {},
     onAbout: () -> Unit = {},
+    /** Opens the privacy page: what leaves the phone, subject by subject. */
+    onPrivacy: () -> Unit = {},
     /** The choice of devices changed: the Garmin watch or the Oura Ring, each on or off. */
     onSources: (garmin: Boolean, oura: Boolean) -> Unit = { _, _ -> },
     /** A colour theme was picked. */
@@ -455,6 +457,7 @@ fun SettingsScreen(
                 Text(stringResource(R.string.about_body), style = MaterialTheme.typography.bodyMedium)
                 Text("github.com/Tufein/OpenConnect", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 SecondaryButton(onClick = onAbout, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.about_open_button)) }
+                SecondaryButton(onClick = onPrivacy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.privacy_title)) }
                 SecondaryButton(onClick = { diagnostics = true }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.diagnostics_button)) }
             }
         }

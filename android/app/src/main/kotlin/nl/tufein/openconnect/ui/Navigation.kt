@@ -72,6 +72,9 @@ private enum class Tab(val route: String, val label: Int, val icon: LineGlyph, v
 
 private const val DETAIL = "activity/{id}"
 
+/** The privacy page: every subject of the register, with a detail page per subject. */
+const val PRIVACY_ROUTE = "privacy"
+
 /**
  * The retro tab bar: a flat strip under a 2 dp ink line. The open tab is a block filled with ink and its icon and word
  * in the background colour, like the highlighted entry in the menu of a game; the other tabs are plain.
@@ -511,12 +514,20 @@ fun OpenConnectRoot(
                     onGarmin = ::openGarmin,
                     onOura = ::openOura,
                     onAbout = { nav.navigate(ABOUT_ROUTE) { launchSingleTop = true } },
+                    onPrivacy = { nav.navigate(PRIVACY_ROUTE) { launchSingleTop = true } },
                     contentPadding = padding,
                 )
             }
             composable(ABOUT_ROUTE) {
                 AboutScreen(
                     ui = SettingsUi(ai = ai, theme = theme, versionName = BuildConfig.VERSION_NAME, goals = goals, overview = overview, syncLog = syncLog, nudges = nudges, appLock = lock.enabled, lockAvailable = lockAvailable, sources = sources, look = look, appIcon = appIcon, appLanguage = appLanguage),
+                    onBack = { nav.popBackStack() },
+                    onPrivacy = { nav.navigate(PRIVACY_ROUTE) { launchSingleTop = true } },
+                    contentPadding = padding,
+                )
+            }
+            composable(PRIVACY_ROUTE) {
+                PrivacyScreen(
                     onBack = { nav.popBackStack() },
                     contentPadding = padding,
                 )

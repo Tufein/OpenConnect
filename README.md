@@ -7,14 +7,15 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.11.0.** The app now speaks **English, Dutch, German and French**. *Settings → Language* follows the
-> phone or picks one of the four; dates and numbers follow that language, and the widget and notifications use it too.
-> AI reports and the coach stay English or Dutch for now. The Oura tab lost its duplicate score cards, and the photo
-> header now follows the day with a different crop and sky at dawn, day, dusk and night. Everything from v1.10.0
-> stays — the adaptive training week, the twelve-month Year overview, the calm themes, the custom front page, folding
-> sections, in-app updates and the honest Oura battery card. The German and French texts are machine-drafted, not
-> native-reviewed.
-> [Release notes](docs/releases/v1.11.0.md).
+> **Status: v1.12.0.** *Settings → About → What leaves your phone* now opens **twelve source pages** built from one
+> privacy register: what each operation sends and receives, where it goes, when it runs, what is stored, what it needs
+> and what it never carries. The same register drives the static address check and the documentation, and a test covers
+> every field and local store. The old privacy text is corrected: WHOOP and Hume are legacy only, Health Connect reads
+> only steps, sleep and weight, Oura includes tokens, SpO2, workouts and ring battery, and AI reports carry derived
+> splits and heart-rate halves but never GPS, journal or notes. **Delete all data** now also clears body, water,
+> journal, gear, plan, race, goals, work-outs, sync log, Health Connect ledger and nudges. Everything from v1.11.0
+> stays, including the four languages; the German and French texts remain machine-drafted, not native-reviewed.
+> [Release notes](docs/releases/v1.12.0.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

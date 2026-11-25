@@ -1,71 +1,107 @@
 # Privacy statement / Privacyverklaring
 
-English first, Nederlands daaronder. The same list is in the app under *Settings, About and licences, Where data can go*,
-and a test (`PrivacyStatementTest`) fails when the code mentions a network address that is not in this document's list.
+English first, Nederlands daaronder. The in-app page *Settings → About and licences → What leaves your phone* is generated
+from the same canonical list (`android/core/.../privacy/PrivacyRegister.kt`) as the tables below. A test fails when the code
+mentions a network address, a data source or a boundary field that the register and this statement do not cover.
+
+The short version: **OpenConnect has no server of ours, no account of ours, no advertising, no analytics and no crash
+reporting.** Your data stays on your phone unless you switch on a source, a provider or a file export. Every outbound
+request starts from something you did.
 
 ## English
 
-**Short version.** OpenConnect has no server of ours, no account of ours, no advertising, no analytics and no crash
-reporting. Your health data is stored on your phone and goes nowhere unless you switch a source or a feature on. Uninstalling
-the app deletes it.
-
 ### What is stored, and where
 
-Activities (with their GPS tracks), daily numbers (steps, heart rate, stress, Body Battery, sleep, HRV, SpO2), the journal,
-shoes, goals and your training plan are stored in the app's private storage on the phone (a SQLite database that no other
-app can read). Keys and sign-ins (AI keys, your Garmin key and Oura tokens) are stored in the Android Keystore through
-`EncryptedSharedPreferences`; if secure storage is not available the key is not stored at all. Android's own backup and
-device-transfer are switched off for the app, so the data does not end up in a Google backup either.
+- **SQLite** (`openconnect.db`): activities and their GPS tracks, daily numbers, sleep, body weight, water, reports,
+  samples and imported watch files, plus older Oura, WHOOP and Hume rows. This database is in the app's private storage;
+  no other app can read it.
+- **Plain settings**: the journal, shoes, training plan, race goal, weekly goals, maximum heart rate, work-outs, the sync
+  log, the Health Connect bookkeeping, the list of apps allowed to forward notifications, and the watch address and name.
+- **Encrypted settings** (`EncryptedSharedPreferences`, backed by the Android Keystore): AI keys, your Garmin key and Oura
+  client id/secret/tokens. If secure storage is unavailable, a key is not stored at all.
+- **Memory only**: the coach conversation and a short notification-forwarding trail (at most 150 lines, holding app names
+  and decisions, never notification text). Both disappear when the app process ends.
+- **App cache**: a downloaded and SHA-256-checked update APK, until Android installs it or the cache is cleared.
+- Android's own cloud backup and device transfer are **off** for this app. The app never writes health data into a Google
+  backup.
 
-A backup file that **you** make (*Settings, Your data, Back up*) and the "Export everything" files are plain files that
-you choose where to save. The backup file never contains keys. Treat these files as sensitive: anyone who has the file can
-read your history.
+A backup or “Export everything” file that **you** make is a plain file you choose where to save. A backup never contains
+keys. Treat these files as sensitive: anyone who has one can read your history.
 
-### Where data can go
+### What leaves your phone
 
-Only to the services below, only when you use them, and only over HTTPS:
+Only the subjects below, only when you use them, and only over HTTPS (except the watch and Health Connect, which are local
+radio/on-device connections):
 
-| Address | When | What is sent |
-|---------|------|--------------|
-| `personal.connectapi.garmin.com` | you use your own Garmin key | the key (to this address only), the dates you ask for; you get your daily data and activities back |
-| `cloud.ouraring.com`, `api.ouraring.com` | you connect an Oura Ring | the Oura sign-in (your own Oura app's client id and secret), the dates you ask for |
-| `api.anthropic.com` | you add a Claude key and ask for a report or use the coach | a short JSON summary of your numbers and, for the coach, your plan weeks with planned/actual distance and the current proposal; never GPS tracks, notes or workout text, plus what you type to the coach; your key |
-| `generativelanguage.googleapis.com` | you add a Gemini key and ask for a report or use the coach | the same, with your Gemini key |
-| `api.github.com`, `github.com` | you open *Settings, Updates* | a request for the newest release and then the download of the APK; nothing about you, but GitHub sees your network address like any website does |
+| Subject | When | Where | What leaves | What comes back |
+|---|---|---|---|---|
+| **Garmin account** | you add your own Garmin key and sync | `personal.connectapi.garmin.com` | your Garmin API key (to exchange for a bearer token), the bearer token, the date range and an activity id | daily summaries, sleep, steps, stress, Body Battery, HRV, activities and FIT files |
+| **Oura Ring** | you connect Oura and sync | `cloud.ouraring.com` (browser login), `api.ouraring.com` | your Oura application's client id and secret, PKCE state/challenge/verifier, the OAuth code or refresh token, access token, date range and page token | access/refresh tokens, sleep, readiness, activity, SpO2, work-outs and ring battery |
+| **Claude** | you add a Claude key and ask for a report, a coach answer or a key check | `api.anthropic.com` | your key (header), model, system prompt, the bounded facts, the coach question/history and the report language | the generated text |
+| **Gemini** | the same with a Gemini key | `generativelanguage.googleapis.com` | the same facts, question/history and language, with your Gemini key | the generated text |
+| **GitHub updates** | you open *Settings → Updates* and check/download | `api.github.com`, `github.com` | a GET for the newest release list, then a GET for the APK and its `.sha256`; no account, token or health data | release JSON, APK and checksum. GitHub sees your network address and user agent like any website |
+| **Notifications on the watch** | you turn it on and Android delivers a notification | your watch, over Bluetooth | notification id, app id/name, title, body/big text, subtitle, time, category and dismiss flag | nothing; the notification is not sent to a server |
+| **Work-outs to the watch** | you press send for a work-out | your watch, over USB | the work-out as a FIT file in `GARMIN/NewFiles` | nothing; no server is involved |
+| **Watch and live heart rate** | you read a watch or start live heart rate | your watch, over USB, a folder or Bluetooth | nothing is sent; FIT files and heart-rate samples come in | activities, daily data, sleep, stress, Body Battery, SpO2, HRV and live heart rate |
+| **Health Connect** | you switch it on and grant types | on this phone only | exercise session, distance and calories when you ask to save an activity | steps, sleep and weight, only where OpenConnect has no data yet |
+| **Files you choose** | you import, back up, export everything or share diagnostics | a file or app you choose | a FIT/GPX/TCX/gzip/ZIP import, a backup, an export, or the diagnostics text | a file you pick; no server is involved |
+| **Keys and app lock** | you save a key or turn on the lock | this phone only | nothing | nothing; keys stay in the Keystore-backed preferences |
+| **Removed WHOOP and Hume** | you open an old installation | this phone only | nothing; those integrations no longer run | old rows that were already on the phone |
 
-What an AI provider does with what it receives is governed by that provider's own terms, which you accepted when you made
-your key. If you do not add an AI key, nothing is sent to an AI provider and the reports are written by a template on your
-phone.
+**AI facts, precisely.** The JSON sent to Claude or Gemini can contain activity names, sport, date, duration, distance,
+pace/speed, heart rate, elevation, calories, device, kilometre splits and heart-rate halves; week/month/year totals including
+steps, sleep, stress, Body Battery and resting heart rate; and, for the coach, the plan weeks with planned/actual distance
+and the current proposal. It does **not** contain GPS points or a route, the journal, notes, your own work-out text,
+contacts, calendar or any key other than the provider key in its header. Splits and heart-rate halves are derived from a
+track, so they are still derived data; the app says so rather than claiming “never anything from your route”.
 
-Nothing else is ever sent. The app does not collect your location, does not read your contacts, calendar or other apps'
-files, and never uploads your GPS tracks. Links to websites (Garmin Connect to make a key, the AI providers' key pages, the
-Connect IQ store, the source code) are opened in your browser; the app itself does not call them.
+**Notification text, precisely.** Android hands the notification listener every app's notification; the app reads title,
+text and metadata, then drops ongoing, grouped, local-only, call, low-importance and do-not-disturb ones, and applies your
+app choices and hide-text switch. At most 16 texts wait at most two minutes in memory while a watch reconnects. Nothing is
+written to the database, the sync log or a server. The in-memory forwarding trail holds app names and decisions only.
+
+What an AI provider, Garmin or Oura does with what it receives is governed by that provider's own terms, which you accepted
+when you made the key or account. If you do not add an AI key, reports are written by a template on the phone and no AI
+provider is called.
+
+### What never leaves the phone
+
+GPS points and routes are never uploaded; they are only stored locally and sent to a watch or Health Connect when you ask.
+The journal, notes and your own work-out text are never sent to Garmin, Oura or an AI provider. Keys are never written into
+a URL, a report body or a backup; each provider key travels only in its own authentication header. The app does not read your
+contacts or calendar, and it does not collect your location for itself.
 
 ### Permissions, and why
 
-- **Internet**: for the services above, and nothing else.
-- **Install packages**: the updater asks Android to install the APK it downloaded and checked. Android asks you each time.
-- **Notifications**: nudges, the live heart-rate notification and the one that shows while notifications are sent to the watch.
-- **Notification access** (only if you switch on *Notifications on the watch* and give it in Android's settings): the app reads the notifications of the apps you chose, only to pass their title and text to your watch over Bluetooth. The text is never stored, logged or sent anywhere else. The only trace is a short log in the phone's memory for the *What is happening?* part of the card (150 lines at most, gone when the app ends, copied only if you press the button): it holds the name of the app a notification came from and what was decided, never its title or text. The app also asks Android whether the Garmin Connect app is installed, to give a hint; that stays on the phone. Without this access the app sees none of your notifications. You can take it back in Android at any time. See [NOTIFICATIONS.md](NOTIFICATIONS.md).
-- **Bluetooth (nearby devices)**: to talk to your watch or a heart-rate strap. On Android 11 and older, Android only lets an app
-  scan for Bluetooth devices when it may also see the location, so it asks for location there; the app never reads your location.
-- **Foreground service (connected device)**: only while *Live heart rate* runs, or while *Notifications on the watch* is on and keeps its Bluetooth connection.
+- **Internet**: only for the services in the table above.
+- **Install packages**: the updater asks Android to install the APK it downloaded and checked; Android asks you.
+- **Notifications**: nudges, live heart rate, and the notification that shows while forwarding is on.
+- **Notification access**: only if you switch on *Notifications on the watch*. It lets the app read the notifications Android
+  delivers so it can pass the chosen ones to your watch. You can take it back in Android at any time.
+- **Bluetooth / nearby devices**: to talk to a watch or heart-rate strap. On Android 11 and older the system also requires
+  the location permission for Bluetooth scanning; the app never reads your location.
+- **Foreground service (connected device)**: while live heart rate runs or the watch connection is kept for forwarding.
 - **Biometrics**: only for the app lock, if you switch it on.
-- **Health Connect**: only when you switch it on, and only the types you allow in Android's own screen: steps, sleep, heart
-  rate, resting heart rate, HRV, SpO2, active calories, exercise and distance are read; exercise, distance and calories are
-  written when you ask to save an activity to Health Connect. You can take the permissions back in Android at any time.
+- **Health Connect**: only the types you allow. OpenConnect reads steps, sleep and weight, and writes exercise, distance and
+  calories. It does not read heart rate, HRV, SpO2, active calories or exercise sessions from Health Connect.
+- **Photos/files**: only when you choose a file to import or a place to save a backup/export.
 
 ### Deleting your data
 
-*Settings, Your data, Delete all data* empties the database. Uninstalling the app deletes everything it stored, including
-keys. Files you exported or backed up yourself are yours to delete. Keys can be removed one by one in Settings. Data at an AI
-provider, Garmin or Oura is theirs: use their own tools to delete it.
+*Settings → Your data → Delete all data* empties the SQLite database (including activities, tracks, body weight, water,
+sleep, reports and imported files) and clears the journal, shoes, plan, race goal, weekly goals, maximum heart rate,
+work-outs, sync log, Health Connect bookkeeping and nudge-sent record. It keeps your keys/tokens, onboarding answers,
+theme/language, app lock and device switches; keys have their own remove buttons. Uninstalling the app deletes everything it
+stored, including keys.
+
+Files you exported or backed up yourself are yours to delete. Data at an AI provider, Garmin or Oura is theirs: use their
+own tools to delete it. The in-app page states the same scope, and a test covers each category.
 
 ### What the project knows about you
 
-Nothing. GitHub hosts the code and the releases and sees who downloads them, as it does for any repository. If you open an
-issue, what you write there is public; use *Share diagnostics* (it shows you the report first and leaves out keys, tokens,
-names, health values and routes) and describe the rest in words.
+Nothing. GitHub hosts the code and releases and sees who downloads them, as it does for any repository. If you open an
+issue, what you write there is public; use *Share diagnostics* (it shows the report first and leaves out keys, tokens, names,
+health values and routes) and describe the rest in words.
 
 ### Changes and contact
 
@@ -75,71 +111,108 @@ repository, or the private report route in [SECURITY.md](../SECURITY.md) for a s
 ## Nederlands
 
 **Kort.** OpenConnect heeft geen server van ons, geen account van ons, geen reclame, geen statistieken en geen
-crashrapporten. Je gezondheidsgegevens staan op je telefoon en gaan nergens heen tenzij jij een bron of functie aanzet. Als je
-de app verwijdert, zijn ze weg.
+crashrapporten. Je gegevens blijven op je telefoon tenzij jij een bron, een aanbieder of een bestandsexport aanzet. Elk
+verzoek naar buiten begint met iets wat jij deed.
 
 ### Wat er wordt bewaard, en waar
 
-Activiteiten (met hun gps-route), dagcijfers (stappen, hartslag, stress, Body Battery, slaap, HRV, SpO2), het dagboek,
-schoenen, doelen en je trainingsplan staan in de eigen opslag van de app op de telefoon (een SQLite-database die geen andere
-app kan lezen). Sleutels en logins (AI-sleutels, je Garmin-sleutel en Oura-tokens) staan in de Android Keystore via
-`EncryptedSharedPreferences`; is veilige opslag er niet, dan wordt een sleutel helemaal niet bewaard. De back-up en
-toestelovername van Android zelf staan voor de app uit, dus de gegevens komen ook niet in een Google-back-up terecht.
+- **SQLite** (`openconnect.db`): activiteiten met hun gps-route, dagcijfers, slaap, gewicht, water, verslagen, samples en
+  geïmporteerde horlogebestanden, plus oudere Oura-, WHOOP- en Hume-rijen. De database staat in de privéopslag van de app;
+  geen andere app kan hem lezen.
+- **Gewone instellingen**: het dagboek, schoenen, trainingsplan, wedstrijddoel, weekdoelen, maximale hartslag, work-outs,
+  het synchronisatielogboek, de Health Connect-administratie, de lijst met apps die meldingen mogen doorsturen, en het adres
+  en de naam van het horloge.
+- **Versleutelde instellingen** (`EncryptedSharedPreferences`, met de Android Keystore): AI-sleutels, je Garmin-sleutel en
+  Oura client-id/geheim/tokens. Is veilige opslag niet beschikbaar, dan wordt een sleutel niet bewaard.
+- **Alleen in geheugen**: het coachgesprek en een korte sporenlijst van doorgestuurde meldingen (maximaal 150 regels, met
+  appnamen en beslissingen, zonder meldingstekst). Allebei weg als het app-proces stopt.
+- **App-cache**: een gedownloade en met SHA-256 gecontroleerde update-APK, tot Android hem installeert of de cache wordt
+  leeggemaakt.
+- De cloudback-up en toestelovername van Android staan voor deze app **uit**. De app schrijft geen gezondheidsgegevens in
+  een Google-back-up.
 
-Een back-upbestand dat **jij** maakt (*Instellingen, Jouw gegevens, Back-up maken*) en de bestanden van "Alles exporteren" zijn gewone
-bestanden waarvan jij kiest waar ze komen. Het back-upbestand bevat nooit sleutels. Behandel ze als gevoelig: wie het bestand
-heeft, kan je geschiedenis lezen.
+Een back-up of “Alles exporteren”-bestand dat **jij** maakt, is een gewoon bestand waarvan jij de plek kiest. Een back-up
+bevat nooit sleutels. Behandel zo'n bestand als gevoelig: wie het heeft, kan je geschiedenis lezen.
 
 ### Waar gegevens heen kunnen
 
-Alleen naar de diensten hieronder, alleen als je ze gebruikt, en alleen via HTTPS:
+Alleen de onderwerpen hieronder, alleen als je ze gebruikt, en alleen via HTTPS (behalve het horloge en Health Connect: dat
+zijn lokale radio- of toestelverbindingen):
 
-| Adres | Wanneer | Wat gaat er heen |
-|-------|---------|------------------|
-| `personal.connectapi.garmin.com` | je gebruikt je eigen Garmin-sleutel | de sleutel (alleen naar dit adres), de data die je opvraagt; je krijgt je dagcijfers en activiteiten terug |
-| `cloud.ouraring.com`, `api.ouraring.com` | je koppelt een Oura Ring | het inloggen bij Oura (met de client-id en het geheim van je eigen Oura-toepassing), de data die je opvraagt |
-| `api.anthropic.com` | je voegt een Claude-sleutel toe en vraagt een verslag of gebruikt de coach | een korte JSON-samenvatting van je cijfers en, voor de coach, je planweken met geplande/werkelijk gelopen afstand en het huidige voorstel; nooit gps-routes, notities of werk-outteksten, plus wat je aan de coach typt; je sleutel |
-| `generativelanguage.googleapis.com` | je voegt een Gemini-sleutel toe en vraagt een verslag of gebruikt de coach | hetzelfde, met je Gemini-sleutel |
-| `api.github.com`, `github.com` | je opent *Instellingen, Updates* | een vraag om de nieuwste release en daarna het binnenhalen van de APK; niets over jou, maar GitHub ziet je netwerkadres zoals elke website |
+| Onderwerp | Wanneer | Waar | Wat gaat er heen | Wat komt er terug |
+|---|---|---|---|---|
+| **Garmin-account** | je voegt je eigen Garmin-sleutel toe en synchroniseert | `personal.connectapi.garmin.com` | je Garmin-API-sleutel (voor een bearer-token), het bearer-token, de datumperiode en een activiteit-id | dagoverzichten, slaap, stappen, stress, Body Battery, HRV, activiteiten en FIT-bestanden |
+| **Oura Ring** | je koppelt Oura en synchroniseert | `cloud.ouraring.com` (inloggen in de browser), `api.ouraring.com` | client-id en geheim van je eigen Oura-app, PKCE-state/challenge/verifier, de OAuth-code of refresh-token, access-token, datumperiode en paginatoken | access/refresh-tokens, slaap, readiness, activiteit, SpO2, work-outs en ringbatterij |
+| **Claude** | je voegt een Claude-sleutel toe en vraagt een verslag, coachantwoord of sleutelcontrole | `api.anthropic.com` | je sleutel (header), model, systeemprompt, de begrensde feiten, de coachvraag/geschiedenis en de rapporttaal | de gegenereerde tekst |
+| **Gemini** | hetzelfde met een Gemini-sleutel | `generativelanguage.googleapis.com` | dezelfde feiten, vraag/geschiedenis en taal, met je Gemini-sleutel | de gegenereerde tekst |
+| **GitHub-updates** | je opent *Instellingen → Updates* en controleert/downloadt | `api.github.com`, `github.com` | een GET voor de nieuwste releaselijst, daarna een GET voor de APK en de `.sha256`; geen account, token of gezondheidsdata | release-JSON, APK en checksum. GitHub ziet je netwerkadres en user-agent zoals elke website |
+| **Meldingen op het horloge** | je zet het aan en Android levert een melding | je horloge, via Bluetooth | melding-id, app-id/naam, titel, tekst/big text, subtitel, tijd, categorie en wegklikvlag | niets; de melding gaat niet naar een server |
+| **Work-outs naar het horloge** | je drukt op verzenden | je horloge, via USB | de work-out als FIT-bestand in `GARMIN/NewFiles` | niets; er is geen server bij betrokken |
+| **Horloge en live hartslag** | je leest een horloge of start live hartslag | je horloge, via USB, een map of Bluetooth | er gaat niets uit; FIT-bestanden en hartslagmetingen komen binnen | activiteiten, dagcijfers, slaap, stress, Body Battery, SpO2, HRV en live hartslag |
+| **Health Connect** | je zet het aan en geeft soorten toestemming | alleen op deze telefoon | training, afstand en calorieën als je een activiteit opslaat | stappen, slaap en gewicht, alleen waar OpenConnect nog niets heeft |
+| **Bestanden die jij kiest** | je importeert, maakt een back-up, exporteert alles of deelt diagnostiek | een bestand of app die jij kiest | een FIT/GPX/TCX/gzip/ZIP-import, een back-up, een export of de diagnosetekst | een bestand dat jij kiest; geen server |
+| **Sleutels en app-vergrendeling** | je bewaart een sleutel of zet de vergrendeling aan | alleen op deze telefoon | niets | niets; sleutels blijven in de Keystore-opslag |
+| **Verwijderde WHOOP en Hume** | je opent een oude installatie | alleen op deze telefoon | niets; die integraties draaien niet meer | oude rijen die al op de telefoon stonden |
 
-Wat een AI-aanbieder met het ontvangene doet, valt onder de voorwaarden van die aanbieder, die je accepteerde toen je je
-sleutel maakte. Voeg je geen AI-sleutel toe, dan gaat er niets naar een AI-aanbieder en schrijft een sjabloon op je telefoon
-de verslagen.
+**AI-feiten, precies.** De JSON naar Claude of Gemini kan bevatten: activiteitsnamen, sport, datum, duur, afstand,
+tempo/snelheid, hartslag, hoogtemeters, calorieën, apparaat, kilometersplits en hartslaghelften; week-/maand-/jaartotalen
+met stappen, slaap, stress, Body Battery en rusthartslag; en voor de coach de planweken met geplande/werkelijke afstand en
+het huidige voorstel. Er zitten **geen** gps-punten of route, dagboek, notities, je eigen work-outtekst, contacten, agenda
+of een andere sleutel dan de aanbiedersleutel in de header in. Splits en hartslaghelften zijn afgeleid van een track; de app
+zegt dat eerlijk in plaats van “nooit iets van je route”.
 
-Er wordt nooit iets anders verstuurd. De app verzamelt je locatie niet, leest je contacten, agenda of de bestanden van andere
-apps niet en uploadt je gps-routes nooit. Verwijzingen naar websites (Garmin Connect om een sleutel te maken, de sleutelpagina's
-van de AI-aanbieders, de Connect IQ-winkel, de broncode) worden in je browser geopend; de app roept ze zelf niet aan.
+**Meldingstekst, precies.** Android geeft de notification listener alle meldingen van alle apps; de app leest titel, tekst
+en metadata en laat doorlopende, gegroepeerde, alleen-lokale, oproep-, lage-importantie- en niet-storenmeldingen vallen. Dan
+gelden je appkeuzes en de tekst-verbergen-schakelaar. Maximaal 16 teksten wachten maximaal twee minuten in het geheugen
+terwijl een horloge opnieuw verbindt. Niets wordt in de database, het synchronisatielogboek of op een server gezet. De
+sporenlijst in het geheugen bevat alleen appnamen en beslissingen.
+
+Wat een AI-aanbieder, Garmin of Oura met het ontvangene doet, valt onder de voorwaarden van die aanbieder, die je accepteerde
+toen je de sleutel of het account maakte. Voeg je geen AI-sleutel toe, dan schrijft een sjabloon op de telefoon de
+verslagen en wordt er geen AI-aanbieder aangeroepen.
+
+### Wat nooit de telefoon verlaat
+
+Gps-punten en routes worden nooit geüpload; ze worden alleen lokaal bewaard en naar een horloge of Health Connect gestuurd
+als jij dat vraagt. Het dagboek, notities en je eigen work-outtekst gaan nooit naar Garmin, Oura of een AI-aanbieder.
+Sleutels komen nooit in een URL, rapporttekst of back-up; elke aanbiedersleutel reist alleen in zijn eigen
+authenticatieheader. De app leest je contacten of agenda niet en verzamelt niet voor zichzelf je locatie.
 
 ### Rechten, en waarom
 
-- **Internet**: voor de diensten hierboven, en voor niets anders.
-- **Pakketten installeren**: de updater vraagt Android de APK te installeren die hij binnenhaalde en controleerde. Android
-  vraagt het je elke keer.
-- **Meldingen**: aansporingen en de melding van live hartslag.
-- **Bluetooth (apparaten in de buurt)**: om met je horloge of hartslagband te praten. Op Android 11 en ouder laat Android een
-  app alleen naar Bluetooth zoeken als hij ook de locatie mag zien, dus daar wordt om locatie gevraagd; de app leest je
-  locatie nooit.
-- **Voorgrondservice (verbonden apparaat)**: alleen zolang *Live hartslag* loopt.
+- **Internet**: alleen voor de diensten in de tabel hierboven.
+- **Pakketten installeren**: de updater vraagt Android de gedownloade en gecontroleerde APK te installeren; Android vraagt
+  het jou.
+- **Meldingen**: aansporingen, live hartslag en de melding die zichtbaar is tijdens doorsturen.
+- **Toegang tot meldingen**: alleen als je *Meldingen op het horloge* aanzet. De app leest wat Android aflevert om de
+  gekozen meldingen naar je horloge te sturen. Je kunt de toegang in Android altijd intrekken.
+- **Bluetooth / apparaten in de buurt**: om met een horloge of hartslagband te praten. Op Android 11 en ouder vraagt het
+  systeem ook de locatietoestemming voor Bluetooth-scannen; de app leest je locatie nooit.
+- **Voorgrondservice (verbonden apparaat)**: zolang live hartslag loopt of de horlogeverbinding voor doorsturen open blijft.
 - **Biometrie**: alleen voor de app-vergrendeling, als je die aanzet.
-- **Health Connect**: alleen als je het aanzet, en alleen de soorten die je toestaat in het scherm van Android zelf: stappen,
-  slaap, hartslag, rusthartslag, HRV, SpO2, actieve calorieën, training en afstand worden gelezen; training, afstand en
-  calorieën worden geschreven als je vraagt een activiteit naar Health Connect te schrijven. Je kunt de rechten in Android
-  altijd intrekken.
+- **Health Connect**: alleen de soorten die je toestaat. OpenConnect leest stappen, slaap en gewicht, en schrijft training,
+  afstand en calorieën. Het leest geen hartslag, HRV, SpO2, actieve calorieën of trainingen uit Health Connect.
+- **Foto's/bestanden**: alleen als je een bestand kiest om te importeren of een plek om een back-up/export te bewaren.
 
 ### Je gegevens wissen
 
-*Instellingen, Jouw gegevens, Alle gegevens wissen* maakt de database leeg. De app verwijderen wist alles wat hij bewaarde,
-sleutels inbegrepen. Bestanden die je zelf exporteerde of als back-up bewaarde, zijn aan jou om te wissen. Sleutels kun je
-in Instellingen één voor één verwijderen. Gegevens bij een AI-aanbieder of bij Garmin of Oura zijn van hen: gebruik hun
-eigen hulpmiddelen om ze te wissen.
+*Instellingen → Jouw gegevens → Alle gegevens wissen* maakt de SQLite-database leeg (inclusief activiteiten, tracks,
+gewicht, water, slaap, verslagen en geïmporteerde bestanden) en wist het dagboek, schoenen, plan, wedstrijddoel, weekdoelen,
+maximale hartslag, work-outs, synchronisatielogboek, Health Connect-administratie en de nudge-administratie. Sleutels/tokens,
+onboarding-antwoorden, thema/taal, app-vergrendeling en apparaatschakelaars blijven staan; sleutels hebben hun eigen
+verwijderknoppen. De app verwijderen wist alles wat hij bewaarde, sleutels inbegrepen.
+
+Bestanden die je zelf exporteerde of als back-up bewaarde, zijn aan jou om te wissen. Gegevens bij een AI-aanbieder, Garmin
+of Oura zijn van hen: gebruik hun eigen hulpmiddelen om ze te wissen. De pagina in de app zegt hetzelfde, en een test dekt
+elke categorie.
 
 ### Wat het project over jou weet
 
-Niets. GitHub host de code en de releases en ziet wie ze downloadt, zoals bij elke repository. Open je een issue, dan is wat je
-daar schrijft openbaar; gebruik *Diagnose delen* (je ziet het rapport eerst, sleutels, tokens, namen, gezondheidswaarden en
-routes blijven eruit) en beschrijf de rest in woorden.
+Niets. GitHub host de code en de releases en ziet wie ze downloadt, zoals bij elke repository. Open je een issue, dan is wat
+je daar schrijft openbaar; gebruik *Diagnose delen* (je ziet het rapport eerst; sleutels, tokens, namen, gezondheidswaarden
+en routes blijven eruit) en beschrijf de rest in woorden.
 
 ### Wijzigingen en contact
 
-Wijzigingen in deze verklaring horen bij de release die ze doorvoert en staan in het changelog. Vragen: een issue op de
-repository, of voor een beveiligingsprobleem de privéroute in [SECURITY.md](../SECURITY.md).
+Wijzigingen aan deze verklaring horen bij de release die ze verandert en staan in de changelog. Vragen: een issue op de
+repository, of de privé-meldroute in [SECURITY.md](../SECURITY.md) voor een beveiligingsprobleem.

@@ -176,8 +176,10 @@ object PrivacyFields {
     val CHECKSUM_REQUEST = PrivacyField("CHECKSUM_REQUEST", "GET release.assets[].browser_download_url (*.sha256)")
     val NOTIFICATION_ID = PrivacyField("NOTIFICATION_ID", "ble.notification.id")
     val NOTIFICATION_APP = PrivacyField("NOTIFICATION_APP", "ble.notification.appId")
+    val NOTIFICATION_APP_NAME = PrivacyField("NOTIFICATION_APP_NAME", "ble.notification.appName")
     val NOTIFICATION_TITLE = PrivacyField("NOTIFICATION_TITLE", "ble.notification.title")
     val NOTIFICATION_BODY = PrivacyField("NOTIFICATION_BODY", "ble.notification.body")
+    val NOTIFICATION_SUBTITLE = PrivacyField("NOTIFICATION_SUBTITLE", "ble.notification.subtitle")
     val NOTIFICATION_TIME = PrivacyField("NOTIFICATION_TIME", "ble.notification.whenMillis")
     val NOTIFICATION_CATEGORY = PrivacyField("NOTIFICATION_CATEGORY", "ble.notification.category")
     val NOTIFICATION_FLAGS = PrivacyField("NOTIFICATION_FLAGS", "ble.notification.canDismiss")
@@ -207,8 +209,9 @@ object PrivacyFields {
         API_KEY, AI_KEY, ACCESS_TOKEN, DATE_RANGE, ACTIVITY_ID, CLIENT_ID, CLIENT_SECRET, REDIRECT_URI, SCOPE, STATE,
         OAUTH_CODE, PKCE_VERIFIER, REFRESH_TOKEN, NEXT_TOKEN, MODEL, SYSTEM_PROMPT, PING, AI_FACTS, COACH_QUESTION,
         COACH_HISTORY, LANGUAGE, RELEASE_REQUEST, APK_REQUEST, CHECKSUM_REQUEST, NOTIFICATION_ID, NOTIFICATION_APP,
-        NOTIFICATION_TITLE, NOTIFICATION_BODY, NOTIFICATION_TIME, NOTIFICATION_CATEGORY, NOTIFICATION_FLAGS,
-        WORKOUT_SPEC, HEALTH_READ_TYPES, HEALTH_WRITE_TYPES, FILE_CONTENT, DIAGNOSTICS, DAILY_METRICS, ACTIVITY_FILE,
+        NOTIFICATION_APP_NAME, NOTIFICATION_TITLE, NOTIFICATION_BODY, NOTIFICATION_SUBTITLE, NOTIFICATION_TIME,
+        NOTIFICATION_CATEGORY, NOTIFICATION_FLAGS, WORKOUT_SPEC, HEALTH_READ_TYPES, HEALTH_WRITE_TYPES, FILE_CONTENT,
+        DIAGNOSTICS, DAILY_METRICS, ACTIVITY_FILE,
         SLEEP_DATA, READINESS_DATA, ACTIVITY_DATA, SPO2_DATA, WORKOUT_DATA, RING_BATTERY, AI_TEXT, RELEASE_JSON,
         APK_FILE, CHECKSUM_FILE, WATCH_DATA, HEART_RATE, TOKEN,
     )
@@ -457,9 +460,9 @@ object PrivacyRegister {
                 trigger = PrivacyTrigger.NOTIFICATION,
                 destination = PrivacyPlace.YOUR_WATCH,
                 sends = listOf(
-                    PrivacyFields.NOTIFICATION_ID, PrivacyFields.NOTIFICATION_APP, PrivacyFields.NOTIFICATION_TITLE,
-                    PrivacyFields.NOTIFICATION_BODY, PrivacyFields.NOTIFICATION_TIME, PrivacyFields.NOTIFICATION_CATEGORY,
-                    PrivacyFields.NOTIFICATION_FLAGS,
+                    PrivacyFields.NOTIFICATION_ID, PrivacyFields.NOTIFICATION_APP, PrivacyFields.NOTIFICATION_APP_NAME,
+                    PrivacyFields.NOTIFICATION_TITLE, PrivacyFields.NOTIFICATION_BODY, PrivacyFields.NOTIFICATION_SUBTITLE,
+                    PrivacyFields.NOTIFICATION_TIME, PrivacyFields.NOTIFICATION_CATEGORY, PrivacyFields.NOTIFICATION_FLAGS,
                 ),
                 never = listOf(
                     PrivacyNever.NOTIFICATION_TEXT_TO_SERVER, PrivacyNever.GPS_POINTS, PrivacyNever.JOURNAL,

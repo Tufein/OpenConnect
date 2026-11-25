@@ -9,7 +9,7 @@ import kotlin.test.assertTrue
 /**
  * v0.59.0 (M6, trust): the privacy statement says everywhere the app can send data, and the code cannot grow another address
  * without the statement changing. This reads the source for every address and checks it against [PrivacyStatement], then
- * checks that the app text (English and Dutch) and docs/PRIVACY.md name each address the app calls.
+ * checks that the app text in all four languages and docs/PRIVACY.md name each address the app calls.
  */
 class PrivacyStatementTest {
     private val sources = listOf("src/main/kotlin", "../core/src/main/kotlin", "src/main/res/values/strings.xml", "src/main/AndroidManifest.xml")
@@ -33,20 +33,21 @@ class PrivacyStatementTest {
     }
 
     @Test
-    fun everyAddressTheAppCallsIsNamedInTheAppTextInBothLanguagesAndInThePrivacyDocument() {
-        val english = File("src/main/res/values/strings.xml").readText()
-        val dutch = File("src/main/res/values-nl/strings.xml").readText()
+    fun everyAddressTheAppCallsIsNamedInEveryAppLanguageAndInThePrivacyDocument() {
+        val languages = listOf("values", "values-nl", "values-de", "values-fr")
         val document = File("../../docs/PRIVACY.md").readText()
         fun text(xml: String, key: String): String {
             val match = Regex("""<string name="privacy_host_$key"[^>]*>(.*?)</string>""", RegexOption.DOT_MATCHES_ALL).find(xml)
             assertTrue(match != null, "missing privacy_host_$key")
             return match.groupValues[1]
         }
-        for ((key, hosts) in PrivacyStatement.called) {
-            for (host in hosts) {
-                assertTrue(host in text(english, key), "the English text privacy_host_$key does not name $host")
-                assertTrue(host in text(dutch, key), "the Dutch text privacy_host_$key does not name $host")
-                assertTrue(host in document, "docs/PRIVACY.md does not name $host")
+        for (language in languages) {
+            val xml = File("src/main/res/$language/strings.xml").readText()
+            for ((key, hosts) in PrivacyStatement.called) {
+                for (host in hosts) {
+                    assertTrue(host in text(xml, key), "the $language text privacy_host_$key does not name $host")
+                    assertTrue(host in document, "docs/PRIVACY.md does not name $host")
+                }
             }
         }
     }

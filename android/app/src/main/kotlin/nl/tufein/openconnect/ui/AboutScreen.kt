@@ -91,6 +91,7 @@ private fun privacyHostText(key: String): String = stringResource(
 fun AboutScreen(
     ui: SettingsUi,
     onBack: () -> Unit,
+    onPrivacy: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     val context = LocalContext.current
@@ -131,6 +132,9 @@ fun AboutScreen(
         item {
             FoldableCard("about-calls", stringResource(R.string.about_calls_title)) {
                 Text(stringResource(R.string.about_calls_intro), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                SecondaryButton(onClick = onPrivacy, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.privacy_title))
+                }
                 for (key in PrivacyStatement.called.keys) Text(privacyHostText(key), style = MaterialTheme.typography.bodyMedium)
                 SecondaryButton(onClick = { openLink(context, PrivacyStatement.STATEMENT_URL) }, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.about_privacy_statement))
