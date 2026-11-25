@@ -40,6 +40,25 @@ Android ecosystem:
 - ⚠️ **The final name's availability is unverified.** Any candidate must be searched on Play, F-Droid, Connect IQ,
   GitHub, the app stores in the target countries, USPTO/EUIPO/BOIP/DPMA and the relevant domains/handles.
 
+## Candidate check (2026-11-25, not a decision)
+
+A quick availability check, not a trademark clearance. Play search was queried with exact quotes; F-Droid through its
+search page; domains through DNS (NXDOMAIN means no A record, not necessarily that the name is registrable); GitHub
+through its repository search. Re-check before printing anything.
+
+| Candidate | Play exact search | F-Droid | GitHub | Domains | Note |
+|---|---|---|---|---|---|
+| **Tufein Health** | no exact result | no app | 0 repos for the phrase | `tufein.health`, `tufeinhealth.com`, `tufeinhealth.app` NXDOMAIN | Recommended working title: short, descriptive, owner namespace; trademark not checked |
+| **Tufein** | no exact result | no app | 10 repos, all under the owner's `Tufein` account | `tufein.com/.app/.nl/.io` NXDOMAIN | Short brand, but close to **Tufin** (network-security company) and not descriptive |
+| **Ownbeat** | no exact result parsed | no app | 2 repos | `ownbeat.app` free; `ownbeat.com` registered | “Own your data + heartbeat”; `.com` unavailable |
+| **Tilth** | not checked | no app | 101 repos | `.com`/`.app` registered | Soil/growth metaphor; obscure and crowded |
+| **OpenConnect Health** | not checked | no app | phrase not checked | not checked | Still carries the VPN collision; not recommended |
+
+**Recommendation for the decision:** `Tufein Health` if a low-risk, descriptive display name is wanted. It keeps the
+existing package id and signing key, avoids the exact VPN name, and has no exact Play/F-Droid listing in this check.
+`Tufein` alone is shorter but needs a trademark look because of **Tufin**. This is not a legal opinion and the final
+choice remains Stefan's.
+
 ## Decision list (for Stefan)
 
 Answer these in order; record the date and the answer in this file.
