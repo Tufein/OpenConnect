@@ -42,9 +42,11 @@ class ManualActivityScreenTest : AppTestBase() {
         typeInto("Minutes", "45")
         typeInto("Kilometres (optional)", "8,5")
         clickChip("Save")
+        // The demo list already contains a run, so "Running ·" is not proof that the typed workout was saved.
+        val stored = ApplicationProvider.getApplicationContext<OpenConnectApp>().container.repository
+        rule.waitUntil(10_000) { stored.listActivities().any { it.source == "manual" } }
         waitForText("Running ·", substring = true)
 
-        val stored = ApplicationProvider.getApplicationContext<OpenConnectApp>().container.repository
         val typed = stored.listActivities().firstOrNull { it.source == "manual" }
         assertTrue(typed != null, "a manual activity should be stored")
         assertEquals(45 * 60.0, typed.durationS)
