@@ -57,21 +57,21 @@ jobs:
         run: bash android/scripts/signing-key.sh "${RUNNER_TEMP}/signing"
       - name: Test and build the signed APK
         working-directory: android
-        run: ./gradlew :core:test :app:testDebugUnitTest :app:assembleRelease --console=plain
+        run: ./gradlew :core:test :app:testGithubDebugUnitTest :app:assembleGithubRelease --console=plain
       - name: Check the APK is signed with the release key
         run: |
-          bash android/scripts/verify-apk-signer.sh android/app/build/outputs/apk/release/app-release.apk \
+          bash android/scripts/verify-apk-signer.sh android/app/build/outputs/apk/github/release/app-github-release.apk \
             "$OPENCONNECT_KEYSTORE" "$OPENCONNECT_KEY_ALIAS" "$OPENCONNECT_KEYSTORE_PASSWORD"
       - name: Keep the APK small
         # It was 30 MB before R8 shrinking (v0.58.0) and is about 10 MB now: a jump past 12 MB means something large came in.
         run: |
-          size=$(stat -c %s android/app/build/outputs/apk/release/app-release.apk)
+          size=$(stat -c %s android/app/build/outputs/apk/github/release/app-github-release.apk)
           echo "APK size: ${size} bytes"
           test "$size" -le 12582912 || { echo "The APK is larger than 12 MiB"; exit 1; }
       - name: Name the APK and write its checksum
         run: |
           mkdir -p apk
-          cp android/app/build/outputs/apk/release/app-release.apk "apk/openconnect-${TAG}.apk"
+          cp android/app/build/outputs/apk/github/release/app-github-release.apk "apk/openconnect-${TAG}.apk"
           (cd apk && sha256sum "openconnect-${TAG}.apk" > "openconnect-${TAG}.apk.sha256")
       - uses: actions/upload-artifact@v7
         with:

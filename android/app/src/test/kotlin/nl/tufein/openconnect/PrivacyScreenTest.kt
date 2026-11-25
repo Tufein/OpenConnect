@@ -32,6 +32,14 @@ class PrivacyScreenTest : AppTestBase() {
         rule.waitUntil(15_000) {
             rule.onAllNodes(hasTestTag("privacy-subject-garmin")).fetchSemanticsNodes().isNotEmpty()
         }
+        // The GitHub subject belongs to the updater: it is in this list only when the build has one. The store
+        // channel leaves the row out (see StoreChannelTest); the GitHub channel shows it (see GithubChannelTest).
+        if (BuildConfig.UPDATER_ENABLED) {
+            scrollToText("In-app updater")
+            rule.waitUntil(15_000) {
+                rule.onAllNodes(hasTestTag("privacy-subject-github")).fetchSemanticsNodes().isNotEmpty()
+            }
+        }
         scrollToText("Notifications")
         assertTrue(hasText("Leaves for your watch", substring = false), "the notifications row shows its group")
         scrollToText("WHOOP and Hume (removed)")

@@ -5,7 +5,7 @@ on the first screens, or that lost something to R8) is caught before anyone inst
     emulator_smoke.py APK OUT_DIR
 
 What it does, on a real Android (an emulator in CI), not on the JVM:
-  1. installs the APK and starts it cold, answers the first-start screen,
+  1. removes any previous copy, installs the APK and starts it cold, answers the first-start screen,
   2. loads the demo data and opens Home, Activities, Health, Insights, Settings and the About screen,
   3. saves a fake AI key (this goes through the real Android Keystore and EncryptedSharedPreferences),
   4. stops the app, starts it again and checks the key is still saved (read back from the Keystore),
@@ -237,6 +237,9 @@ def main(apk, out):
         adb("shell", "settings", "put", "global", "window_animation_scale", "0", check=False)
         adb("shell", "settings", "put", "global", "transition_animation_scale", "0", check=False)
         adb("shell", "settings", "put", "global", "animator_duration_scale", "0", check=False)
+        # Each channel is walked on its own emulator, but remove any previous install first: a stale package or its
+        # data must never make a github run look like a store run (or the other way around).
+        adb("uninstall", PKG, check=False)
         adb("logcat", "-c", check=False)
         print(adb("install", "-r", apk, timeout=300).strip())
         # The emulator can drop the adb connection for a moment right after a large install.

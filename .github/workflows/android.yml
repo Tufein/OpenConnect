@@ -35,22 +35,27 @@ jobs:
             robolectric-${{ runner.os }}-
       - name: Core tests
         run: ./gradlew :core:test --console=plain
-      - name: App tests (includes UI smoke tests that write screenshots)
-        run: ./gradlew :app:testDebugUnitTest --console=plain
-      - name: Lint
-        run: ./gradlew :app:lintDebug --console=plain
-      - name: Build the release APK
-        run: ./gradlew :app:assembleRelease --console=plain
-      # Pull-request builds have no release key, so this APK is signed with the throw-away Android debug
-      # key: fine for trying it out, not for handing to anyone. Releases are signed in release.yml.
-      - name: Check the APK signature
+      - name: App tests (GitHub and store channels, includes UI smoke tests that write screenshots)
+        run: ./gradlew :app:testGithubDebugUnitTest :app:testStoreDebugUnitTest --console=plain
+      - name: Lint (GitHub and store channels)
+        run: ./gradlew :app:lintGithubDebug :app:lintStoreDebug --console=plain
+      - name: Build the release APKs (GitHub and store)
+        run: ./gradlew :app:assembleGithubRelease :app:assembleStoreRelease --console=plain
+      # Pull-request builds have no release key, so these APKs are signed with the throw-away Android debug
+      # key: fine for trying them out, not for handing them to anyone. Releases are signed in release.yml.
+      # The GitHub channel is the one the updater and the release job use; check its signature explicitly.
+      - name: Check the GitHub APK signature
         run: |
           "${ANDROID_HOME}/build-tools/$(ls "${ANDROID_HOME}/build-tools" | sort -V | tail -1)/apksigner" \
-            verify --print-certs app/build/outputs/apk/release/app-release.apk
+            verify --print-certs app/build/outputs/apk/github/release/app-github-release.apk
       - uses: actions/upload-artifact@v7
         with:
-          name: openconnect-apk-debug-signed
-          path: android/app/build/outputs/apk/release/app-release.apk
+          name: openconnect-apk-debug-signed-github
+          path: android/app/build/outputs/apk/github/release/app-github-release.apk
+      - uses: actions/upload-artifact@v7
+        with:
+          name: openconnect-apk-debug-signed-store
+          path: android/app/build/outputs/apk/store/release/app-store-release.apk
       - uses: actions/upload-artifact@v7
         if: always()
         with:

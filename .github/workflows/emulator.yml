@@ -2,8 +2,8 @@ name: Emulator smoke
 
 # Starts the release APK on a real Android (an emulator) and walks the app: first start, demo data, every tab, a key saved
 # through the Keystore and read back after a restart (android/scripts/emulator_smoke.py). The JVM tests cannot see a crash
-# that only happens in the shrunk APK or on the real Android runtime. It runs the shrunk APK (the one that is released) and the
-# plain one, so a failure that only shows in the shrunk one points at R8.
+# that only happens in the shrunk APK or on the real Android runtime. It runs the shrunk and the plain APK of both channels
+# (github, with the updater, and store, without it), so a failure that only shows in one flavor or with R8 points at the cause.
 on:
   pull_request:
     paths:
@@ -22,6 +22,11 @@ jobs:
       fail-fast: false
       matrix:
         minify: ["true", "false"]
+        channel:
+          - flavor: github
+            task: assembleGithubRelease
+          - flavor: store
+            task: assembleStoreRelease
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
@@ -29,13 +34,15 @@ jobs:
           distribution: temurin
           java-version: "17"
       - uses: gradle/actions/setup-gradle@v6
-      - name: Build the release APK (minify=${{ matrix.minify }})
+      # Each matrix job has its own fresh runner and emulator, so no flavor can inherit an install from another one.
+      - name: Build the release APK (${{ matrix.channel.flavor }}, minify=${{ matrix.minify }})
         working-directory: android
-        run: ./gradlew :app:assembleRelease -Popenconnect.minify=${{ matrix.minify }} --console=plain
+        run: ./gradlew :app:${{ matrix.channel.task }} -Popenconnect.minify=${{ matrix.minify }} --console=plain
       - name: Size of the APK
         run: |
-          ls -l android/app/build/outputs/apk/release/app-release.apk
-          echo "minify=${{ matrix.minify }}: $(du -h android/app/build/outputs/apk/release/app-release.apk | cut -f1)" >> "$GITHUB_STEP_SUMMARY"
+          apk="android/app/build/outputs/apk/${{ matrix.channel.flavor }}/release/app-${{ matrix.channel.flavor }}-release.apk"
+          ls -l "$apk"
+          echo "${{ matrix.channel.flavor }} minify=${{ matrix.minify }}: $(du -h "$apk" | cut -f1)" >> "$GITHUB_STEP_SUMMARY"
       - name: Allow the emulator to use KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -48,11 +55,11 @@ jobs:
           arch: x86_64
           target: google_apis
           disable-animations: true
-          script: python3 android/scripts/emulator_smoke.py android/app/build/outputs/apk/release/app-release.apk smoke-out
+          script: python3 android/scripts/emulator_smoke.py android/app/build/outputs/apk/${{ matrix.channel.flavor }}/release/app-${{ matrix.channel.flavor }}-release.apk smoke-out-${{ matrix.channel.flavor }}-minify-${{ matrix.minify }}
       - name: Keep the screenshots and the log
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: emulator-smoke-minify-${{ matrix.minify }}
-          path: smoke-out/
+          name: emulator-smoke-${{ matrix.channel.flavor }}-minify-${{ matrix.minify }}
+          path: smoke-out-${{ matrix.channel.flavor }}-minify-${{ matrix.minify }}/
           if-no-files-found: ignore
