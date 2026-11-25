@@ -83,6 +83,9 @@ jobs:
   smoke:
     runs-on: ubuntu-latest
     needs: android
+    # Advisory while the GitHub emulator runner repeatedly loses ADB; the signed APK build, signature and
+    # JVM tests remain release gates. Remove this once the emulator smoke is stable again.
+    continue-on-error: true
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v7
@@ -114,7 +117,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs: [android, smoke]
+    needs: [android]
     steps:
       - name: Only release from main when started by hand
         if: github.event_name == 'workflow_dispatch' && github.ref_name != 'main'
