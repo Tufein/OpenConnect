@@ -17,12 +17,20 @@ on:
           that walked fine before, on today's emulator and runner, tells an app regression from a runner problem.
         required: false
         default: ""
+      gpu:
+        description: >-
+          The emulator's renderers for the published walks, as a JSON list (for example
+          ["swiftshader_indirect","swangle_indirect"]). The first one is the emulator-runner's default.
+        required: false
+        default: '["swiftshader_indirect"]'
 
 permissions:
   contents: read
 
 jobs:
   smoke:
+    # A request for published walks is a diagnosis: the four builds are left out then.
+    if: github.event_name != 'workflow_dispatch' || inputs.published == ''
     runs-on: ubuntu-latest
     timeout-minutes: 40
     strategy:
@@ -76,7 +84,9 @@ jobs:
         run: |
           sudo dmesg -T | tail -n 200 > runner-state/dmesg.txt || true
           grep -iE "out of memory|oom|killed process|qemu" runner-state/dmesg.txt || echo "no out-of-memory kill in the kernel log"
-          ls -la /tmp/android-runner/ > runner-state/emulator-crash-dir.txt 2>&1 || true
+          ls -laR /tmp/android-runner/ > runner-state/emulator-crash-dir.txt 2>&1 || true
+          # The emulator writes a minidump here when it crashes itself (not the app, the emulator process).
+          cp -r /tmp/android-runner/emu-crash-*.db runner-state/ 2>/dev/null || true
       - name: Keep the screenshots and the log
         if: always()
         uses: actions/upload-artifact@v7
@@ -96,6 +106,7 @@ jobs:
       fail-fast: false
       matrix:
         tag: ${{ fromJSON(inputs.published || '[""]') }}
+        gpu: ${{ fromJSON(inputs.gpu || '["swiftshader_indirect"]') }}
     steps:
       - uses: actions/checkout@v7
       - name: Download the published APK of ${{ matrix.tag }}
@@ -112,24 +123,27 @@ jobs:
           mkdir -p runner-state
           nproc > runner-state/cpus.txt
           nohup sh -c 'while true; do echo "$(date +%T) $(free -m | sed -n 2p)"; sleep 5; done' > runner-state/memory.txt 2>&1 &
-      - name: Walk the published APK on an emulator
+      - name: Walk the published APK on an emulator (${{ matrix.gpu }})
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           arch: x86_64
           target: google_apis
           disable-animations: true
+          emulator-options: -no-window -gpu ${{ matrix.gpu }} -no-snapshot -noaudio -no-boot-anim
           script: python3 android/scripts/emulator_smoke.py published/openconnect-${{ matrix.tag }}.apk smoke-out-${{ matrix.tag }}
       - name: Keep the kernel's view of the runner
         if: always()
         run: |
           sudo dmesg -T | tail -n 200 > runner-state/dmesg.txt || true
           grep -iE "out of memory|oom|killed process|qemu" runner-state/dmesg.txt || echo "no out-of-memory kill in the kernel log"
+          ls -laR /tmp/android-runner/ > runner-state/emulator-crash-dir.txt 2>&1 || true
+          cp -r /tmp/android-runner/emu-crash-*.db runner-state/ 2>/dev/null || true
       - name: Keep the screenshots and the log
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: emulator-smoke-published-${{ matrix.tag }}
+          name: emulator-smoke-published-${{ matrix.tag }}-${{ matrix.gpu }}
           path: |
             smoke-out-${{ matrix.tag }}/
             runner-state/
