@@ -147,9 +147,16 @@ abstract class AppTestBase {
         waitForText("Colours")
     }
 
+    /** The main vertical list, not a small horizontal row that happens to be first in the tree. */
+    private fun mainScrollable(): SemanticsNodeInteraction {
+        val nodes = rule.onAllNodes(hasScrollAction()).fetchSemanticsNodes()
+        val index = nodes.indices.maxByOrNull { nodes[it].bounds.height } ?: 0
+        return rule.onAllNodes(hasScrollAction())[index]
+    }
+
     /** Back to the top of a list; a setup screen can leave the next screen scrolled to its old position. */
     protected fun scrollToTop() {
-        rule.onAllNodes(hasScrollAction())[0].performScrollToIndex(0)
+        mainScrollable().performScrollToIndex(0)
     }
 
     /** A chip in a fixed header has no scroll parent; click its semantics instead of trying to scroll to it. */
@@ -160,7 +167,7 @@ abstract class AppTestBase {
     /** Scroll the first scrollable list until [text] has been composed. */
     protected fun scrollToText(text: String, substring: Boolean = false) {
         if (!hasText(text, substring)) {
-            rule.onAllNodes(hasScrollAction())[0].performScrollToNode(androidx.compose.ui.test.hasText(text, substring))
+            mainScrollable().performScrollToNode(androidx.compose.ui.test.hasText(text, substring))
         }
     }
 
@@ -181,7 +188,7 @@ abstract class AppTestBase {
     /** Lists compose lazily, so an item below the fold is not in the tree until it has been scrolled to. */
     protected fun clickText(text: String) {
         if (!hasText(text, substring = false)) {
-            rule.onAllNodes(hasScrollAction())[0].performScrollToNode(hasText(text))
+            mainScrollable().performScrollToNode(hasText(text))
         }
         // A tile or button can keep its click on a parent while its text is a child without an OnClick action: walk up
         // and invoke the nearest click action, so a tile behind the navigation bar is clicked through semantics too.
