@@ -127,10 +127,14 @@ abstract class AppTestBase {
     /**
      * A cold start (bundled fonts, first composition) is slow on a shared CI runner: four runs timed out at 15 s and passed on
      * the next try, so the wait is 45 s. A screen that is really missing still fails, just later.
+     *
+     * A lazy list only composes what is on screen. With Compose 1.13 (PR #94) "Load demo data" on Home and a few cards
+     * on other screens sat just below the composed part, and 16 tests waited 45 s for a text that was there one swipe
+     * down. So a text that is not composed yet is also looked for in the main list, as a person would scroll to it.
      */
     protected fun waitForText(text: String, substring: Boolean = false) {
         try {
-            rule.waitUntil(45_000) { hasText(text, substring) }
+            rule.waitUntil(45_000) { hasText(text, substring) || scrolledInto(text, substring) }
         } catch (e: Throwable) {
             println("--- screen when waiting for \"$text\" ---\n" + rule.onRoot().printToString(maxDepth = 100))
             throw e
@@ -164,12 +168,20 @@ abstract class AppTestBase {
         rule.onNodeWithText(text).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
     }
 
-    /** Scroll the first scrollable list until [text] has been composed. */
+    /**
+     * Scroll the main list until [text] has been composed. The screen's data can still be loading when this is called
+     * (the Journal heads-up appears once the days are read), so it keeps looking for as long as [waitForText] does.
+     */
     protected fun scrollToText(text: String, substring: Boolean = false) {
-        if (!hasText(text, substring)) {
-            mainScrollable().performScrollToNode(androidx.compose.ui.test.hasText(text, substring))
-        }
+        waitForText(text, substring)
     }
+
+    /** True when the main list could be scrolled to a node with [text]; false when there is no list or no such node yet. */
+    private fun scrolledInto(text: String, substring: Boolean): Boolean =
+        runCatching {
+            mainScrollable().performScrollToNode(androidx.compose.ui.test.hasText(text, substring))
+            hasText(text, substring)
+        }.getOrDefault(false)
 
     /** Click a tagged tile/card through the nearest click action, even when the tag is hidden in the merged tree. */
     protected fun clickTag(tag: String) {
