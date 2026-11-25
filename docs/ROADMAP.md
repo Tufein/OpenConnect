@@ -41,7 +41,7 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   bestemming, trigger, velden, opslag, toestemming en wat nooit meegaat. De oude tekst is gecorrigeerd (WHOOP/Hume
   alleen legacy, Health Connect alleen stappen/slaap/gewicht, Oura inclusief tokens/SpO2/work-outs/ringbatterij,
   AI zonder GPS/dagboek/notities), en **Delete all data** wist nu ook lichaam, water, dagboek, schoenen, plan,
-  race, doelen, work-outs, log en ledger. Machinevertaling en de adviserende emulator-smoke blijven known issues.
+  race, doelen, work-outs, log en ledger. Machinevertaling blijft een known issue.
 - **Sinds v1.13.0:** de Android-app heeft twee kanalen uit één codebase. `github` houdt de updater,
   `REQUEST_INSTALL_PACKAGES` en de FileProvider; `store` laat die drie weg en verbergt de updater. targetSdk staat op
   36. De store-AAB en -APK worden gebouwd en gecontroleerd, maar **niet gepubliceerd**: de naam, een
@@ -51,6 +51,10 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   verward. Alleen de weergavenaam veranderde; de pakketnaam `nl.tufein.openconnect`, de repository, de APK-namen
   (`openconnect-vX.Y.Z.apk`) en de updater bleven, dus v1.13.0 werkt gewoon bij naar v1.13.1. De juridische controle
   van de nieuwe naam staat nog open; de winkelpublicatie blijft daarom geblokkeerd.
+- **Sinds v1.13.2:** de emulator-rooktest houdt een release weer tegen (één herkansing op een verse emulator). Hij
+  was sinds v1.11.0 rood omdat de standaardweergave van de emulator (`swiftshader_indirect`) wegviel bij de eerste
+  veeg op Home; met `swangle_indirect` loopt dezelfde APK de hele app door. De APK heeft een budget van 13 MiB dat
+  ook elk pull request controleert.
 - **Zwak voor het verdere verhaal:**
   1. Op één bron na (de Garmin-account, die live is geprobeerd) is **niets op een echte telefoon, horloge of ring geproefd**. Zie het register in paragraaf 7; M9 is dat spoor.
   2. Of de meldingen op de fenix 8 nu bij elk bericht trillen, wacht op een nieuw logboek; v1.0.1 pakte de meest waarschijnlijke oorzaak aan.
@@ -147,7 +151,7 @@ Klaar als: de toegankelijkheidstests en taalpariteit in CI staan en groen zijn.
 - **targetSdk bijhouden:** nu 36 (sinds v1.13.0; compileSdk 37). Zonder Google Play is er geen verplichte datum; omhoog alleen als een nieuwe Android-versie het vraagt, met de lijst van gedragswijzigingen afgewerkt.
 - **Batterij:** niet te meten zonder telefoon. Wat er op de achtergrond draait staat met zijn frequentie in `docs/PERFORMANCE.md`; het cijfer van Android na een dag is proefstap T16 voor Stefan.
 
-Klaar als: het budget in CI staat en de APK niet groter is geworden dan 12 MiB (`release.yml` faalt erop).
+Klaar als: het budget in CI staat en de APK niet groter is geworden dan 12 MiB (`release.yml` faalde erop; sinds v1.13.1 is het budget 13 MiB en staat het in `android/scripts/check_apk_size.py`, zie [PERFORMANCE.md](PERFORMANCE.md)).
 
 ### M6: "Installeren en vertrouwen" ✅ v0.58.0, behalve de echte schermafbeeldingen (S tot M)
 

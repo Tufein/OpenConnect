@@ -7,7 +7,11 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.13.1.** The app is now called **Cercis**, so it no longer shares its name with the OpenConnect VPN
+> **Status: v1.13.2.** The release checks are strict again: the emulator smoke test stops a release when it fails (it
+> had been advisory since v1.11.0, because the emulator's default software renderer dies on the new front page; the walk
+> now uses `swangle_indirect`), the APK has a 13 MiB budget checked on every pull request, and four older release notes
+> no longer say Android 8 is enough. The app itself is unchanged from v1.13.1.
+> **Since v1.13.1:** the app is called **Cercis**, so it no longer shares its name with the OpenConnect VPN
 > client. Only the display name changed: the Android package id `nl.tufein.openconnect`, the GitHub repository and the
 > release asset names (`openconnect-vX.Y.Z.apk`) stay the same, and the GitHub build keeps its updater. A phone on
 > v1.13.0 therefore updates to v1.13.1 normally, with the same signing key and no data migration. The two channels from
@@ -15,7 +19,7 @@ Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 > cleared, and an account, testers, real screenshots and store declarations are still missing. Everything from v1.12.0
 > stays, including the privacy register and the four languages; the German and French texts remain machine-drafted,
 > not native-reviewed.
-> [Release notes](docs/releases/v1.13.1.md).
+> [Release notes](docs/releases/v1.13.2.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

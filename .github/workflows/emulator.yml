@@ -10,12 +10,28 @@ on:
       - "android/**"
       - ".github/workflows/emulator.yml"
   workflow_dispatch:
+    inputs:
+      published:
+        description: >-
+          Also walk these published release APKs, as a JSON list of tags (for example ["v1.10.0","v1.13.0"]). An APK
+          that walked fine before, on today's emulator and runner, tells an app regression from a runner problem.
+        required: false
+        default: ""
+      gpu:
+        description: >-
+          The emulator's renderers for the published walks, as a JSON list (for example
+          ["swangle_indirect","swiftshader_indirect"]). swangle_indirect is what releases use; swiftshader_indirect,
+          the emulator-runner's default, loses the emulator on Home since v1.11.0.
+        required: false
+        default: '["swangle_indirect"]'
 
 permissions:
   contents: read
 
 jobs:
   smoke:
+    # A request for published walks is a diagnosis: the four builds are left out then.
+    if: github.event_name != 'workflow_dispatch' || inputs.published == ''
     runs-on: ubuntu-latest
     timeout-minutes: 40
     strategy:
@@ -48,6 +64,15 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+      # The emulator process has disappeared mid-walk without a word since v1.11.0. A process that is killed by the
+      # kernel (out of memory) says nothing itself, so the runner's memory is written down every five seconds and the
+      # kernel's own log is kept after the walk.
+      - name: Watch the runner's memory during the walk
+        run: |
+          mkdir -p runner-state
+          nproc > runner-state/cpus.txt
+          nohup sh -c 'while true; do echo "$(date +%T) $(free -m | sed -n 2p)"; sleep 5; done' > runner-state/memory.txt 2>&1 &
+      # The same renderer as the release walk (swangle; see release.yml for why not swiftshader_indirect).
       - name: Walk the app on an emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -55,11 +80,74 @@ jobs:
           arch: x86_64
           target: google_apis
           disable-animations: true
+          emulator-options: -no-window -gpu swangle_indirect -no-snapshot -noaudio -no-boot-anim
           script: python3 android/scripts/emulator_smoke.py android/app/build/outputs/apk/${{ matrix.channel.flavor }}/release/app-${{ matrix.channel.flavor }}-release.apk smoke-out-${{ matrix.channel.flavor }}-minify-${{ matrix.minify }}
+      - name: Keep the kernel's view of the runner
+        if: always()
+        run: |
+          sudo dmesg -T | tail -n 200 > runner-state/dmesg.txt || true
+          grep -iE "out of memory|oom|killed process|qemu" runner-state/dmesg.txt || echo "no out-of-memory kill in the kernel log"
+          ls -laR /tmp/android-runner/ > runner-state/emulator-crash-dir.txt 2>&1 || true
+          # The emulator writes a minidump here when it crashes itself (not the app, the emulator process).
+          cp -r /tmp/android-runner/emu-crash-*.db runner-state/ 2>/dev/null || true
       - name: Keep the screenshots and the log
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: emulator-smoke-${{ matrix.channel.flavor }}-minify-${{ matrix.minify }}
-          path: smoke-out-${{ matrix.channel.flavor }}-minify-${{ matrix.minify }}/
+          path: |
+            smoke-out-${{ matrix.channel.flavor }}-minify-${{ matrix.minify }}/
+            runner-state/
+          if-no-files-found: ignore
+
+  # Walks APKs that were published before, on today's emulator and runner, with today's walk. Only on request.
+  published:
+    if: github.event_name == 'workflow_dispatch' && inputs.published != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ${{ fromJSON(inputs.published || '[""]') }}
+        gpu: ${{ fromJSON(inputs.gpu || '["swangle_indirect"]') }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Download the published APK of ${{ matrix.tag }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "${{ matrix.tag }}" --repo "$GITHUB_REPOSITORY" --pattern "openconnect-${{ matrix.tag }}.apk" --dir published
+      - name: Allow the emulator to use KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Watch the runner's memory during the walk
+        run: |
+          mkdir -p runner-state
+          nproc > runner-state/cpus.txt
+          nohup sh -c 'while true; do echo "$(date +%T) $(free -m | sed -n 2p)"; sleep 5; done' > runner-state/memory.txt 2>&1 &
+      - name: Walk the published APK on an emulator (${{ matrix.gpu }})
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu ${{ matrix.gpu }} -no-snapshot -noaudio -no-boot-anim
+          script: python3 android/scripts/emulator_smoke.py published/openconnect-${{ matrix.tag }}.apk smoke-out-${{ matrix.tag }}
+      - name: Keep the kernel's view of the runner
+        if: always()
+        run: |
+          sudo dmesg -T | tail -n 200 > runner-state/dmesg.txt || true
+          grep -iE "out of memory|oom|killed process|qemu" runner-state/dmesg.txt || echo "no out-of-memory kill in the kernel log"
+          ls -laR /tmp/android-runner/ > runner-state/emulator-crash-dir.txt 2>&1 || true
+          cp -r /tmp/android-runner/emu-crash-*.db runner-state/ 2>/dev/null || true
+      - name: Keep the screenshots and the log
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: emulator-smoke-published-${{ matrix.tag }}-${{ matrix.gpu }}
+          path: |
+            smoke-out-${{ matrix.tag }}/
+            runner-state/
           if-no-files-found: ignore

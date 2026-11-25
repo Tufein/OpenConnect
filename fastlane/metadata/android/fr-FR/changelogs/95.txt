@@ -1,0 +1,1 @@
+Rien ne change dans ce que fait l'application. En coulisse, chaque version est de nouveau parcourue sur un émulateur Android avant sa publication, et le téléchargement a un budget de taille vérifié à chaque modification.

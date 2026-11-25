@@ -450,6 +450,10 @@ class AppViewModelPlanTest {
         val settings = FakeAiSettings().also { it.setKey(nl.tufein.openconnect.core.reports.AiVendor.GEMINI, "AIzaSyA-0123456789abcdefghijklmnopqrstu") }
         val transport = FakeAiTransport { FakeAiTransport.gemini("The proposal copies the missed pattern.") }
         val vm = launch(aiSettings = settings, aiTransport = transport)
+        // The first load must be over before the private data is written. If it read the settings after the writes,
+        // the reload below produced an equal PlanState, the StateFlow kept the old instance, and waiting for a new
+        // instance timed out after 45 s (Android workflow on PR #93, 2026-11-25): a race, not a slow runner.
+        await("the first plan load") { vm.plan.value.loaded }
         val rawName = "RAW_ACTIVITY_NAME_SECRET"
         val rawGps = "52.123456"
         val ownName = "OWN_WORKOUT_TEXT_SECRET"
@@ -466,10 +470,10 @@ class AppViewModelPlanTest {
         )
         app.container.settings.journal = JournalBook(mapOf(LocalDate.parse("2026-11-12") to setOf(JournalTag.ALCOHOL))).encode()
         app.container.settings.workouts = WorkoutBook(listOf(OwnWorkout(id = "own-secret", name = ownName))).encode()
-        val beforeReload = vm.plan.value
         vm.loadPlan()
+        // The reloaded state is the one that has read the private data: it lists the own workout written above.
         await("the plan and coach facts to reload with private data present") {
-            vm.plan.value.loaded && vm.plan.value !== beforeReload && vm.plan.value.proposal != null
+            vm.plan.value.loaded && vm.plan.value.ownWorkouts.any { it.id == "own-secret" } && vm.plan.value.proposal != null
         }
 
         vm.askCoach("What does the current proposal change?")

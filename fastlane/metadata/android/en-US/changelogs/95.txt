@@ -1,0 +1,1 @@
+Nothing changes in what the app does. Behind the scenes every release is again walked on an Android emulator before it is published, and the download has a size budget that every change is checked against.

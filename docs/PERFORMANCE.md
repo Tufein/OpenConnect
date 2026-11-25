@@ -31,9 +31,26 @@ the newest 300 routes and thins each to 500 positions, however much history ther
 |---------|-----|
 | v0.55.0 and before (not shrunk) | 30.2 MB, of which 28.7 MB is code (Compose, Material, Health Connect, Kotlin) |
 | v0.58.0 (shrunk with R8) | 9.8 MB |
+| v1.4.0 | 9.9 MB |
+| v1.12.0 and v1.13.0 | 12.56 MB (12,562,016 bytes), 20 KB under the old 12 MiB limit |
 
-The earlier statement in the roadmap that the APK was 11 MB was wrong; it had never been measured. The limit for the
-release is now **12 MB**, and the release workflow fails when the APK is larger.
+The earlier statement in the roadmap that the APK was 11 MB was wrong; it had never been measured. The budget is now
+**13 MiB** (13,631,488 bytes), kept in one place, `android/scripts/check_apk_size.py`. Both the *Release* workflow and the
+*Android* workflow (on every push and pull request) run it, so a change that makes the APK too big is found when it is made,
+not at release time. It prints where the bytes are, writes that to the run summary, warns from 95 percent and fails above
+the budget. A test (`tests/unit/test_apk_size.py`) keeps this page and the script on the same number.
+
+Where the 12.56 MB of v1.13.0 are: **10.7 MB is code** (`classes.dex` 8.7 MB and `classes2.dex` 2.1 MB, stored
+uncompressed, which is what the Android Gradle Plugin does for minSdk 28 and newer), 1.15 MB is `resources.arsc` (the
+strings of four languages and the layouts), 0.48 MB is `res/` (five fonts of about 0.3 MB, a 44 KB photo, nine-patches) and
+0.04 MB is the native `libandroidx.graphics.path.so` for four ABIs. The code grew by about 2.6 MB over the eight releases
+from v1.4.0 to v1.12.0 (the editorial look, the privacy register, plan adaptation, two more languages), roughly 0.3 MB a
+release, so 13 MiB is about three releases of room, not a permanent answer.
+
+Two ways to get a lot back when it is needed, neither taken yet because they cannot be tried on a real phone from here:
+compress the dex files in the APK (`useLegacyPackaging` for dex: the APK would be about 6 MB smaller, at the price of the
+phone decompressing them when the app is installed), or let R8 optimise instead of only shrinking (it would also rename,
+which makes a stack trace in an issue unreadable unless the mapping file is kept).
 
 R8 shrinks only (it removes unused code and resources, it does not rename or optimise: `proguard-rules.pro`), so a stack
 trace in an issue still reads. The risk of shrinking is a class that is only reached by name (Work manager, JSON
@@ -44,8 +61,13 @@ serializers, the Keystore library) being removed. The libraries bring their own 
   the plain one on an Android 14 emulator, answers the first-start screen, loads demo data, opens Home, Activities, Health,
   Insights, Settings and About, saves a fake AI key (through the real Keystore), stops the app, starts it again and checks the
   key is still there. It fails on a crash, a dead process or a screen that does not show up. The same walk runs in
-  `release.yml` on the signed APK **before** a release is published. Its screenshots and the app's log are kept as a build
-  artifact.
+  `release.yml` on the signed APK **before** a release is published, and a red walk stops the release (one second try on
+  a fresh emulator). Its screenshots, the app's log, the whole device log (`logcat.txt`, streamed during the walk, so it
+  survives an emulator that dies) and, in the *Emulator smoke* workflow, the runner's memory and kernel log are kept as a
+  build artifact. The emulator draws with `-gpu swangle_indirect`: with the emulator-runner's default
+  (`swiftshader_indirect`) the emulator process vanished at the first swipe on Home from v1.11.0 on, while the same APK
+  walked to the end on `swangle_indirect` and `guest` (measured 2026-11-25). *Emulator smoke* can walk published APKs on
+  request (inputs `published` and `gpu`), to tell an app regression from a runner problem.
 - It does not cover: Bluetooth, USB, Health Connect data, the live heart-rate service, a real network, biometrics. Those are
   the trials in [PUBLIC_RELEASE.md](PUBLIC_RELEASE.md).
 

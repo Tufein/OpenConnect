@@ -1,0 +1,1 @@
+Er verandert niets aan wat de app doet. Achter de schermen wordt elke release weer op een Android-emulator doorgelopen voordat hij verschijnt, en de download heeft een groottebudget dat bij elke wijziging wordt gecontroleerd.
