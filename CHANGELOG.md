@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.13.0: twee kanalen, één app
+
+Deze GitHub-release splitst de Android-app in twee kanalen uit één codebase. De **GitHub-versie** (`github`) houdt de in-app-updater, de installatietoestemming en de FileProvider; de **winkelversie** (`store`) laat die drie weg en verbergt de updater. De winkelversie is gebouwd en getest, maar **niet gepubliceerd**: Google Play en F-Droid blijven geblokkeerd. Verder gaat targetSdk naar 36.
+
+[Release notes](docs/releases/v1.13.0.md)
+
 ## v1.12.0: wat je telefoon verlaat
 
 Deze release maakt privacy concreet: **Instellingen → Over en licenties → Wat je telefoon verlaat** opent een index met twaalf onderwerpen. Elk onderwerp heeft een eigen pagina met wat er wel weggaat, wat er terugkomt, wat nooit meegaat, waar het bewaard blijft, wanneer het gebeurt en welke toestemming je ervoor geeft. De pagina is opgebouwd uit dezelfde `PrivacyRegister` als de statische …

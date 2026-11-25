@@ -6,7 +6,8 @@ mentions a network address, a data source or a boundary field that the register 
 
 The short version: **OpenConnect has no server of ours, no account of ours, no advertising, no analytics and no crash
 reporting.** Your data stays on your phone unless you switch on a source, a provider or a file export. Every outbound
-request starts from something you did.
+request starts from something you did. The **GitHub build** has an in-app updater; the **store build** has no updater, no
+install-packages permission and no FileProvider.
 
 ## English
 
@@ -21,7 +22,8 @@ request starts from something you did.
   client id/secret/tokens. If secure storage is unavailable, a key is not stored at all.
 - **Memory only**: the coach conversation and a short notification-forwarding trail (at most 150 lines, holding app names
   and decisions, never notification text). Both disappear when the app process ends.
-- **App cache**: a downloaded and SHA-256-checked update APK, until Android installs it or the cache is cleared.
+- **App cache (GitHub build only)**: a downloaded and SHA-256-checked update APK, until Android installs it or the cache
+  is cleared. The store build never downloads an update.
 - Android's own cloud backup and device transfer are **off** for this app. The app never writes health data into a Google
   backup.
 
@@ -39,7 +41,7 @@ radio/on-device connections):
 | **Oura Ring** | you connect Oura and sync | `cloud.ouraring.com` (browser login), `api.ouraring.com` | your Oura application's client id and secret, PKCE state/challenge/verifier, the OAuth code or refresh token, access token, date range and page token | access/refresh tokens, sleep, readiness, activity, SpO2, work-outs and ring battery |
 | **Claude** | you add a Claude key and ask for a report, a coach answer or a key check | `api.anthropic.com` | your key (header), model, system prompt, the bounded facts, the coach question/history and the report language | the generated text |
 | **Gemini** | the same with a Gemini key | `generativelanguage.googleapis.com` | the same facts, question/history and language, with your Gemini key | the generated text |
-| **GitHub updates** | you open *Settings → Updates* and check/download | `api.github.com`, `github.com` | a GET for the newest release list, then a GET for the APK and its `.sha256`; no account, token or health data | release JSON, APK and checksum. GitHub sees your network address and user agent like any website |
+| **GitHub updates** (GitHub build only) | you open *Settings → Updates* and check/download | `api.github.com`, `github.com` | a GET for the newest release list, then a GET for the APK and its `.sha256`; no account, token or health data | release JSON, APK and checksum. GitHub sees your network address and user agent like any website |
 | **Notifications on the watch** | you turn it on and Android delivers a notification | your watch, over Bluetooth | notification id, app id/name, title, body/big text, subtitle, time, category and dismiss flag | nothing; the notification is not sent to a server |
 | **Work-outs to the watch** | you press send for a work-out | your watch, over USB | the work-out as a FIT file in `GARMIN/NewFiles` | nothing; no server is involved |
 | **Watch and live heart rate** | you read a watch or start live heart rate | your watch, over USB, a folder or Bluetooth | nothing is sent; FIT files and heart-rate samples come in | activities, daily data, sleep, stress, Body Battery, SpO2, HRV and live heart rate |
@@ -74,7 +76,8 @@ contacts or calendar, and it does not collect your location for itself.
 ### Permissions, and why
 
 - **Internet**: only for the services in the table above.
-- **Install packages**: the updater asks Android to install the APK it downloaded and checked; Android asks you.
+- **Install packages (GitHub build only)**: the updater asks Android to install the APK it downloaded and checked; Android
+  asks you. The store build does not declare this permission.
 - **Notifications**: nudges, live heart rate, and the notification that shows while forwarding is on.
 - **Notification access**: only if you switch on *Notifications on the watch*. It lets the app read the notifications Android
   delivers so it can pass the chosen ones to your watch. You can take it back in Android at any time.
@@ -112,7 +115,8 @@ repository, or the private report route in [SECURITY.md](../SECURITY.md) for a s
 
 **Kort.** OpenConnect heeft geen server van ons, geen account van ons, geen reclame, geen statistieken en geen
 crashrapporten. Je gegevens blijven op je telefoon tenzij jij een bron, een aanbieder of een bestandsexport aanzet. Elk
-verzoek naar buiten begint met iets wat jij deed.
+verzoek naar buiten begint met iets wat jij deed. De **GitHub-versie** heeft een in-app-updater; de **winkelversie**
+heeft geen updater, geen installatietoestemming en geen FileProvider.
 
 ### Wat er wordt bewaard, en waar
 
@@ -126,8 +130,8 @@ verzoek naar buiten begint met iets wat jij deed.
   Oura client-id/geheim/tokens. Is veilige opslag niet beschikbaar, dan wordt een sleutel niet bewaard.
 - **Alleen in geheugen**: het coachgesprek en een korte sporenlijst van doorgestuurde meldingen (maximaal 150 regels, met
   appnamen en beslissingen, zonder meldingstekst). Allebei weg als het app-proces stopt.
-- **App-cache**: een gedownloade en met SHA-256 gecontroleerde update-APK, tot Android hem installeert of de cache wordt
-  leeggemaakt.
+- **App-cache (alleen GitHub-versie)**: een gedownloade en met SHA-256 gecontroleerde update-APK, tot Android hem
+  installeert of de cache wordt leeggemaakt. De winkelversie downloadt nooit een update.
 - De cloudback-up en toestelovername van Android staan voor deze app **uit**. De app schrijft geen gezondheidsgegevens in
   een Google-back-up.
 
@@ -145,7 +149,7 @@ zijn lokale radio- of toestelverbindingen):
 | **Oura Ring** | je koppelt Oura en synchroniseert | `cloud.ouraring.com` (inloggen in de browser), `api.ouraring.com` | client-id en geheim van je eigen Oura-app, PKCE-state/challenge/verifier, de OAuth-code of refresh-token, access-token, datumperiode en paginatoken | access/refresh-tokens, slaap, readiness, activiteit, SpO2, work-outs en ringbatterij |
 | **Claude** | je voegt een Claude-sleutel toe en vraagt een verslag, coachantwoord of sleutelcontrole | `api.anthropic.com` | je sleutel (header), model, systeemprompt, de begrensde feiten, de coachvraag/geschiedenis en de rapporttaal | de gegenereerde tekst |
 | **Gemini** | hetzelfde met een Gemini-sleutel | `generativelanguage.googleapis.com` | dezelfde feiten, vraag/geschiedenis en taal, met je Gemini-sleutel | de gegenereerde tekst |
-| **GitHub-updates** | je opent *Instellingen → Updates* en controleert/downloadt | `api.github.com`, `github.com` | een GET voor de nieuwste releaselijst, daarna een GET voor de APK en de `.sha256`; geen account, token of gezondheidsdata | release-JSON, APK en checksum. GitHub ziet je netwerkadres en user-agent zoals elke website |
+| **GitHub-updates** (alleen GitHub-versie) | je opent *Instellingen → Updates* en controleert/downloadt | `api.github.com`, `github.com` | een GET voor de nieuwste releaselijst, daarna een GET voor de APK en de `.sha256`; geen account, token of gezondheidsdata | release-JSON, APK en checksum. GitHub ziet je netwerkadres en user-agent zoals elke website |
 | **Meldingen op het horloge** | je zet het aan en Android levert een melding | je horloge, via Bluetooth | melding-id, app-id/naam, titel, tekst/big text, subtitel, tijd, categorie en wegklikvlag | niets; de melding gaat niet naar een server |
 | **Work-outs naar het horloge** | je drukt op verzenden | je horloge, via USB | de work-out als FIT-bestand in `GARMIN/NewFiles` | niets; er is geen server bij betrokken |
 | **Horloge en live hartslag** | je leest een horloge of start live hartslag | je horloge, via USB, een map of Bluetooth | er gaat niets uit; FIT-bestanden en hartslagmetingen komen binnen | activiteiten, dagcijfers, slaap, stress, Body Battery, SpO2, HRV en live hartslag |
@@ -181,8 +185,8 @@ authenticatieheader. De app leest je contacten of agenda niet en verzamelt niet 
 ### Rechten, en waarom
 
 - **Internet**: alleen voor de diensten in de tabel hierboven.
-- **Pakketten installeren**: de updater vraagt Android de gedownloade en gecontroleerde APK te installeren; Android vraagt
-  het jou.
+- **Pakketten installeren (alleen GitHub-versie)**: de updater vraagt Android de gedownloade en gecontroleerde APK te
+  installeren; Android vraagt het jou. De winkelversie vraagt deze toestemming niet aan.
 - **Meldingen**: aansporingen, live hartslag en de melding die zichtbaar is tijdens doorsturen.
 - **Toegang tot meldingen**: alleen als je *Meldingen op het horloge* aanzet. De app leest wat Android aflevert om de
   gekozen meldingen naar je horloge te sturen. Je kunt de toegang in Android altijd intrekken.

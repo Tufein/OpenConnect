@@ -59,8 +59,9 @@ No test can prove that a translation reads naturally. A native review is still a
 2. Add the language to `AppLocale.SUPPORTED`/`CHOICES`, to `res/xml/locales_config.xml`, and to the Settings card if it
    should be offered. Keep English as the base and the fallback.
 3. Add date/number cases to `FmtTest` and a launch case to `LocaleSwitchTest`.
-4. Run `:app:testDebugUnitTest`, `:app:lintDebug` and `:core:test`. Do not send personal data, screenshots or health
-   values to a translation service; only public UI strings belong in a translation pass.
+4. Run `:app:testGithubDebugUnitTest :app:testStoreDebugUnitTest`, `:app:lintGithubDebug :app:lintStoreDebug` and
+   `:core:test`. Do not send personal data, screenshots or health values to a translation service; only public UI
+   strings belong in a translation pass.
 
 The app language is stored as `app_language` (`system`, `en`, `nl`, `de`, `fr`) and is independent of the older
 `report_language` setting. Existing installs keep their report choice; an install without `app_language` follows the

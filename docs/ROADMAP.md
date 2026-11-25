@@ -3,7 +3,7 @@
 Waar OpenConnect staat en hoe het verder groeit. Opnieuw geschreven op 2026-11-20, na v1.0.4, op 2026-11-22 (na
 v1.2.0) met een **thematische koerswissel** (paragraaf 4b, "Je geschiedenis is van jou") en op **2026-11-24 (na
 v1.11.0)** met een nieuwe **koers naar 2.0** in paragraaf 6b: geen lijst met losse ideeën, maar vier fasen en vijf
-poorten. 1.0 is uitgebracht; dit plan zegt wat de volgorde is. Alles is **test-first** gebouwd: eerst de test, dan de
+poorten. Op **2026-11-25 (na v1.13.0)** is de winkelvariant als code toegevoegd, zonder publicatie. 1.0 is uitgebracht; dit plan zegt wat de volgorde is. Alles is **test-first** gebouwd: eerst de test, dan de
 code, en niets gaat uit zonder dat CI groen is. Wat zonder horloge, ring of telefoon niet te controleren is, staat er
 eerlijk bij.
 
@@ -12,9 +12,9 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
 
 **Legenda:** ✅ klaar · 🔜 volgende · 🧪 gebouwd en getest met nepgegevens, nog nooit op echte hardware of tegen de echte dienst · ❓ heeft iets nodig dat alleen de eigenaar kan geven · **S/M/L** = klein (een sessie), middel, groot (meerdere releases)
 
-## 1. Waar we staan (v1.12.0, 2026-11-25)
+## 1. Waar we staan (v1.13.0, 2026-11-25)
 
-- **12 releases sinds 1.0** (v1.0.0 tot en met v1.12.0, met tientallen kandidaten daartussen), ruim 1.400 tests
+- **13 releases sinds 1.0** (v1.0.0 tot en met v1.13.0, met tientallen kandidaten daartussen), ruim 1.400 tests
   (Python, `core` en de app), AGPL-3.0, openbare repository, een Android-app die zonder server werkt en een
   Python-server voor wie die liever zelf draait. Nederlands, Engels, Duits en Frans; de laatste twee zijn
   machine-draft en nog niet native nagekeken.
@@ -22,14 +22,14 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   Health Connect (sinds v1.2.0 ook op de achtergrond aangevuld), bestanden (FIT, GPX, TCX), Claude en Gemini voor de
   coach. Sinds v1.8.3 zijn de WHOOP- en Hume Band eruit; hun geschiedenis blijft leesbaar.
 - **Sterk:** alles is test-first, gegevens blijven op de telefoon, horloge en ring worden nooit door elkaar gemengd, elke release zegt eerlijk
-  wat niet is gecontroleerd, en de app is met een in-app-updater te bijwerken met SHA-256-controle.
-- **Sinds 1.0** gingen de releases over zes dingen: meldingen op het horloge (v1.0.1), het uiterlijk (van Graphite
+  wat niet is gecontroleerd, en de **GitHub-versie** is met een in-app-updater te bijwerken met SHA-256-controle.
+- **Sinds 1.0** gingen de releases over zeven dingen: meldingen op het horloge (v1.0.1), het uiterlijk (van Graphite
   naar de **editorial**-look in v1.9.0, met signaalkleuren, ringdikte en een voorbladfoto die je zelf kiest), kleine
   slices op Health (HRV-status, slaapfases, gewicht, water, Health Connect op de achtergrond), je eigen geschiedenis
   (archief-import, namen, zelf een training en work-out invoeren), **terugkijken** (het jaaroverzicht in v1.9.3) en een
   **schema dat meedenkt** (v1.10.0): één voorstel na een gemiste afgesloten week, jij kiest Toepassen of Niet nu, en
   de coach bespreekt dat voorstel maar verandert niets. In v1.9.3 is ook de gereedschapsketen naar Gradle 9.6, AGP 9.5
-  en compileSdk 37 gegaan.
+  en compileSdk 37 gegaan. In v1.13.0 kwamen daar de twee Android-kanalen bij.
 - **Sinds v1.11.0:** vier talen met een taalkeuze in Instellingen, lokale datums en getallen, en Duitse/Franse
   widget- en meldingsteksten. De Oura-tab is opgeruimd en de voorbladfoto volgt de dag met vier composities.
   De Duitse en Franse teksten zijn automatisch opgesteld en niet native nagekeken; dat staat ook in de app en
@@ -39,13 +39,19 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   alleen legacy, Health Connect alleen stappen/slaap/gewicht, Oura inclusief tokens/SpO2/work-outs/ringbatterij,
   AI zonder GPS/dagboek/notities), en **Delete all data** wist nu ook lichaam, water, dagboek, schoenen, plan,
   race, doelen, work-outs, log en ledger. Machinevertaling en de adviserende emulator-smoke blijven known issues.
+- **Sinds v1.13.0:** de Android-app heeft twee kanalen uit één codebase. `github` houdt de updater,
+  `REQUEST_INSTALL_PACKAGES` en de FileProvider; `store` laat die drie weg en verbergt de updater. targetSdk staat op
+  36. De store-AAB en -APK worden gebouwd en gecontroleerd, maar **niet gepubliceerd**: de naam, een
+  Play-ontwikkelaarsaccount met testers, echte schermafbeeldingen en de winkelverklaringen staan nog open. De app is
+  dus niet in een winkel te vinden.
 - **Zwak voor het verdere verhaal:**
   1. Op één bron na (de Garmin-account, die live is geprobeerd) is **niets op een echte telefoon, horloge of ring geproefd**. Zie het register in paragraaf 7; M9 is dat spoor.
   2. Of de meldingen op de fenix 8 nu bij elk bericht trillen, wacht op een nieuw logboek; v1.0.1 pakte de meest waarschijnlijke oorzaak aan.
   3. De naam: er bestaat al een bekende VPN-client die OpenConnect heet; het besluit staat nog open (G6).
   4. **De geschiedenis zit nog in Garmin Connect en Strava.** De app importeert één bestand tegelijk en haalt via de eigen sleutel een beperkt stuk terug, terwijl elk inzicht (vorm, VO2max, racevoorspelling, heatmap, seizoen) zo goed is als de geschiedenis eronder. Dat is het thema van 4b.
   5. De twee Dependabot-voorstellen (#86 en #89) zijn in v1.9.3 opgelost met de bewuste compileSdk-37/AGP-9-stap (Gradle 9.6, AGP 9.5.2, Kotlin 2.4.21, Health Connect 1.2.0-alpha06).
-  6. De in-app-updater past niet in Google Play of F-Droid; winkels komen als `store`-variant in M10.
+  6. De in-app-updater past niet in Google Play of F-Droid; de `store`-variant bestaat sinds v1.13.0 als code, maar
+     publicatie blijft geblokkeerd (naam, account/testers, echte schermafbeeldingen, verklaringen). Zie M10.
   7. De Oura-ringbatterij werkt in de app, maar **Oura is nooit live geprobeerd**: login en ringdata zijn alleen tegen nep-antwoorden getest. De grootste rem op 2.0 is daarom niet code maar echte-hardwareproeven.
 
 ## 2. Wat "1.0" betekent
@@ -130,7 +136,7 @@ Klaar als: de toegankelijkheidstests en taalpariteit in CI staan en groen zijn.
 
 - **Prestatiebudget:** een gegenereerde historie van vijf jaar (ongeveer 1800 activiteiten met tracks en dagrijen) en een test op de openingstijd van elk tabblad en op het geheugen van de heatmap; opstarttijd gemeten.
 - **Verkleinen:** R8 en het verkleinen van resources beoordeeld. De APK was 30 MB (niet 11: dat was nooit gemeten), nu 9,8 MB. De test dat serialisatie, WorkManager en de sleutelkluis nog werken is een **rooktest op een echte Android** (emulator) die ook vóór elke release draait.
-- **targetSdk bijhouden:** nu 35. Zonder Google Play is er geen verplichte datum; omhoog alleen als een nieuwe Android-versie het vraagt, met de lijst van gedragswijzigingen afgewerkt.
+- **targetSdk bijhouden:** nu 36 (sinds v1.13.0; compileSdk 37). Zonder Google Play is er geen verplichte datum; omhoog alleen als een nieuwe Android-versie het vraagt, met de lijst van gedragswijzigingen afgewerkt.
 - **Batterij:** niet te meten zonder telefoon. Wat er op de achtergrond draait staat met zijn frequentie in `docs/PERFORMANCE.md`; het cijfer van Android na een dag is proefstap T16 voor Stefan.
 
 Klaar als: het budget in CI staat en de APK niet groter is geworden dan 12 MiB (`release.yml` faalt erop).
@@ -174,12 +180,18 @@ en Oura als die er is. Wat klopt, krijgt in de app het label *Getest op echt app
 *Experimenteel*. Reparaties komen als gewone 1.0.x-uitgaven; geen nieuwe features in dit spoor. Schermafbeeldingen van je eigen telefoon horen hier
 ook bij (G5), evenals het besluit over de naam (G6), dat Stefan alleen kan nemen.
 
-### M10: winkels 🔜 (L)
+### M10: winkels 🧪 code klaar, publicatie geblokkeerd (L, ❓)
 
-F-Droid en Google Play als een **`store`-variant** naast de GitHub-versie: zonder updater en zonder `REQUEST_INSTALL_PACKAGES`, met de
-Health Connect-verklaring, de antwoorden op Play's gegevensveiligheid en een `fastlane/metadata`-boom. F-Droid ondertekent met een eigen sleutel,
-dus die APK installeert niet over de GitHub-APK heen; dat hoort in de uitleg. Google Play vraagt eenmalig ongeveer 25 dollar voor een
-ontwikkelaarsaccount en een recent genoeg targetSdk. De updater blijft gewoon in de GitHub-versie.
+Sinds v1.13.0 is de **`store`-variant** er als code: dezelfde `applicationId` als de GitHub-app, zonder updater en
+zonder `REQUEST_INSTALL_PACKAGES`/FileProvider, met eigen AAB- en APK-taken. De store-workflow bouwt en controleert die
+artefacten; de release-workflow publiceert alleen de GitHub-APK. Publicatie in F-Droid of Google Play is nog niet
+gebeurd en blijft geblokkeerd: de naam botst met een bestaande OpenConnect-VPN-app, een Play-ontwikkelaarsaccount en de
+testersregel (12 testers, 14 dagen) staan open, echte schermafbeeldingen en een feature graphic ontbreken, en de
+verklaringen voor gegevensveiligheid, Health Connect en voorgrondservice zijn niet afgerond. Voor F-Droid komen daar de
+ontbrekende `v1.13.0`-tag, de toolchain op de buildserver en de ondertekening bij. F-Droid ondertekent met een eigen
+sleutel, dus die APK installeert niet over de GitHub-APK heen; dat hoort in de uitleg. Google Play vraagt eenmalig
+ongeveer 25 dollar voor een ontwikkelaarsaccount en een recent genoeg targetSdk (nu 36). De updater blijft gewoon in de
+GitHub-versie.
 
 ### M11: inhoud na 1.0 🔜 (M-L)
 
@@ -317,10 +329,12 @@ en zonder abonnement. Drie dingen moeten dan waar zijn:
 | **P2 Echt** | 🧪 | Elke bron is op echte hardware geprobeerd en gedateerd, of draagt in de app het label *Experimenteel* |
 | **P3 Talen** | 🧪 | Nederlands, Engels, Duits en Frans zijn volledig; de taaltest faalt op een ontbrekende regel. De Duitse en Franse teksten zijn machine-draft en niet native nagekeken |
 | **P4 Uitleg** | 🧪 | Elke tegel noemt zijn bron en berekening; *Wat verlaat je telefoon* klopt met de code en met de netwerktest |
-| **P5 Bereik** | 🧪 | De app installeert en werkt zonder server, zonder netwerk en zonder updater; een winkelversie en de GitHub-versie botsen niet |
+| **P5 Bereik** | 🧪 | De app installeert en werkt zonder server, zonder netwerk en zonder updater; een winkelversie en de GitHub-versie botsen niet. De store-code bestaat sinds v1.13.0; een echte winkelpublicatie en winkelinstallatie zijn niet geprobeerd |
 
 Een poort gaat pas op groen als het bewijs in de repository staat (een test, een release note of een gedateerde
-proef), niet omdat het idee goed klinkt.
+proef), niet omdat het idee goed klinkt. **P5 is daarom nog niet groen:** de store-code bestaat sinds v1.13.0 en de
+builds zijn per kanaal getest, maar er is geen winkelpublicatie en geen echte installatie van een winkelbuild; ook het
+naast of over elkaar installeren is niet op een toestel geprobeerd.
 
 #### De vier fasen
 
@@ -328,8 +342,8 @@ proef), niet omdat het idee goed klinkt.
 |------|----------|----------|------|----------|
 | **1. Zichtbaar en eigen** ✅ | De app voelt als één rustig geheel en jij bepaalt hoe hij eruitziet: editorial-look, signaalkleuren, ringen, foto, thema's, iconen en een voorblad dat je zelf samenstelt | v1.9.0 – v1.9.3 | M | — |
 | **2. Het denkt mee** ✅ | Het schema past zich aan als je week anders liep: één voorstel met Toepassen/Niet nu; de coach bespreekt alleen dat voorstel en verandert niets | v1.10.0 | L | niets |
-| **3. Bereik en uitleg** | Duits en Frans, één pagina *Wat verlaat je telefoon* per bron, en een winkelversie die naast de GitHub-versie kan staan | v1.11.0, v1.12.0, v1.15.0 | M | niets |
-| **4. Geschiedenis en analyse** | Garmin's protobuf-sync en de rest van de exportvelden; Training Effect, hersteltijd en Performance Condition uit je eigen FIT | v1.13.0, v1.14.0 | L ❓ | een echte Garmin-export en één fenix 8-opname van Stefan |
+| **3. Bereik en uitleg** | Duits en Frans, één pagina *Wat verlaat je telefoon* per bron, en een winkelversie die naast de GitHub-versie kan staan | v1.11.0, v1.12.0, v1.13.0, v1.15.0 | M | naam, account/testers, echte schermafbeeldingen en verklaringen voor publicatie |
+| **4. Geschiedenis en analyse** | Garmin's protobuf-sync en de rest van de exportvelden; Training Effect, hersteltijd en Performance Condition uit je eigen FIT | v1.14.0 of later | L ❓ | een echte Garmin-export en één fenix 8-opname van Stefan |
 | **Sluiten** | Alle vijf poorten groen; geen nieuwe functie, alleen bewijs en reparaties | v2.0.0 | XL | de vier fasen |
 
 #### De ladder naar 2.0
@@ -343,15 +357,19 @@ echte hardware daarom vraagt. **S/M/L/XL** zoals in de legenda.
 | **v1.10.0** ✅ | 2 | Het schema past zich aan: een gemiste afgesloten week levert één voorstel met Toepassen/Niet nu; de coach bespreekt alleen dat voorstel en verandert niets | L |
 | **v1.11.0** ✅ | 3 | Duits en Frans, met een taaltest die elke tekst dekt en een keuze in de instellingen; de teksten zijn machine-draft en niet native nagekeken | M |
 | **v1.12.0** ✅ | 3 | *Wat verlaat je telefoon*: één pagina per bron met wat er wel en niet weggaat, plus een test die elk veld dekt | M |
-| **v1.13.0** | 4 | Garmin's protobuf-sync en de rest van de archiefvelden, zodat een tweede import geen gat meer laat | L ❓ |
+| **v1.13.0** ✅ | 3 | De winkelvariant als code: `github` en `store` uit één codebase, store zonder updater/installatietoestemming/FileProvider, targetSdk 36; AAB en APK gebouwd en gecontroleerd, niet gepubliceerd | S/M |
 | **v1.14.0** | 4 | Training Effect, hersteltijd en Performance Condition uit FIT, met een register dat zegt wanneer het op echte data is bevestigd | L ❓ |
-| **v1.15.0** | 3 | Laatste loodjes: winkelvariant, schermafbeeldingen van een echte telefoon, installatiegids en de naamkeuze | S/M |
+| **v1.15.0** | 3 | Laatste loodjes: winkelpublicatie, schermafbeeldingen van een echte telefoon, installatiegids en de naamkeuze | S/M |
 | **v2.0.0** | Slot | De vijf poorten hierboven groen; geen nieuwe functie | XL |
 
 **Waarom deze volgorde:** eerst wat je elke dag ziet en zelf bestuurt (klaar), dan wat je training stuurt, dan bereik
 en uitleg, en pas daarna de zware geschiedenis en analyse. Die laatste twee wachten op een export en een opname van
 Stefan; ze schuiven door zonder de rest op te houden. v1.15.0 maakt de belofte af voordat 2.0 hem alleen nog hoeft te
 bewijzen.
+
+**Verschoven:** de Garmin-protobuf-sync en de rest van de archiefvelden stonden oorspronkelijk op v1.13.0. Ze zijn niet
+gedaan; die slice wacht nog op een echte Garmin-export en schuift naar v1.14.0 of later. v1.13.0 is de winkelvariant als
+code, zonder publicatie.
 
 #### Wat 2.0 niet is
 
@@ -366,10 +384,11 @@ bewijzen.
 
 | Wanneer | Wat | Waarom het niet zonder jou kan |
 |---------|-----|--------------------------------|
-| Vóór v1.13.0 | Je export bij Garmin Connect (Account, Gegevensbeheer, *Je gegevens exporteren*) en eventueel Strava, één keer in OpenConnect importeren, daarna *Rapport kopiëren* en als melding plakken (aantallen en bestandsnamen, geen waarden) | De veldnamen staan nergens beschreven; alleen een echte export bevestigt de lezer |
+| Vóór de Garmin-protobuf-slice (v1.14.0 of later) | Je export bij Garmin Connect (Account, Gegevensbeheer, *Je gegevens exporteren*) en eventueel Strava, één keer in OpenConnect importeren, daarna *Rapport kopiëren* en als melding plakken (aantallen en bestandsnamen, geen waarden) | De veldnamen staan nergens beschreven; alleen een echte export bevestigt de lezer |
 | Vóór v1.14.0 | Eén echte fenix 8-opname met Training Effect, hersteltijd en Performance Condition | Alleen jouw horloge levert die velden |
 | Doorlopend | De proefronde op telefoon, fenix 8 en Oura-ring, met een nieuw meldingenlogboek | Alleen jij hebt de apparaten en de accounts |
-| Vóór v1.15.0 | Schermafbeeldingen van je eigen telefoon en de knoop over de naam | Mijn plaatjes komen uit een test; de naam is jouw merk |
+| Vóór winkelpublicatie | De naam kiezen, een Play-ontwikkelaarsaccount met testers regelen, echte schermafbeeldingen en een feature graphic aanleveren, en de verklaringen (gegevensveiligheid, Health Connect, voorgrondservice) afronden | Account-, merk- en bewijsstukken die alleen de eigenaar kan geven; zonder die stukken gaat er niets naar Play of F-Droid |
+| Vóór v1.15.0 | De laatste winkelstukken uit de rij hierboven en de naamkeuze | Mijn plaatjes komen uit een test; de naam is jouw merk |
 
 #### Klaar per release
 
@@ -398,7 +417,8 @@ De bron van waarheid voor poort G1. Een regel gaat pas naar ✅ als er een echte
 | Oura Ring | 🧪 nooit tegen de echte dienst | [OURA.md](OURA.md) |
 | Claude en Gemini voor rapporten en coach | 🧪 geen live aanroepen met eigen sleutels | [AI.md](AI.md) |
 | Archief-import (Strava- en Garmin-export, ZIP en `.gz`) | 🧪 gebouwd met zelf gemaakte archieven in de indeling die de bronnen beschrijven; nooit met een echte export | [MIGRATING.md](MIGRATING.md) |
-| In-app-updater | 🧪 niet op een echte telefoon | [ANDROID.md](ANDROID.md) |
+| In-app-updater (GitHub-versie) | 🧪 niet op een echte telefoon | [ANDROID.md](ANDROID.md) |
+| Winkelvariant (`store`) | 🧪 gebouwd en per kanaal getest; niet gepubliceerd, geen echte winkelinstallatie | [PUBLIC_RELEASE.md](PUBLIC_RELEASE.md) |
 | Sleutelkluis, appvergrendeling, iconen en thema's | 🧪 niet op een echte telefoon | [ANDROID.md](ANDROID.md) |
 
 De drempels en afbakeningen van de inzichten (vorm, vroege waarschuwing, slaapbehoefte, seizoensfases, scores van de ring) zijn vuistregels die door tests vastliggen, niet door een studie.
@@ -472,6 +492,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.9.3 | Jaaroverzicht: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar met eerlijke "geen data"-regels; tegelijk de gereedschapsketen naar Gradle 9.6, AGP 9.5 en compileSdk 37, met Kotlin 2.4 als ingebouwde taal |
 | v1.10.0 | Een schema dat meedenkt: de nieuwste afgesloten gemiste week wordt één bron voor een begrensd sessiepatroon in een latere trainingsweek; Toepassen/Niet nu blijven bewaard, dubbele of oude acties doen niets, en de coach krijgt alleen die plan- en voorstelfacts om read-only te bespreken |
 | v1.12.0 | Wat je telefoon verlaat: twaalf bronpagina’s uit één PrivacyRegister, met bestemming, trigger, velden, opslag en “nooit”-regels; de oude privacytekst is gecorrigeerd en Delete all data wist nu ook lichaam, water, dagboek, schoenen, plan, race, doelen, work-outs, log en ledger |
+| v1.13.0 | Twee Android-kanalen uit één codebase: GitHub met updater, installatietoestemming en FileProvider; store zonder die drie en met een verborgen updater; targetSdk 36; AAB en APK gebouwd en gecontroleerd maar niet gepubliceerd; Play/F-Droid geblokkeerd door naam, account/testers, echte schermafbeeldingen en verklaringen |
 | v1.11.0 | Vier talen: Engels, Nederlands, Duits en Frans, met een taalkeuze los van de rapporttaal, lokale datums/getallen, Duitse/Franse widget- en meldingsteksten, een opgeruimde Oura-tab en een voorblad dat de dag volgt; de nieuwe talen zijn machine-draft zonder native review |
 
 ## 9. Hoe releases werken

@@ -4,7 +4,7 @@ Het plan staat in [ROADMAP.md](ROADMAP.md). Dit bestand is de lijst die je afvin
 (paragraaf 1) is aangevinkt.** Een vakje gaat pas aan met bewijs: een link naar de pull request, een testnaam, of een regel in
 de proefronde (paragraaf 2) met datum en versie.
 
-Stand op 2026-11-18, na v0.53.0: nog niets aangevinkt dat van een echt apparaat afhangt. Aangevinkt is wat het werk van Claude alleen was: minimum Android 9 (v0.52.0), de README, `SECURITY.md`, `docs/VERSIONING.md` en het changelog (v0.53.0).
+Stand op 2026-11-25, na v1.13.0: nog niets aangevinkt dat van een echt apparaat afhangt. Aangevinkt is wat het werk van Claude alleen was: minimum Android 9 (v0.52.0), de README, `SECURITY.md`, `docs/VERSIONING.md` en het changelog (v0.53.0), plus de migratie-, back-up- en exporttests en de updaterweigering (v0.56.0). De store-variant bestaat sinds v1.13.0 als code, maar is niet gepubliceerd.
 
 ## 1. Go/no-go per poort
 
@@ -60,6 +60,7 @@ Stand op 2026-11-18, na v0.53.0: nog niets aangevinkt dat van een echt apparaat 
 ### G7 Verspreiding
 - [x] Besluit welke kanalen: **alleen GitHub** (Stefan, 2026-11-18). Winkels komen na 1.0
 - [x] De release met APK, SHA-256 en uitleg werkt (v0.58.0: vaste kop op de releasepagina met installeren, controleren en wat is getest)
+- [ ] **Winkelpublicatie.** De store-variant bestaat sinds v1.13.0 als code: dezelfde app-id, zonder updater, zonder `REQUEST_INSTALL_PACKAGES` en zonder FileProvider; CI bouwt en controleert de AAB en APK. Er is **niets ingediend** bij Google Play of F-Droid. Geblokkeerd door: de naamkeuze, een Play-ontwikkelaarsaccount met testers (12 testers, 14 dagen voor een nieuw persoonlijk account), echte schermafbeeldingen en een feature graphic, en de verklaringen (gegevensveiligheid, Health Connect, voorgrondservice); voor F-Droid ook de ontbrekende `v1.13.0`-tag, de toolchain en de ondertekening. Zie [docs/store/android/](store/android/)
 - [ ] Iemand die het project niet kent kan de installatiegids volgen tot een draaiende app (T1)
 
 ## 2. Proefronde op echte apparaten
@@ -95,6 +96,8 @@ Een stap die niet kan (geen ring, geen band) hoef je niet te doen: die bron blij
 
 ## 3. De kandidaat (release candidate)
 
+**Winkelstatus (2026-11-25, v1.13.0):** de `store`-code is klaar en CI bouwt en controleert de AAB en APK zonder updater, `REQUEST_INSTALL_PACKAGES` of FileProvider, maar er is geen Play- of F-Droid-publicatie. Zie G7 en [docs/store/android/](store/android/).
+
 **Stand:** `v1.0.4` is op 2026-11-20 op verzoek van Stefan uitgebracht als volledige release: de tien Health-grafieken staan niet meer onder elkaar maar in tabs onder de scores. `v1.0.3` bracht scores open met grafieken in ingeklapte secties, `v1.0.2` de sportieve pas en `v1.0.1` de meldingenreparaties van `v1.0.1-rc.1`. Daarvoor is `v1.0.0` op uitdrukkelijk verzoek van Stefan uitgebracht als eerste volledige release, na de kandidaat `v1.0.0-rc.7`. De apparaatproeven en go/no-go-vakjes hieronder zijn **niet** allemaal groen en blijven daarom zichtbaar; zie de [releasenotes](releases/v1.0.0.md). `rc.6` tot en met `rc.1` gingen aan rc.7 vooraf. De code is bevroren, op zes uitzonderingen na, alle op Stefans verzoek (`rc.4` laat per stap zien waarom een melding niet aankomt, `rc.5` herkent een stil gevallen Bluetooth-verbinding, `rc.6` laat het horloge niet meer wachten op onbeantwoorde vragen, zie [NOTIFICATIONS.md](NOTIFICATIONS.md), en `rc.7` repareert wat een doorloop van alle code vond, zonder nieuwe functie, zie [de notities](releases/v1.0.0-rc.7.md)): `rc.2` herkent **alle** Garmin-families in plaats van vooral de fenix 8 ([GARMIN_DEVICES.md](GARMIN_DEVICES.md)) en `rc.3` stuurt meldingen van de telefoon naar het horloge ([NOTIFICATIONS.md](NOTIFICATIONS.md)). Allebei raken ze Bluetooth, dus **de wachttijd van 7 dagen begint opnieuw** voor het horloge (T6, T7), en vanaf rc.3 komt er een stap bij: *Meldingen op het horloge, Stuur een test naar het horloge*, met bij rc.4 de knop *Wat gebeurt er?*. Er is niets op een echt horloge geprobeerd, ook niet op de fenix 8. De wachttijd van 7 dagen en de proefstappen T1 tot en met T17 zijn aan Stefan.
 
 1. **Bevriezen:** vanaf de eerste kandidaat alleen reparaties en teksten. Een nieuwe functie wacht op 1.1.
@@ -112,7 +115,7 @@ Android laat een app niet terug naar een lager versienummer gaan, dus **terugdra
 - **Fout die gegevens beschadigt of wist:** eerst een release die het schrijven stopt of er een export voor aanbiedt, met in de notities hoe iemand uit een back-up terugkeert; daarna de echte reparatie. Het vorige schema blijft leesbaar (dat is het belang van de migratietests).
 - **Sleutel verloren:** zonder de sleutel kan geen update meer over bestaande installaties heen; iedereen zou eerst een export moeten maken en opnieuw installeren. Daarom ligt er een offline kopie (G3).
 - **Sleutel gelekt of gecompromitteerd:** Android kent sleutelwissel met een bewijsketen (APK Signature Scheme v3). Die werkt vanaf Android 9, en sinds v0.52.0 is dat het minimum, dus de nieuwe sleutel kan over bestaande installaties heen zonder dat iemand opnieuw hoeft te installeren. Het vraagt wel een ondertekeningsstap met `apksigner rotate` en een test dat de keten klopt; die staat nog niet klaar.
-- **Na 1.0, als er winkels zijn:** de GitHub-release blijft het referentiepunt; een winkelvariant volgt die.
+- **Na 1.0, als er winkels zijn:** de GitHub-release blijft het referentiepunt. De store-variant bestaat sinds v1.13.0 als code, maar is niet gepubliceerd. Een winkelbuild heeft dezelfde app-id en een andere sleutel; terugdraaien betekent daar: back-up, verwijderen, installeren, terugzetten (sleutels zitten niet in de back-up).
 
 ## 5. Aankondigen
 

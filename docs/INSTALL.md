@@ -1,10 +1,11 @@
 # Install and update OpenConnect
 
-OpenConnect is an Android app that is published as an APK file on GitHub, signed with one fixed key. There is no store
-listing for 1.0. This page takes you from nothing to a running app, shows how to check the download, and how to update.
+OpenConnect is an Android app that is published as an APK file on GitHub, signed with one fixed key. There is no Google
+Play or F-Droid listing yet. This page takes you from nothing to a running app, shows how to check the download, and how
+to update.
 
 **You need:** a phone with **Android 9 or newer**, about 30 MB free (the app itself is about 10 MB), and nothing else: no
-account, no server. (A phone with Android 8 stays on v0.51.0.)
+account, no server. The app targets Android 16 (API 36). (A phone with Android 8 stays on v0.51.0.)
 
 ## 1. Download
 
@@ -43,16 +44,29 @@ backup first if it holds anything you need.
 
 ## 4. Update
 
-- **In the app:** *Settings, Updates, Check for updates*. It asks GitHub for the newest release, downloads the APK, checks the
-  checksum and that it is signed with the same key as the installed app, and only then asks Android to install it. A release
-  without a checksum, or signed with a different key, is refused with a message that says why.
+- **In the app (GitHub build):** *Settings, Updates, Check for updates*. It asks GitHub for the newest release, downloads the
+  APK, checks the checksum and that it is signed with the same key as the installed app, and only then asks Android to
+  install it. A release without a checksum, or signed with a different key, is refused with a message that says why. The
+  store build has no updater.
 - **By hand:** download the newer APK as in step 1 and open it. It installs **over** the old one and keeps your data and
   your keys. Android refuses to go back to an older version over a newer one.
 - **With Obtainium** (an app that follows GitHub releases; not tried by this project): add the app with the address
   `https://github.com/Tufein/OpenConnect`. If it offers the Python files as well, set *Filter APKs by regular expression*
   to `openconnect-v.*\.apk$`, and leave pre-releases off.
 
-## 5. Move to a new phone, or start over
+## 5. The store build (not yet available)
+
+Since v1.13.0 the app can also be built as a Google Play/F-Droid **`store` variant**, but it is **not published**: there
+is no Play or F-Droid listing. It has the same app id (`nl.tufein.openconnect`), but a store build is signed with a
+different key than the GitHub APK. Android therefore sees a different app: you cannot install it over the GitHub build,
+or switch back, without uninstalling.
+
+To move: *Settings, Your data, Back up*, copy the backup file, uninstall OpenConnect, install the store build, then
+*Restore*. The backup never contains keys: enter your Garmin key and AI keys again. The store build has no in-app
+updater, no install-packages permission and no FileProvider; the GitHub build keeps all three. Play and F-Droid remain
+blocked by the name, an account and testers, real screenshots and store declarations.
+
+## 6. Move to a new phone, or start over
 
 Your data lives only on the phone. To move it: *Settings, Your data, Back up* on the old phone, copy the file, then *Restore*
 on the new one. The backup holds activities, days, nights, the journal, shoes, goals and your plan, **not your keys**: enter

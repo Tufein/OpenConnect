@@ -7,15 +7,14 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.12.0.** *Settings → About → What leaves your phone* now opens **twelve source pages** built from one
-> privacy register: what each operation sends and receives, where it goes, when it runs, what is stored, what it needs
-> and what it never carries. The same register drives the static address check and the documentation, and a test covers
-> every field and local store. The old privacy text is corrected: WHOOP and Hume are legacy only, Health Connect reads
-> only steps, sleep and weight, Oura includes tokens, SpO2, workouts and ring battery, and AI reports carry derived
-> splits and heart-rate halves but never GPS, journal or notes. **Delete all data** now also clears body, water,
-> journal, gear, plan, race, goals, work-outs, sync log, Health Connect ledger and nudges. Everything from v1.11.0
-> stays, including the four languages; the German and French texts remain machine-drafted, not native-reviewed.
-> [Release notes](docs/releases/v1.12.0.md).
+> **Status: v1.13.0.** The Android app now builds in two channels from one code base. The **GitHub build** keeps the
+> in-app updater, the install permission and the FileProvider; the **store build** leaves all three out and hides the
+> updater. Both use the same app id, but a store build is signed with a different key, so moving between them means
+> backup → uninstall → install → restore; keys are never in a backup. targetSdk is now 36. The store build is **not
+> published**: Google Play and F-Droid are blocked by the name, an account and testers, real screenshots and store
+> declarations. Everything from v1.12.0 stays, including the privacy register and the four languages; the German and
+> French texts remain machine-drafted, not native-reviewed.
+> [Release notes](docs/releases/v1.13.0.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).
@@ -25,7 +24,7 @@ Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
 ## Install the Android app
 
-Needs **Android 9 or newer**. No server, no account, no store: your data stays on the phone. The full guide, with checking the
+Needs **Android 9 or newer**. No server, no account, no store listing: your data stays on the phone. The full guide, with checking the
 download, the "install unknown apps" switch, updating and Obtainium, is [docs/INSTALL.md](docs/INSTALL.md).
 
 1. Open the [latest release](https://github.com/Tufein/OpenConnect/releases/latest) on your phone and download
@@ -33,9 +32,9 @@ download, the "install unknown apps" switch, updating and Obtainium, is [docs/IN
 2. Open the file. Android asks once to allow installing apps from your browser or file manager; allow it.
 3. Open **OpenConnect**, answer the first-start questions and press **Load demo data** to look around.
 
-Check the download with `sha256sum -c openconnect-vX.Y.Z.apk.sha256`. Every release is signed with the same key, so an
-update installs over the old app and keeps your data; *Settings, Updates* can fetch and verify the next one for you.
-The signing certificate is listed in [SECURITY.md](SECURITY.md). A phone with Android 8 stays on v0.51.0.
+Check the download with `sha256sum -c openconnect-vX.Y.Z.apk.sha256`. Every GitHub release is signed with the same key, so
+an update installs over the old app and keeps your data; *Settings, Updates* (GitHub build) can fetch and verify the next
+one for you. The signing certificate is listed in [SECURITY.md](SECURITY.md). A phone with Android 8 stays on v0.51.0.
 
 Then connect what you have, all optional: a Garmin watch, bike computer or golf device (any family, see
 [docs/GARMIN_DEVICES.md](docs/GARMIN_DEVICES.md)) over USB or Bluetooth ([docs/WATCH.md](docs/WATCH.md),
@@ -66,7 +65,7 @@ hardware is another matter.** The register of what has and has not been checked 
 | Health Connect | **not tried on a real phone** |
 | Oura Ring | **never run against the real service** |
 | Claude and Gemini | **no live calls with a real key** |
-| In-app updater, key vault, app lock | **not tried on a real phone** |
+| In-app updater (GitHub build), key vault, app lock | **not tried on a real phone** |
 
 Release notes say what was not checked, every time.
 
@@ -145,7 +144,7 @@ the network, a Garmin account or an API key.
 ```bash
 pytest                                  # Python unit + integration tests
 ruff check src tests && ruff format --check src tests
-cd android && ./gradlew :core:test :app:testDebugUnitTest :app:lintDebug   # the Android app
+cd android && ./gradlew :core:test :app:testGithubDebugUnitTest :app:testStoreDebugUnitTest :app:lintGithubDebug :app:lintStoreDebug   # the Android app
 python tools/changelog.py               # after adding docs/releases/vX.Y.Z.md
 ```
 

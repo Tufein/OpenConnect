@@ -1,6 +1,6 @@
 # Security and maintenance
 
-OpenConnect holds your health history and, optionally, AI provider keys and Garmin, Oura or WHOOP logins. Treat the
+OpenConnect holds your health history and, optionally, AI provider keys and Garmin or Oura logins. Treat the
 database (`openconnect.db` on the server, the app's private storage on the phone) and any backup file as sensitive.
 Never attach them to an issue. For a problem report use **Settings, Share diagnostics** in the app: it shows the exact
 text first and leaves keys, tokens, names, health values and routes out (a test proves that with fake secrets). Read it
@@ -22,24 +22,30 @@ with Android 8 stays on v0.51.0, which will not get fixes.
 ## The Android app
 
 - **Everything stays on the phone.** There is no server of ours. The app talks only to the services you switch on
-  (your Garmin account, Oura, WHOOP, the AI provider whose key you entered, GitHub for the updater).
+  (your Garmin account, Oura, the AI provider whose key you entered, and GitHub for the updater in the GitHub build).
 - **Keys and logins** (AI keys, the Garmin key, OAuth tokens) are kept in `EncryptedSharedPreferences` (Android
   Keystore), are only entered in the app, are sent only to their own service and never in a web address. If secure
   storage is unavailable, a key is not stored at all. Backups and device transfer are off (`allowBackup=false` plus
   data-extraction rules that exclude everything); the app's own backup file never contains keys.
 - **What goes to an AI provider:** a short JSON summary of the numbers and the activity names, never the GPS track. Every
   address the app can send to is listed in [docs/PRIVACY.md](docs/PRIVACY.md) and enforced by a test.
-- **The updater** (`REQUEST_INSTALL_PACKAGES`) downloads the APK from the repository's GitHub releases and checks its
-  SHA-256 against the published checksum before it asks Android to install it. Since v0.56.0 a release without a checksum
-  file is refused (before, it was accepted unchecked), and so is an APK that is not signed with the same key as the
-  installed app, each with a message that says why. Android itself also refuses a different key.
+- **The updater (GitHub build only)** (`REQUEST_INSTALL_PACKAGES`) downloads the APK from the repository's GitHub releases
+  and checks its SHA-256 against the published checksum before it asks Android to install it. Since v0.56.0 a release
+  without a checksum file is refused (before, it was accepted unchecked), and so is an APK that is not signed with the
+  same key as the installed app, each with a message that says why. Android itself also refuses a different key. The
+  **store build** has no updater, no install-packages permission and no FileProvider.
 - **Shrunk and checked on a real Android.** Since v0.58.0 the release APK is shrunk by R8 (no renaming, no optimising), and a
   release is only published after the signed APK has been started on an emulator and walked through
   (`android/scripts/emulator_smoke.py`).
-- **Release signing:** every release is signed with the same key (certificate SHA-256
+- **Release signing:** every GitHub release is signed with the same key (certificate SHA-256
   `06b67b82ec65b533343130fea378165b15ef520bc01969f47ff440242dbdf3b7`, common name *OpenConnect release*). A release is
   only published after a step in `release.yml` has checked that the APK carries it. Check a download yourself with
   `apksigner verify --print-certs`.
+- **Two channels, one app id.** The store channel keeps `nl.tufein.openconnect` but a real Play/F-Droid publication is
+  signed with a different key (the store itself manages or requires it). Android then sees a different signer: a store
+  build cannot install over the GitHub APK, and the GitHub APK cannot install over a store build. Moving means backup →
+  uninstall → install → restore; a backup never contains keys. The store build is **not published** yet; Play and F-Droid
+  remain blocked (see [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md)).
 - **Not independently reviewed.** The code is test-first and open, but nobody outside the project has audited it.
 
 ## The server (for people who host it themselves)

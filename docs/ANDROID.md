@@ -19,7 +19,7 @@ phone, so fonts and spacing on a real device can differ slightly.*
 | **Insights** | **Week** (totals, AI report, personal records), **Day** (one day against your own last four weeks, from the watch or the ring, chosen in dropdowns), **Trophies** (17 trophies and a level), **Coach** (chat about your numbers) and since v1.9.3 **Year** (twelve months of steps, sleep, resting heart rate and trainings with the same honest "no data" rules), and **Plan** with the race goal, the week plan and since v1.6.0 **Your own workouts** (a builder that turns name, repeats, fast/rest, warm-up and cool-down into a FIT workout for the watch; since v1.8.0 the fast repeat can also be a **distance with a pace range** and a saved workout can be edited). See [INSIGHTS.md](INSIGHTS.md) and [AI.md](AI.md) |
 | **Watch** | Read a Garmin watch over a USB cable or a folder of watch files (activities, steps, sleep, heart rate, stress, Body Battery, SpO2, HRV, ...) and follow live heart rate over Bluetooth, which reconnects by itself. Since v1.8.0 a **battery card** shows the charge of the watch (asked over Bluetooth) and of the Oura Ring (from your Oura account) with when each last reported; since v1.8.1 the same card sits high on Home. See [WATCH.md](WATCH.md) |
 | **Garmin account** | Paste your personal Garmin key and pull steps, heart rate, stress, Body Battery, sleep, HRV and activities (with their original FIT files) from your Garmin account; syncs by itself too. See [GARMIN.md](GARMIN.md) |
-| **Settings** | **App language** (phone, English, Nederlands, Deutsch or Français, since v1.11.0; separate from report language), theme (follow phone, dark, light), import files, load or delete all data, **CSV export**, who writes the reports and the coach (automatic, offline, Claude, Gemini), report language, a key and model per provider, **Health Connect** (send, read, and since v1.2.0 fill missing days in the background), **front page** (which metric card and which cards show, since v1.9.2), an **updater** that checks GitHub, verifies the APK's SHA-256 and installs it, and **What leaves your phone** (one page per privacy subject, since v1.12.0) |
+| **Settings** | **App language** (phone, English, Nederlands, Deutsch or Français, since v1.11.0; separate from report language), theme (follow phone, dark, light), import files, load or delete all data, **CSV export**, who writes the reports and the coach (automatic, offline, Claude, Gemini), report language, a key and model per provider, **Health Connect** (send, read, and since v1.2.0 fill missing days in the background), **front page** (which metric card and which cards show, since v1.9.2), an **updater** that checks GitHub, verifies the APK's SHA-256 and installs it (**GitHub build only**; the store build hides it), and **What leaves your phone** (one page per privacy subject, since v1.12.0) |
 
 The look is editorial by default (see [DESIGN.md](DESIGN.md)): a calm page with Instrument Serif display type, IBM Plex Sans running text, very large rounded cards, hairline borders and a floating tab bar with smooth line icons. Olive, the default, is warm cream with deep olive in light mode and warm charcoal-green with soft sage in dark mode. The colour choice is deliberately small: Olive, Sand, Forest, Graphite, High contrast and the phone's Wallpaper, grouped as Calm, Neutral and Phone; an old saved key that is no theme any more opens as Olive. The sporty Sleek style is compact Plex Sans with rectangular controls; the original Handheld console look is still available as Retro (with its pixel icons and letters), as is a formal Classic style. All six themes work in every style; the first start offers a choice of style and theme with a live preview, and *Settings → Appearance* shows that same preview above the choices. The front page is yours: the card under the battery shows calories, steps, resting heart rate, stress, sleep, readiness or activity, and *Settings → Appearance → Front page* also switches the battery card, the journal and *Last 7 days* on or off. The five orbs, the photo header, the serif readiness and sleep cards and the journal check-in stay; the day's key numbers stay open, while the 7-day lines, the month chart and the recent-activity list fold away on Home. Health shows one chart at a time in tabs under the scores, and Insights keeps six everyday tabs with the rest behind *More*. The home-screen widget and the start-up background follow the chosen palette, and since v1.7.0 the widget comes in three sizes — a small cell with readiness and steps, the usual card with the weekly goal, and a large card that adds last night's sleep and the resting heart rate — redrawing itself when you resize it. The launcher icon is one of eight smooth vector variants (six hearts with a pulse and a rounded star and stopwatch), each in a calm palette and with a themed single-colour version for Android 13 and later. Since v1.9.1 *Settings → Appearance* also sets the signal colours (soft or clear), the ring weight (thin or bold) and the front-page light (following the hour or fixed); the choice applies across the whole app, including the Oura tab.
 
@@ -93,8 +93,8 @@ The look is editorial by default (see [DESIGN.md](DESIGN.md)): a calm page with 
 - **Export everything** (`core/ExportAll.kt`): one ZIP with `daily.csv`, `activities.csv`, every activity as FIT (and GPX
   when it has a position), the backup file and a `README.txt`. The FIT and GPX files are written from what the app stored,
   because the watch's original files are not kept.
-- **The updater** refuses a release without a checksum file, a download that does not match it, and an APK signed with
-  another key than the installed app (`updates/ApkSigners.kt`).
+- **The updater** (GitHub build only) refuses a release without a checksum file, a download that does not match it, and
+  an APK signed with another key than the installed app (`updates/ApkSigners.kt`).
 
 ### Accessible and bilingual (v0.57.0)
 
@@ -140,24 +140,38 @@ android/
 
 ## Build it
 
-Requirements: JDK 17 or newer and the Android SDK (platform 35, build-tools 35). Set `ANDROID_HOME`.
+Requirements: JDK 17 or newer and an Android SDK with **platform 37** (compileSdk 37; targetSdk 36, minSdk 28). Set
+`ANDROID_HOME`.
+
+The app has two channels from one code base: `github` keeps the updater, the install permission and the FileProvider;
+`store` leaves those out. Build and test each channel with its own task:
 
 ```bash
 cd android
-./gradlew :core:test                 # core unit tests
-./gradlew :app:testDebugUnitTest     # app tests, incl. UI smoke tests with screenshots in app/build/screenshots
-./gradlew :app:lintDebug
-./gradlew :app:assembleRelease       # app/build/outputs/apk/release/app-release.apk (debug-signed unless a release key is set)
+./gradlew :core:test                                                             # core unit tests
+./gradlew :app:testGithubDebugUnitTest :app:testStoreDebugUnitTest               # app tests per channel
+./gradlew :app:lintGithubDebug :app:lintStoreDebug                               # lint per channel
+./gradlew :app:assembleGithubRelease :app:assembleStoreRelease                   # both release APKs
+./gradlew :app:bundleStoreRelease                                                # store AAB for a store upload
 ```
 
-CI runs the same on every pull request and attaches a debug-signed APK. Release builds attach the APK, signed
-with the release key, to the GitHub release (`openconnect-vX.Y.Z.apk` with a `.sha256`).
+Outputs (debug-signed unless `OPENCONNECT_KEYSTORE` is set):
+
+- `app/build/outputs/apk/github/release/app-github-release.apk`
+- `app/build/outputs/apk/store/release/app-store-release.apk`
+- `app/build/outputs/bundle/storeRelease/app-store-release.aab`
+
+CI runs the tests and lint for both channels and builds both APKs on every pull request. The **release workflow builds
+only the GitHub APK** (`:app:assembleGithubRelease`) and attaches it, signed with the release key, to the GitHub release
+(`openconnect-vX.Y.Z.apk` with a `.sha256`). A separate **store workflow** builds the store AAB and APK, verifies that
+they contain neither `REQUEST_INSTALL_PACKAGES` nor the FileProvider, and keeps them as CI artifacts. It publishes
+nothing to Play or F-Droid, and the AAB is not part of a GitHub release.
 
 ## Install it (sideload)
 
 1. Download `openconnect-vX.Y.Z.apk` from the [releases page](https://github.com/Tufein/OpenConnect/releases).
 2. On the phone, allow installing from the browser or file manager when Android asks.
-3. Open the APK. Needs Android 9 or newer (v0.52.0 raised the minimum from Android 8.0; a phone with Android 8 stays on v0.51.0).
+3. Open the APK. Needs Android 9 or newer (v0.52.0 raised the minimum from Android 8.0; a phone with Android 8 stays on v0.51.0). The app targets Android 16 (API 36). The store build is not available from Play or F-Droid yet.
 
 ### About the signing key
 
@@ -179,7 +193,10 @@ The key is **not in this repository**.
 - Local builds and pull-request CI have no release key and sign with the throw-away Android debug key. Those
   APKs are fine for trying out but are not releases, and cannot be updated by a release APK.
 - Using another key, for example for a Play Store build: set `OPENCONNECT_KEYSTORE` (path),
-  `OPENCONNECT_KEYSTORE_PASSWORD` and optionally `OPENCONNECT_KEY_ALIAS` in the build environment.
+  `OPENCONNECT_KEYSTORE_PASSWORD` and optionally `OPENCONNECT_KEY_ALIAS` in the build environment. The store channel uses
+  the same signing config when those variables are set; a real Play/F-Droid upload needs its own upload key. Because the
+  app id stays `nl.tufein.openconnect`, a store build signed with another key cannot install over the GitHub APK. Back
+  up, uninstall the old app, install the store build and restore; keys are never in a backup.
 
 ## Garmin
 
@@ -210,4 +227,5 @@ what is verified, is in [GARMIN.md](GARMIN.md) and [WATCH.md](WATCH.md).
 
 Trying the watch routes and the background job on real devices and fixing what that turns up, a live Claude and Gemini
 check with real keys, the watch's `Metrics` folder (VO2 max, training status),
-Health Connect on a real phone, a home-screen widget, laps and zoomable charts, and a signed Play Store build.
+Health Connect on a real phone, a home-screen widget, laps and zoomable charts, and publishing the store build (the code
+exists since v1.13.0, but Play and F-Droid are not available yet).
