@@ -1,6 +1,6 @@
-# Install and update OpenConnect
+# Install and update Cercis
 
-OpenConnect is an Android app that is published as an APK file on GitHub, signed with one fixed key. There is no Google
+Cercis is an Android app that is published as an APK file on GitHub, signed with one fixed key. There is no Google
 Play or F-Droid listing yet. This page takes you from nothing to a running app, shows how to check the download, and how
 to update.
 
@@ -35,10 +35,10 @@ The `.sha256` file holds the file's fingerprint. The download is intact when you
    off again afterwards; it is per app, not for the whole phone.
 3. If Google Play Protect asks whether to scan the app, you can choose to scan or to install anyway: the app is not in the
    Play Store, so it has no Play reputation yet.
-4. Open **OpenConnect**, answer the first-start questions (which devices you use) and tap **Load demo data** to look around
+4. Open **Cercis**, answer the first-start questions (which devices you use) and tap **Load demo data** to look around
    before you connect anything.
 
-If Android says **"App not installed"**: the most common cause is an older copy of OpenConnect that was signed with a
+If Android says **"App not installed"**: the most common cause is an older copy of Cercis that was signed with a
 different key (a build someone made themselves). Uninstalling that copy first fixes it; this deletes its data, so make a
 backup first if it holds anything you need.
 
@@ -61,10 +61,10 @@ is no Play or F-Droid listing. It has the same app id (`nl.tufein.openconnect`),
 different key than the GitHub APK. Android therefore sees a different app: you cannot install it over the GitHub build,
 or switch back, without uninstalling.
 
-To move: *Settings, Your data, Back up*, copy the backup file, uninstall OpenConnect, install the store build, then
+To move: *Settings, Your data, Back up*, copy the backup file, uninstall Cercis, install the store build, then
 *Restore*. The backup never contains keys: enter your Garmin key and AI keys again. The store build has no in-app
 updater, no install-packages permission and no FileProvider; the GitHub build keeps all three. Play and F-Droid remain
-blocked by the name, an account and testers, real screenshots and store declarations.
+blocked by legal clearance of the name, an account and testers, real screenshots and store declarations.
 
 ## 6. Move to a new phone, or start over
 

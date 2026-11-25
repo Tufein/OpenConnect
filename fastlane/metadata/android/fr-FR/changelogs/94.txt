@@ -1,0 +1,1 @@
+Cercis est le nouveau nom affiché ; l'application, vos données et le nom de paquet restent inchangés, donc les installations existantes se mettent à jour normalement. Le dépôt et le nom de paquet conservent l'identifiant technique OpenConnect. Cercis est un tableau de bord de fitness et de santé, pas le client VPN OpenConnect.

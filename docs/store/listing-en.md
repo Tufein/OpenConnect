@@ -6,13 +6,13 @@ and the **widget** (with its glance).
 
 ## Watch face
 
-**Name:** OpenConnect Watch Face
+**Name:** Cercis Watch Face
 
 **Tagline:** Your Body Battery, heart rate, stress and steps on a clean, dashboard or retro face.
 
 **Description:**
 
-OpenConnect Watch Face puts what your watch already knows on your wrist, in three designs you pick in Garmin's Connect
+Cercis Watch Face puts what your watch already knows on your wrist, in three designs you pick in Garmin's Connect
 IQ app:
 
 - **Clean:** a ring around a big time.
@@ -26,7 +26,7 @@ down, to protect the screen.
 Everything on the face is read on the watch itself. No phone, no account and no internet connection are needed, and
 nothing is sent anywhere.
 
-There is no sleep field: Garmin gives watch apps no sleep length. OpenConnect is an independent open-source project
+There is no sleep field: Garmin gives watch apps no sleep length. Cercis is an independent open-source project
 (AGPL-3.0-or-later) and is not made or endorsed by Garmin. Garmin and Body Battery are trademarks of Garmin Ltd.
 
 Source code and the companion Android app: https://github.com/Tufein/OpenConnect
@@ -45,20 +45,20 @@ app, like those of any watch face.
 
 ## Widget
 
-**Name:** OpenConnect Widget
+**Name:** Cercis Widget
 
 **Tagline:** A glance and a screen with your Body Battery, heart rate, stress, steps and floors.
 
 **Description:**
 
-OpenConnect Widget adds a glance to the glance list of your watch: your first three fields on one line, such as
+Cercis Widget adds a glance to the glance list of your watch: your first three fields on one line, such as
 *Battery 72  HR 52  Stress 28*. Open it for one screen with a ring, four rows and a line of your Body Battery over the
 last 12 hours.
 
 Colour and fields are set in Garmin's Connect IQ app (the same five colours and five fields as the watch face). All
 values come from the watch itself: no phone, no account, no internet.
 
-There is no sleep screen: Garmin gives watch apps no sleep length. OpenConnect is an independent open-source project
+There is no sleep screen: Garmin gives watch apps no sleep length. Cercis is an independent open-source project
 (AGPL-3.0-or-later) and is not made or endorsed by Garmin. Garmin and Body Battery are trademarks of Garmin Ltd.
 
 Source code and the companion Android app: https://github.com/Tufein/OpenConnect

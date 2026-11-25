@@ -87,10 +87,10 @@ class AppSmokeTest : AppTestBase() {
         // the scores come first, each as a tile, then their 30-day charts
         waitForText("Scores")
         assertTrue(hasText("Sleep score", substring = false))
-        assertTrue(hasText("Readiness is OpenConnect's own estimate", substring = true))
+        assertTrue(hasText("Readiness is Cercis's own estimate", substring = true))
         shot("34-health-scores")
         clickChip("Readiness chart")
-        scrollToText("OpenConnect's own 0 to 100 estimate", substring = true)
+        scrollToText("Cercis's own 0 to 100 estimate", substring = true)
         shot("35-health-readiness-chart")
         clickChip("Sleep score chart")
         scrollToText("The sleep score your watch gives each night", substring = true)

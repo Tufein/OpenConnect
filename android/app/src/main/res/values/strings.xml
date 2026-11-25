@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">OpenConnect</string>
+    <string name="app_name">Cercis</string>
     <string name="tab_home">Home</string>
     <string name="tab_activities">Activities</string>
     <string name="tab_health">Health</string>
@@ -60,16 +60,16 @@
     <string name="device_status">Status: %1$s</string>
     <string name="source_line">%1$s: %2$s</string>
     <string name="about_open_button">About and licences</string>
-    <string name="about_title">About OpenConnect</string>
-    <string name="about_version">OpenConnect %1$s</string>
+    <string name="about_title">About Cercis</string>
+    <string name="about_version">Cercis %1$s</string>
     <string name="about_licence_line">Free software under the AGPL-3.0-or-later. Not affiliated with or endorsed by Garmin, Oura, WHOOP or Hume.</string>
     <string name="about_source_link">Source code and issues: github.com/Tufein/OpenConnect</string>
     <string name="about_tried_title">What has been tried on a real device</string>
     <string name="about_tried_body">Everything has automated tests. These labels say what has also been tried on a real phone, watch, ring or band. A label only changes after a real trial.</string>
     <string name="about_licences_title">Licences</string>
-    <string name="about_garmin_disclaimer">Garmin, Garmin Connect and fenix are trademarks of Garmin Ltd. or its subsidiaries. OpenConnect is not affiliated with or endorsed by Garmin.</string>
+    <string name="about_garmin_disclaimer">Garmin, Garmin Connect and fenix are trademarks of Garmin Ltd. or its subsidiaries. Cercis is not affiliated with or endorsed by Garmin.</string>
     <string name="about_privacy_title">Privacy</string>
-    <string name="about_privacy_body">OpenConnect has no server of ours. Your data stays on this phone. Only what you switch on leaves it: your Garmin or Oura account, an AI provider if you add a key, and GitHub when you look for an update. With an AI on, activity names, splits and heart-rate halves go to it, but no GPS route or GPS points. Keys stay in the Android Keystore. The page What leaves your phone lists each one.</string>
+    <string name="about_privacy_body">Cercis has no server of ours. Your data stays on this phone. Only what you switch on leaves it: your Garmin or Oura account, an AI provider if you add a key, and GitHub when you look for an update. With an AI on, activity names, splits and heart-rate halves go to it, but no GPS route or GPS points. Keys stay in the Android Keystore. The page What leaves your phone lists each one.</string>
     <string name="diagnostics_button">Share diagnostics</string>
     <string name="diagnostics_title">Diagnostics report</string>
     <string name="diagnostics_body">This is exactly what will be shared. It holds versions, what is switched on and what the last syncs did. It holds no keys, tokens, names, health values or routes. Paste it into a GitHub issue.</string>
@@ -154,7 +154,7 @@
     <string name="watch_card_title">Garmin watch</string>
     <string name="watch_card_body">Read your watch with a USB cable or a folder, follow your heart rate live over Bluetooth, or pull your data from your Garmin account.</string>
     <string name="watch_usb_title">Read the watch with a USB cable</string>
-    <string name="watch_usb_body">Plug the watch into the phone with its cable (USB-C, or with an OTG adapter). OpenConnect then copies the activities and the all-day data stored on the watch: steps, heart rate, stress, Body Battery, sleep, HRV and SpO2. It goes straight from the watch to this phone, not through Garmin or the internet.</string>
+    <string name="watch_usb_body">Plug the watch into the phone with its cable (USB-C, or with an OTG adapter). Cercis then copies the activities and the all-day data stored on the watch: steps, heart rate, stress, Body Battery, sleep, HRV and SpO2. It goes straight from the watch to this phone, not through Garmin or the internet.</string>
     <string name="watch_usb_none">No Garmin watch found on the USB port. Check the cable and that the watch is switched on, then search again.</string>
     <string name="watch_usb_search">Search again</string>
     <string name="watch_read_button">Read %1$s</string>
@@ -166,7 +166,7 @@
     <string name="watch_done_days">Days updated: %1$d, nights: %2$d</string>
     <string name="watch_done_errors">%1$d file(s) could not be read</string>
     <string name="watch_fail_not_found">The watch is no longer connected.</string>
-    <string name="watch_fail_permission">Android did not give OpenConnect access to the watch. Search again and allow it when asked.</string>
+    <string name="watch_fail_permission">Android did not give Cercis access to the watch. Search again and allow it when asked.</string>
     <string name="watch_fail_open">The watch did not answer as a storage device. Unlock it, try another cable, or look for a USB or MTP mode in its settings.</string>
     <string name="watch_fail_files">The watch connected, but it has no GARMIN folder with data.</string>
     <string name="watch_fail_other">Reading the watch stopped: %1$s</string>
@@ -189,7 +189,7 @@
     <string name="watch_live_saved">Saved as an activity</string>
     <string name="watch_live_name">Live heart rate</string>
     <string name="watch_live_permission">Bluetooth permission is needed to find sensors.</string>
-    <string name="watch_note">The watch can sync over Bluetooth with OpenConnect itself (above), be read with a cable or from a folder, or send live heart rate. Data from Garmin\'s servers comes in on the Garmin screen.</string>
+    <string name="watch_note">The watch can sync over Bluetooth with Cercis itself (above), be read with a cable or from a folder, or send live heart rate. Data from Garmin\'s servers comes in on the Garmin screen.</string>
     <string name="hrv">HRV (last night)</string>
     <string name="spo2">Blood oxygen (SpO2)</string>
     <string name="respiration">Respiration</string>
@@ -201,9 +201,9 @@
     <string name="live_notification_text">%1$s bpm · %2$s</string>
     <string name="action_garmin">Garmin account</string>
     <string name="garmin_title">Garmin account</string>
-    <string name="garmin_intro">Your watch talks to the Garmin Connect app on your phone over Bluetooth, and Garmin keeps your data in its cloud. OpenConnect reads your own data from there with a personal key that only you can create. There is no server of ours in between.</string>
+    <string name="garmin_intro">Your watch talks to the Garmin Connect app on your phone over Bluetooth, and Garmin keeps your data in its cloud. Cercis reads your own data from there with a personal key that only you can create. There is no server of ours in between.</string>
     <string name="garmin_key_title">Your personal key</string>
-    <string name="garmin_key_body">Make the key on Garmin\'s page (it is shown once), copy it and paste it below. OpenConnect keeps it encrypted on this phone and sends it only to Garmin.</string>
+    <string name="garmin_key_body">Make the key on Garmin\'s page (it is shown once), copy it and paste it below. Cercis keeps it encrypted on this phone and sends it only to Garmin.</string>
     <string name="garmin_open_key_page">Open Garmin\'s key page</string>
     <string name="garmin_key_field">Garmin key</string>
     <string name="garmin_key_field_saved">Key saved, paste a new one to replace it</string>
@@ -293,7 +293,7 @@
     <string name="readiness_excellent">Peak form</string>
     <string name="readiness_best">Strongest: %1$s</string>
     <string name="readiness_worst">Weakest: %1$s</string>
-    <string name="readiness_note">OpenConnect\'s own estimate from your sleep, Body Battery, HRV, resting heart rate and stress. Not Garmin\'s score and not medical advice.</string>
+    <string name="readiness_note">Cercis\'s own estimate from your sleep, Body Battery, HRV, resting heart rate and stress. Not Garmin\'s score and not medical advice.</string>
     <string name="search_hint">Search name, sport or date (2026-05)</string>
     <string name="search_none">Nothing matches.</string>
     <string name="activities_count">%1$d activities</string>
@@ -391,11 +391,11 @@
     <string name="save_model">Save model</string>
     <string name="default_model">Use default model</string>
     <string name="watch_ble_title">Sync a Garmin watch over Bluetooth</string>
-    <string name="watch_ble_body">Experimental. OpenConnect talks to the watch the way the Garmin Connect app does (the protocol Gadgetbridge worked out) and copies what is new: activities, steps, heart rate, stress, Body Battery, sleep and HRV. No cable, no Garmin account. The first time, Android pairs with the watch: put the watch in pairing mode (Settings, Connectivity, Phone, Pair phone) and confirm the code.</string>
+    <string name="watch_ble_body">Experimental. Cercis talks to the watch the way the Garmin Connect app does (the protocol Gadgetbridge worked out) and copies what is new: activities, steps, heart rate, stress, Body Battery, sleep and HRV. No cable, no Garmin account. The first time, Android pairs with the watch: put the watch in pairing mode (Settings, Connectivity, Phone, Pair phone) and confirm the code.</string>
     <string name="watch_ble_families">Looks for every kind of Garmin watch, golf watch and bike computer, by its name and by the model number it advertises. Heart rate straps, lights and scales are left out: there is nothing to sync from them. Models that are not on the list this sync was made for carry a note.</string>
     <string name="watch_ble_hint_unknown">Not on the list this sync was ported from, and nothing was tried on this model. Syncing may fail; the Garmin account route is the safe one.</string>
-    <string name="watch_ble_hint_newer">This model needs Garmin\'s newer sync protocol, which OpenConnect does not have, so some files may be missing. The Garmin account route is safer.</string>
-    <string name="watch_ble_warning">A watch paired with OpenConnect will in practice no longer sync with the Garmin Connect app. The files stay on the watch.</string>
+    <string name="watch_ble_hint_newer">This model needs Garmin\'s newer sync protocol, which Cercis does not have, so some files may be missing. The Garmin account route is safer.</string>
+    <string name="watch_ble_warning">A watch paired with Cercis will in practice no longer sync with the Garmin Connect app. The files stay on the watch.</string>
     <string name="watch_ble_find">Find watch</string>
     <string name="watch_ble_stop">Stop looking</string>
     <string name="watch_ble_searching">Looking for Garmin watches nearby…</string>
@@ -406,7 +406,7 @@
     <string name="watch_ble_step_connecting">Connecting to the watch…</string>
     <string name="watch_ble_step_handshake">Saying hello to the watch…</string>
     <string name="watch_fail_ble_open">Could not connect to the watch: %1$s. If Garmin Connect is paired with this watch, use the Garmin account route instead.</string>
-    <string name="watch_fail_ble_files">The watch connected, but listed no files OpenConnect can read.</string>
+    <string name="watch_fail_ble_files">The watch connected, but listed no files Cercis can read.</string>
     <string name="watch_fail_not_paired">Pairing with the watch did not work. Put the watch in pairing mode (Settings, Connectivity, Phone, Pair phone) and try again.</string>
     <string name="insight_range">Average %1$s · lowest %2$s (%3$s) · highest %4$s (%5$s)</string>
     <string name="insight_days">Based on %1$d days with a reading.</string>
@@ -430,7 +430,7 @@
     <string name="insight_explain_stress">Garmin\'s stress score from heart rate variability, 0 to 100: up to 25 is rest, 26 to 50 low, 51 to 75 medium, above 75 high.</string>
     <string name="insight_hr_range">Average %1$s · highest %2$s</string>
     <string name="watch_together_title">Using Garmin Connect too?</string>
-    <string name="watch_together_body">A watch talks to one phone app at a time over Bluetooth. If Garmin Connect is your main app, keep it that way and let OpenConnect read the same data from your Garmin account (Garmin account screen) or from files. Use the Bluetooth sync here only when OpenConnect should be the watch\'s phone. Runs that arrive from more than one route are recognised and kept once.</string>
+    <string name="watch_together_body">A watch talks to one phone app at a time over Bluetooth. If Garmin Connect is your main app, keep it that way and let Cercis read the same data from your Garmin account (Garmin account screen) or from files. Use the Bluetooth sync here only when Cercis should be the watch\'s phone. Runs that arrive from more than one route are recognised and kept once.</string>
     <string name="scores_title">Scores</string>
     <string name="score_sleep">Sleep score</string>
     <string name="score_readiness_30">Readiness, 30 days</string>
@@ -456,10 +456,10 @@
     <string name="hrv_status_balanced">Balanced</string>
     <string name="hrv_status_high">Above your normal</string>
     <string name="hrv_status_line">%1$s ms this week · %2$s ms your normal (%3$s%%)</string>
-    <string name="hrv_status_note">OpenConnect compares your last seven nights with your own four-week baseline; this is not the HRV Status of Garmin.</string>
+    <string name="hrv_status_note">Cercis compares your last seven nights with your own four-week baseline; this is not the HRV Status of Garmin.</string>
     <string name="health_chart">%1$s chart</string>
-    <string name="scores_note">Readiness is OpenConnect\'s own estimate. Sleep score, Body Battery and stress are the watch\'s numbers. No reading yet shows a dash.</string>
-    <string name="insight_explain_readiness">OpenConnect\'s own 0 to 100 estimate from sleep, Body Battery, HRV, resting heart rate and stress, against your own normal. 70 or more means ready for a hard day, under 40 means take it easy.</string>
+    <string name="scores_note">Readiness is Cercis\'s own estimate. Sleep score, Body Battery and stress are the watch\'s numbers. No reading yet shows a dash.</string>
+    <string name="insight_explain_readiness">Cercis\'s own 0 to 100 estimate from sleep, Body Battery, HRV, resting heart rate and stress, against your own normal. 70 or more means ready for a hard day, under 40 means take it easy.</string>
     <string name="insight_explain_sleep_score">The sleep score your watch gives each night, 0 to 100: 80 or more is good, 60 to 79 fair, below 60 poor. It weighs duration, deep and REM sleep and restlessness.</string>
     <string name="score_out_of">out of 100</string>
     <string name="settings_goals">Weekly goals</string>
@@ -482,7 +482,7 @@
     <string name="load_steady_text">In line with the last four weeks. This is the range where fitness builds with the least risk.</string>
     <string name="load_heavy_text">More than usual. Fine for a short block, but plan an easier week after it.</string>
     <string name="load_overreaching_text">A big jump over what your body is used to. This is the usual time for niggles and illness: back off a little.</string>
-    <string name="load_note">OpenConnect\'s own estimate: minutes times an effort weight from your heart rate, this week against your 4-week average. Not Garmin\'s Training Load, not medical advice.</string>
+    <string name="load_note">Cercis\'s own estimate: minutes times an effort weight from your heart rate, this week against your 4-week average. Not Garmin\'s Training Load, not medical advice.</string>
     <string name="settings_backup">Back up and restore</string>
     <string name="settings_backup_body">Save everything the app holds in one file: activities with their tracks, daily health, sleep, the readings of your watch, ring and bands, and your journal, shoes, training plan, race and goals. Restoring adds it back without removing or overwriting anything. Keys are never in the file. Export everything makes one ZIP with CSV, FIT and GPX files that other apps can read, with the backup inside.</string>
     <string name="action_backup">Back up</string>
@@ -620,12 +620,12 @@
     <string name="session_intervals_hint">Warm up, then 5 to 8 fast stretches of 2 to 3 minutes with an easy jog in between, and cool down.</string>
     <string name="session_race">Race day</string>
     <string name="session_race_hint">Go at the pace you trained for and enjoy it. Rest the day before.</string>
-    <string name="lock_title">OpenConnect is locked</string>
+    <string name="lock_title">Cercis is locked</string>
     <string name="lock_body">Unlock with your fingerprint, face or screen lock.</string>
     <string name="lock_unlock">Unlock</string>
-    <string name="lock_prompt_title">Unlock OpenConnect</string>
+    <string name="lock_prompt_title">Unlock Cercis</string>
     <string name="settings_lock">App lock</string>
-    <string name="settings_lock_body">Ask for your fingerprint, face or screen lock when OpenConnect opens and after it has been out of sight for a minute. The recent-apps list and screenshots then stay blank. The widget and the notifications still show their short summaries.</string>
+    <string name="settings_lock_body">Ask for your fingerprint, face or screen lock when Cercis opens and after it has been out of sight for a minute. The recent-apps list and screenshots then stay blank. The widget and the notifications still show their short summaries.</string>
     <string name="settings_lock_switch">Lock the app</string>
     <string name="settings_lock_unavailable">Set a screen lock or fingerprint on your phone first.</string>
     <string name="action_oura">Open the Oura tab</string>
@@ -642,9 +642,9 @@
     <string name="oura_client_secret_saved">Client secret (saved; leave empty to keep it)</string>
     <string name="oura_redirect">Redirect address</string>
     <string name="oura_save_client">Save</string>
-    <string name="oura_cannot_store">This phone cannot keep a secret safely, so OpenConnect does not store an Oura login.</string>
+    <string name="oura_cannot_store">This phone cannot keep a secret safely, so Cercis does not store an Oura login.</string>
     <string name="oura_step3">3. Log in at Oura</string>
-    <string name="oura_step3_body">Your browser opens Oura\'s login. After you allow it, the browser comes back to OpenConnect and the last 30 days are synced. If it does not come back, copy the address the browser ends up on and paste it below.</string>
+    <string name="oura_step3_body">Your browser opens Oura\'s login. After you allow it, the browser comes back to Cercis and the last 30 days are synced. If it does not come back, copy the address the browser ends up on and paste it below.</string>
     <string name="oura_log_in">Log in at Oura</string>
     <string name="oura_log_in_again">Log in at Oura again</string>
     <string name="oura_paste">Address after the login</string>
@@ -688,7 +688,7 @@
     <string name="device_garmin_body">Garmin Connect account and the watch over Bluetooth or USB</string>
     <string name="device_oura">Oura Ring</string>
     <string name="device_oura_body">Its own tab with the ring\'s scores, nights and workouts</string>
-    <string name="onboarding_title">Welcome to OpenConnect</string>
+    <string name="onboarding_title">Welcome to Cercis</string>
     <string name="onboarding_body">Which devices do you use? The app only shows what fits you. Your data stays on this phone.</string>
     <string name="onboarding_devices">Your devices</string>
     <string name="onboarding_look">Choose your look</string>
@@ -752,7 +752,7 @@
     <string name="watch_cannot_write">The watch did not accept the file over USB.</string>
     <string name="home_my_day">My day</string>
     <string name="race_title">Race goal</string>
-    <string name="race_intro">Predicted race times from your best efforts, with Riegel\'s formula. Garmin\'s own Race Predictor is not available to apps, so this is OpenConnect\'s own estimate: the further a distance is from what you have run, the rougher it is.</string>
+    <string name="race_intro">Predicted race times from your best efforts, with Riegel\'s formula. Garmin\'s own Race Predictor is not available to apps, so this is Cercis\'s own estimate: the further a distance is from what you have run, the rougher it is.</string>
     <string name="race_no_runs">Run at least 4 km with a track to get predictions.</string>
     <string name="race_row">%1$s  %2$s  (%3$s per km, %4$s)</string>
     <string name="race_d_5k">5 km</string>
@@ -833,7 +833,7 @@
     <string name="zones_verdict_all_easy">All easy (under 5 percent hard). Fine for building a base; add one hard session to get faster.</string>
     <string name="zones_earlier_title">Earlier weeks</string>
     <string name="zones_earlier_line">From %1$s: %2$s in zones 1 to 5, %3$d activities</string>
-    <string name="zones_note">OpenConnect\'s own arithmetic on the heart rate your watch recorded, as a percentage of the maximum. Garmin\'s own zones can differ, and a wrist sensor can read too high. Not medical advice.</string>
+    <string name="zones_note">Cercis\'s own arithmetic on the heart rate your watch recorded, as a percentage of the maximum. Garmin\'s own zones can differ, and a wrist sensor can read too high. Not medical advice.</string>
     <string name="zones_activity_title">Time in heart-rate zones</string>
     <string name="zones_activity_max">Zones from a maximum of %1$d bpm.</string>
     <string name="zones_activity_guess">A guess: this activity has only an average heart rate, no samples.</string>
@@ -944,7 +944,7 @@
     <string name="form_chart_fatigue">Fatigue (7-day average)</string>
     <string name="form_chart_form">Form (fitness minus fatigue)</string>
     <string name="form_explain">Fitness is a slow average of your training load, fatigue a fast one. Form is the difference: above zero you are rested, below zero you carry fatigue. A hard week lowers form at once and raises fitness slowly; a rest week does the opposite.</string>
-    <string name="form_note">OpenConnect\'s own estimate from minutes and heart rate, in its own units. It is not Garmin\'s Training Status, not TSS, and not medical advice.</string>
+    <string name="form_note">Cercis\'s own estimate from minutes and heart rate, in its own units. It is not Garmin\'s Training Status, not TSS, and not medical advice.</string>
     <string name="shape_title">Shape for each distance</string>
     <string name="shape_intro">How well your last six weeks of running fit each distance: your weekly kilometres and your longest run against what a typical plan asks.</string>
     <string name="shape_row_description">%1$s: %2$d percent, %3$s</string>
@@ -998,7 +998,7 @@
     <string name="monotony_strain">Strain</string>
     <string name="monotony_rest_days">Rest days</string>
     <string name="monotony_usual">Usual strain</string>
-    <string name="monotony_note">Foster\'s monotony (mean daily load divided by its spread) of the last seven days; strain is the week\'s load times it. OpenConnect\'s own load units, an estimate, not medical advice.</string>
+    <string name="monotony_note">Foster\'s monotony (mean daily load divided by its spread) of the last seven days; strain is the week\'s load times it. Cercis\'s own load units, an estimate, not medical advice.</string>
     <string name="sleep_need_title">Sleep tonight</string>
     <string name="sleep_need_value">%1$s h</string>
     <string name="sleep_need_last">Last night: %1$s h</string>
@@ -1071,7 +1071,7 @@
     <string name="score_best_steps">Best step day</string>
     <string name="score_best_steps_value">%1$s, %2$s</string>
     <string name="score_share">Share as text</string>
-    <string name="score_share_text">OpenConnect %1$d: %2$s km in %3$d activities, %4$s hours, %5$d active days, longest streak %6$d days.</string>
+    <string name="score_share_text">Cercis %1$d: %2$s km in %3$d activities, %4$s hours, %5$d active days, longest streak %6$d days.</string>
     <string name="score_note">Worked out on the phone from your activities and daily summaries. Nothing is sent anywhere until you press share.</string>
     <string name="ramp_title">Training ramp</string>
     <string name="ramp_low">Lighter than usual</string>
@@ -1083,7 +1083,7 @@
     <string name="ramp_text_steady">About what your body is used to: a good base to keep building from.</string>
     <string name="ramp_text_high">More than you are used to. Fine now and then, but follow it with an easy day.</string>
     <string name="ramp_text_spike">A big jump in one week. That is the pattern that goes with overuse injuries: take it easy for a few days.</string>
-    <string name="ramp_note">Your last 7 days against the average week of the four weeks before. OpenConnect\'s own load units, a rule of thumb, not medical advice.</string>
+    <string name="ramp_note">Your last 7 days against the average week of the four weeks before. Cercis\'s own load units, a rule of thumb, not medical advice.</string>
     <string name="sleep_rhythm_title">Sleep rhythm</string>
     <string name="sleep_rhythm_steady">Steady nights</string>
     <string name="sleep_rhythm_variable">Some ups and downs</string>
@@ -1112,7 +1112,7 @@
     <string name="fold_open">open</string>
     <string name="fold_closed">folded away</string>
     <string name="connect_iq_open">Open Garmin Connect IQ</string>
-    <string name="connect_iq_open_listing">Open OpenConnect in Connect IQ</string>
+    <string name="connect_iq_open_listing">Open Cercis in Connect IQ</string>
     <string name="connect_iq_note">Opens Garmin\'s Connect IQ app on this phone, where you manage the watch faces and apps of your watch. Without that app the Play Store opens, so you can install it.</string>
     <string name="connect_iq_failed">Connect IQ could not be opened: this phone has no Garmin app, no Play Store and no browser for it.</string>
     <string name="ring_row_note">Recorded by the %1$s only. It is listed here, but it does not count in totals, training load, records or trophies, and it has no heart rate or route.</string>
@@ -1142,7 +1142,7 @@
     <string name="around_gap_watch_nothing">The watch has no measurements for this day.</string>
     <string name="around_gap_watch_day_only">No Body Battery or stress from just before and after: those minute-by-minute readings only come in when the watch itself is read (cable, folder or Bluetooth). A Garmin account and a file give totals of the day.</string>
     <string name="around_gap_ring_no_day">The ring has no day here: not worn, or not synced with the Oura app yet.</string>
-    <string name="around_gap_ring_hr">The ring\'s heart rate during the effort is not shown: OpenConnect does not ask Oura for it.</string>
+    <string name="around_gap_ring_hr">The ring\'s heart rate during the effort is not shown: Cercis does not ask Oura for it.</string>
     <string name="around_not_live">None of this is live: it is what the watch and the ring had at their last sync.</string>
     <string name="insights_day">Day</string>
     <string name="day_source">Source</string>
@@ -1183,12 +1183,12 @@
     <string name="update_downloading">Downloading %1$d%%</string>
     <string name="update_install">Install update</string>
     <string name="update_note">The APK comes from the GitHub release of this project. Its SHA-256 is checked before Android is asked to install it.</string>
-    <string name="update_permission">Allow OpenConnect to install apps in Android settings, then press Install again.</string>
+    <string name="update_permission">Allow Cercis to install apps in Android settings, then press Install again.</string>
     <string name="update_error_network">Could not reach GitHub. Check the connection and try again.</string>
     <string name="update_error_no_release">GitHub did not return a usable release.</string>
     <string name="update_error_checksum">The download did not match its checksum. It was not installed.</string>
     <string name="update_error_no_checksum">This release has no checksum file, so the download cannot be checked. It was not installed.</string>
-    <string name="update_error_signature">The download is not signed with the same key as the installed OpenConnect. It was not installed.</string>
+    <string name="update_error_signature">The download is not signed with the same key as the installed Cercis. It was not installed.</string>
     <string name="update_error_storage">The downloaded file could not be saved.</string>
     <string name="update_error_unknown">The update could not be completed.</string>
 
@@ -1227,13 +1227,13 @@
     <string name="forward_title">Notifications on the watch</string>
     <string name="forward_body">Shows the notifications of the apps you choose on your Garmin watch, over the same Bluetooth connection the sync uses. The text goes from the phone to the watch and nowhere else. Answering a message or taking a call from the watch is not supported.</string>
     <string name="forward_switch">Send notifications to the watch</string>
-    <string name="forward_one_phone">A watch talks to one phone at a time. While this is on, OpenConnect holds the connection, so the Garmin Connect app cannot connect to the same watch. Turn this off to give it back.</string>
-    <string name="forward_needs_access">OpenConnect needs notification access to see your notifications. It reads them only to pass them to the watch, and keeps none.</string>
+    <string name="forward_one_phone">A watch talks to one phone at a time. While this is on, Cercis holds the connection, so the Garmin Connect app cannot connect to the same watch. Turn this off to give it back.</string>
+    <string name="forward_needs_access">Cercis needs notification access to see your notifications. It reads them only to pass them to the watch, and keeps none.</string>
     <string name="forward_allow_access">Allow notification access</string>
     <string name="forward_restricted">Installed from a file and the switch is greyed out? Open the app info, tap the three dots and choose Allow restricted settings, then go back and try again.</string>
     <string name="forward_open_app_info">Open the app info</string>
-    <string name="forward_needs_watch">First sync your watch over Bluetooth in the card above, so OpenConnect knows which watch to use.</string>
-    <string name="forward_needs_bluetooth">OpenConnect needs the Bluetooth permission (Nearby devices) to reach the watch.</string>
+    <string name="forward_needs_watch">First sync your watch over Bluetooth in the card above, so Cercis knows which watch to use.</string>
+    <string name="forward_needs_bluetooth">Cercis needs the Bluetooth permission (Nearby devices) to reach the watch.</string>
     <string name="forward_allow_bluetooth">Allow Bluetooth</string>
     <string name="forward_connecting">Connecting to %1$s…</string>
     <string name="forward_connected">Connected to %1$s.</string>
@@ -1245,7 +1245,7 @@
     <string name="forward_try_now">Try now</string>
     <string name="forward_choose_apps">Choose apps (%1$d chosen)</string>
     <string name="forward_test">Send a test to the watch</string>
-    <string name="forward_test_title">OpenConnect test</string>
+    <string name="forward_test_title">Cercis test</string>
     <string name="forward_test_body">If you can read this on the watch, notifications work.</string>
     <string name="forward_test_sent">Test sent. Look at the watch.</string>
     <string name="forward_test_not_connected">Not connected to the watch yet.</string>
@@ -1257,7 +1257,7 @@
     <string name="forward_screen_off_note">While you are looking at the phone, the watch stays quiet.</string>
     <string name="forward_skipped">Last notification not sent: %1$s</string>
     <string name="forward_skip_off">forwarding is off</string>
-    <string name="forward_skip_own_app">it came from OpenConnect itself</string>
+    <string name="forward_skip_own_app">it came from Cercis itself</string>
     <string name="forward_skip_app_not_chosen">its app is not chosen</string>
     <string name="forward_skip_ongoing">it is a notification that stays (music, a timer, a download)</string>
     <string name="forward_skip_group_summary">it is the summary of a stack</string>
@@ -1301,23 +1301,23 @@
     <string name="forward_step_connecting">connecting</string>
     <string name="forward_step_handshake">introductions</string>
     <string name="forward_skipped_counts">Held back so far: %1$s</string>
-    <string name="forward_log_header">OpenConnect notifications to the watch: log</string>
+    <string name="forward_log_header">Cercis notifications to the watch: log</string>
     <string name="forward_log_empty">Nothing has happened yet.</string>
     <string name="forward_log_copy">Copy the log</string>
     <string name="forward_log_copied">Log copied</string>
     <string name="forward_open_battery">Open battery settings</string>
-    <string name="forward_hint_listener">Notification access is on, but Android has not started the OpenConnect listener. Switch the access off and on again in Android settings, or restart the phone.</string>
+    <string name="forward_hint_listener">Notification access is on, but Android has not started the Cercis listener. Switch the access off and on again in Android settings, or restart the phone.</string>
     <string name="forward_hint_nothing_seen">Android has not handed over a single notification yet. Wait for one to arrive, or check that notification access is still on.</string>
     <string name="forward_hint_garmin_connect">The Garmin Connect app is on this phone and may be holding the watch (a watch talks to one phone app at a time). Close it completely (App info, Force stop), then tap Try now.</string>
-    <string name="forward_hint_battery">The connection worked and then dropped. The phone may be saving power: set OpenConnect to Unrestricted (not optimised) in the battery settings.</string>
-    <string name="forward_hint_not_asking">The watch has not asked for notifications, so OpenConnect sends them anyway. If none show, check the settings of the watch (under Phone) for notifications.</string>
+    <string name="forward_hint_battery">The connection worked and then dropped. The phone may be saving power: set Cercis to Unrestricted (not optimised) in the battery settings.</string>
+    <string name="forward_hint_not_asking">The watch has not asked for notifications, so Cercis sends them anyway. If none show, check the settings of the watch (under Phone) for notifications.</string>
     <string name="forward_hint_said_no">The watch told the phone it does not want notifications. Switch them on in the settings of the watch (under Phone).</string>
     <string name="forward_hint_silent">The watch does not answer anything we send, not even a confirmation. The connection is probably dead; the app notices that after about a minute and connects again. If it stays like this, switch the setting off and on, and look at the log below.</string>
     <string name="forward_hint_ignores">The watch was told about notifications but never asked what they say. Check the notification settings of the watch, and look at the log below.</string>
     <string name="forward_hint_choose_apps">Android hands over notifications, but no app is chosen yet. Tap Choose apps.</string>
-    <string name="forward_check_own_notification">Android lets OpenConnect show its persistent notification</string>
+    <string name="forward_check_own_notification">Android lets Cercis show its persistent notification</string>
     <string name="forward_open_notification_settings">Open notification settings</string>
-    <string name="forward_hint_own_notification">Android does not let OpenConnect show notifications, so the persistent notification (Notifications to the watch) is hidden. Without it Android ends the app sooner and the connection to the watch drops. Allow notifications for OpenConnect.</string>
+    <string name="forward_hint_own_notification">Android does not let Cercis show notifications, so the persistent notification (Notifications to the watch) is hidden. Without it Android ends the app sooner and the connection to the watch drops. Allow notifications for Cercis.</string>
     <string name="forward_test_not_asking">The watch has not asked for notifications yet. The test is kept for a minute and shown when it does.</string>
 
     <!-- v1.3.0: importing a whole archive (ZIP, gzip, Strava and Garmin exports) -->
@@ -1326,7 +1326,7 @@
     <string name="import_busy">An import is still running</string>
     <string name="import_summary">%1$d new, %2$d already there, %3$d files skipped (not activities), %4$d failed</string>
     <string name="import_period">Activities from %1$s to %2$s</string>
-    <string name="import_backup_inside">This archive holds an OpenConnect backup. Use Restore from backup to bring back the journal, shoes and goals too.</string>
+    <string name="import_backup_inside">This archive holds an Cercis backup. Use Restore from backup to bring back the journal, shoes and goals too.</string>
     <string name="import_stopped_cancelled">Stopped before the end, as you asked. What came in so far is kept.</string>
     <string name="import_stopped_files">Stopped: the archive holds too many files. What came in so far is kept.</string>
     <string name="import_stopped_large">Stopped: the archive unpacks to too much data. What came in so far is kept.</string>

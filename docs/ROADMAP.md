@@ -1,9 +1,10 @@
-# OpenConnect: roadmap naar 2.0
+# Cercis: roadmap naar 2.0
 
-Waar OpenConnect staat en hoe het verder groeit. Opnieuw geschreven op 2026-11-20, na v1.0.4, op 2026-11-22 (na
+Waar Cercis staat en hoe het verder groeit. Opnieuw geschreven op 2026-11-20, na v1.0.4, op 2026-11-22 (na
 v1.2.0) met een **thematische koerswissel** (paragraaf 4b, "Je geschiedenis is van jou") en op **2026-11-24 (na
 v1.11.0)** met een nieuwe **koers naar 2.0** in paragraaf 6b: geen lijst met losse ideeën, maar vier fasen en vijf
-poorten. Op **2026-11-25 (na v1.13.0)** is de winkelvariant als code toegevoegd, zonder publicatie. 1.0 is uitgebracht; dit plan zegt wat de volgorde is. Alles is **test-first** gebouwd: eerst de test, dan de
+poorten. Op **2026-11-25 (na v1.13.0)** is de winkelvariant als code toegevoegd, zonder publicatie; in **v1.13.1**
+kreeg de app de weergavenaam **Cercis**, terwijl pakketnaam, repository en updater `openconnect` bleven. 1.0 is uitgebracht; dit plan zegt wat de volgorde is. Alles is **test-first** gebouwd: eerst de test, dan de
 code, en niets gaat uit zonder dat CI groen is. Wat zonder horloge, ring of telefoon niet te controleren is, staat er
 eerlijk bij.
 
@@ -12,9 +13,10 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
 
 **Legenda:** ✅ klaar · 🔜 volgende · 🧪 gebouwd en getest met nepgegevens, nog nooit op echte hardware of tegen de echte dienst · ❓ heeft iets nodig dat alleen de eigenaar kan geven · **S/M/L** = klein (een sessie), middel, groot (meerdere releases)
 
-## 1. Waar we staan (v1.13.0, 2026-11-25)
+## 1. Waar we staan (v1.13.1, 2026-11-25)
 
-- **13 releases sinds 1.0** (v1.0.0 tot en met v1.13.0, met tientallen kandidaten daartussen), ruim 1.400 tests
+- **13 minorreleases sinds 1.0** (v1.1.0 tot en met v1.13.0, met tientallen kandidaten en patchreleases daartussen;
+  v1.13.1 is de naamswijziging), ruim 1.400 tests
   (Python, `core` en de app), AGPL-3.0, openbare repository, een Android-app die zonder server werkt en een
   Python-server voor wie die liever zelf draait. Nederlands, Engels, Duits en Frans; de laatste twee zijn
   machine-draft en nog niet native nagekeken.
@@ -29,7 +31,8 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   (archief-import, namen, zelf een training en work-out invoeren), **terugkijken** (het jaaroverzicht in v1.9.3) en een
   **schema dat meedenkt** (v1.10.0): één voorstel na een gemiste afgesloten week, jij kiest Toepassen of Niet nu, en
   de coach bespreekt dat voorstel maar verandert niets. In v1.9.3 is ook de gereedschapsketen naar Gradle 9.6, AGP 9.5
-  en compileSdk 37 gegaan. In v1.13.0 kwamen daar de twee Android-kanalen bij.
+  en compileSdk 37 gegaan. In v1.13.0 kwamen daar de twee Android-kanalen bij; in v1.13.1 kreeg de app de
+  weergavenaam **Cercis**.
 - **Sinds v1.11.0:** vier talen met een taalkeuze in Instellingen, lokale datums en getallen, en Duitse/Franse
   widget- en meldingsteksten. De Oura-tab is opgeruimd en de voorbladfoto volgt de dag met vier composities.
   De Duitse en Franse teksten zijn automatisch opgesteld en niet native nagekeken; dat staat ook in de app en
@@ -44,10 +47,15 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   36. De store-AAB en -APK worden gebouwd en gecontroleerd, maar **niet gepubliceerd**: de naam, een
   Play-ontwikkelaarsaccount met testers, echte schermafbeeldingen en de winkelverklaringen staan nog open. De app is
   dus niet in een winkel te vinden.
+- **Sinds v1.13.1:** de app heet **Cercis** en niet meer OpenConnect, om niet met de gelijknamige VPN-client te worden
+  verward. Alleen de weergavenaam veranderde; de pakketnaam `nl.tufein.openconnect`, de repository, de APK-namen
+  (`openconnect-vX.Y.Z.apk`) en de updater bleven, dus v1.13.0 werkt gewoon bij naar v1.13.1. De juridische controle
+  van de nieuwe naam staat nog open; de winkelpublicatie blijft daarom geblokkeerd.
 - **Zwak voor het verdere verhaal:**
   1. Op één bron na (de Garmin-account, die live is geprobeerd) is **niets op een echte telefoon, horloge of ring geproefd**. Zie het register in paragraaf 7; M9 is dat spoor.
   2. Of de meldingen op de fenix 8 nu bij elk bericht trillen, wacht op een nieuw logboek; v1.0.1 pakte de meest waarschijnlijke oorzaak aan.
-  3. De naam: er bestaat al een bekende VPN-client die OpenConnect heet; het besluit staat nog open (G6).
+  3. De **juridische controle van de naam Cercis** staat nog open; de pakketnaam `nl.tufein.openconnect` blijft
+     ondertussen ongewijzigd (G6).
   4. **De geschiedenis zit nog in Garmin Connect en Strava.** De app importeert één bestand tegelijk en haalt via de eigen sleutel een beperkt stuk terug, terwijl elk inzicht (vorm, VO2max, racevoorspelling, heatmap, seizoen) zo goed is als de geschiedenis eronder. Dat is het thema van 4b.
   5. De twee Dependabot-voorstellen (#86 en #89) zijn in v1.9.3 opgelost met de bewuste compileSdk-37/AGP-9-stap (Gradle 9.6, AGP 9.5.2, Kotlin 2.4.21, Health Connect 1.2.0-alpha06).
   6. De in-app-updater past niet in Google Play of F-Droid; de `store`-variant bestaat sinds v1.13.0 als code, maar
@@ -80,7 +88,7 @@ raken de server alleen als dat nodig is.
 | **G3 Sleutel en beveiliging** | Sleutel in GitHub-secrets met een offline kopie, de conceptrelease weg, privé melden van kwetsbaarheden aan, `SECURITY.md` klopt, geen openstaande beveiligingsmeldingen van afhankelijkheden | Stefan (secrets), Claude (rest) |
 | **G4 Kwaliteit** | Drie CI-runs op rij groen zonder opnieuw starten, afhankelijkheden bij, prestatiebudgetten gehaald, geen bekende crash | Claude |
 | **G5 Begrijpelijk** | README opnieuw, installatiegids, privacyverklaring (NL en EN), schermafbeeldingen van een echte telefoon, uitleg bij de eerste start | Claude, Stefan levert schermafbeeldingen |
-| **G6 Juridisch en naam** | Overzicht van alle licenties in de app, Garmin-disclaimer in de app, **keuze over de naam gemaakt (nog open)** | Stefan beslist |
+| **G6 Juridisch en naam** | Overzicht van alle licenties in de app, Garmin-disclaimer in de app, **naamkeuze gemaakt: Cercis (2026-11-25)**; de juridische controle van die naam staat nog open | Stefan beslist |
 | **G7 Verspreiding** | **Besloten op 2026-11-18: alleen GitHub.** De release met APK, SHA-256 en uitleg over installeren, controleren en bijwerken (ook met Obtainium) is voor een vreemde te volgen | Claude |
 
 ## 4. De mijlpalen
@@ -185,10 +193,11 @@ ook bij (G5), evenals het besluit over de naam (G6), dat Stefan alleen kan nemen
 Sinds v1.13.0 is de **`store`-variant** er als code: dezelfde `applicationId` als de GitHub-app, zonder updater en
 zonder `REQUEST_INSTALL_PACKAGES`/FileProvider, met eigen AAB- en APK-taken. De store-workflow bouwt en controleert die
 artefacten; de release-workflow publiceert alleen de GitHub-APK. Publicatie in F-Droid of Google Play is nog niet
-gebeurd en blijft geblokkeerd: de naam botst met een bestaande OpenConnect-VPN-app, een Play-ontwikkelaarsaccount en de
+gebeurd en blijft geblokkeerd: de oude naam botste met een bestaande OpenConnect-VPN-app (sinds v1.13.1 heet de app
+Cercis, maar de juridische controle daarvan staat nog open), een Play-ontwikkelaarsaccount en de
 testersregel (12 testers, 14 dagen) staan open, echte schermafbeeldingen en een feature graphic ontbreken, en de
 verklaringen voor gegevensveiligheid, Health Connect en voorgrondservice zijn niet afgerond. Voor F-Droid komen daar de
-ontbrekende `v1.13.0`-tag, de toolchain op de buildserver en de ondertekening bij. F-Droid ondertekent met een eigen
+ontbrekende `v1.13.1`-tag, de toolchain op de buildserver en de ondertekening bij. F-Droid ondertekent met een eigen
 sleutel, dus die APK installeert niet over de GitHub-APK heen; dat hoort in de uitleg. Google Play vraagt eenmalig
 ongeveer 25 dollar voor een ontwikkelaarsaccount en een recent genoeg targetSdk (nu 36). De updater blijft gewoon in de
 GitHub-versie.
@@ -275,7 +284,7 @@ Lange geschiedenis moet je ook kunnen zien. Er is nu geen jaar-op-jaar.
 | Nu (M9 loopt) | De proefronde op echte apparaten: telefoon, fenix 8 en de Oura-ring, met een nieuw meldingenlogboek voor de reparaties van v1.0.1 | Alleen jij hebt de apparaten en de accounts |
 | ✅ 2026-11-18 | Gekozen waar 1.0 uitkomt: alleen GitHub | Gedaan: winkels (F-Droid, Google Play) komen in M10 |
 | ✅ 2026-11-18 | Minimum Android van 8.0 naar 9 | Gedaan in v0.52.0; telefoons met Android 8 blijven op v0.51.0 |
-| **Open**, vóór M12 af is | Beslissen over de naam: houden of veranderen (de pakketnaam `nl.tufein.openconnect` verandert in elk geval niet). Voorlopig blijft het OpenConnect | Het is jouw project en jouw merk |
+| ✅ 2026-11-25 | Gekozen voor de weergavenaam **Cercis** (v1.13.1); de pakketnaam `nl.tufein.openconnect` blijft | Gedaan; de juridische controle van de naam staat nog open |
 | Bij M9 | Schermafbeeldingen van je eigen telefoon aanleveren | Mijn plaatjes komen uit een test, niet van een toestel |
 | Bij M13, M14 en M14b | Je export bij Garmin Connect (Account, Gegevensbeheer, *Je gegevens exporteren*) en eventueel Strava aanvragen en een keer in OpenConnect importeren; daarna in Instellingen op *Rapport kopiëren* drukken en dat in een melding op GitHub plakken (aantallen, bestandsnamen zonder e-mailadres, sleutelnamen, geen waarden) | De veldnamen van Garmin's export staan nergens beschreven; alleen een echte export kan bevestigen dat de lezer klopt |
 
@@ -342,7 +351,7 @@ naast of over elkaar installeren is niet op een toestel geprobeerd.
 |------|----------|----------|------|----------|
 | **1. Zichtbaar en eigen** ✅ | De app voelt als één rustig geheel en jij bepaalt hoe hij eruitziet: editorial-look, signaalkleuren, ringen, foto, thema's, iconen en een voorblad dat je zelf samenstelt | v1.9.0 – v1.9.3 | M | — |
 | **2. Het denkt mee** ✅ | Het schema past zich aan als je week anders liep: één voorstel met Toepassen/Niet nu; de coach bespreekt alleen dat voorstel en verandert niets | v1.10.0 | L | niets |
-| **3. Bereik en uitleg** | Duits en Frans, één pagina *Wat verlaat je telefoon* per bron, en een winkelversie die naast de GitHub-versie kan staan | v1.11.0, v1.12.0, v1.13.0, v1.15.0 | M | naam, account/testers, echte schermafbeeldingen en verklaringen voor publicatie |
+| **3. Bereik en uitleg** | Duits en Frans, één pagina *Wat verlaat je telefoon* per bron, en een winkelversie die naast de GitHub-versie kan staan | v1.11.0, v1.12.0, v1.13.0, v1.13.1, v1.15.0 | M | juridische naamcontrole, account/testers, echte schermafbeeldingen en verklaringen voor publicatie |
 | **4. Geschiedenis en analyse** | Garmin's protobuf-sync en de rest van de exportvelden; Training Effect, hersteltijd en Performance Condition uit je eigen FIT | v1.14.0 of later | L ❓ | een echte Garmin-export en één fenix 8-opname van Stefan |
 | **Sluiten** | Alle vijf poorten groen; geen nieuwe functie, alleen bewijs en reparaties | v2.0.0 | XL | de vier fasen |
 
@@ -358,8 +367,9 @@ echte hardware daarom vraagt. **S/M/L/XL** zoals in de legenda.
 | **v1.11.0** ✅ | 3 | Duits en Frans, met een taaltest die elke tekst dekt en een keuze in de instellingen; de teksten zijn machine-draft en niet native nagekeken | M |
 | **v1.12.0** ✅ | 3 | *Wat verlaat je telefoon*: één pagina per bron met wat er wel en niet weggaat, plus een test die elk veld dekt | M |
 | **v1.13.0** ✅ | 3 | De winkelvariant als code: `github` en `store` uit één codebase, store zonder updater/installatietoestemming/FileProvider, targetSdk 36; AAB en APK gebouwd en gecontroleerd, niet gepubliceerd | S/M |
+| **v1.13.1** ✅ | 3 | Weergavenaam **Cercis** in plaats van OpenConnect; pakketnaam, repository, APK-namen en updater blijven, dus v1.13.0 werkt gewoon bij; juridische controle en winkelpublicatie staan nog open | S |
 | **v1.14.0** | 4 | Training Effect, hersteltijd en Performance Condition uit FIT, met een register dat zegt wanneer het op echte data is bevestigd | L ❓ |
-| **v1.15.0** | 3 | Laatste loodjes: winkelpublicatie, schermafbeeldingen van een echte telefoon, installatiegids en de naamkeuze | S/M |
+| **v1.15.0** | 3 | Laatste loodjes: winkelpublicatie, schermafbeeldingen van een echte telefoon, installatiegids en de juridische naamcontrole | S/M |
 | **v2.0.0** | Slot | De vijf poorten hierboven groen; geen nieuwe functie | XL |
 
 **Waarom deze volgorde:** eerst wat je elke dag ziet en zelf bestuurt (klaar), dan wat je training stuurt, dan bereik
@@ -387,8 +397,8 @@ code, zonder publicatie.
 | Vóór de Garmin-protobuf-slice (v1.14.0 of later) | Je export bij Garmin Connect (Account, Gegevensbeheer, *Je gegevens exporteren*) en eventueel Strava, één keer in OpenConnect importeren, daarna *Rapport kopiëren* en als melding plakken (aantallen en bestandsnamen, geen waarden) | De veldnamen staan nergens beschreven; alleen een echte export bevestigt de lezer |
 | Vóór v1.14.0 | Eén echte fenix 8-opname met Training Effect, hersteltijd en Performance Condition | Alleen jouw horloge levert die velden |
 | Doorlopend | De proefronde op telefoon, fenix 8 en Oura-ring, met een nieuw meldingenlogboek | Alleen jij hebt de apparaten en de accounts |
-| Vóór winkelpublicatie | De naam kiezen, een Play-ontwikkelaarsaccount met testers regelen, echte schermafbeeldingen en een feature graphic aanleveren, en de verklaringen (gegevensveiligheid, Health Connect, voorgrondservice) afronden | Account-, merk- en bewijsstukken die alleen de eigenaar kan geven; zonder die stukken gaat er niets naar Play of F-Droid |
-| Vóór v1.15.0 | De laatste winkelstukken uit de rij hierboven en de naamkeuze | Mijn plaatjes komen uit een test; de naam is jouw merk |
+| Vóór winkelpublicatie | De gekozen naam **Cercis** juridisch laten controleren, een Play-ontwikkelaarsaccount met testers regelen, echte schermafbeeldingen en een feature graphic aanleveren, en de verklaringen (gegevensveiligheid, Health Connect, voorgrondservice) afronden | Account-, merk- en bewijsstukken die alleen de eigenaar kan geven; zonder die stukken gaat er niets naar Play of F-Droid |
+| Vóór v1.15.0 | De laatste winkelstukken uit de rij hierboven en de juridische naamcontrole | Mijn plaatjes komen uit een test; de naam is jouw merk |
 
 #### Klaar per release
 
@@ -493,6 +503,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.10.0 | Een schema dat meedenkt: de nieuwste afgesloten gemiste week wordt één bron voor een begrensd sessiepatroon in een latere trainingsweek; Toepassen/Niet nu blijven bewaard, dubbele of oude acties doen niets, en de coach krijgt alleen die plan- en voorstelfacts om read-only te bespreken |
 | v1.12.0 | Wat je telefoon verlaat: twaalf bronpagina’s uit één PrivacyRegister, met bestemming, trigger, velden, opslag en “nooit”-regels; de oude privacytekst is gecorrigeerd en Delete all data wist nu ook lichaam, water, dagboek, schoenen, plan, race, doelen, work-outs, log en ledger |
 | v1.13.0 | Twee Android-kanalen uit één codebase: GitHub met updater, installatietoestemming en FileProvider; store zonder die drie en met een verborgen updater; targetSdk 36; AAB en APK gebouwd en gecontroleerd maar niet gepubliceerd; Play/F-Droid geblokkeerd door naam, account/testers, echte schermafbeeldingen en verklaringen |
+| v1.13.1 | Weergavenaam **Cercis** in plaats van OpenConnect, om verwarring met de OpenConnect-VPN-client te voorkomen; pakketnaam `nl.tufein.openconnect`, repository, APK-namen en updater blijven, dus v1.13.0 werkt gewoon bij; juridische controle en winkelpublicatie staan nog open |
 | v1.11.0 | Vier talen: Engels, Nederlands, Duits en Frans, met een taalkeuze los van de rapporttaal, lokale datums/getallen, Duitse/Franse widget- en meldingsteksten, een opgeruimde Oura-tab en een voorblad dat de dag volgt; de nieuwe talen zijn machine-draft zonder native review |
 
 ## 9. Hoe releases werken

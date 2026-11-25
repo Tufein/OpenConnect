@@ -125,7 +125,7 @@ class AccessibilityAuditTest : AppTestBase() {
             problems += auditScrolling(tab)
         }
         clickText("About and licences")
-        waitForText("About OpenConnect")
+        waitForText("About Cercis")
         problems += auditScrolling("About")
         return problems
     }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">OpenConnect</string>
+    <string name="app_name">Cercis</string>
     <string name="tab_home">Overzicht</string>
     <string name="tab_activities">Activiteiten</string>
     <string name="tab_health">Gezondheid</string>
@@ -60,16 +60,16 @@
     <string name="device_status">Status: %1$s</string>
     <string name="source_line">%1$s: %2$s</string>
     <string name="about_open_button">Over en licenties</string>
-    <string name="about_title">Over OpenConnect</string>
-    <string name="about_version">OpenConnect %1$s</string>
+    <string name="about_title">Over Cercis</string>
+    <string name="about_version">Cercis %1$s</string>
     <string name="about_licence_line">Vrije software onder de AGPL-3.0-or-later. Niet verbonden aan of goedgekeurd door Garmin, Oura, WHOOP of Hume.</string>
     <string name="about_source_link">Broncode en meldingen: github.com/Tufein/OpenConnect</string>
     <string name="about_tried_title">Wat op een echt apparaat is geprobeerd</string>
     <string name="about_tried_body">Alles heeft geautomatiseerde tests. Deze labels zeggen wat ook op een echte telefoon, horloge, ring of band is geprobeerd. Een label verandert pas na een echte proef.</string>
     <string name="about_licences_title">Licenties</string>
-    <string name="about_garmin_disclaimer">Garmin, Garmin Connect en fenix zijn handelsmerken van Garmin Ltd. of zijn dochterondernemingen. OpenConnect is niet verbonden aan of goedgekeurd door Garmin.</string>
+    <string name="about_garmin_disclaimer">Garmin, Garmin Connect en fenix zijn handelsmerken van Garmin Ltd. of zijn dochterondernemingen. Cercis is niet verbonden aan of goedgekeurd door Garmin.</string>
     <string name="about_privacy_title">Privacy</string>
-    <string name="about_privacy_body">OpenConnect heeft geen server van ons. Je gegevens blijven op deze telefoon. Alleen wat je aanzet gaat naar buiten: je Garmin- of Oura-account, een AI-aanbieder als je een sleutel toevoegt, en GitHub als je naar een update zoekt. Met een AI aan gaan activiteitsnamen, rondjes en hartslaghelften ernaartoe, maar geen GPS-route of GPS-punten. Sleutels blijven in de Android Keystore. De pagina Wat je telefoon verlaat somt ze op.</string>
+    <string name="about_privacy_body">Cercis heeft geen server van ons. Je gegevens blijven op deze telefoon. Alleen wat je aanzet gaat naar buiten: je Garmin- of Oura-account, een AI-aanbieder als je een sleutel toevoegt, en GitHub als je naar een update zoekt. Met een AI aan gaan activiteitsnamen, rondjes en hartslaghelften ernaartoe, maar geen GPS-route of GPS-punten. Sleutels blijven in de Android Keystore. De pagina Wat je telefoon verlaat somt ze op.</string>
     <string name="diagnostics_button">Diagnose delen</string>
     <string name="diagnostics_title">Diagnoserapport</string>
     <string name="diagnostics_body">Dit is precies wat gedeeld wordt. Er staan versies in, wat aanstaat en wat de laatste syncs deden. Er staan geen sleutels, tokens, namen, gezondheidswaarden of routes in. Plak het in een GitHub-melding.</string>
@@ -154,7 +154,7 @@
     <string name="watch_card_title">Garmin-horloge</string>
     <string name="watch_card_body">Lees je horloge uit met een USB-kabel of een map, volg je hartslag live via Bluetooth, of haal je gegevens op uit je Garmin-account.</string>
     <string name="watch_usb_title">Horloge uitlezen met een USB-kabel</string>
-    <string name="watch_usb_body">Sluit het horloge met zijn kabel aan op de telefoon (USB-C, of met een OTG-verloopstukje). OpenConnect kopieert dan de activiteiten en de dagdata die op het horloge staan: stappen, hartslag, stress, Body Battery, slaap, HRV en SpO2. Het gaat rechtstreeks van horloge naar telefoon, niet via Garmin of internet.</string>
+    <string name="watch_usb_body">Sluit het horloge met zijn kabel aan op de telefoon (USB-C, of met een OTG-verloopstukje). Cercis kopieert dan de activiteiten en de dagdata die op het horloge staan: stappen, hartslag, stress, Body Battery, slaap, HRV en SpO2. Het gaat rechtstreeks van horloge naar telefoon, niet via Garmin of internet.</string>
     <string name="watch_usb_none">Geen Garmin-horloge gevonden op de USB-poort. Controleer de kabel en of het horloge aanstaat, en zoek dan opnieuw.</string>
     <string name="watch_usb_search">Opnieuw zoeken</string>
     <string name="watch_read_button">%1$s uitlezen</string>
@@ -166,7 +166,7 @@
     <string name="watch_done_days">Dagen bijgewerkt: %1$d, nachten: %2$d</string>
     <string name="watch_done_errors">%1$d bestand(en) konden niet worden gelezen</string>
     <string name="watch_fail_not_found">Het horloge is niet meer verbonden.</string>
-    <string name="watch_fail_permission">Android heeft OpenConnect geen toegang tot het horloge gegeven. Zoek opnieuw en sta het toe als erom gevraagd wordt.</string>
+    <string name="watch_fail_permission">Android heeft Cercis geen toegang tot het horloge gegeven. Zoek opnieuw en sta het toe als erom gevraagd wordt.</string>
     <string name="watch_fail_open">Het horloge antwoordde niet als opslagapparaat. Ontgrendel het, probeer een andere kabel, of zoek naar een USB- of MTP-modus in de instellingen.</string>
     <string name="watch_fail_files">Het horloge is verbonden, maar heeft geen GARMIN-map met gegevens.</string>
     <string name="watch_fail_other">Het uitlezen van het horloge stopte: %1$s</string>
@@ -189,7 +189,7 @@
     <string name="watch_live_saved">Opgeslagen als activiteit</string>
     <string name="watch_live_name">Live hartslag</string>
     <string name="watch_live_permission">Voor het zoeken naar sensoren is Bluetooth-toestemming nodig.</string>
-    <string name="watch_note">Het horloge kan via Bluetooth met OpenConnect zelf syncen (bovenaan), uitgelezen worden met een kabel of uit een map, of live hartslag sturen. Gegevens van Garmins servers komen binnen via het Garmin-scherm.</string>
+    <string name="watch_note">Het horloge kan via Bluetooth met Cercis zelf syncen (bovenaan), uitgelezen worden met een kabel of uit een map, of live hartslag sturen. Gegevens van Garmins servers komen binnen via het Garmin-scherm.</string>
     <string name="hrv">HRV (afgelopen nacht)</string>
     <string name="spo2">Zuurstof in het bloed (SpO2)</string>
     <string name="respiration">Ademhaling</string>
@@ -201,9 +201,9 @@
     <string name="live_notification_text">%1$s bpm · %2$s</string>
     <string name="action_garmin">Garmin-account</string>
     <string name="garmin_title">Garmin-account</string>
-    <string name="garmin_intro">Je horloge praat via Bluetooth met de Garmin Connect-app op je telefoon, en Garmin bewaart je gegevens in zijn cloud. OpenConnect leest je eigen gegevens daar uit met een persoonlijke key die alleen jij kunt maken. Er zit geen server van ons tussen.</string>
+    <string name="garmin_intro">Je horloge praat via Bluetooth met de Garmin Connect-app op je telefoon, en Garmin bewaart je gegevens in zijn cloud. Cercis leest je eigen gegevens daar uit met een persoonlijke key die alleen jij kunt maken. Er zit geen server van ons tussen.</string>
     <string name="garmin_key_title">Je persoonlijke key</string>
-    <string name="garmin_key_body">Maak de key op Garmins pagina (hij wordt één keer getoond), kopieer hem en plak hem hieronder. OpenConnect bewaart hem versleuteld op deze telefoon en stuurt hem alleen naar Garmin.</string>
+    <string name="garmin_key_body">Maak de key op Garmins pagina (hij wordt één keer getoond), kopieer hem en plak hem hieronder. Cercis bewaart hem versleuteld op deze telefoon en stuurt hem alleen naar Garmin.</string>
     <string name="garmin_open_key_page">Garmins key-pagina openen</string>
     <string name="garmin_key_field">Garmin-key</string>
     <string name="garmin_key_field_saved">Key opgeslagen, plak een nieuwe om hem te vervangen</string>
@@ -293,7 +293,7 @@
     <string name="readiness_excellent">Topvorm</string>
     <string name="readiness_best">Sterkst: %1$s</string>
     <string name="readiness_worst">Zwakst: %1$s</string>
-    <string name="readiness_note">OpenConnects eigen schatting op basis van je slaap, Body Battery, HRV, rusthartslag en stress. Niet de score van Garmin en geen medisch advies.</string>
+    <string name="readiness_note">Cercis\' eigen schatting op basis van je slaap, Body Battery, HRV, rusthartslag en stress. Niet de score van Garmin en geen medisch advies.</string>
     <string name="search_hint">Zoek op naam, sport of datum (2026-05)</string>
     <string name="search_none">Niets gevonden.</string>
     <string name="activities_count">%1$d activiteiten</string>
@@ -391,11 +391,11 @@
     <string name="save_model">Model opslaan</string>
     <string name="default_model">Standaardmodel gebruiken</string>
     <string name="watch_ble_title">Garmin-horloge syncen via Bluetooth</string>
-    <string name="watch_ble_body">Experimenteel. OpenConnect praat met het horloge zoals de Garmin Connect-app dat doet (het protocol dat Gadgetbridge heeft uitgezocht) en haalt op wat nieuw is: activiteiten, stappen, hartslag, stress, Body Battery, slaap en HRV. Geen kabel, geen Garmin-account. De eerste keer koppelt Android met het horloge: zet het horloge in koppelmodus (Instellingen, Connectiviteit, Telefoon, Koppel telefoon) en bevestig de code.</string>
+    <string name="watch_ble_body">Experimenteel. Cercis praat met het horloge zoals de Garmin Connect-app dat doet (het protocol dat Gadgetbridge heeft uitgezocht) en haalt op wat nieuw is: activiteiten, stappen, hartslag, stress, Body Battery, slaap en HRV. Geen kabel, geen Garmin-account. De eerste keer koppelt Android met het horloge: zet het horloge in koppelmodus (Instellingen, Connectiviteit, Telefoon, Koppel telefoon) en bevestig de code.</string>
     <string name="watch_ble_families">Zoekt elk soort Garmin-horloge, golfhorloge en fietscomputer, op naam en op het modelnummer dat het apparaat uitzendt. Hartslagbanden, lampen en weegschalen blijven buiten beeld: daar valt niets van te synchroniseren. Modellen die niet op de lijst staan waarvoor deze sync is gemaakt, krijgen een opmerking.</string>
     <string name="watch_ble_hint_unknown">Niet op de lijst waar deze sync van is overgenomen, en met dit model is niets geprobeerd. Synchroniseren kan mislukken; via je Garmin-account kan het ook.</string>
-    <string name="watch_ble_hint_newer">Dit model heeft Garmins nieuwere syncprotocol nodig, dat OpenConnect niet heeft, dus er kunnen bestanden ontbreken. Via je Garmin-account is het veiliger.</string>
-    <string name="watch_ble_warning">Een horloge dat aan OpenConnect gekoppeld is, synct in de praktijk niet meer met de Garmin Connect-app. De bestanden blijven op het horloge staan.</string>
+    <string name="watch_ble_hint_newer">Dit model heeft Garmins nieuwere syncprotocol nodig, dat Cercis niet heeft, dus er kunnen bestanden ontbreken. Via je Garmin-account is het veiliger.</string>
+    <string name="watch_ble_warning">Een horloge dat aan Cercis gekoppeld is, synct in de praktijk niet meer met de Garmin Connect-app. De bestanden blijven op het horloge staan.</string>
     <string name="watch_ble_find">Zoek horloge</string>
     <string name="watch_ble_stop">Stop met zoeken</string>
     <string name="watch_ble_searching">Zoeken naar Garmin-horloges in de buurt…</string>
@@ -406,7 +406,7 @@
     <string name="watch_ble_step_connecting">Verbinden met het horloge…</string>
     <string name="watch_ble_step_handshake">Kennismaken met het horloge…</string>
     <string name="watch_fail_ble_open">Verbinden met het horloge lukte niet: %1$s. Is Garmin Connect aan dit horloge gekoppeld, gebruik dan de Garmin-accountroute.</string>
-    <string name="watch_fail_ble_files">Het horloge is verbonden, maar gaf geen bestanden die OpenConnect kan lezen.</string>
+    <string name="watch_fail_ble_files">Het horloge is verbonden, maar gaf geen bestanden die Cercis kan lezen.</string>
     <string name="watch_fail_not_paired">Koppelen met het horloge lukte niet. Zet het horloge in koppelmodus (Instellingen, Connectiviteit, Telefoon, Koppel telefoon) en probeer opnieuw.</string>
     <string name="insight_range">Gemiddeld %1$s · laagste %2$s (%3$s) · hoogste %4$s (%5$s)</string>
     <string name="insight_days">Gebaseerd op %1$d dagen met een meting.</string>
@@ -430,7 +430,7 @@
     <string name="insight_explain_stress">Garmins stressscore uit hartslagvariabiliteit, 0 tot 100: tot 25 is rust, 26 tot 50 laag, 51 tot 75 gemiddeld, boven 75 hoog.</string>
     <string name="insight_hr_range">Gemiddeld %1$s · hoogste %2$s</string>
     <string name="watch_together_title">Gebruik je ook Garmin Connect?</string>
-    <string name="watch_together_body">Een horloge praat via Bluetooth met één telefoon-app tegelijk. Is Garmin Connect je hoofdapp, laat dat dan zo en laat OpenConnect dezelfde gegevens lezen uit je Garmin-account (scherm Garmin-account) of uit bestanden. Gebruik de Bluetooth-sync hier alleen als OpenConnect de telefoon van het horloge moet zijn. Activiteiten die via meerdere routes binnenkomen worden herkend en maar één keer bewaard.</string>
+    <string name="watch_together_body">Een horloge praat via Bluetooth met één telefoon-app tegelijk. Is Garmin Connect je hoofdapp, laat dat dan zo en laat Cercis dezelfde gegevens lezen uit je Garmin-account (scherm Garmin-account) of uit bestanden. Gebruik de Bluetooth-sync hier alleen als Cercis de telefoon van het horloge moet zijn. Activiteiten die via meerdere routes binnenkomen worden herkend en maar één keer bewaard.</string>
     <string name="scores_title">Scores</string>
     <string name="score_sleep">Slaapscore</string>
     <string name="score_readiness_30">Gereedheid, 30 dagen</string>
@@ -456,10 +456,10 @@
     <string name="hrv_status_balanced">In balans</string>
     <string name="hrv_status_high">Boven je normaal</string>
     <string name="hrv_status_line">%1$s ms deze week · %2$s ms je normaal (%3$s%%)</string>
-    <string name="hrv_status_note">OpenConnect vergelijkt je laatste zeven nachten met je eigen vierweekse basis; dit is niet de HRV Status van Garmin.</string>
+    <string name="hrv_status_note">Cercis vergelijkt je laatste zeven nachten met je eigen vierweekse basis; dit is niet de HRV Status van Garmin.</string>
     <string name="health_chart">%1$s-grafiek</string>
-    <string name="scores_note">Gereedheid is de eigen schatting van OpenConnect. Slaapscore, Body Battery en stress zijn de cijfers van het horloge. Nog geen meting? Dan staat er een streepje.</string>
-    <string name="insight_explain_readiness">De eigen schatting van OpenConnect van 0 tot 100, uit slaap, Body Battery, HRV, rusthartslag en stress, ten opzichte van jouw eigen normaal. 70 of meer is klaar voor een zware dag, onder 40 neem je het rustig aan.</string>
+    <string name="scores_note">Gereedheid is de eigen schatting van Cercis. Slaapscore, Body Battery en stress zijn de cijfers van het horloge. Nog geen meting? Dan staat er een streepje.</string>
+    <string name="insight_explain_readiness">De eigen schatting van Cercis van 0 tot 100, uit slaap, Body Battery, HRV, rusthartslag en stress, ten opzichte van jouw eigen normaal. 70 of meer is klaar voor een zware dag, onder 40 neem je het rustig aan.</string>
     <string name="insight_explain_sleep_score">De slaapscore die je horloge elke nacht geeft, van 0 tot 100: 80 of meer is goed, 60 tot 79 redelijk, onder 60 slecht. Hij weegt duur, diepe en REM-slaap en onrust mee.</string>
     <string name="score_out_of">van de 100</string>
     <string name="settings_goals">Weekdoelen</string>
@@ -482,7 +482,7 @@
     <string name="load_steady_text">Op één lijn met de afgelopen vier weken. In dit gebied bouw je conditie op met het minste risico.</string>
     <string name="load_heavy_text">Meer dan gebruikelijk. Prima voor een korte periode, maar plan daarna een rustiger week.</string>
     <string name="load_overreaching_text">Een grote sprong ten opzichte van wat je lichaam gewend is. Dit is het moment voor kwaaltjes en ziekte: neem even gas terug.</string>
-    <string name="load_note">Eigen schatting van OpenConnect: minuten maal een inspanningsgewicht uit je hartslag, deze week tegenover je gemiddelde van 4 weken. Niet de Training Load van Garmin en geen medisch advies.</string>
+    <string name="load_note">Eigen schatting van Cercis: minuten maal een inspanningsgewicht uit je hartslag, deze week tegenover je gemiddelde van 4 weken. Niet de Training Load van Garmin en geen medisch advies.</string>
     <string name="settings_backup">Back-up en herstel</string>
     <string name="settings_backup_body">Bewaar alles wat de app heeft in één bestand: activiteiten met hun route, dagelijkse gezondheid, slaap, de metingen van je horloge, ring en banden, en je dagboek, schoenen, trainingsplan, wedstrijd en doelen. Herstellen voegt het weer toe zonder iets te verwijderen of te overschrijven. Keys staan nooit in het bestand. Alles exporteren maakt één ZIP met CSV-, FIT- en GPX-bestanden die andere apps kunnen lezen, met de back-up erin.</string>
     <string name="action_backup">Back-up maken</string>
@@ -620,12 +620,12 @@
     <string name="session_intervals_hint">Inlopen, dan 5 tot 8 snelle stukken van 2 tot 3 minuten met rustig draven ertussen, en uitlopen.</string>
     <string name="session_race">Wedstrijddag</string>
     <string name="session_race_hint">Loop het tempo waarvoor je getraind hebt en geniet. Rust de dag ervoor.</string>
-    <string name="lock_title">OpenConnect is vergrendeld</string>
+    <string name="lock_title">Cercis is vergrendeld</string>
     <string name="lock_body">Ontgrendel met je vingerafdruk, gezicht of schermvergrendeling.</string>
     <string name="lock_unlock">Ontgrendelen</string>
-    <string name="lock_prompt_title">OpenConnect ontgrendelen</string>
+    <string name="lock_prompt_title">Cercis ontgrendelen</string>
     <string name="settings_lock">App-vergrendeling</string>
-    <string name="settings_lock_body">Vraag om je vingerafdruk, gezicht of schermvergrendeling als OpenConnect opent en nadat het een minuut uit beeld was. Het recente-appsoverzicht en schermafbeeldingen blijven dan leeg. De widget en de meldingen tonen nog wel hun korte samenvattingen.</string>
+    <string name="settings_lock_body">Vraag om je vingerafdruk, gezicht of schermvergrendeling als Cercis opent en nadat het een minuut uit beeld was. Het recente-appsoverzicht en schermafbeeldingen blijven dan leeg. De widget en de meldingen tonen nog wel hun korte samenvattingen.</string>
     <string name="settings_lock_switch">App vergrendelen</string>
     <string name="settings_lock_unavailable">Stel eerst een schermvergrendeling of vingerafdruk in op je telefoon.</string>
     <string name="action_oura">Open de Oura-tab</string>
@@ -642,9 +642,9 @@
     <string name="oura_client_secret_saved">Client-secret (bewaard; leeg laten om te houden)</string>
     <string name="oura_redirect">Redirect-adres</string>
     <string name="oura_save_client">Bewaren</string>
-    <string name="oura_cannot_store">Deze telefoon kan geen geheim veilig bewaren, dus OpenConnect bewaart geen Oura-login.</string>
+    <string name="oura_cannot_store">Deze telefoon kan geen geheim veilig bewaren, dus Cercis bewaart geen Oura-login.</string>
     <string name="oura_step3">3. Log in bij Oura</string>
-    <string name="oura_step3_body">Je browser opent de login van Oura. Na toestemming keert de browser terug naar OpenConnect en worden de laatste 30 dagen gesynchroniseerd. Keert hij niet terug, kopieer dan het adres waar de browser op uitkomt en plak het hieronder.</string>
+    <string name="oura_step3_body">Je browser opent de login van Oura. Na toestemming keert de browser terug naar Cercis en worden de laatste 30 dagen gesynchroniseerd. Keert hij niet terug, kopieer dan het adres waar de browser op uitkomt en plak het hieronder.</string>
     <string name="oura_log_in">Inloggen bij Oura</string>
     <string name="oura_log_in_again">Opnieuw inloggen bij Oura</string>
     <string name="oura_paste">Adres na de login</string>
@@ -688,7 +688,7 @@
     <string name="device_garmin_body">Garmin Connect-account en het horloge via Bluetooth of USB</string>
     <string name="device_oura">Oura Ring</string>
     <string name="device_oura_body">Een eigen tab met de scores, nachten en workouts van de ring</string>
-    <string name="onboarding_title">Welkom bij OpenConnect</string>
+    <string name="onboarding_title">Welkom bij Cercis</string>
     <string name="onboarding_body">Welke toestellen gebruik je? De app toont alleen wat bij jou past. Je gegevens blijven op deze telefoon.</string>
     <string name="onboarding_devices">Je toestellen</string>
     <string name="onboarding_look">Kies je look</string>
@@ -752,7 +752,7 @@
     <string name="watch_cannot_write">Het horloge nam het bestand via USB niet aan.</string>
     <string name="home_my_day">Mijn dag</string>
     <string name="race_title">Racedoel</string>
-    <string name="race_intro">Voorspelde racetijden uit je beste prestaties, met de formule van Riegel. Garmins eigen Race Predictor is niet beschikbaar voor apps, dus dit is OpenConnects eigen schatting: hoe verder een afstand van wat je hebt gelopen af ligt, hoe grover.</string>
+    <string name="race_intro">Voorspelde racetijden uit je beste prestaties, met de formule van Riegel. Garmins eigen Race Predictor is niet beschikbaar voor apps, dus dit is Cercis\' eigen schatting: hoe verder een afstand van wat je hebt gelopen af ligt, hoe grover.</string>
     <string name="race_no_runs">Loop minstens 4 km met een route om voorspellingen te krijgen.</string>
     <string name="race_row">%1$s  %2$s  (%3$s per km, %4$s)</string>
     <string name="race_d_5k">5 km</string>
@@ -833,7 +833,7 @@
     <string name="zones_verdict_all_easy">Alles rustig (minder dan 5 procent zwaar). Goed voor een basis; voeg één zware training toe om sneller te worden.</string>
     <string name="zones_earlier_title">Eerdere weken</string>
     <string name="zones_earlier_line">Vanaf %1$s: %2$s in zone 1 tot 5, %3$d activiteiten</string>
-    <string name="zones_note">OpenConnects eigen rekenwerk op de hartslag die je horloge opnam, als percentage van het maximum. Garmins eigen zones kunnen afwijken en een polssensor kan te hoog meten. Geen medisch advies.</string>
+    <string name="zones_note">Cercis\' eigen rekenwerk op de hartslag die je horloge opnam, als percentage van het maximum. Garmins eigen zones kunnen afwijken en een polssensor kan te hoog meten. Geen medisch advies.</string>
     <string name="zones_activity_title">Tijd in hartslagzones</string>
     <string name="zones_activity_max">Zones vanaf een maximum van %1$d slagen/min.</string>
     <string name="zones_activity_guess">Een schatting: deze activiteit heeft alleen een gemiddelde hartslag, geen metingen.</string>
@@ -944,7 +944,7 @@
     <string name="form_chart_fatigue">Vermoeidheid (gemiddelde van 7 dagen)</string>
     <string name="form_chart_form">Vorm (fitheid min vermoeidheid)</string>
     <string name="form_explain">Fitheid is een traag gemiddelde van je trainingsbelasting, vermoeidheid een snel gemiddelde. Vorm is het verschil: boven nul ben je uitgerust, onder nul draag je vermoeidheid mee. Een zware week verlaagt je vorm meteen en verhoogt je fitheid langzaam; een rustweek doet het omgekeerde.</string>
-    <string name="form_note">OpenConnects eigen schatting uit minuten en hartslag, in eigen eenheden. Het is niet Garmins Training Status, geen TSS en geen medisch advies.</string>
+    <string name="form_note">Cercis\' eigen schatting uit minuten en hartslag, in eigen eenheden. Het is niet Garmins Training Status, geen TSS en geen medisch advies.</string>
     <string name="shape_title">Conditie per afstand</string>
     <string name="shape_intro">Hoe goed je laatste zes weken hardlopen bij elke afstand passen: je kilometers per week en je langste loop tegenover wat een gewoon schema vraagt.</string>
     <string name="shape_row_description">%1$s: %2$d procent, %3$s</string>
@@ -998,7 +998,7 @@
     <string name="monotony_strain">Belasting</string>
     <string name="monotony_rest_days">Rustdagen</string>
     <string name="monotony_usual">Gebruikelijke belasting</string>
-    <string name="monotony_note">Fosters eentonigheid (gemiddelde dagbelasting gedeeld door de spreiding) van de laatste zeven dagen; belasting is de weekbelasting maal dat getal. Eigen belastingseenheden van OpenConnect, een schatting, geen medisch advies.</string>
+    <string name="monotony_note">Fosters eentonigheid (gemiddelde dagbelasting gedeeld door de spreiding) van de laatste zeven dagen; belasting is de weekbelasting maal dat getal. Eigen belastingseenheden van Cercis, een schatting, geen medisch advies.</string>
     <string name="sleep_need_title">Slaap vannacht</string>
     <string name="sleep_need_value">%1$s u</string>
     <string name="sleep_need_last">Afgelopen nacht: %1$s u</string>
@@ -1071,7 +1071,7 @@
     <string name="score_best_steps">Beste stappendag</string>
     <string name="score_best_steps_value">%1$s, %2$s</string>
     <string name="score_share">Deel als tekst</string>
-    <string name="score_share_text">OpenConnect %1$d: %2$s km in %3$d activiteiten, %4$s uur, %5$d actieve dagen, langste reeks %6$d dagen.</string>
+    <string name="score_share_text">Cercis %1$d: %2$s km in %3$d activiteiten, %4$s uur, %5$d actieve dagen, langste reeks %6$d dagen.</string>
     <string name="score_note">Op de telefoon berekend uit je activiteiten en dagoverzichten. Er wordt niets verstuurd tot je op delen drukt.</string>
     <string name="ramp_title">Trainingsopbouw</string>
     <string name="ramp_low">Lichter dan gebruikelijk</string>
@@ -1083,7 +1083,7 @@
     <string name="ramp_text_steady">Ongeveer wat je lichaam gewend is: een goede basis om verder op te bouwen.</string>
     <string name="ramp_text_high">Meer dan je gewend bent. Af en toe prima, maar laat er een rustige dag op volgen.</string>
     <string name="ramp_text_spike">Een grote sprong in één week. Dat is het patroon dat bij overbelastingsblessures hoort: doe het een paar dagen rustig aan.</string>
-    <string name="ramp_note">Je laatste 7 dagen tegenover de gemiddelde week van de vier weken ervoor. Eigen belastingseenheden van OpenConnect, een vuistregel, geen medisch advies.</string>
+    <string name="ramp_note">Je laatste 7 dagen tegenover de gemiddelde week van de vier weken ervoor. Eigen belastingseenheden van Cercis, een vuistregel, geen medisch advies.</string>
     <string name="sleep_rhythm_title">Slaapritme</string>
     <string name="sleep_rhythm_steady">Vaste nachten</string>
     <string name="sleep_rhythm_variable">Wat schommelingen</string>
@@ -1112,7 +1112,7 @@
     <string name="fold_open">open</string>
     <string name="fold_closed">ingeklapt</string>
     <string name="connect_iq_open">Garmin Connect IQ openen</string>
-    <string name="connect_iq_open_listing">OpenConnect in Connect IQ openen</string>
+    <string name="connect_iq_open_listing">Cercis in Connect IQ openen</string>
     <string name="connect_iq_note">Opent de Connect IQ-app van Garmin op deze telefoon, waar je de wijzerplaten en apps van je horloge beheert. Staat die app er niet op, dan opent de Play Store zodat je hem kunt installeren.</string>
     <string name="connect_iq_failed">Connect IQ kon niet worden geopend: deze telefoon heeft er geen Garmin-app, geen Play Store en geen browser voor.</string>
     <string name="ring_row_note">Alleen door de %1$s vastgelegd. Het staat hier in de lijst, maar telt niet mee in totalen, trainingsbelasting, records en trofeeën, en heeft geen hartslag of route.</string>
@@ -1142,7 +1142,7 @@
     <string name="around_gap_watch_nothing">Het horloge heeft voor deze dag geen metingen.</string>
     <string name="around_gap_watch_day_only">Geen Body Battery of stress van vlak ervoor en erna: die metingen per minuut komen alleen binnen als het horloge zelf wordt uitgelezen (kabel, map of Bluetooth). Een Garmin-account en een bestand geven dagtotalen.</string>
     <string name="around_gap_ring_no_day">De ring heeft hier geen dag: niet gedragen, of nog niet gesynchroniseerd met de Oura-app.</string>
-    <string name="around_gap_ring_hr">De hartslag van de ring tijdens de inspanning staat er niet bij: OpenConnect vraagt die niet op bij Oura.</string>
+    <string name="around_gap_ring_hr">De hartslag van de ring tijdens de inspanning staat er niet bij: Cercis vraagt die niet op bij Oura.</string>
     <string name="around_not_live">Niets hiervan is live: het is wat het horloge en de ring bij hun laatste synchronisatie hadden.</string>
     <string name="insights_day">Dag</string>
     <string name="day_source">Bron</string>
@@ -1183,12 +1183,12 @@
     <string name="update_downloading">Downloaden %1$d%%</string>
     <string name="update_install">Update installeren</string>
     <string name="update_note">De APK komt van de GitHub-release van dit project. De SHA-256 wordt gecontroleerd voordat Android om installatie vraagt.</string>
-    <string name="update_permission">Geef OpenConnect toestemming om apps te installeren in de Android-instellingen en druk daarna opnieuw op Installeren.</string>
+    <string name="update_permission">Geef Cercis toestemming om apps te installeren in de Android-instellingen en druk daarna opnieuw op Installeren.</string>
     <string name="update_error_network">GitHub is niet bereikbaar. Controleer de verbinding en probeer het opnieuw.</string>
     <string name="update_error_no_release">GitHub gaf geen bruikbare release terug.</string>
     <string name="update_error_checksum">De download past niet bij de checksum. Er is niets geïnstalleerd.</string>
     <string name="update_error_no_checksum">Deze release heeft geen checksum-bestand, dus de download kan niet gecontroleerd worden. Er is niets geïnstalleerd.</string>
-    <string name="update_error_signature">De download is niet ondertekend met dezelfde sleutel als de geïnstalleerde OpenConnect. Er is niets geïnstalleerd.</string>
+    <string name="update_error_signature">De download is niet ondertekend met dezelfde sleutel als de geïnstalleerde Cercis. Er is niets geïnstalleerd.</string>
     <string name="update_error_storage">Het gedownloade bestand kon niet worden opgeslagen.</string>
     <string name="update_error_unknown">De update kon niet worden voltooid.</string>
 
@@ -1227,13 +1227,13 @@
     <string name="forward_title">Meldingen op het horloge</string>
     <string name="forward_body">Toont de meldingen van de apps die je kiest op je Garmin-horloge, via dezelfde Bluetooth-verbinding als de sync. De tekst gaat van de telefoon naar het horloge en nergens anders heen. Een bericht beantwoorden of een gesprek aannemen vanaf het horloge kan niet.</string>
     <string name="forward_switch">Meldingen naar het horloge sturen</string>
-    <string name="forward_one_phone">Een horloge praat met één telefoon tegelijk. Zolang dit aan staat houdt OpenConnect de verbinding vast, dus de Garmin Connect-app kan niet met hetzelfde horloge verbinden. Zet dit uit om de verbinding terug te geven.</string>
-    <string name="forward_needs_access">OpenConnect heeft toegang tot meldingen nodig om je meldingen te zien. Het leest ze alleen om ze door te geven aan het horloge en bewaart er geen enkele.</string>
+    <string name="forward_one_phone">Een horloge praat met één telefoon tegelijk. Zolang dit aan staat houdt Cercis de verbinding vast, dus de Garmin Connect-app kan niet met hetzelfde horloge verbinden. Zet dit uit om de verbinding terug te geven.</string>
+    <string name="forward_needs_access">Cercis heeft toegang tot meldingen nodig om je meldingen te zien. Het leest ze alleen om ze door te geven aan het horloge en bewaart er geen enkele.</string>
     <string name="forward_allow_access">Toegang tot meldingen toestaan</string>
     <string name="forward_restricted">Vanuit een bestand geïnstalleerd en is de schakelaar grijs? Open de app-info, tik op de drie puntjes en kies Beperkte instellingen toestaan. Ga daarna terug en probeer het opnieuw.</string>
     <string name="forward_open_app_info">Open de app-info</string>
-    <string name="forward_needs_watch">Sync eerst je horloge via Bluetooth in de kaart hierboven, zodat OpenConnect weet welk horloge het moet gebruiken.</string>
-    <string name="forward_needs_bluetooth">OpenConnect heeft de Bluetooth-toestemming (Apparaten in de buurt) nodig om het horloge te bereiken.</string>
+    <string name="forward_needs_watch">Sync eerst je horloge via Bluetooth in de kaart hierboven, zodat Cercis weet welk horloge het moet gebruiken.</string>
+    <string name="forward_needs_bluetooth">Cercis heeft de Bluetooth-toestemming (Apparaten in de buurt) nodig om het horloge te bereiken.</string>
     <string name="forward_allow_bluetooth">Bluetooth toestaan</string>
     <string name="forward_connecting">Verbinden met %1$s…</string>
     <string name="forward_connected">Verbonden met %1$s.</string>
@@ -1245,7 +1245,7 @@
     <string name="forward_try_now">Nu proberen</string>
     <string name="forward_choose_apps">Kies apps (%1$d gekozen)</string>
     <string name="forward_test">Stuur een test naar het horloge</string>
-    <string name="forward_test_title">OpenConnect-test</string>
+    <string name="forward_test_title">Cercis-test</string>
     <string name="forward_test_body">Kun je dit op het horloge lezen, dan werken meldingen.</string>
     <string name="forward_test_sent">Test verstuurd. Kijk op het horloge.</string>
     <string name="forward_test_not_connected">Nog niet verbonden met het horloge.</string>
@@ -1257,7 +1257,7 @@
     <string name="forward_screen_off_note">Zolang je naar de telefoon kijkt, blijft het horloge stil.</string>
     <string name="forward_skipped">Laatste melding niet verstuurd: %1$s</string>
     <string name="forward_skip_off">doorsturen staat uit</string>
-    <string name="forward_skip_own_app">hij kwam van OpenConnect zelf</string>
+    <string name="forward_skip_own_app">hij kwam van Cercis zelf</string>
     <string name="forward_skip_app_not_chosen">de app is niet gekozen</string>
     <string name="forward_skip_ongoing">het is een melding die blijft staan (muziek, een timer, een download)</string>
     <string name="forward_skip_group_summary">het is de samenvatting van een stapel</string>
@@ -1301,23 +1301,23 @@
     <string name="forward_step_connecting">verbinden</string>
     <string name="forward_step_handshake">kennismaken</string>
     <string name="forward_skipped_counts">Tot nu toe tegengehouden: %1$s</string>
-    <string name="forward_log_header">OpenConnect meldingen naar het horloge: logboek</string>
+    <string name="forward_log_header">Cercis meldingen naar het horloge: logboek</string>
     <string name="forward_log_empty">Er is nog niets gebeurd.</string>
     <string name="forward_log_copy">Kopieer het logboek</string>
     <string name="forward_log_copied">Logboek gekopieerd</string>
     <string name="forward_open_battery">Open de batterij-instellingen</string>
-    <string name="forward_hint_listener">Toegang tot meldingen staat aan, maar Android heeft de luisteraar van OpenConnect niet gestart. Zet de toegang in de Android-instellingen uit en weer aan, of start de telefoon opnieuw op.</string>
+    <string name="forward_hint_listener">Toegang tot meldingen staat aan, maar Android heeft de luisteraar van Cercis niet gestart. Zet de toegang in de Android-instellingen uit en weer aan, of start de telefoon opnieuw op.</string>
     <string name="forward_hint_nothing_seen">Android heeft nog geen enkele melding doorgegeven. Wacht tot er een binnenkomt, of controleer of de toegang tot meldingen nog aan staat.</string>
     <string name="forward_hint_garmin_connect">De Garmin Connect-app staat op deze telefoon en houdt het horloge misschien vast (een horloge praat met één telefoon-app tegelijk). Sluit hem helemaal af (App-info, Forceer stoppen) en tik dan op Nu proberen.</string>
-    <string name="forward_hint_battery">De verbinding werkte en viel daarna weg. De telefoon bespaart misschien stroom: zet OpenConnect in de batterij-instellingen op Onbeperkt (niet geoptimaliseerd).</string>
-    <string name="forward_hint_not_asking">Het horloge heeft niet om meldingen gevraagd, dus OpenConnect stuurt ze toch. Komt er niets op, kijk dan in de instellingen van het horloge (onder Telefoon) of meldingen aan staan.</string>
+    <string name="forward_hint_battery">De verbinding werkte en viel daarna weg. De telefoon bespaart misschien stroom: zet Cercis in de batterij-instellingen op Onbeperkt (niet geoptimaliseerd).</string>
+    <string name="forward_hint_not_asking">Het horloge heeft niet om meldingen gevraagd, dus Cercis stuurt ze toch. Komt er niets op, kijk dan in de instellingen van het horloge (onder Telefoon) of meldingen aan staan.</string>
     <string name="forward_hint_said_no">Het horloge heeft de telefoon laten weten dat het geen meldingen wil. Zet ze aan in de instellingen van het horloge (onder Telefoon).</string>
     <string name="forward_hint_silent">Het horloge antwoordt op niets wat we sturen, zelfs niet met een bevestiging. De verbinding is waarschijnlijk dood; de app merkt dat na ongeveer een minuut en verbindt opnieuw. Blijft het zo, zet de instelling dan uit en aan en bekijk het logboek hieronder.</string>
     <string name="forward_hint_ignores">Het horloge hoorde van meldingen maar vroeg nooit wat erin staat. Kijk in de meldingsinstellingen van het horloge en bekijk het logboek hieronder.</string>
     <string name="forward_hint_choose_apps">Android geeft meldingen door, maar er is nog geen app gekozen. Tik op Kies apps.</string>
-    <string name="forward_check_own_notification">Android laat OpenConnect zijn vaste melding tonen</string>
+    <string name="forward_check_own_notification">Android laat Cercis zijn vaste melding tonen</string>
     <string name="forward_open_notification_settings">Open de meldingsinstellingen</string>
-    <string name="forward_hint_own_notification">Android laat OpenConnect geen meldingen tonen, dus de vaste melding (Meldingen naar het horloge) blijft verborgen. Zonder die melding stopt Android de app sneller en valt de verbinding met het horloge weg. Sta meldingen voor OpenConnect toe.</string>
+    <string name="forward_hint_own_notification">Android laat Cercis geen meldingen tonen, dus de vaste melding (Meldingen naar het horloge) blijft verborgen. Zonder die melding stopt Android de app sneller en valt de verbinding met het horloge weg. Sta meldingen voor Cercis toe.</string>
     <string name="forward_test_not_asking">Het horloge heeft nog niet om meldingen gevraagd. De test blijft een minuut bewaard en verschijnt zodra het dat doet.</string>
 
     <!-- v1.3.0: een heel archief importeren (ZIP, gzip, Strava- en Garmin-exports) -->
@@ -1326,7 +1326,7 @@
     <string name="import_busy">Er loopt nog een import</string>
     <string name="import_summary">%1$d nieuw, %2$d al aanwezig, %3$d bestanden overgeslagen (geen activiteit), %4$d mislukt</string>
     <string name="import_period">Activiteiten van %1$s tot %2$s</string>
-    <string name="import_backup_inside">Dit archief bevat een OpenConnect-back-up. Gebruik Terugzetten uit back-up om ook het dagboek, de schoenen en de doelen terug te halen.</string>
+    <string name="import_backup_inside">Dit archief bevat een Cercis-back-up. Gebruik Terugzetten uit back-up om ook het dagboek, de schoenen en de doelen terug te halen.</string>
     <string name="import_stopped_cancelled">Eerder gestopt, zoals je vroeg. Wat al binnen was blijft staan.</string>
     <string name="import_stopped_files">Gestopt: het archief bevat te veel bestanden. Wat al binnen was blijft staan.</string>
     <string name="import_stopped_large">Gestopt: het archief pakt uit tot te veel gegevens. Wat al binnen was blijft staan.</string>

@@ -1,7 +1,7 @@
-OpenConnect ist eine unabhängige Open-Source-Android-App, die deine Garmin- und Oura-Daten auf deinem Telefon zusammenführt. Sie ist ein Fitness- und Gesundheitsdashboard, nicht der OpenConnect-VPN-Client. OpenConnect ist ein Arbeitstitel und wird vor der Veröffentlichung umbenannt.
+Cercis ist eine unabhängige Open-Source-Android-App, die deine Garmin- und Oura-Daten auf deinem Telefon zusammenführt. Sie ist ein Fitness- und Gesundheitsdashboard, nicht der OpenConnect-VPN-Client.
 
 LOKAL ZUERST
-Deine Daten bleiben auf deinem Telefon. Die App braucht keinen OpenConnect-Server und kein OpenConnect-Konto; es gibt keine Werbung, kein Analytics und keine Absturzberichte. Alles, was die App speichert, funktioniert ohne Netzwerk; nur die optionalen Quellen unten nutzen das Internet, und nur wenn du sie einschaltest.
+Deine Daten bleiben auf deinem Telefon. Die App braucht keinen Cercis-Server und kein Cercis-Konto; es gibt keine Werbung, kein Analytics und keine Absturzberichte. Alles, was die App speichert, funktioniert ohne Netzwerk; nur die optionalen Quellen unten nutzen das Internet, und nur wenn du sie einschaltest.
 
 WAS DU BEKOMMST
 - Startseite: Bereitschaft, Schritte, Ruheherzfrequenz, Body Battery, Stress, Schlaf und letzte Aktivitäten.
@@ -22,7 +22,7 @@ DATENSCHUTZ UND BERECHTIGUNGEN
 Die App fragt nur, was eine Funktion braucht, und erklärt jede Berechtigung in den Einstellungen. Health Connect und Benachrichtigungszugriff sind optional. Du kannst alle Daten in der App löschen. Vollständige Datenschutzerklärung: https://github.com/Tufein/OpenConnect/blob/main/docs/PRIVACY.md
 
 OPEN SOURCE
-OpenConnect steht unter AGPL-3.0-or-later. Quellcode, Issues und Versionshinweise: https://github.com/Tufein/OpenConnect
+Cercis steht unter AGPL-3.0-or-later. Quellcode, Issues und Versionshinweise: https://github.com/Tufein/OpenConnect
 Die App ist nicht mit Garmin, Oura, Anthropic oder Google verbunden und wird von ihnen nicht empfohlen. Garmin, Garmin Connect und Body Battery sind Marken von Garmin Ltd.
 
 Android 9 oder neuer. Das Garmin-Watchface und das Widget sind separate Connect IQ-Einträge und nicht Teil dieser Android-App.

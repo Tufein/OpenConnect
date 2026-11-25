@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.13.1: voortaan Cercis
+
+Vanaf deze release heet de app **Cercis**, niet meer OpenConnect. De oude naam botste met de bekende OpenConnect-VPN-client, waardoor zoeken in een winkel de verkeerde app kan opleveren. Alleen de weergavenaam verandert. De pakketnaam `nl.tufein.openconnect`, de repository, de APK-namen en de updater blijven; v1.13.0 werkt gewoon bij.
+
+[Release notes](docs/releases/v1.13.1.md)
+
 ## v1.13.0: twee kanalen, één app
 
 Deze GitHub-release splitst de Android-app in twee kanalen uit één codebase. De **GitHub-versie** (`github`) houdt de in-app-updater, de installatietoestemming en de FileProvider; de **winkelversie** (`store`) laat die drie weg en verbergt de updater. De winkelversie is gebouwd en getest, maar **niet gepubliceerd**: Google Play en F-Droid blijven geblokkeerd. Verder gaat targetSdk naar 36.

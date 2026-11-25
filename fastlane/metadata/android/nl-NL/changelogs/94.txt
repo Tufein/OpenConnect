@@ -1,0 +1,1 @@
+Cercis is de nieuwe weergavenaam; de app, je gegevens en de pakketnaam blijven gelijk, dus bestaande installaties werken gewoon bij. De repository en pakketnaam houden de technische aanduiding OpenConnect. Cercis is een fitness- en gezondheidsdashboard, niet de OpenConnect-VPN-client.

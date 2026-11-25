@@ -1,0 +1,1 @@
+Cercis is the new display name; the app, your data and the package name stay the same, so existing installs update normally. The repository and package keep the technical OpenConnect identifier. Cercis is a fitness and health dashboard, not the OpenConnect VPN client.

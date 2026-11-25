@@ -4,7 +4,7 @@ English first, Nederlands daaronder. The in-app page *Settings → About and lic
 from the same canonical list (`android/core/.../privacy/PrivacyRegister.kt`) as the tables below. A test fails when the code
 mentions a network address, a data source or a boundary field that the register and this statement do not cover.
 
-The short version: **OpenConnect has no server of ours, no account of ours, no advertising, no analytics and no crash
+The short version: **Cercis has no server of ours, no account of ours, no advertising, no analytics and no crash
 reporting.** Your data stays on your phone unless you switch on a source, a provider or a file export. Every outbound
 request starts from something you did. The **GitHub build** has an in-app updater; the **store build** has no updater, no
 install-packages permission and no FileProvider.
@@ -45,7 +45,7 @@ radio/on-device connections):
 | **Notifications on the watch** | you turn it on and Android delivers a notification | your watch, over Bluetooth | notification id, app id/name, title, body/big text, subtitle, time, category and dismiss flag | nothing; the notification is not sent to a server |
 | **Work-outs to the watch** | you press send for a work-out | your watch, over USB | the work-out as a FIT file in `GARMIN/NewFiles` | nothing; no server is involved |
 | **Watch and live heart rate** | you read a watch or start live heart rate | your watch, over USB, a folder or Bluetooth | nothing is sent; FIT files and heart-rate samples come in | activities, daily data, sleep, stress, Body Battery, SpO2, HRV and live heart rate |
-| **Health Connect** | you switch it on and grant types | on this phone only | exercise session, distance and calories when you ask to save an activity | steps, sleep and weight, only where OpenConnect has no data yet |
+| **Health Connect** | you switch it on and grant types | on this phone only | exercise session, distance and calories when you ask to save an activity | steps, sleep and weight, only where Cercis has no data yet |
 | **Files you choose** | you import, back up, export everything or share diagnostics | a file or app you choose | a FIT/GPX/TCX/gzip/ZIP import, a backup, an export, or the diagnostics text | a file you pick; no server is involved |
 | **Keys and app lock** | you save a key or turn on the lock | this phone only | nothing | nothing; keys stay in the Keystore-backed preferences |
 | **Removed WHOOP and Hume** | you open an old installation | this phone only | nothing; those integrations no longer run | old rows that were already on the phone |
@@ -85,7 +85,7 @@ contacts or calendar, and it does not collect your location for itself.
   the location permission for Bluetooth scanning; the app never reads your location.
 - **Foreground service (connected device)**: while live heart rate runs or the watch connection is kept for forwarding.
 - **Biometrics**: only for the app lock, if you switch it on.
-- **Health Connect**: only the types you allow. OpenConnect reads steps, sleep and weight, and writes exercise, distance and
+- **Health Connect**: only the types you allow. Cercis reads steps, sleep and weight, and writes exercise, distance and
   calories. It does not read heart rate, HRV, SpO2, active calories or exercise sessions from Health Connect.
 - **Photos/files**: only when you choose a file to import or a place to save a backup/export.
 
@@ -113,7 +113,7 @@ repository, or the private report route in [SECURITY.md](../SECURITY.md) for a s
 
 ## Nederlands
 
-**Kort.** OpenConnect heeft geen server van ons, geen account van ons, geen reclame, geen statistieken en geen
+**Kort.** Cercis heeft geen server van ons, geen account van ons, geen reclame, geen statistieken en geen
 crashrapporten. Je gegevens blijven op je telefoon tenzij jij een bron, een aanbieder of een bestandsexport aanzet. Elk
 verzoek naar buiten begint met iets wat jij deed. De **GitHub-versie** heeft een in-app-updater; de **winkelversie**
 heeft geen updater, geen installatietoestemming en geen FileProvider.
@@ -153,7 +153,7 @@ zijn lokale radio- of toestelverbindingen):
 | **Meldingen op het horloge** | je zet het aan en Android levert een melding | je horloge, via Bluetooth | melding-id, app-id/naam, titel, tekst/big text, subtitel, tijd, categorie en wegklikvlag | niets; de melding gaat niet naar een server |
 | **Work-outs naar het horloge** | je drukt op verzenden | je horloge, via USB | de work-out als FIT-bestand in `GARMIN/NewFiles` | niets; er is geen server bij betrokken |
 | **Horloge en live hartslag** | je leest een horloge of start live hartslag | je horloge, via USB, een map of Bluetooth | er gaat niets uit; FIT-bestanden en hartslagmetingen komen binnen | activiteiten, dagcijfers, slaap, stress, Body Battery, SpO2, HRV en live hartslag |
-| **Health Connect** | je zet het aan en geeft soorten toestemming | alleen op deze telefoon | training, afstand en calorieën als je een activiteit opslaat | stappen, slaap en gewicht, alleen waar OpenConnect nog niets heeft |
+| **Health Connect** | je zet het aan en geeft soorten toestemming | alleen op deze telefoon | training, afstand en calorieën als je een activiteit opslaat | stappen, slaap en gewicht, alleen waar Cercis nog niets heeft |
 | **Bestanden die jij kiest** | je importeert, maakt een back-up, exporteert alles of deelt diagnostiek | een bestand of app die jij kiest | een FIT/GPX/TCX/gzip/ZIP-import, een back-up, een export of de diagnosetekst | een bestand dat jij kiest; geen server |
 | **Sleutels en app-vergrendeling** | je bewaart een sleutel of zet de vergrendeling aan | alleen op deze telefoon | niets | niets; sleutels blijven in de Keystore-opslag |
 | **Verwijderde WHOOP en Hume** | je opent een oude installatie | alleen op deze telefoon | niets; die integraties draaien niet meer | oude rijen die al op de telefoon stonden |
@@ -194,7 +194,7 @@ authenticatieheader. De app leest je contacten of agenda niet en verzamelt niet 
   systeem ook de locatietoestemming voor Bluetooth-scannen; de app leest je locatie nooit.
 - **Voorgrondservice (verbonden apparaat)**: zolang live hartslag loopt of de horlogeverbinding voor doorsturen open blijft.
 - **Biometrie**: alleen voor de app-vergrendeling, als je die aanzet.
-- **Health Connect**: alleen de soorten die je toestaat. OpenConnect leest stappen, slaap en gewicht, en schrijft training,
+- **Health Connect**: alleen de soorten die je toestaat. Cercis leest stappen, slaap en gewicht, en schrijft training,
   afstand en calorieën. Het leest geen hartslag, HRV, SpO2, actieve calorieën of trainingen uit Health Connect.
 - **Foto's/bestanden**: alleen als je een bestand kiest om te importeren of een plek om een back-up/export te bewaren.
 

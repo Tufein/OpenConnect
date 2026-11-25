@@ -89,7 +89,7 @@ class WatchForwardingScreenTest : AppTestBase() {
         launch()
         openCard()
         clickText("Send notifications to the watch")
-        waitForText("OpenConnect needs notification access", substring = true)
+        waitForText("Cercis needs notification access", substring = true)
         assertTrue(settings().forwarding.enabled, "the switch stays on while the person goes to Android's settings")
         assertTrue(hasText("Allow notification access", substring = false))
         scrollToText("Open the app info")
@@ -121,7 +121,7 @@ class WatchForwardingScreenTest : AppTestBase() {
         clickText("Send a test to the watch")
         waitForText("Test sent. Look at the watch.")
         val test = connections.single().posted.single()
-        assertEquals("OpenConnect test", test.title)
+        assertEquals("Cercis test", test.title)
         assertEquals("If you can read this on the watch, notifications work.", test.body)
     }
 
@@ -165,7 +165,7 @@ class WatchForwardingScreenTest : AppTestBase() {
         openCard()
         waitForText("Connected to fenix 8.")
         // in the real app Android starts the listener by itself; in this test there is none, and the card says so
-        assertTrue(hasText("has not started the OpenConnect listener", substring = true))
+        assertTrue(hasText("has not started the Cercis listener", substring = true))
 
         scrollToText("What is happening?")
         clickText("What is happening?")
@@ -180,7 +180,7 @@ class WatchForwardingScreenTest : AppTestBase() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val copied = context.getSystemService(android.content.ClipboardManager::class.java).primaryClip!!.getItemAt(0).text.toString()
         assertTrue("connected to fenix 8" in copied, copied)
-        assertTrue(copied.startsWith("OpenConnect notifications to the watch: log"), copied)
+        assertTrue(copied.startsWith("Cercis notifications to the watch: log"), copied)
     }
 
     @Test

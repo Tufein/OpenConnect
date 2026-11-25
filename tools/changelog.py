@@ -1,6 +1,6 @@
 """Build CHANGELOG.md from docs/releases/vX.Y.Z.md.
 
-Each release note starts with `## OpenConnect vX.Y.Z: title` and a first paragraph. The
+Each release note starts with `## OpenConnect/Cercis vX.Y.Z: title` and a first paragraph. The
 changelog keeps those two, newest first, with a link to the full note. Run
 `python tools/changelog.py` after adding a release note; a test fails when CHANGELOG.md is out
 of date, so a release cannot forget it.
@@ -31,7 +31,7 @@ def _version_key(path: Path):
 
 def _entry(path: Path) -> str:
     lines = path.read_text(encoding="utf-8").splitlines()
-    title = re.sub(r"^#+\s*OpenConnect\s+", "", lines[0]).strip()
+    title = re.sub(r"^#+\s*(?:OpenConnect|Cercis)\s+", "", lines[0]).strip()
     paragraph: list[str] = []
     for line in lines[1:]:
         if not line.strip():

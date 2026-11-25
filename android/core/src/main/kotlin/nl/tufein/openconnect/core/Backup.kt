@@ -134,16 +134,16 @@ object Backup {
         } catch (e: BackupException) {
             throw e
         } catch (e: Exception) {
-            throw BackupException("This is not an OpenConnect backup.")
+            throw BackupException("This is not a Cercis backup.")
         }
         val root = try {
             Json.parseToJsonElement(text).jsonObject
         } catch (e: Exception) {
-            throw BackupException("This is not an OpenConnect backup.")
+            throw BackupException("This is not a Cercis backup.")
         }
-        if (root.str("format") != FORMAT) throw BackupException("This is not an OpenConnect backup.")
+        if (root.str("format") != FORMAT) throw BackupException("This is not a Cercis backup.")
         val version = root["version"]?.jsonPrimitive?.intOrNull ?: throw BackupException("This backup has no version.")
-        if (version > VERSION) throw BackupException("This backup comes from a newer version of OpenConnect. Update the app first.")
+        if (version > VERSION) throw BackupException("This backup comes from a newer version of Cercis. Update the app first.")
         return root
     }
 

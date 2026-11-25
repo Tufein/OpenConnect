@@ -252,7 +252,7 @@ class AndroidGarminBleLink(
         val session = GarminBleSession(
             pipe = connection::write,
             phone = PhoneIdentity(
-                name = runCatching { adapter.name }.getOrNull()?.takeIf { it.isNotBlank() } ?: "OpenConnect",
+                name = runCatching { adapter.name }.getOrNull()?.takeIf { it.isNotBlank() } ?: "Cercis",
                 manufacturer = Build.MANUFACTURER ?: "Android",
                 model = Build.DEVICE ?: "phone",
             ),

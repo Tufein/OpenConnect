@@ -1,7 +1,7 @@
-OpenConnect is an independent, open-source Android app that brings your Garmin and Oura data together on your phone. It is a fitness and health dashboard, not the OpenConnect VPN client. OpenConnect is a working title and will be renamed before release.
+Cercis is an independent, open-source Android app that brings your Garmin and Oura data together on your phone. It is a fitness and health dashboard, not the OpenConnect VPN client.
 
 LOCAL FIRST
-Your data lives on your phone. The app needs no OpenConnect server and no OpenConnect account, and there is no advertising, no analytics and no crash reporting. Everything the app stores works without a network; only the optional sources below use the internet, and only when you switch them on.
+Your data lives on your phone. The app needs no Cercis server and no Cercis account, and there is no advertising, no analytics and no crash reporting. Everything the app stores works without a network; only the optional sources below use the internet, and only when you switch them on.
 
 WHAT YOU GET
 - Home: readiness, steps, resting heart rate, Body Battery, stress, sleep and recent activities.
@@ -22,7 +22,7 @@ PRIVACY AND PERMISSIONS
 The app asks only for what a feature needs and explains each permission in Settings. Health Connect and notification access are opt-in. You can delete all data in the app. Read the full privacy statement: https://github.com/Tufein/OpenConnect/blob/main/docs/PRIVACY.md
 
 OPEN SOURCE
-OpenConnect is licensed AGPL-3.0-or-later. Source code, issues and release notes: https://github.com/Tufein/OpenConnect
+Cercis is licensed AGPL-3.0-or-later. Source code, issues and release notes: https://github.com/Tufein/OpenConnect
 It is not affiliated with or endorsed by Garmin, Oura, Anthropic or Google. Garmin, Garmin Connect and Body Battery are trademarks of Garmin Ltd.
 
 Android 9 or newer. The Garmin watch face and widget are separate Connect IQ listings and are not part of this Android app.

@@ -207,7 +207,7 @@ class NotificationForwarder(
         synchronized(lock) {
             val allowed = notificationsAllowed()
             if (_state.value.ownNotificationAllowed != allowed) {
-                trail.add(if (allowed) "Android lets OpenConnect show notifications" else "Android does not let OpenConnect show notifications: the persistent notification stays hidden")
+                trail.add(if (allowed) "Android lets Cercis show notifications" else "Android does not let Cercis show notifications: the persistent notification stays hidden")
                 _state.update { it.copy(ownNotificationAllowed = allowed) }
             }
             // read once: the person can forget the watch at any moment, between a check and the use of it
@@ -551,7 +551,7 @@ class NotificationForwarder(
         val test = WatchNotification(
             id = id,
             appId = ownPackage,
-            appName = "OpenConnect",
+            appName = "Cercis",
             title = title,
             body = body,
             whenMillis = now().toEpochMilli(),

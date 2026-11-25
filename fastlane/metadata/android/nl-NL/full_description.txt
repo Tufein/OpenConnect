@@ -1,7 +1,7 @@
-OpenConnect is een onafhankelijke, open-source Android-app die je Garmin- en Oura-gegevens op één plek op je telefoon zet. Het is een fitness- en gezondheidsdashboard, niet de OpenConnect-VPN-client. OpenConnect is een werknaam en krijgt voor de release een andere naam.
+Cercis is een onafhankelijke, open-source Android-app die je Garmin- en Oura-gegevens op één plek op je telefoon zet. Het is een fitness- en gezondheidsdashboard, niet de OpenConnect-VPN-client.
 
 LOKAAL EERST
-Je gegevens blijven op je telefoon. De app heeft geen OpenConnect-server en geen OpenConnect-account nodig, en er is geen reclame, analytics of crashrapportage. Alles wat de app opslaat werkt zonder netwerk; alleen de optionele bronnen hieronder gebruiken internet, en alleen als je ze aanzet.
+Je gegevens blijven op je telefoon. De app heeft geen Cercis-server en geen Cercis-account nodig, en er is geen reclame, analytics of crashrapportage. Alles wat de app opslaat werkt zonder netwerk; alleen de optionele bronnen hieronder gebruiken internet, en alleen als je ze aanzet.
 
 WAT JE KRIJGT
 - Voorblad: gereedheid, stappen, rusthartslag, Body Battery, stress, slaap en recente activiteiten.
@@ -22,7 +22,7 @@ PRIVACY EN RECHTEN
 De app vraagt alleen wat een functie nodig heeft en legt elke toestemming uit in Instellingen. Health Connect en toegang tot meldingen zijn optioneel. Je kunt alle gegevens in de app wissen. Lees de volledige privacyverklaring: https://github.com/Tufein/OpenConnect/blob/main/docs/PRIVACY.md
 
 OPEN SOURCE
-OpenConnect is gelicentieerd onder AGPL-3.0-or-later. Broncode, meldingen en release-opmerkingen: https://github.com/Tufein/OpenConnect
+Cercis is gelicentieerd onder AGPL-3.0-or-later. Broncode, meldingen en release-opmerkingen: https://github.com/Tufein/OpenConnect
 De app is niet verbonden aan of goedgekeurd door Garmin, Oura, Anthropic of Google. Garmin, Garmin Connect en Body Battery zijn handelsmerken van Garmin Ltd.
 
 Android 9 of nieuwer. De Garmin-watchface en -widget zijn aparte Connect IQ-vermeldingen en horen niet bij deze Android-app.

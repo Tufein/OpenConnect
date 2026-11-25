@@ -1,26 +1,25 @@
-<p align="center"><img src="docs/img/logo.png" alt="OpenConnect logo" width="96"></p>
+<p align="center"><img src="docs/img/logo.png" alt="Cercis logo" width="96"></p>
 
-# OpenConnect
+# Cercis
 
 An open-source, **private alternative to Garmin Connect**: an Android app (and a self-hosted server) that keeps your
 activities and daily health data on your own device, with charts, insights, a coach and reports, optionally written by
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.13.0.** The Android app now builds in two channels from one code base. The **GitHub build** keeps the
-> in-app updater, the install permission and the FileProvider; the **store build** leaves all three out and hides the
-> updater. Both use the same app id, but a store build is signed with a different key, so moving between them means
-> backup → uninstall → install → restore; keys are never in a backup. targetSdk is now 36. The store build is **not
-> published**: Google Play and F-Droid are blocked by the name, an account and testers, real screenshots and store
-> declarations. Everything from v1.12.0 stays, including the privacy register and the four languages; the German and
-> French texts remain machine-drafted, not native-reviewed.
-> [Release notes](docs/releases/v1.13.0.md).
+> **Status: v1.13.1.** The app is now called **Cercis**, so it no longer shares its name with the OpenConnect VPN
+> client. Only the display name changed: the Android package id `nl.tufein.openconnect`, the GitHub repository and the
+> release asset names (`openconnect-vX.Y.Z.apk`) stay the same, and the GitHub build keeps its updater. A phone on
+> v1.13.0 therefore updates to v1.13.1 normally, with the same signing key and no data migration. The two channels from
+> v1.13.0 stay; the **store build is not published**: Google Play and F-Droid remain blocked until the name is legally
+> cleared, and an account, testers, real screenshots and store declarations are still missing. Everything from v1.12.0
+> stays, including the privacy register and the four languages; the German and French texts remain machine-drafted,
+> not native-reviewed.
+> [Release notes](docs/releases/v1.13.1.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).
 > Not affiliated with or endorsed by Garmin or Oura.
-
-![OpenConnect dashboard](docs/img/dashboard.png)
 
 ## Install the Android app
 
@@ -30,7 +29,7 @@ download, the "install unknown apps" switch, updating and Obtainium, is [docs/IN
 1. Open the [latest release](https://github.com/Tufein/OpenConnect/releases/latest) on your phone and download
    `openconnect-vX.Y.Z.apk` (and `openconnect-vX.Y.Z.apk.sha256` if you want to check it).
 2. Open the file. Android asks once to allow installing apps from your browser or file manager; allow it.
-3. Open **OpenConnect**, answer the first-start questions and press **Load demo data** to look around.
+3. Open **Cercis**, answer the first-start questions and press **Load demo data** to look around.
 
 Check the download with `sha256sum -c openconnect-vX.Y.Z.apk.sha256`. Every GitHub release is signed with the same key, so
 an update installs over the old app and keeps your data; *Settings, Updates* (GitHub build) can fetch and verify the next
@@ -81,8 +80,8 @@ Dutch, is [docs/PRIVACY.md](docs/PRIVACY.md); a test fails when the code mention
 
 ## The server (self-hosted)
 
-The Python server is the original OpenConnect: FastAPI, one SQLite file, a web dashboard, a JSON API
-(`/api/docs`) and a CLI. Requires Python 3.11 or newer.
+The Python server is the original OpenConnect code; the package and command stay `openconnect`: FastAPI, one SQLite
+file, a web dashboard, a JSON API (`/api/docs`) and a CLI. Requires Python 3.11 or newer.
 
 ```bash
 git clone https://github.com/Tufein/OpenConnect.git

@@ -33,7 +33,7 @@ class GithubChannelTest : AppTestBase() {
         waitForText("Load demo data")
         tab("Settings").performClick()
         clickText("About and licences")
-        waitForText("About OpenConnect")
+        waitForText("About Cercis")
         scrollToText("What leaves your phone")
         clickText("What leaves your phone")
         waitForText("What leaves your phone")

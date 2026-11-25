@@ -248,9 +248,9 @@ def main(apk, out):
         adb("shell", "pm", "grant", PKG, "android.permission.POST_NOTIFICATIONS", check=False)
 
         run.start()
-        first = run.wait("Welcome to OpenConnect", "Load demo data", timeout=150)
+        first = run.wait("Welcome to Cercis", "Load demo data", timeout=150)
         run.shot("first-screen")
-        if first.text == "Welcome to OpenConnect":
+        if first.text == "Welcome to Cercis":
             # The Start button is under the device list, below the fold on a small screen, and a node that is
             # not on screen is not in the uiautomator dump: scroll to it first.
             run.tap(run.scroll_to("Start"))
@@ -273,7 +273,7 @@ def main(apk, out):
             print(f"{tab}: ok")
 
         run.tap(run.scroll_to("About and licences"))
-        run.wait("About OpenConnect")
+        run.wait("About Cercis")
         run.shot("about")
         run.back()
         run.wait("About and licences")

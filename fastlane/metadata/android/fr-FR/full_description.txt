@@ -1,7 +1,7 @@
-OpenConnect est une application Android indépendante et open source qui réunit vos données Garmin et Oura sur votre téléphone. C'est un tableau de bord de fitness et de santé, pas le client VPN OpenConnect. OpenConnect est un nom provisoire et sera renommé avant la publication.
+Cercis est une application Android indépendante et open source qui réunit vos données Garmin et Oura sur votre téléphone. C'est un tableau de bord de fitness et de santé, pas le client VPN OpenConnect.
 
 LOCAL D'ABORD
-Vos données restent sur votre téléphone. L'application n'a besoin d'aucun serveur OpenConnect ni d'aucun compte OpenConnect ; il n'y a ni publicité, ni analytics, ni rapport de crash. Tout ce que l'application stocke fonctionne sans réseau ; seules les sources facultatives ci-dessous utilisent Internet, et seulement si vous les activez.
+Vos données restent sur votre téléphone. L'application n'a besoin d'aucun serveur Cercis ni d'aucun compte Cercis ; il n'y a ni publicité, ni analytics, ni rapport de crash. Tout ce que l'application stocke fonctionne sans réseau ; seules les sources facultatives ci-dessous utilisent Internet, et seulement si vous les activez.
 
 CE QUE VOUS OBTENEZ
 - Accueil : préparation, pas, fréquence cardiaque au repos, Body Battery, stress, sommeil et activités récentes.
@@ -22,7 +22,7 @@ CONFIDENTIALITÉ ET AUTORISATIONS
 L'application ne demande que ce dont une fonction a besoin et explique chaque autorisation dans les réglages. Health Connect et l'accès aux notifications sont facultatifs. Vous pouvez supprimer toutes les données dans l'application. Déclaration de confidentialité complète : https://github.com/Tufein/OpenConnect/blob/main/docs/PRIVACY.md
 
 OPEN SOURCE
-OpenConnect est sous licence AGPL-3.0-or-later. Code source, tickets et notes de version : https://github.com/Tufein/OpenConnect
+Cercis est sous licence AGPL-3.0-or-later. Code source, tickets et notes de version : https://github.com/Tufein/OpenConnect
 L'application n'est ni affiliée à Garmin, Oura, Anthropic ou Google, ni approuvée par eux. Garmin, Garmin Connect et Body Battery sont des marques de Garmin Ltd.
 
 Android 9 ou plus récent. Le cadran et le widget Garmin sont des fiches Connect IQ distinctes et ne font pas partie de cette application Android.

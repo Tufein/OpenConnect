@@ -108,7 +108,7 @@ class WatchScreenTest : AppTestBase() {
         scrollToText("Pick a folder")
         assertTrue(hasText("Pick a folder", substring = false))
         shot("12b-watch-folder")
-        scrollToText("The watch can sync over Bluetooth with OpenConnect itself", substring = true)
+        scrollToText("The watch can sync over Bluetooth with Cercis itself", substring = true)
     }
 
     @Test

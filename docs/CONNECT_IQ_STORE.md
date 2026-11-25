@@ -1,4 +1,4 @@
-# OpenConnect in the Connect IQ store
+# Cercis in the Connect IQ store
 
 *Written 2026-11-14 for v0.24.0, from Garmin's developer pages and forum threads (sources at the end). Updated for v0.43.0.*
 
@@ -12,14 +12,14 @@ phone can open:
 |---|---|
 | Garmin's Connect IQ app is installed, no listing of ours | that app, at its start (`getLaunchIntentForPackage("com.garmin.connectiq")`) |
 | Garmin's app is not installed | its Play Store page (`market://details?id=com.garmin.connectiq`), else the same page on the web |
-| `ConnectIqStore.LISTING_ID` is filled in and the app is installed | OpenConnect's own page, handed to Garmin's app (`https://apps.garmin.com/apps/<store id>`), else the browser |
+| `ConnectIqStore.LISTING_ID` is filled in and the app is installed | Cercis's own page, handed to Garmin's app (`https://apps.garmin.com/apps/<store id>`), else the browser |
 
 Seeing whether Garmin's app is installed needs `<queries><package android:name="com.garmin.connectiq"/></queries>` in the
 manifest (Android 11 and newer hide other apps otherwise). **What is not known:** whether Garmin's app takes a store address
 handed to it; if it does not, the same address opens in the browser (the second step). It was tested with fakes only; no
 phone with that app was available.
 
-**What is missing for "straight to OpenConnect's own page":** OpenConnect is not in Garmin's store yet, so it has no store
+**What is missing for "straight to Cercis's own page":** Cercis is not in Garmin's store yet, so it has no store
 id. After the first upload (steps below), paste the id or the address into `ConnectIqStore.LISTING_ID`; nothing else changes.
 Since v0.43.0 there is one constant, not two: the watch face is no longer part of the app and the widget has no button of
 its own.
