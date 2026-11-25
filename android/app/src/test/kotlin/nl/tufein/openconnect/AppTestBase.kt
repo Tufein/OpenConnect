@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -161,6 +162,20 @@ abstract class AppTestBase {
         if (!hasText(text, substring)) {
             rule.onAllNodes(hasScrollAction())[0].performScrollToNode(androidx.compose.ui.test.hasText(text, substring))
         }
+    }
+
+    /** Click a tagged tile/card through the nearest click action, even when the tag is hidden in the merged tree. */
+    protected fun clickTag(tag: String) {
+        var node: androidx.compose.ui.semantics.SemanticsNode? =
+            rule.onNode(hasTestTag(tag), useUnmergedTree = true).fetchSemanticsNode()
+        while (node != null) {
+            if (node.config.contains(androidx.compose.ui.semantics.SemanticsActions.OnClick)) {
+                node.config[androidx.compose.ui.semantics.SemanticsActions.OnClick].action?.invoke()
+                return
+            }
+            node = node.parent
+        }
+        throw AssertionError("no click action above test tag $tag")
     }
 
     /** Lists compose lazily, so an item below the fold is not in the tree until it has been scrolled to. */
