@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.os.LocaleList
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.ui.platform.findViewTreeCompositionContext
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasScrollAction
@@ -81,10 +82,19 @@ abstract class AppTestBase {
         LocaleList.setDefault(LocaleList.forLanguageTags("en"))
     }
 
+    @get:Rule
+    val testName = org.junit.rules.TestName()
+
     @After
     fun close() {
         if (::scenario.isInitialized) scenario.close()
         resetLocales()
+        previousTest = "${javaClass.simpleName}.${testName.methodName}"
+    }
+
+    private companion object {
+        /** DIAGNOSTIC: the test that ran before this one in the same sandbox. */
+        var previousTest: String = "(none)"
     }
 
     /**
@@ -152,6 +162,7 @@ abstract class AppTestBase {
         try {
             scenario.onActivity { a ->
                 val vm = a.viewModel
+                println("--- previous test in this sandbox: $previousTest")
                 println("--- vm: home.loaded=${vm.home.value.loaded} hasData=${vm.home.value.hasData} sameApp=${vm.getApplication<OpenConnectApp>() === ApplicationProvider.getApplicationContext<Context>()} lifecycle=${a.lifecycle.currentState}")
                 val ui = androidx.compose.ui.platform.AndroidUiDispatcher.Main[kotlin.coroutines.ContinuationInterceptor]
                     as androidx.compose.ui.platform.AndroidUiDispatcher
@@ -164,6 +175,22 @@ abstract class AppTestBase {
                 val looper = org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper())
                 println("--- main looper: idle=${looper.isIdle} next=${looper.nextScheduledTaskTime} paused=${looper.isPaused}")
                 println("--- snapshot: pending=${androidx.compose.runtime.snapshots.Snapshot.current.hasPendingChanges()}")
+                // Which recomposer drives the activity's content, and is it the one the test rule runs?
+                val content = a.findViewById<android.view.ViewGroup>(android.R.id.content)
+                val composeView = (0 until content.childCount).map { content.getChildAt(it) }
+                    .firstOrNull { it is androidx.compose.ui.platform.AbstractComposeView }
+                val ctx = composeView?.findViewTreeCompositionContext()
+                val screenRecomposer = ctx as? androidx.compose.runtime.Recomposer
+                println("--- screen recomposer: ${ctx?.javaClass?.name}@${System.identityHashCode(ctx)} state=${screenRecomposer?.currentState?.value} pendingWork=${screenRecomposer?.hasPendingWork} running=${androidx.compose.runtime.Recomposer.runningRecomposers.value.size}")
+                val env = rule.javaClass.getDeclaredField("environment").also { it.isAccessible = true }.get(rule)
+                var cls: Class<*>? = env.javaClass
+                var testRecomposer: Any? = null
+                while (cls != null && testRecomposer == null) {
+                    testRecomposer = runCatching { cls!!.getDeclaredField("recomposer").also { it.isAccessible = true }.get(env) }.getOrNull()
+                    cls = cls.superclass
+                }
+                val tr = testRecomposer as? androidx.compose.runtime.Recomposer
+                println("--- rule recomposer: @${System.identityHashCode(tr)} state=${tr?.currentState?.value} same=${tr === screenRecomposer} activity=${System.identityHashCode(a)} created=${a.lifecycle.currentState}")
             }
         } catch (t: Throwable) {
             println("--- state: could not read: $t")
