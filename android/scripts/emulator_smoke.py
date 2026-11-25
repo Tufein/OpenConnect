@@ -27,6 +27,7 @@ FAKE_KEY = "sk-ant-api03-" + "A" * 60
 # rename can still be walked (emulator.yml, input `published`) to compare it with today's.
 WELCOME = ("Welcome to Cercis", "Welcome to OpenConnect")
 ABOUT = ("About Cercis", "About OpenConnect")
+APP_NAMES = ("Cercis", "OpenConnect")
 
 
 class Smoke(Exception):
@@ -103,8 +104,20 @@ class Node:
         return f"{self.text or self.desc!r}@{self.centre}"
 
 
+def not_responding(nodes):
+    """The text of an Android "... isn't responding" dialog on screen, or None."""
+    for node in nodes:
+        if node.text.endswith(" isn't responding") or node.text.endswith(" is not responding"):
+            return node.text
+    return None
+
+
 def screen():
-    """The nodes on screen now. uiautomator sometimes cannot get an idle state, so it is tried a few times."""
+    """The nodes on screen now. uiautomator sometimes cannot get an idle state, so it is tried a few times.
+
+    A freshly booted emulator can be slow enough for one of its own apps (the launcher) to be reported as not responding;
+    that dialog covers the app and is not about it, so it is answered with Wait. The same dialog about this app fails."""
+    dialog = None
     for _ in range(6):
         # Remove the old dump first: if the device is briefly offline, cat must not return the previous screen.
         adb("shell", "rm", "-f", "/sdcard/ui.xml", check=False)
@@ -113,11 +126,22 @@ def screen():
         start = xml.find("<?xml")
         if start >= 0:
             try:
-                return [Node(e) for e in ET.fromstring(xml[start:]).iter("node")]
+                nodes = [Node(e) for e in ET.fromstring(xml[start:]).iter("node")]
             except ET.ParseError:
-                pass
+                nodes = None
+            if nodes is not None:
+                dialog = not_responding(nodes)
+                if dialog is None:
+                    return nodes
+                if dialog.split(" is", 1)[0] in APP_NAMES:
+                    raise Smoke(f"the app stopped answering: {dialog}")
+                wait = find(nodes, "Wait")
+                if wait is not None:
+                    print(f"Answered a system dialog with Wait: {dialog}")
+                    x, y = wait.centre
+                    adb("shell", "input", "tap", str(x), str(y), check=False)
         time.sleep(1)
-    raise Smoke("could not read the screen")
+    raise Smoke(f"a system dialog did not go away: {dialog}" if dialog else "could not read the screen")
 
 
 def labels(nodes):

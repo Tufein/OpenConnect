@@ -252,3 +252,64 @@ def test_without_adb_the_recording_is_skipped_and_the_walk_still_reports(monkeyp
 def test_the_walk_knows_the_first_screen_and_the_about_screen_under_both_names():
     assert set(smoke.WELCOME) == {"Welcome to Cercis", "Welcome to OpenConnect"}
     assert set(smoke.ABOUT) == {"About Cercis", "About OpenConnect"}
+
+
+# 2026-11-25, PR #93: one emulator walk failed before the app was even looked at. The screen showed
+# "Pixel Launcher isn't responding" with Close app and Wait: the freshly booted emulator's own
+# launcher was slow, and its dialog covered the first-start screen. That is not the app. A dialog
+# about another app is answered with Wait and the walk goes on; a dialog about this app fails.
+
+
+def _dump(*nodes):
+    body = "".join(
+        f'<node text="{text}" class="android.widget.Button" bounds="{bounds}" />'
+        for text, bounds in nodes
+    )
+    return f'<?xml version="1.0"?><hierarchy>{body}</hierarchy>'
+
+
+ANR = _dump(
+    ("Pixel Launcher isn't responding", "[20,200][300,240]"),
+    ("Close app", "[20,260][300,300]"),
+    ("Wait", "[20,320][300,360]"),
+)
+WELCOME = _dump(("Welcome to Cercis", "[20,100][300,140]"))
+
+
+class FakeAdb:
+    def __init__(self, *screens):
+        self.screens = list(screens)
+        self.taps = []
+
+    def __call__(self, *args, **kwargs):
+        if args[:2] == ("shell", "cat"):
+            return self.screens.pop(0) if len(self.screens) > 1 else self.screens[0]
+        if args[:3] == ("shell", "input", "tap"):
+            self.taps.append((int(args[3]), int(args[4])))
+        return ""
+
+
+def test_another_apps_not_responding_dialog_is_answered_with_wait(monkeypatch):
+    fake = FakeAdb(ANR, WELCOME)
+    monkeypatch.setattr(smoke, "adb", fake)
+    monkeypatch.setattr(smoke.time, "sleep", lambda s: None)
+    nodes = smoke.screen()
+    assert [n.text for n in nodes] == ["Welcome to Cercis"]
+    assert fake.taps == [(160, 340)], "Wait was pressed, not Close app"
+
+
+def test_this_apps_not_responding_dialog_fails_the_walk(monkeypatch):
+    mine = _dump(("Cercis isn't responding", "[20,200][300,240]"), ("Wait", "[20,320][300,360]"))
+    fake = FakeAdb(mine)
+    monkeypatch.setattr(smoke, "adb", fake)
+    monkeypatch.setattr(smoke.time, "sleep", lambda s: None)
+    with pytest.raises(smoke.Smoke, match="Cercis isn't responding"):
+        smoke.screen()
+    assert fake.taps == []
+
+
+def test_a_dialog_that_keeps_coming_back_is_named_in_the_failure(monkeypatch):
+    monkeypatch.setattr(smoke, "adb", FakeAdb(ANR))
+    monkeypatch.setattr(smoke.time, "sleep", lambda s: None)
+    with pytest.raises(smoke.Smoke, match="did not go away: Pixel Launcher isn't responding"):
+        smoke.screen()
