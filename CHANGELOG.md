@@ -4,7 +4,7 @@ Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do
 
 ## v1.12.0: wat je telefoon verlaat
 
-Deze release maakt privacy concreet: **Instellingen → Over en licenties → Wat je telefoon verlaat** opent een index met twaalf onderwerpen. Elk onderwerp heeft een eigen pagina met wat er wel weggaat, wat er terugkomt, wat nooit meegaat, waar het bewaard blijft, wanneer het gebeurt en welke toestemming je ervoor geeft. De pagina is opgebouwd uit dezelfde `PrivacyRegister` als de statische controle en de documentatie; hij is geen live verkeersmonitor en toont geen namen, meldingsteksten of gezondheidswaarden.
+Deze release maakt privacy concreet: **Instellingen → Over en licenties → Wat je telefoon verlaat** opent een index met twaalf onderwerpen. Elk onderwerp heeft een eigen pagina met wat er wel weggaat, wat er terugkomt, wat nooit meegaat, waar het bewaard blijft, wanneer het gebeurt en welke toestemming je ervoor geeft. De pagina is opgebouwd uit dezelfde `PrivacyRegister` als de statische …
 
 [Release notes](docs/releases/v1.12.0.md)
 
