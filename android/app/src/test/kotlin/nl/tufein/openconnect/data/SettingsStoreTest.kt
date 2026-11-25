@@ -146,6 +146,53 @@ class SettingsStoreTest {
     }
 
     @Test
+    fun `clearing user data removes journal gear plan race goals workouts sync log and ledger but keeps keys and preferences`() {
+        val s = store()
+        s.journal = "2026-05-01:good"
+        s.gear = "shoes"
+        s.trainingPlan = "plan"
+        s.raceGoal = "race"
+        s.maxHr = 191
+        s.weeklyGoals = WeeklyGoals(200, 50, 5)
+        s.workouts = "workouts"
+        s.syncLogText = "2026-05-01 garmin ok"
+        s.healthLedger.remember(mapOf("openconnect-a1" to "f1"))
+        s.nudges.sent = listOf("2026-05-01:goal")
+        s.onboarded = true
+        s.themeMode = "dark"
+        s.appLanguage = "de"
+        s.setKey(AiVendor.CLAUDE, "sk-ant-claude-key-0123456789")
+        s.garmin.key = "GCDC_0123456789abcdef.fedcba9876543210.AbCdEf"
+        s.oura.clientId = "oura-client"
+        s.oura.clientSecret = "oura-secret"
+        s.oura.tokens = nl.tufein.openconnect.core.oura.OuraTokens("access", "refresh", java.time.Instant.now())
+
+        s.clearUserData()
+
+        val after = store() // the app was restarted: the change is on disk
+        assertEquals("", after.journal)
+        assertEquals("", after.gear)
+        assertEquals("", after.trainingPlan)
+        assertEquals("", after.raceGoal)
+        assertEquals(0, after.maxHr)
+        assertEquals(WeeklyGoals(), after.weeklyGoals)
+        assertEquals("", after.workouts)
+        assertEquals("", after.syncLogText)
+        assertEquals(emptyMap(), after.healthLedger.fingerprints())
+        assertEquals(emptyList(), after.nudges.sent)
+
+        assertTrue(after.onboarded, "onboarding is a preference, not data")
+        assertEquals("dark", after.themeMode)
+        assertEquals("de", after.appLanguage)
+        assertEquals("sk-ant-claude-key-0123456789", after.key(AiVendor.CLAUDE), "keys are cleared by the key-vault flow, not here")
+        assertEquals("GCDC_0123456789abcdef.fedcba9876543210.AbCdEf", after.garmin.key)
+        assertEquals("oura-client", after.oura.clientId)
+        assertEquals("oura-secret", after.oura.clientSecret)
+        assertEquals("access", after.oura.tokens?.access)
+        assertEquals("refresh", after.oura.tokens?.refresh)
+    }
+
+    @Test
     fun `the theme can be system, dark or light and nothing else`() {
         val s = store()
         s.themeMode = "dark"

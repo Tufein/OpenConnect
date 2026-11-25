@@ -1374,6 +1374,10 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun clearAll() = io {
         repo.clearAll()
+        container.settings.clearUserData()
+        container.syncLog.clear()
+        container.coach.clear()
+        _goals.value = container.settings.weeklyGoals
         currentActivityId = null
         _detail.value = DetailState()
         tell(text(R.string.data_cleared))

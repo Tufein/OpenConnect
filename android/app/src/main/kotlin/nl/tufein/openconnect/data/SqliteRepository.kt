@@ -494,7 +494,10 @@ class SqliteRepository(context: Context, name: String? = "openconnect.db") :
     override fun clearAll() {
         writableDatabase.beginTransaction()
         try {
-            for (table in listOf("activities", "daily", "sleep", "reports", "samples", "watch_files", "oura_days", "whoop_days", "hume_days")) writableDatabase.delete(table, null, null)
+            for (table in listOf(
+                "activities", "daily", "sleep", "body_weight", "water_log", "reports", "samples", "watch_files",
+                "oura_days", "whoop_days", "hume_days",
+            )) writableDatabase.delete(table, null, null)
             writableDatabase.setTransactionSuccessful()
         } finally {
             writableDatabase.endTransaction()

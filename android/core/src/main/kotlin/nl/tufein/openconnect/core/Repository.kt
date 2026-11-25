@@ -195,6 +195,8 @@ class InMemoryRepository : Repository {
         activities.clear()
         dailies.clear()
         sleeps.clear()
+        body.clear()
+        water.clear()
         reports.clear()
         samples.clear()
         watchFiles.clear()

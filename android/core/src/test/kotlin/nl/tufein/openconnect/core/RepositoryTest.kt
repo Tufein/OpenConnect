@@ -72,8 +72,16 @@ class RepositoryTest {
         val repo = InMemoryRepository()
         repo.upsertActivity(TestData.activity())
         repo.upsertDaily(TestData.daily(day))
+        repo.upsertSleep(TestData.sleep(day))
+        repo.upsertBody(BodyEntry(day, 78_400, 18.5))
+        repo.upsertWater(WaterEntry(day, 1_750))
+        repo.saveReport(StoredReport("weekly", "w", "text", "template", null, "hash", Instant.now()))
         repo.clearAll()
         assertEquals(emptyList(), repo.listActivities())
         assertEquals(emptyList(), repo.listDaily(day, day))
+        assertEquals(emptyList(), repo.listSleep(day, day))
+        assertEquals(emptyList(), repo.listBody(day, day), "body weight is user data and must be deleted")
+        assertEquals(emptyList(), repo.listWater(day, day), "water is user data and must be deleted")
+        assertNull(repo.getReport("weekly", "w"))
     }
 }

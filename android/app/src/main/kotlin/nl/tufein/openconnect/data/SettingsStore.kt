@@ -221,6 +221,32 @@ class SettingsStore(
         if (data.workouts != workouts) workouts = data.workouts
     }
 
+    /**
+     * Removes everything the person wrote or chose, so that *Delete all data* is true for the settings side too:
+     * the journal, shoes, training plan, race, maximum heart rate, weekly goals, work-outs, the sync log, the Health
+     * Connect ledger and the record of nudges already sent.
+     *
+     * Keys, tokens, onboarding, theme, language, app lock and the device switches stay: the key vault is cleared by
+     * its own flow, and the rest is a preference rather than data. [nl.tufein.openconnect.ui.AppViewModel.clearAll]
+     * calls this together with the repository.
+     */
+    fun clearUserData() {
+        prefs.edit()
+            .remove(KEY_JOURNAL)
+            .remove(KEY_GEAR)
+            .remove(KEY_PLAN)
+            .remove(KEY_RACE)
+            .remove(KEY_MAX_HR)
+            .remove(KEY_GOAL_INTENSITY)
+            .remove(KEY_GOAL_DISTANCE)
+            .remove(KEY_GOAL_ACTIVITIES)
+            .remove(KEY_WORKOUTS)
+            .remove(KEY_SYNC_LOG)
+            .remove(KEY_HEALTH_LEDGER)
+            .remove(KEY_NUDGES_SENT)
+            .apply()
+    }
+
     /** Whether the first-start questions (which devices do you use) were answered. */
     var onboarded: Boolean
         get() = prefs.getBoolean(KEY_ONBOARDED, false)

@@ -4,11 +4,13 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import androidx.test.core.app.ApplicationProvider
 import nl.tufein.openconnect.core.Activity
+import nl.tufein.openconnect.core.BodyEntry
 import nl.tufein.openconnect.core.DailySummary
 import nl.tufein.openconnect.core.DemoData
 import nl.tufein.openconnect.core.Sport
 import nl.tufein.openconnect.core.StoredReport
 import nl.tufein.openconnect.core.TrackPoint
+import nl.tufein.openconnect.core.WaterEntry
 import nl.tufein.openconnect.core.watch.Metric
 import nl.tufein.openconnect.core.watch.MetricSample
 import nl.tufein.openconnect.data.SqliteRepository
@@ -119,10 +121,15 @@ class SqliteRepositoryTest {
     fun clearAllEmptiesEveryTable() {
         repo.inTransaction { DemoData.store(repo, DemoData.generate(LocalDate.parse("2026-05-10"), days = 7)) }
         repo.saveReport(StoredReport("weekly", "w", "t", "template", null, "h", Instant.now()))
+        val day = LocalDate.parse("2026-05-10")
+        repo.upsertBody(BodyEntry(day, 78_400, 18.5))
+        repo.upsertWater(WaterEntry(day, 1_750))
         repo.clearAll()
         assertEquals(0, repo.countActivities())
         assertEquals(emptyList(), repo.listDaily(LocalDate.parse("2000-01-01"), LocalDate.parse("2100-01-01")))
         assertEquals(emptyList(), repo.listSleep(LocalDate.parse("2000-01-01"), LocalDate.parse("2100-01-01")))
+        assertEquals(emptyList(), repo.listBody(LocalDate.parse("2000-01-01"), LocalDate.parse("2100-01-01")), "body weight must be deleted")
+        assertEquals(emptyList(), repo.listWater(LocalDate.parse("2000-01-01"), LocalDate.parse("2100-01-01")), "water must be deleted")
         assertNull(repo.getReport("weekly", "w"))
     }
 
