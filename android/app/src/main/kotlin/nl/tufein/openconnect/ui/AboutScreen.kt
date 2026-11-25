@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import nl.tufein.openconnect.BuildConfig
 import nl.tufein.openconnect.R
 import nl.tufein.openconnect.core.DataSourceKind
 import nl.tufein.openconnect.core.DiagnosticInput
@@ -123,7 +124,9 @@ fun AboutScreen(
         item {
             FoldableCard("about-tried", stringResource(R.string.about_tried_title)) {
                 Text(stringResource(R.string.about_tried_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                for (kind in DataSourceKind.values()) Text(sourceLine(SourceLabels.status(kind)), style = MaterialTheme.typography.bodyMedium)
+                for (kind in DataSourceKind.values().filter { BuildConfig.UPDATER_ENABLED || it != DataSourceKind.UPDATER }) {
+                    Text(sourceLine(SourceLabels.status(kind)), style = MaterialTheme.typography.bodyMedium)
+                }
             }
         }
         item {
@@ -135,7 +138,9 @@ fun AboutScreen(
                 SecondaryButton(onClick = onPrivacy, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.privacy_title))
                 }
-                for (key in PrivacyStatement.called.keys) Text(privacyHostText(key), style = MaterialTheme.typography.bodyMedium)
+                for (key in PrivacyStatement.called.keys.filter { BuildConfig.UPDATER_ENABLED || it != "github" }) {
+                    Text(privacyHostText(key), style = MaterialTheme.typography.bodyMedium)
+                }
                 SecondaryButton(onClick = { openLink(context, PrivacyStatement.STATEMENT_URL) }, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.about_privacy_statement))
                 }
@@ -199,6 +204,7 @@ fun diagnosticInput(ui: SettingsUi): DiagnosticInput {
         samples = overview?.samples ?: 0,
         activitiesBySource = overview?.sources?.map { it.source to it.activities }.orEmpty(),
         log = ui.syncLog,
+        updaterEnabled = BuildConfig.UPDATER_ENABLED,
     )
 }
 

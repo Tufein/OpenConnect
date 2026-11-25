@@ -53,6 +53,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import nl.tufein.openconnect.BuildConfig
 import nl.tufein.openconnect.R
 import nl.tufein.openconnect.ai.AiKeyCheck
 import nl.tufein.openconnect.ai.AiKeyProblem
@@ -445,8 +446,10 @@ fun SettingsScreen(
         items(ui.ai.vendors.filter { it.vendor.id == ui.ai.choice }, key = { it.vendor.id }) { vendor ->
             VendorCard(ui.ai.canStoreKeys, vendor, onSaveKey, onCheckKey, onForgetKey, onModel)
         }
-        item {
-            UpdateCard()
+        if (BuildConfig.UPDATER_ENABLED) {
+            item {
+                UpdateCard()
+            }
         }
         item {
             FoldableCard("settings-about", stringResource(R.string.settings_about)) {

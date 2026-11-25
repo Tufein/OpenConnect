@@ -10,9 +10,30 @@ android {
     defaultConfig {
         applicationId = "nl.tufein.openconnect"
         minSdk = 28
-        targetSdk = 35
-        versionCode = 92
-        versionName = "1.12.0"
+        targetSdk = 36
+        versionCode = 93
+        versionName = "1.13.0"
+    }
+
+    // Two channels from one code base. The GitHub build keeps the in-app updater (the install permission and the
+    // FileProvider live in src/github); the store build leaves both out and hides the updater in the app.
+    flavorDimensions += "channel"
+    productFlavors {
+        create("github") {
+            dimension = "channel"
+            buildConfigField("boolean", "UPDATER_ENABLED", "true")
+        }
+        create("store") {
+            dimension = "channel"
+            buildConfigField("boolean", "UPDATER_ENABLED", "false")
+        }
+    }
+
+    // The language picker switches the app's own strings, so every language has to stay in the one bundle.
+    bundle {
+        language {
+            enableSplit = false
+        }
     }
 
     // Release signing. The key is never stored in this repository: a release build reads it from

@@ -20,6 +20,8 @@ data class DiagnosticInput(
     val samples: Int,
     val activitiesBySource: List<Pair<String, Int>>,
     val log: List<SyncLogEntry>,
+    /** False in a store build, where the in-app updater does not exist and must not show up in the report. */
+    val updaterEnabled: Boolean = true,
 )
 
 /** The text behind *Share diagnostics*: versions, what is switched on, what the last syncs did and why one failed. */
@@ -71,7 +73,7 @@ object Diagnostics {
         appendLine("Activities by source: ${input.activitiesBySource.joinToString(", ") { (s, n) -> "$s $n" }.ifBlank { "none" }}")
         appendLine()
         appendLine("What has been tried on a real device:")
-        for (s in SourceLabels.all) {
+        for (s in SourceLabels.all.filter { input.updaterEnabled || it.kind != DataSourceKind.UPDATER }) {
             val label = if (s.tested) "tested ${s.testedOn} in v${s.version}" else "experimental"
             appendLine("- ${s.kind.key}: $label")
         }

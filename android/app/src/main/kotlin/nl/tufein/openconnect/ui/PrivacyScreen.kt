@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import nl.tufein.openconnect.BuildConfig
 import nl.tufein.openconnect.R
 import nl.tufein.openconnect.core.PrivacyStatement
 import nl.tufein.openconnect.core.privacy.PrivacyField
@@ -36,6 +37,10 @@ import nl.tufein.openconnect.core.privacy.PrivacySubject
 import nl.tufein.openconnect.core.privacy.PrivacySubjectSpec
 import nl.tufein.openconnect.core.privacy.PrivacyTrigger
 
+/** A store build has no updater, so the GitHub subject (and its detail page) is left out of the register here. */
+private val visibleSubjects: List<PrivacySubjectSpec> =
+    PrivacyRegister.subjects.filter { BuildConfig.UPDATER_ENABLED || it.subject != PrivacySubject.GITHUB }
+
 /**
  * "What leaves your phone": the privacy register (v1.12.0) as a page instead of prose. The index groups every subject by
  * [PrivacyGroup]; a detail page shows, operation by operation, what goes out and what comes back, then what is never
@@ -49,7 +54,7 @@ fun PrivacyScreen(
     contentPadding: PaddingValues = PaddingValues(),
 ) {
     var selectedKey by rememberSaveable { mutableStateOf<String?>(null) }
-    val selected = selectedKey?.let { key -> PrivacyRegister.subjects.firstOrNull { it.subject.key == key } }
+    val selected = selectedKey?.let { key -> visibleSubjects.firstOrNull { it.subject.key == key } }
     // The arrow and the system back button both step from a detail back to the index, never straight out of the page.
     BackHandler(enabled = selected != null) { selectedKey = null }
     if (selected == null) {
@@ -103,7 +108,7 @@ private fun PrivacyIndex(
             }
         }
         for (group in PrivacyGroup.entries) {
-            val subjects = PrivacyRegister.subjects.filter { it.group == group }
+            val subjects = visibleSubjects.filter { it.group == group }
             if (subjects.isEmpty()) continue
             item(key = "privacy-group-${group.key}") {
                 SectionTitle(subjectGroupLabel(group))
