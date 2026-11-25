@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.13.1: de release-controles weer streng
+
+Deze release verandert **niets aan wat de app doet**; de APK is dezelfde app als v1.13.0 met een nieuw versienummer. Wat verandert is het vangnet eromheen: de emulator-rooktest houdt een release weer tegen als hij faalt, de APK heeft een budget met ruimte (13 MiB, in plaats van 20 KB onder de oude grens) dat bij elke wijziging wordt gecontroleerd, en de release notes van vier eerdere versies …
+
+[Release notes](docs/releases/v1.13.1.md)
+
 ## v1.13.0: twee kanalen, één app
 
 Deze GitHub-release splitst de Android-app in twee kanalen uit één codebase. De **GitHub-versie** (`github`) houdt de in-app-updater, de installatietoestemming en de FileProvider; de **winkelversie** (`store`) laat die drie weg en verbergt de updater. De winkelversie is gebouwd en getest, maar **niet gepubliceerd**: Google Play en F-Droid blijven geblokkeerd. Verder gaat targetSdk naar 36.

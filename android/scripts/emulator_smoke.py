@@ -30,10 +30,10 @@ class Smoke(Exception):
 
 
 class DeviceLost(Smoke):
-    """The emulator stopped answering. That can be the runner, but not always: from v1.11.0 to v1.13.0 the emulator was
-    lost at the same swipe every time, with the emulator and runner image that walked v1.10.0 the same day. It has its own
-    exit status, the release workflow tries once more on a fresh emulator, and the device log streamed to OUT/logcat.txt
-    shows what the device said up to its last second."""
+    """The emulator stopped answering. That can be the runner, but not always: from v1.11.0 to v1.13.0 the emulator's
+    swiftshader_indirect renderer died at the first swipe on Home every time (the walks now use swangle_indirect, see
+    release.yml). It has its own exit status, the release workflow tries once more on a fresh emulator, and the device
+    log streamed to OUT/logcat.txt shows what the device said up to its last second."""
 
 
 EXIT_EMULATOR_LOST = 3

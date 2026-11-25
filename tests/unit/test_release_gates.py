@@ -13,6 +13,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = yaml.safe_load((ROOT / ".github" / "workflows" / "release.yml").read_text())
 JOBS = WORKFLOW["jobs"]
+EMULATOR = yaml.safe_load((ROOT / ".github" / "workflows" / "emulator.yml").read_text())
 
 
 def _needs(job: dict) -> list:
@@ -61,3 +62,35 @@ def test_the_screenshots_of_both_walks_are_kept_even_when_a_walk_fails():
     assert (
         "smoke-out/" in keep[-1]["with"]["path"] and "smoke-out-retry/" in keep[-1]["with"]["path"]
     )
+
+
+# Why the smoke was red from v1.11.0 on (measured 2026-11-25, emulator 37.3.10, API 34): the same
+# published v1.13.0 APK, the same walk and the same runner image were tried on three renderers.
+# With `-gpu swiftshader_indirect` the emulator process vanished at the first swipe on Home, every
+# time, with no out-of-memory kill and no crash dump; with `swangle_indirect` and `guest` it walked
+# the whole app. Published v1.10.0 still walks on swiftshader_indirect; v1.11.0 redrew the front
+# page's photograph (gradients, a scaled photo, a drawn sun or moon): the likely trigger, unproven.
+# The walk now uses swangle (ANGLE on SwiftShader's Vulkan), so the gate tests the app, not a dying
+# GL translator in the emulator.
+RENDERER = "-gpu swangle_indirect"
+
+
+def _gpu(options: str) -> str:
+    words = options.split()
+    return " ".join(words[words.index("-gpu") : words.index("-gpu") + 2])
+
+
+def test_the_release_walks_use_the_renderer_that_survives_the_front_page():
+    for step in _walk_steps():
+        assert _gpu(step["with"]["emulator-options"]) == RENDERER
+
+
+def test_pull_requests_walk_the_app_on_the_same_renderer_as_a_release():
+    steps = [
+        s
+        for s in EMULATOR["jobs"]["smoke"]["steps"]
+        if "emulator_smoke.py" in str(s.get("with", {}))
+    ]
+    assert steps, "emulator.yml walks the app"
+    for step in steps:
+        assert _gpu(step["with"].get("emulator-options", "")) == RENDERER

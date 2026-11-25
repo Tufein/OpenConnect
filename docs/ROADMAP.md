@@ -38,12 +38,16 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   bestemming, trigger, velden, opslag, toestemming en wat nooit meegaat. De oude tekst is gecorrigeerd (WHOOP/Hume
   alleen legacy, Health Connect alleen stappen/slaap/gewicht, Oura inclusief tokens/SpO2/work-outs/ringbatterij,
   AI zonder GPS/dagboek/notities), en **Delete all data** wist nu ook lichaam, water, dagboek, schoenen, plan,
-  race, doelen, work-outs, log en ledger. Machinevertaling en de adviserende emulator-smoke blijven known issues.
+  race, doelen, work-outs, log en ledger. Machinevertaling blijft een known issue.
 - **Sinds v1.13.0:** de Android-app heeft twee kanalen uit één codebase. `github` houdt de updater,
   `REQUEST_INSTALL_PACKAGES` en de FileProvider; `store` laat die drie weg en verbergt de updater. targetSdk staat op
   36. De store-AAB en -APK worden gebouwd en gecontroleerd, maar **niet gepubliceerd**: de naam, een
   Play-ontwikkelaarsaccount met testers, echte schermafbeeldingen en de winkelverklaringen staan nog open. De app is
   dus niet in een winkel te vinden.
+- **Sinds v1.13.1:** de emulator-rooktest houdt een release weer tegen (één herkansing op een verse emulator). Hij
+  was sinds v1.11.0 rood omdat de standaardweergave van de emulator (`swiftshader_indirect`) wegviel bij de eerste
+  veeg op Home; met `swangle_indirect` loopt dezelfde APK de hele app door. De APK heeft een budget van 13 MiB dat
+  ook elk pull request controleert.
 - **Zwak voor het verdere verhaal:**
   1. Op één bron na (de Garmin-account, die live is geprobeerd) is **niets op een echte telefoon, horloge of ring geproefd**. Zie het register in paragraaf 7; M9 is dat spoor.
   2. Of de meldingen op de fenix 8 nu bij elk bericht trillen, wacht op een nieuw logboek; v1.0.1 pakte de meest waarschijnlijke oorzaak aan.

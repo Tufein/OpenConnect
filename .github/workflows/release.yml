@@ -98,6 +98,9 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+      # The renderer is swangle (ANGLE on SwiftShader's Vulkan), not the emulator-runner's default swiftshader_indirect:
+      # from v1.11.0 on, swiftshader_indirect made the emulator process vanish at the first swipe on Home, every time,
+      # while swangle_indirect and guest walked the same APK to the end (tests/unit/test_release_gates.py).
       - name: Walk the signed APK on an emulator
         id: walk
         continue-on-error: true
@@ -107,7 +110,7 @@ jobs:
           arch: x86_64
           target: google_apis
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -memory 2048
+          emulator-options: -no-window -gpu swangle_indirect -no-snapshot -noaudio -no-boot-anim -memory 2048
           script: python3 android/scripts/emulator_smoke.py apk/openconnect-${{ inputs.tag || github.ref_name }}.apk smoke-out
       - name: Walk the signed APK again on a fresh emulator
         if: steps.walk.outcome == 'failure'
@@ -117,7 +120,7 @@ jobs:
           arch: x86_64
           target: google_apis
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -memory 2048
+          emulator-options: -no-window -gpu swangle_indirect -no-snapshot -noaudio -no-boot-anim -memory 2048
           script: python3 android/scripts/emulator_smoke.py apk/openconnect-${{ inputs.tag || github.ref_name }}.apk smoke-out-retry
       - name: Keep the screenshots and the log
         if: always()

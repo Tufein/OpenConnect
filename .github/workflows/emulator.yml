@@ -20,9 +20,10 @@ on:
       gpu:
         description: >-
           The emulator's renderers for the published walks, as a JSON list (for example
-          ["swiftshader_indirect","swangle_indirect"]). The first one is the emulator-runner's default.
+          ["swangle_indirect","swiftshader_indirect"]). swangle_indirect is what releases use; swiftshader_indirect,
+          the emulator-runner's default, loses the emulator on Home since v1.11.0.
         required: false
-        default: '["swiftshader_indirect"]'
+        default: '["swangle_indirect"]'
 
 permissions:
   contents: read
@@ -71,6 +72,7 @@ jobs:
           mkdir -p runner-state
           nproc > runner-state/cpus.txt
           nohup sh -c 'while true; do echo "$(date +%T) $(free -m | sed -n 2p)"; sleep 5; done' > runner-state/memory.txt 2>&1 &
+      # The same renderer as the release walk (swangle; see release.yml for why not swiftshader_indirect).
       - name: Walk the app on an emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -78,6 +80,7 @@ jobs:
           arch: x86_64
           target: google_apis
           disable-animations: true
+          emulator-options: -no-window -gpu swangle_indirect -no-snapshot -noaudio -no-boot-anim
           script: python3 android/scripts/emulator_smoke.py android/app/build/outputs/apk/${{ matrix.channel.flavor }}/release/app-${{ matrix.channel.flavor }}-release.apk smoke-out-${{ matrix.channel.flavor }}-minify-${{ matrix.minify }}
       - name: Keep the kernel's view of the runner
         if: always()
@@ -106,7 +109,7 @@ jobs:
       fail-fast: false
       matrix:
         tag: ${{ fromJSON(inputs.published || '[""]') }}
-        gpu: ${{ fromJSON(inputs.gpu || '["swiftshader_indirect"]') }}
+        gpu: ${{ fromJSON(inputs.gpu || '["swangle_indirect"]') }}
     steps:
       - uses: actions/checkout@v7
       - name: Download the published APK of ${{ matrix.tag }}

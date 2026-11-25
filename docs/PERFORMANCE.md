@@ -61,8 +61,13 @@ serializers, the Keystore library) being removed. The libraries bring their own 
   the plain one on an Android 14 emulator, answers the first-start screen, loads demo data, opens Home, Activities, Health,
   Insights, Settings and About, saves a fake AI key (through the real Keystore), stops the app, starts it again and checks the
   key is still there. It fails on a crash, a dead process or a screen that does not show up. The same walk runs in
-  `release.yml` on the signed APK **before** a release is published. Its screenshots and the app's log are kept as a build
-  artifact.
+  `release.yml` on the signed APK **before** a release is published, and a red walk stops the release (one second try on
+  a fresh emulator). Its screenshots, the app's log, the whole device log (`logcat.txt`, streamed during the walk, so it
+  survives an emulator that dies) and, in the *Emulator smoke* workflow, the runner's memory and kernel log are kept as a
+  build artifact. The emulator draws with `-gpu swangle_indirect`: with the emulator-runner's default
+  (`swiftshader_indirect`) the emulator process vanished at the first swipe on Home from v1.11.0 on, while the same APK
+  walked to the end on `swangle_indirect` and `guest` (measured 2026-11-25). *Emulator smoke* can walk published APKs on
+  request (inputs `published` and `gpu`), to tell an app regression from a runner problem.
 - It does not cover: Bluetooth, USB, Health Connect data, the live heart-rate service, a real network, biometrics. Those are
   the trials in [PUBLIC_RELEASE.md](PUBLIC_RELEASE.md).
 
