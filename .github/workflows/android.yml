@@ -48,6 +48,9 @@ jobs:
         run: |
           "${ANDROID_HOME}/build-tools/$(ls "${ANDROID_HOME}/build-tools" | sort -V | tail -1)/apksigner" \
             verify --print-certs app/build/outputs/apk/github/release/app-github-release.apk
+      # The release workflow fails above the same budget, so a change that makes the APK too big is found here, not at release time.
+      - name: Check the size of the GitHub APK
+        run: python3 scripts/check_apk_size.py app/build/outputs/apk/github/release/app-github-release.apk --summary "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v7
         with:
           name: openconnect-apk-debug-signed-github

@@ -63,11 +63,11 @@ jobs:
           bash android/scripts/verify-apk-signer.sh android/app/build/outputs/apk/github/release/app-github-release.apk \
             "$OPENCONNECT_KEYSTORE" "$OPENCONNECT_KEY_ALIAS" "$OPENCONNECT_KEYSTORE_PASSWORD"
       - name: Keep the APK small
-        # It was 30 MB before R8 shrinking (v0.58.0) and is about 10 MB now: a jump past 12 MB means something large came in.
+        # The budget (13 MiB) lives in android/scripts/check_apk_size.py, which the Android workflow runs on every change
+        # too. It was 30 MB before R8 shrinking (v0.58.0) and is 12.56 MB at v1.13.0, nearly all of it code.
         run: |
-          size=$(stat -c %s android/app/build/outputs/apk/github/release/app-github-release.apk)
-          echo "APK size: ${size} bytes"
-          test "$size" -le 12582912 || { echo "The APK is larger than 12 MiB"; exit 1; }
+          python3 android/scripts/check_apk_size.py android/app/build/outputs/apk/github/release/app-github-release.apk \
+            --summary "$GITHUB_STEP_SUMMARY"
       - name: Name the APK and write its checksum
         run: |
           mkdir -p apk
@@ -79,14 +79,14 @@ jobs:
           path: apk/
 
   # The signed APK is started on a real Android (an emulator) and walked through before anything is published, because the
-  # APK is shrunk and the JVM tests cannot see what shrinking breaks (android/scripts/emulator_smoke.py).
+  # APK is shrunk and the JVM tests cannot see what shrinking breaks (android/scripts/emulator_smoke.py). This is a gate:
+  # the release job waits for it. The only allowance is one more walk on a fresh emulator when the first walk failed,
+  # because the GitHub runner can lose its emulator (the script then exits with status 3 and says so); a crash of the app
+  # fails both walks.
   smoke:
     runs-on: ubuntu-latest
     needs: android
-    # Advisory while the GitHub emulator runner repeatedly loses ADB; the signed APK build, signature and
-    # JVM tests remain release gates. Remove this once the emulator smoke is stable again.
-    continue-on-error: true
-    timeout-minutes: 40
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
@@ -99,6 +99,8 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       - name: Walk the signed APK on an emulator
+        id: walk
+        continue-on-error: true
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -107,17 +109,29 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -memory 2048
           script: python3 android/scripts/emulator_smoke.py apk/openconnect-${{ inputs.tag || github.ref_name }}.apk smoke-out
+      - name: Walk the signed APK again on a fresh emulator
+        if: steps.walk.outcome == 'failure'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -memory 2048
+          script: python3 android/scripts/emulator_smoke.py apk/openconnect-${{ inputs.tag || github.ref_name }}.apk smoke-out-retry
       - name: Keep the screenshots and the log
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: emulator-smoke
-          path: smoke-out/
+          path: |
+            smoke-out/
+            smoke-out-retry/
           if-no-files-found: ignore
 
   release:
     runs-on: ubuntu-latest
-    needs: [android]
+    needs: [android, smoke]
     steps:
       - name: Only release from main when started by hand
         if: github.event_name == 'workflow_dispatch' && github.ref_name != 'main'

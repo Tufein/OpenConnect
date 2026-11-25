@@ -133,3 +133,112 @@ def test_the_field_is_the_edit_text_and_never_the_save_button(phone):
 def test_a_switched_off_button_says_so_and_a_silent_node_counts_as_on():
     assert node("Save Claude key", enabled="false").enabled is False
     assert smoke.Node(ET.Element("node", {"text": "x"})).enabled is True
+
+
+# --- a lost emulator is not an app failure ---------------------------------------------------
+#
+# On 2026-11-24 and 25 the release smoke died five times in a row with a Python traceback: the
+# emulator process went away in the middle of a swipe, `adb wait-for-device` timed out and the
+# exception left the script without a message, a screenshot or the app's log. The release was
+# made to ignore the smoke instead. Now a timeout is a named condition (DeviceLost) with its own
+# exit status, so the workflow log says "the emulator was lost" and the release can retry once on
+# a fresh emulator, while a crash of the app still fails at once.
+
+
+def test_an_adb_call_that_times_out_is_a_lost_device_not_a_traceback(monkeypatch):
+    def hang(command, **kwargs):
+        raise smoke.subprocess.TimeoutExpired(command, kwargs.get("timeout", 1))
+
+    monkeypatch.setattr(smoke.subprocess, "run", hang)
+    with pytest.raises(smoke.DeviceLost, match="adb wait-for-device did not answer within 30 s"):
+        smoke.adb("wait-for-device", timeout=30)
+
+
+def test_a_lost_device_is_a_kind_of_smoke_failure():
+    assert issubclass(smoke.DeviceLost, smoke.Smoke)
+
+
+def test_a_lost_emulator_ends_the_run_with_its_own_message_and_exit_status(
+    monkeypatch, tmp_path, capsys
+):
+    def gone(*args, **kwargs):
+        raise smoke.DeviceLost("adb shell input swipe did not answer within 30 s")
+
+    monkeypatch.setattr(smoke, "adb", gone)
+
+    def no_adb(*args, **kwargs):
+        raise smoke.DeviceLost("gone")
+
+    monkeypatch.setattr(smoke.subprocess, "run", no_adb)
+    assert smoke.main("app.apk", str(tmp_path)) == smoke.EXIT_EMULATOR_LOST == 3
+    out = capsys.readouterr().out
+    assert "THE EMULATOR WAS LOST" in out and "logcat.txt" in out
+    # From v1.11.0 to v1.13.0 the emulator was lost at the same swipe every time, with an emulator
+    # and a runner image that had walked v1.10.0 the same day: the message may not blame the runner.
+    assert "not a failure of the app" not in out
+
+
+def test_an_app_failure_keeps_exit_status_one(monkeypatch, tmp_path, capsys):
+    def broken(*args, **kwargs):
+        raise smoke.Smoke("the app is not running any more")
+
+    monkeypatch.setattr(smoke, "adb", broken)
+
+    def no_adb(*args, **kwargs):
+        raise OSError("no adb here")
+
+    monkeypatch.setattr(smoke.subprocess, "run", no_adb)
+    assert smoke.main("app.apk", str(tmp_path)) == 1
+    assert "SMOKE TEST FAILED: the app is not running any more" in capsys.readouterr().out
+
+
+# When the emulator is lost, adb can no longer be asked for the device log afterwards: by then the
+# device is gone. So the whole log is streamed to OUT/logcat.txt from the moment the app is
+# installed, and what the device said up to its last second survives in the uploaded artifact.
+
+
+class FakeLogcat:
+    """Stands in for `adb logcat` streaming: writes one line and remembers how it was stopped."""
+
+    def __init__(self, command, stdout=None, stderr=None):
+        self.command = command
+        self.stopped = False
+        stdout.write(b"11-25 12:44:01.000  1234  1234 I ActivityManager: Start proc nl.tufein\n")
+        FakeLogcat.last = self
+
+    def poll(self):
+        return 0 if self.stopped else None
+
+    def terminate(self):
+        self.stopped = True
+
+    def wait(self, timeout=None):
+        return 0
+
+    def kill(self):
+        self.stopped = True
+
+
+def _lost_at_install(*args, **kwargs):
+    if args and args[0] == "install":
+        raise smoke.DeviceLost("adb install did not answer within 300 s")
+    return ""
+
+
+def test_the_device_log_is_streamed_to_a_file_and_survives_a_lost_emulator(monkeypatch, tmp_path):
+    monkeypatch.setattr(smoke, "adb", _lost_at_install)
+    monkeypatch.setattr(smoke.subprocess, "Popen", FakeLogcat)
+    assert smoke.main("app.apk", str(tmp_path)) == smoke.EXIT_EMULATOR_LOST
+    recorded = FakeLogcat.last
+    assert recorded.command[:2] == ["adb", "logcat"]
+    assert recorded.stopped, "the recording is stopped when the walk ends, also when it failed"
+    assert "Start proc" in (tmp_path / "logcat.txt").read_text()
+
+
+def test_without_adb_the_recording_is_skipped_and_the_walk_still_reports(monkeypatch, tmp_path):
+    def no_adb(*args, **kwargs):
+        raise OSError("no adb here")
+
+    monkeypatch.setattr(smoke, "adb", _lost_at_install)
+    monkeypatch.setattr(smoke.subprocess, "Popen", no_adb)
+    assert smoke.main("app.apk", str(tmp_path)) == smoke.EXIT_EMULATOR_LOST

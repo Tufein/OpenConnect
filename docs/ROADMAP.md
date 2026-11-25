@@ -139,7 +139,7 @@ Klaar als: de toegankelijkheidstests en taalpariteit in CI staan en groen zijn.
 - **targetSdk bijhouden:** nu 36 (sinds v1.13.0; compileSdk 37). Zonder Google Play is er geen verplichte datum; omhoog alleen als een nieuwe Android-versie het vraagt, met de lijst van gedragswijzigingen afgewerkt.
 - **Batterij:** niet te meten zonder telefoon. Wat er op de achtergrond draait staat met zijn frequentie in `docs/PERFORMANCE.md`; het cijfer van Android na een dag is proefstap T16 voor Stefan.
 
-Klaar als: het budget in CI staat en de APK niet groter is geworden dan 12 MiB (`release.yml` faalt erop).
+Klaar als: het budget in CI staat en de APK niet groter is geworden dan 12 MiB (`release.yml` faalde erop; sinds v1.13.1 is het budget 13 MiB en staat het in `android/scripts/check_apk_size.py`, zie [PERFORMANCE.md](PERFORMANCE.md)).
 
 ### M6: "Installeren en vertrouwen" ✅ v0.58.0, behalve de echte schermafbeeldingen (S tot M)
 

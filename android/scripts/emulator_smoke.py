@@ -10,7 +10,8 @@ What it does, on a real Android (an emulator in CI), not on the JVM:
   3. saves a fake AI key (this goes through the real Android Keystore and EncryptedSharedPreferences),
   4. stops the app, starts it again and checks the key is still saved (read back from the Keystore),
   5. fails if the app's process died or the crash log mentions the app at any point.
-Screenshots of every step and the app's log are written to OUT_DIR. Only the Python standard library and adb are needed.
+Screenshots of every step, the app's log and the whole device log (logcat.txt, streamed while the walk runs) are
+written to OUT_DIR. Only the Python standard library and adb are needed.
 """
 
 import os
@@ -28,12 +29,56 @@ class Smoke(Exception):
     pass
 
 
+class DeviceLost(Smoke):
+    """The emulator stopped answering. That can be the runner, but not always: from v1.11.0 to v1.13.0 the emulator was
+    lost at the same swipe every time, with the emulator and runner image that walked v1.10.0 the same day. It has its own
+    exit status, the release workflow tries once more on a fresh emulator, and the device log streamed to OUT/logcat.txt
+    shows what the device said up to its last second."""
+
+
+EXIT_EMULATOR_LOST = 3
+
+
 def adb(*args, timeout=90, check=True):
-    done = subprocess.run(["adb", *args], capture_output=True, timeout=timeout)
+    try:
+        done = subprocess.run(["adb", *args], capture_output=True, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        raise DeviceLost(f"adb {' '.join(args)} did not answer within {timeout} s") from None
     out = done.stdout.decode("utf-8", errors="replace")
     if check and done.returncode != 0:
         raise Smoke(f"adb {' '.join(args)} failed: {done.stderr.decode('utf-8', errors='replace')[:500]}")
     return out
+
+
+class DeviceLog:
+    """Streams the whole device log to OUT/logcat.txt while the walk runs. Asking for the log afterwards (`logcat -d`) is
+    impossible once the emulator is gone, which is exactly when it is needed."""
+
+    def __init__(self, out):
+        self.path = os.path.join(out, "logcat.txt")
+        self.file = None
+        self.process = None
+
+    def start(self):
+        self.file = open(self.path, "wb")
+        try:
+            self.process = subprocess.Popen(
+                ["adb", "logcat", "-v", "threadtime", "-b", "main,system,crash,events"],
+                stdout=self.file,
+                stderr=subprocess.STDOUT,
+            )
+        except OSError as problem:
+            self.file.write(f"could not start adb logcat: {problem}\n".encode())
+
+    def stop(self):
+        if self.process is not None and self.process.poll() is None:
+            self.process.terminate()
+            try:
+                self.process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self.process.kill()
+        if self.file is not None:
+            self.file.close()
 
 
 class Node:
@@ -104,7 +149,10 @@ class Run:
 
     def shot(self, name):
         self.step += 1
-        data = subprocess.run(["adb", "exec-out", "screencap", "-p"], capture_output=True, timeout=60).stdout
+        try:
+            data = subprocess.run(["adb", "exec-out", "screencap", "-p"], capture_output=True, timeout=60).stdout
+        except subprocess.TimeoutExpired:
+            raise DeviceLost("adb exec-out screencap did not answer within 60 s") from None
         with open(os.path.join(self.out, f"{self.step:02d}-{name}.png"), "wb") as f:
             f.write(data)
 
@@ -233,6 +281,7 @@ def save_fake_key(run, attempts=3):
 
 def main(apk, out):
     run = Run(out)
+    device_log = DeviceLog(out)
     try:
         adb("shell", "settings", "put", "global", "window_animation_scale", "0", check=False)
         adb("shell", "settings", "put", "global", "transition_animation_scale", "0", check=False)
@@ -241,6 +290,7 @@ def main(apk, out):
         # data must never make a github run look like a store run (or the other way around).
         adb("uninstall", PKG, check=False)
         adb("logcat", "-c", check=False)
+        device_log.start()
         print(adb("install", "-r", apk, timeout=300).strip())
         # The emulator can drop the adb connection for a moment right after a large install.
         adb("wait-for-device", timeout=60, check=False)
@@ -300,6 +350,12 @@ def main(apk, out):
         run.alive()
         print("SMOKE TEST PASSED")
         return 0
+    except DeviceLost as problem:
+        print(
+            f"SMOKE TEST FAILED: THE EMULATOR WAS LOST ({problem}). What the device said up to that moment is in "
+            f"{device_log.path}."
+        )
+        return EXIT_EMULATOR_LOST
     except Smoke as problem:
         print(f"SMOKE TEST FAILED: {problem}")
         try:
@@ -312,6 +368,7 @@ def main(apk, out):
             run.log_tail()
         except Exception:
             pass
+        device_log.stop()
 
 
 if __name__ == "__main__":
