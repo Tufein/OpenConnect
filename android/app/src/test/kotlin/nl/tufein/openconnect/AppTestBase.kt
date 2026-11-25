@@ -133,7 +133,47 @@ abstract class AppTestBase {
             rule.waitUntil(45_000) { hasText(text, substring) }
         } catch (e: Throwable) {
             println("--- screen when waiting for \"$text\" ---\n" + rule.onRoot().printToString(maxDepth = 100))
+            dumpState()
+            // DIAGNOSTIC: does handing the snapshot changes to the recomposer by hand bring the text?
+            scenario.onActivity { androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications() }
+            val rescued = runCatching { rule.waitUntil(5_000) { hasText(text, substring) } }.isSuccess
+            println("--- rescued by sendApplyNotifications: $rescued")
+            if (!rescued) {
+                org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofMillis(100))
+                val rescued2 = runCatching { rule.waitUntil(5_000) { hasText(text, substring) } }.isSuccess
+                println("--- rescued by moving the looper clock 100 ms: $rescued2")
+            }
             throw e
+        }
+    }
+
+    /** DIAGNOSTIC: what the view model, the UI dispatcher and every thread hold when a wait times out. */
+    private fun dumpState() {
+        try {
+            scenario.onActivity { a ->
+                val vm = a.viewModel
+                println("--- vm: home.loaded=${vm.home.value.loaded} hasData=${vm.home.value.hasData} sameApp=${vm.getApplication<OpenConnectApp>() === ApplicationProvider.getApplicationContext<Context>()} lifecycle=${a.lifecycle.currentState}")
+                val ui = androidx.compose.ui.platform.AndroidUiDispatcher.Main[kotlin.coroutines.ContinuationInterceptor]
+                    as androidx.compose.ui.platform.AndroidUiDispatcher
+                val fields = listOf("scheduledTrampolineDispatch", "scheduledFrameDispatch", "toRunTrampolined", "toRunOnFrame").joinToString(" ") { name ->
+                    val f = ui.javaClass.getDeclaredField(name).also { it.isAccessible = true }
+                    val v = f.get(ui)
+                    "$name=" + if (v is Collection<*>) "size ${v.size}" else v.toString()
+                }
+                println("--- ui dispatcher: $fields sameChoreographer=${ui.choreographer === android.view.Choreographer.getInstance()}")
+                val looper = org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper())
+                println("--- main looper: idle=${looper.isIdle} next=${looper.nextScheduledTaskTime} paused=${looper.isPaused}")
+                println("--- snapshot: pending=${androidx.compose.runtime.snapshots.Snapshot.current.hasPendingChanges()}")
+            }
+        } catch (t: Throwable) {
+            println("--- state: could not read: $t")
+        }
+        val threads = Thread.getAllStackTraces()
+        println("--- threads: ${threads.size}")
+        for ((thread, stack) in threads) {
+            if (stack.isEmpty()) continue
+            val top = stack.take(12).joinToString("\n        ") { it.toString() }
+            println("  [${thread.name}] ${thread.state}\n        $top")
         }
     }
 
