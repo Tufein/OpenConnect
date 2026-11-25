@@ -183,9 +183,8 @@ class OuraAndTouchScreenTest : AppTestBase() {
         rule.onNodeWithText("Load demo data").performClick()
         rule.waitUntil(45_000) { !hasText("Load demo data", substring = false) }
         rule.waitUntil(45_000) { !hasText("Demo data loaded", substring = true) }
-        scrollToText("Resting heart rate") // a tile further down Home
-        // The tile can end up behind the navigation bar after the battery card; click through its semantics action.
-        clickText("Resting heart rate")
+        // The tile can end up behind the navigation bar after the battery card; its own test tag is unambiguous.
+        rule.onNodeWithTag("metric-resting-hr").performScrollTo().performClick()
         scrollToText("Latest:", substring = true) // the card now sits further down, so scroll to it
         waitForText("Latest:", substring = true) // the resting heart rate chart on the Health screen
         val hints = rule.onAllNodesWithText("Tap or slide along the chart to read a day.").fetchSemanticsNodes().size

@@ -281,7 +281,7 @@ fun HomeScreen(
             val last7 = overview.trend.takeLast(7)
             // The four signals as tiles: today's value and a line of the last seven days.
             val signals = listOf<@Composable (Modifier) -> Unit>(
-                { MetricTile(stringResource(R.string.resting_hr), today?.restingHr?.takeIf { it > 0 }?.toString() ?: "–", metrics.heart, it, "bpm", last7.map { r -> r.restingHr?.toDouble() }, onClick = { onOpenHealth(ChartMetric.RESTING_HR) }, showSeries = false) },
+                { MetricTile(stringResource(R.string.resting_hr), today?.restingHr?.takeIf { it > 0 }?.toString() ?: "–", metrics.heart, it.testTag("metric-resting-hr"), "bpm", last7.map { r -> r.restingHr?.toDouble() }, onClick = { onOpenHealth(ChartMetric.RESTING_HR) }, showSeries = false) },
                 { MetricTile(stringResource(R.string.body_battery), today?.bodyBatteryHigh?.toString() ?: "–", metrics.battery, it, unit = today?.bodyBatteryHigh?.let { stringResource(R.string.unit_highest_of_day) }, series = last7.map { r -> r.bodyBatteryHigh?.toDouble() }, onClick = { onOpenHealth(ChartMetric.BODY_BATTERY) }, showSeries = false) },
                 { MetricTile(stringResource(R.string.stress), today?.avgStress?.toString() ?: "–", metrics.stress, it, series = last7.map { r -> r.avgStress?.toDouble() }, onClick = { onOpenHealth(ChartMetric.STRESS) }, showSeries = false) },
                 { MetricTile(stringResource(R.string.sleep), state.sleep?.takeIf { it.durationS > 0 }?.let { s -> Fmt.hours(s.durationS) } ?: "–", metrics.sleep, it, "h", last7.map { r -> r.sleepHours }, onClick = { onOpenHealth(ChartMetric.SLEEP) }, showSeries = false) },
