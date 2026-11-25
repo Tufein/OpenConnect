@@ -124,7 +124,7 @@ class OuraAndTouchScreenTest : AppTestBase() {
     @Test
     fun theFirstStartAsksForTheDevicesAndShowsOnlyWhatWasChosen() {
         launchWithOura(onboarded = false, ring = false)
-        waitForText("Welcome to OpenConnect")
+        waitForText("Welcome to Cercis")
         shot("41-onboarding")
         clickText("Garmin") // off: this person only has a ring
         clickText("Oura Ring")

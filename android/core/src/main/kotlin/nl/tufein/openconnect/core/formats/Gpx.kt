@@ -16,7 +16,7 @@ internal object Gpx {
 
         val sb = StringBuilder()
         sb.append("<?xml version='1.0' encoding='utf-8'?>\n")
-        sb.append("<gpx version=\"1.1\" creator=\"OpenConnect\" xmlns=\"$GPX_NS\" xmlns:gpxtpx=\"$TPX_NS\">")
+        sb.append("<gpx version=\"1.1\" creator=\"Cercis\" xmlns=\"$GPX_NS\" xmlns:gpxtpx=\"$TPX_NS\">")
         sb.append("<metadata><name>$name</name><time>${isoZ(activity.startTime)}</time></metadata>")
         sb.append("<trk><name>$name</name><type>${activity.sport.key}</type><trkseg>")
         for (p in positioned) {

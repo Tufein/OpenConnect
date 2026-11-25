@@ -203,7 +203,7 @@ def test_the_listing_texts_exist_in_both_languages_and_stay_honest():
     english = (ROOT / "docs" / "store" / "listing-en.md").read_text()
     dutch = (ROOT / "docs" / "store" / "listing-nl.md").read_text()
     for text in (english, dutch):
-        assert "OpenConnect Watch Face" in text and "OpenConnect Widget" in text
+        assert "Cercis Watch Face" in text and "Cercis Widget" in text
         assert "github.com/Tufein/OpenConnect" in text
         assert "Garmin" in text and "AGPL-3.0-or-later" in text
     # Same structure: the same number of headings and bold labels.

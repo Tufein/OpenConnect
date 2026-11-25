@@ -622,7 +622,7 @@ class NotificationForwarderTest {
         val f = forwarder()
         f.refresh()
         assertFalse(f.state.value.ownNotificationAllowed)
-        assertTrue(trail.flow.value.any { "does not let OpenConnect show notifications" in it.text })
+        assertTrue(trail.flow.value.any { "does not let Cercis show notifications" in it.text })
         notificationsAllowed = true
         f.refresh()
         assertTrue(f.state.value.ownNotificationAllowed)

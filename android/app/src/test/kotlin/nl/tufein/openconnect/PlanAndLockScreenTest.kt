@@ -257,13 +257,13 @@ class PlanAndLockScreenTest : AppTestBase() {
             app.container.setAppLock(true)
             app.container.lockGate.lock()
         }
-        waitForText("OpenConnect is locked")
+        waitForText("Cercis is locked")
         assertTrue(fake.asked >= 1, "the check starts by itself")
         assertEquals(0, rule.onAllNodesWithTextCount("Load demo data"), "no data behind the lock")
         shot("36-locked")
         fake.answer(false) // cancelled: still locked
         rule.waitForIdle()
-        waitForText("OpenConnect is locked")
+        waitForText("Cercis is locked")
         fake.answer(true)
         waitForText("Load demo data")
     }

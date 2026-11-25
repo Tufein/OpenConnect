@@ -1,7 +1,7 @@
 # Google Play preparation (draft)
 
 **Status: draft only.** Nothing in this document has been uploaded to Play Console, and there is no Play listing. This
-is preparation, not a claim that OpenConnect is available on Google Play.
+is preparation, not a claim that Cercis is available on Google Play.
 
 **How to read the marks**
 
@@ -15,7 +15,7 @@ is preparation, not a claim that OpenConnect is available on Google Play.
 | Item | Value | Source |
 |---|---|---|
 | Package name | `nl.tufein.openconnect` | `android/app/build.gradle.kts` |
-| Version | `1.13.0` (versionCode `93`) | `android/app/build.gradle.kts` |
+| Version | `1.13.1` (versionCode `94`) | `android/app/build.gradle.kts` |
 | Minimum Android | 9 (API 28) | `android/app/build.gradle.kts` |
 | Target Android | 16 (API 36) | `android/app/build.gradle.kts` |
 | Compile SDK | 37 | `android/app/build.gradle.kts` |
@@ -28,17 +28,17 @@ is preparation, not a claim that OpenConnect is available on Google Play.
 | Languages in the app | English, Dutch, German, French | `android/app/src/main/res/values*/strings.xml` |
 | Licences | AGPL-3.0-or-later; fonts OFL; photo Unsplash | `NOTICE`, `CREDITS.md`, `licenses/` |
 
-## 0. The name is a blocker
+## 0. The name: decided, legal clearance still open
 
-`OpenConnect` is also a well-known VPN client, and an Android VPN app with that name is on Google Play (1M+ downloads)
-and F-Droid. `OpenConnect (working title)` in the fastlane metadata is deliberately a placeholder, not a decision.
-Do not upload with a working title. Read [NAME.md](NAME.md) and get Stefan's decision first.
+The display name is **Cercis**, chosen on 2026-11-25 after the availability check in [NAME.md](NAME.md). Cercis is a
+fitness and health dashboard, not the OpenConnect VPN client; the fastlane descriptions keep that disclaimer. The old
+`OpenConnect` title collided with a well-known VPN client on Play (1M+ downloads) and F-Droid.
 
-- [ ] 🚫 Decide the final display name before creating the Play app.
-- [ ] ⚠️ Decide whether the `applicationId` also changes. It can change only **before** the first store upload; after
-  that, changing it creates a different app and loses the installed base and review history.
-- [ ] ⚠️ Run a trademark/search check for the final name (Play, F-Droid, Connect IQ, USPTO/EUIPO/BOIP, domain and
-  social handles). This document does not give legal advice.
+- [x] ✅ Final display name decided: **Cercis** (2026-11-25), see [NAME.md](NAME.md).
+- [x] ✅ `applicationId` stays `nl.tufein.openconnect`; the OAuth scheme (`openconnect://oura`) and asset names stay too.
+- [ ] 🚫 Legal clearance: the availability check found no exact Play/F-Droid app, but no trademark search in
+  USPTO/EUIPO/BOIP/DPMA and no lawyer review has been done. Do not upload until this is closed. This document does not
+  give legal advice.
 
 ## 1. Developer account and app creation
 
@@ -61,12 +61,13 @@ Copy the text from `fastlane/metadata/android/<locale>/`. The character counts b
 
 | Field | en-US | nl-NL | de-DE | fr-FR | Limit | Status |
 |---|---:|---:|---:|---:|---:|---|
-| `title.txt` | 27 | 22 | 26 | 28 | 30 | ✅ Verified (repo) |
+| `title.txt` | 6 | 6 | 6 | 6 | 30 | ✅ Verified (repo) |
 | `short_description.txt` | 60 | 67 | 59 | 67 | 80 | ✅ Verified (repo) |
-| `full_description.txt` | 2729 | 2893 | 3038 | 3303 | 4000 | ✅ Verified (repo) |
-| `changelogs/93.txt` | 416 | 437 | 446 | 435 | 500 | ✅ Verified (repo) |
+| `full_description.txt` | 2642 | 2802 | 2940 | 3211 | 4000 | ✅ Verified (repo) |
+| `changelogs/94.txt` | 268 | 285 | 290 | 328 | 500 | ✅ Verified (repo) |
+| `changelogs/93.txt` (previous build) | 416 | 437 | 446 | 435 | 500 | ✅ historical |
 
-The counts are characters without the trailing newline. The changelog is under 500 characters in all four locales; re-check every field in the Console after any edit.
+The counts are characters without the trailing newline. The changelogs are under 500 characters in all four locales; re-check every field in the Console after any edit.
 
 - [x] Icon: `fastlane/metadata/android/en-US/images/icon.png` is the existing 512 x 512 project mark. ✅ Verified.
 - [ ] 🚫 Feature graphic: missing; see `fastlane/metadata/android/IMAGE_TODO.md`. ⚠️ Play requires 1024 x 500.
@@ -125,7 +126,7 @@ an activity. The manifest declares exactly these permissions (`android/app/src/m
 
 | Permission | What the app does | When |
 |---|---|---|
-| `android.permission.health.READ_STEPS` | Reads daily steps where OpenConnect has no data | After the user grants it and a sync/fill runs |
+| `android.permission.health.READ_STEPS` | Reads daily steps where Cercis has no data | After the user grants it and a sync/fill runs |
 | `android.permission.health.READ_SLEEP` | Reads sleep sessions/nights | Same |
 | `android.permission.health.READ_WEIGHT` | Optional body weight for the Body card | Only if granted; the rest works without it |
 | `android.permission.health.WRITE_EXERCISE` | Saves an activity as an exercise session | Only when the user asks to save an activity |
@@ -134,7 +135,7 @@ an activity. The manifest declares exactly these permissions (`android/app/src/m
 
 Suggested declaration text (edit to match the final UI):
 
-> OpenConnect reads steps, sleep and optional body weight from Health Connect so the Health screen can show them
+> Cercis reads steps, sleep and optional body weight from Health Connect so the Health screen can show them
 > where the app has no data of its own. It writes an exercise session, its distance and its calories only when the
 > user asks to save an activity. The data is shown in the app and stored on the phone. It is not sent to Tufein, sold,
 > or used for advertising, credit, insurance or employment decisions. The user can revoke each permission in Health
@@ -182,7 +183,7 @@ Store build merged manifest (verified with `aapt2 dump permissions`; GitHub buil
 
 Suggested justification text (edit to match the final UI):
 
-> OpenConnect uses a connected-device foreground service only after the user starts one of two features. Live heart
+> Cercis uses a connected-device foreground service only after the user starts one of two features. Live heart
 > rate keeps a Bluetooth LE connection to a watch or chest strap open and shows a persistent notification with a stop
 > action. Notification forwarding keeps the Bluetooth connection to the paired Garmin watch alive while the user has
 > enabled forwarding; the persistent notification says so. Neither service starts on its own, and stopping the
@@ -217,7 +218,7 @@ bash scripts/verify-store-aab.sh app/build/outputs/apk/store/release/app-store-r
   same `applicationId` does **not** make the channels interchangeable. Decide whether Play uses the same key as the
   GitHub release; if not, users must export, uninstall and reinstall to switch channels. Document this in the store
   listing and the release notes.
-- [ ] ⚠️ `versionCode 93` must be higher than every previous upload. AAB uploads are immutable; bump for every retry.
+- [ ] ⚠️ `versionCode 94` must be higher than every previous upload. AAB uploads are immutable; bump for every retry.
 - [ ] ⚠️ Target API: `targetSdk 36`. Confirm Play's current target-API requirement for new apps and updates; API 36 is
   the current target in this repository, but the Console is the authority.
 - [ ] ⚠️ 64-bit: the bundle contains `arm64-v8a` (plus 32-bit and x86 for emulators). Play requires a 64-bit version;
@@ -258,7 +259,8 @@ Current URL: `https://github.com/Tufein/OpenConnect/blob/main/docs/PRIVACY.md`
 
 ## 9. Release checklist (ordered)
 
-1. [ ] 🚫 Final name decided; [NAME.md](NAME.md) signed off; title, package decision and Connect IQ names aligned.
+1. [x] ✅ Final display name decided: **Cercis**; [NAME.md](NAME.md) records it (2026-11-25); title, package decision
+   and Connect IQ names aligned. 🚫 Legal clearance remains open (section 0).
 2. [ ] 🚫 Feature graphic and 2–8 real phone screenshots captured and checked.
 3. [ ] ⚠️ Run the T1–T17 hardware trial in `docs/PUBLIC_RELEASE.md` on the store build, or record what remains untested.
 4. [ ] ⚠️ Build the AAB with the upload key; run `verify-store-aab.sh` on the AAB and APK; keep the output.
@@ -274,7 +276,7 @@ Current URL: `https://github.com/Tufein/OpenConnect/blob/main/docs/PRIVACY.md`
 - Never upload `app-github-release.apk` or a GitHub-flavor AAB: it contains `REQUEST_INSTALL_PACKAGES` and a
   FileProvider. The store CI workflow builds and verifies the store flavor only.
 - Never add a Play service account, `fastlane supply`, or any upload step to `.github/workflows/store.yml`.
-- Never publish with “working title” in the listing.
+- Never publish with a working title or with the old `OpenConnect` display name.
 - Never claim Play/F-Droid availability before the listing is actually live.
 - Never promise medical advice, diagnosis or treatment. The app shows fitness/health estimates and says so.
 
@@ -286,4 +288,4 @@ Current URL: `https://github.com/Tufein/OpenConnect/blob/main/docs/PRIVACY.md`
 - `docs/PRIVACY.md`, `docs/ANDROID.md`, `android/app/src/main/AndroidManifest.xml` and
   `android/app/src/github/AndroidManifest.xml`.
 
-_Last written: 2026-11-25, for v1.13.0 / versionCode 93. No Play upload has been made._
+_Last written: 2026-11-25, for v1.13.1 / versionCode 94. Display name decided: Cercis. No Play upload has been made._

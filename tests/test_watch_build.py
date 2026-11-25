@@ -44,7 +44,7 @@ def test_dry_run_writes_the_config_manifest_and_strings(script):
     assert '<iq:product id="fenix847mm"' in manifest
     assert re.search(r'id="[0-9a-f]{32}"', manifest)
     assert "__" not in manifest
-    assert "OpenConnect Retro" in (gen / "resources" / "strings" / "strings.xml").read_text()
+    assert "Cercis Retro" in (gen / "resources" / "strings" / "strings.xml").read_text()
 
 
 def test_every_variant_gets_its_own_app_id(script):
@@ -83,7 +83,7 @@ def test_a_widget_has_its_own_entry_type_name_and_file(script):
     assert 'entry="OpenConnectWidgetApp"' in manifest
     assert 'type="widget"' in manifest
     assert "__" not in manifest
-    assert "OpenConnect Widget" in (gen / "resources" / "strings" / "strings.xml").read_text()
+    assert "Cercis Widget" in (gen / "resources" / "strings" / "strings.xml").read_text()
     # A glance runs in little memory: everything it uses is annotated for it.
     assert (gen / "source" / "Config.mc").read_text().startswith("(:glance)")
     # The widget and the face have different app ids, so both fit on the watch.

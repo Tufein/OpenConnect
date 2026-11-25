@@ -1,6 +1,6 @@
 # Languages
 
-OpenConnect has four app languages: **English** (the base), **Nederlands**, **Deutsch** and **Français**. The
+Cercis has four app languages: **English** (the base), **Nederlands**, **Deutsch** and **Français**. The
 choice is in *Settings → Language* and is separate from the language of AI reports and the coach:
 
 - **App language**: `Phone language`, English, Nederlands, Deutsch or Français. It changes the screens, the widget,
@@ -36,7 +36,7 @@ What intentionally stays English:
   app shows a raw diagnostic line, that line can remain English so a bug report stays searchable. The same applies to
   FIT workout names (`Easy`, `Long`, `Tempo`, ...): they are data from the watch, not app copy.
 - **AI reports and the coach** stay in English or Dutch, as described above.
-- Product names and formats: OpenConnect, Garmin, Oura, WHOOP, FIT, GPX, TCX, BLE, USB, Body Battery, HRV, SpO2.
+- Product names and formats: Cercis, Garmin, Oura, WHOOP, FIT, GPX, TCX, BLE, USB, Body Battery, HRV, SpO2.
 
 ## How it is tested
 

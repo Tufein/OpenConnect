@@ -1,7 +1,7 @@
 # F-Droid preparation (draft)
 
 **Status: draft only.** No metadata has been submitted to F-Droid and no F-Droid build exists. This document prepares a
-recipe for the existing `store` flavor; it does not claim that OpenConnect is available on F-Droid.
+recipe for the existing `store` flavor; it does not claim that Cercis is available on F-Droid.
 
 The `store` flavor is the one to build: it has no in-app updater, no `REQUEST_INSTALL_PACKAGES` permission and no
 FileProvider. The `github` flavor must never be sent to F-Droid.
@@ -13,11 +13,12 @@ FileProvider. The `github` flavor must never be sent to F-Droid.
   Kotlin, kotlinx.serialization/coroutines (Apache-2.0) and fonts under the OFL; there is no Google Play Services,
   Firebase, ad SDK or crash reporter. ✅ Verified (repo; `android/app/build.gradle.kts`).
 - A unique application ID: `nl.tufein.openconnect`. ✅ Verified (repo).
-- A tag or full commit hash, a version name/code and a Gradle task. 🚫 The `v1.13.0` tag does not exist yet.
+- A tag or full commit hash, a version name/code and a Gradle task. 🚫 The `v1.13.1` tag does not exist yet.
 - Listing text, icon, screenshots and a feature graphic. Text and icon exist; feature graphic and screenshots are
   blockers (see `fastlane/metadata/android/IMAGE_TODO.md`).
-- A final name. **Do not submit with “OpenConnect (working title)”.** F-Droid already lists an OpenConnect VPN client
-  (`net.openconnect_vpn.android`), so the name/search collision is real. See [NAME.md](NAME.md).
+- A final name: **Cercis** (decided 2026-11-25, see [NAME.md](NAME.md)). The old “OpenConnect (working title)” is no
+  longer used. F-Droid already lists an OpenConnect VPN client (`net.openconnect_vpn.android`); the name is different
+  now, but legal clearance of Cercis is still open.
 
 ## Recipe (draft)
 
@@ -29,7 +30,7 @@ as the source of truth for the submitter.
 Categories:
   - Sports & Health
 License: AGPL-3.0-or-later
-AuthorName: Tufein and OpenConnect contributors
+AuthorName: Tufein and Cercis contributors
 SourceCode: https://github.com/Tufein/OpenConnect
 IssueTracker: https://github.com/Tufein/OpenConnect/issues
 Changelog: https://github.com/Tufein/OpenConnect/blob/main/CHANGELOG.md
@@ -37,9 +38,9 @@ RepoType: git
 Repo: https://github.com/Tufein/OpenConnect.git
 
 Builds:
-  - versionName: 1.13.0
-    versionCode: 93
-    commit: d36ceecadfea2d5dad6bdd2738f32fa6747dc047   # DRAFT: HEAD when written; replace with the v1.13.0 release commit
+  - versionName: 1.13.1
+    versionCode: 94
+    commit: d36ceecadfea2d5dad6bdd2738f32fa6747dc047   # DRAFT: HEAD when written; replace with the v1.13.1 release commit
     subdir: android
     gradle:
       - store
@@ -48,8 +49,8 @@ Builds:
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 1.13.0
-CurrentVersionCode: 93
+CurrentVersion: 1.13.1
+CurrentVersionCode: 94
 ```
 
 Notes on the fields:
@@ -60,14 +61,14 @@ Notes on the fields:
   locally is `:app:bundleStoreRelease` for the AAB and `:app:assembleStoreRelease` for the APK; F-Droid builds the APK.
 - `output:` is relative to `subdir` (`android/`). ✅ The path exists in a local build.
 - `commit:` must be a **full commit hash**, not a branch or tag name (F-Droid's metadata reference says so). The hash
-  above is the store-channel commit, not a released/tagged version. 🚫 Replace it with the final `v1.13.0` commit and create
+  above is the store-channel commit, not a released/tagged version. 🚫 Replace it with the final `v1.13.1` commit and create
   the tag before submitting.
 - `gradleprops: openconnect.minify=false` is a reproducibility aid, not a requirement. R8 is deterministic within
   one toolchain, but F-Droid's build JDK/SDK may differ. Turning shrinking off makes the APK larger but removes a
   common source of non-reproducible bytecode. Test both ways with `fdroid build --test`; if the minimized build is
   reproducible, drop this line. ⚠️ UNVERIFIED.
-- `UpdateCheckMode: Tags` requires `v1.13.0` and later `vX.Y.Z` tags. The repository currently tags releases this way
-  (`v1.12.0` is the latest). ✅ Verified (repo); the next tag is missing.
+- `UpdateCheckMode: Tags` requires `v1.13.1` and later `vX.Y.Z` tags. The repository currently tags releases this way
+  (`v1.13.0` is the latest). ✅ Verified (repo); the `v1.13.1` tag is missing.
 - Do not add `Name:` or `Summary:`: F-Droid's reference says the localized fastlane metadata in this repository should
   win. The fastlane tree at `fastlane/metadata/android/` is already in the layout F-Droid reads.
 - Do not add `AllowedAPKSigningKeys`: F-Droid signs the build with its own key. See the signing section below.
@@ -111,7 +112,7 @@ This is the most important user-facing consequence:
 ## Metadata and images
 
 - The fastlane tree is `fastlane/metadata/android/{en-US,nl-NL,de-DE,fr-FR}` with title, short/full description and
-  `changelogs/93.txt`. ✅ Verified (repo; character limits checked).
+  `changelogs/` (93 for the first store build; 94 adds the Cercis rename note). ✅ Verified (repo; character limits checked).
 - The 512 x 512 icon is `fastlane/metadata/android/en-US/images/icon.png`, copied from the project's existing
   `docs/img/logo.png`. ✅
 - 🚫 `featureGraphic.png` is missing (needs 1024 x 500, a design decision).
@@ -122,9 +123,10 @@ This is the most important user-facing consequence:
 
 ## Blockers before an F-Droid merge request
 
-1. 🚫 **Final name.** F-Droid already has an OpenConnect VPN client (`net.openconnect_vpn.android`); the app title must
-   not be a working title. See [NAME.md](NAME.md).
-2. 🚫 **Release tag.** `v1.13.0` is not tagged. F-Droid needs a full commit hash; `UpdateCheckMode: Tags` needs the tag.
+1. 🚫 **Legal clearance of the name.** The display name is **Cercis** (see [NAME.md](NAME.md)), but no trademark
+   clearance has been done. F-Droid already has an OpenConnect VPN client (`net.openconnect_vpn.android`); the app title
+   is no longer the same, which removes the exact collision, not the need for a legal check.
+2. 🚫 **Release tag.** `v1.13.1` is not tagged. F-Droid needs a full commit hash; `UpdateCheckMode: Tags` needs the tag.
 3. 🚫 **Toolchain.** Confirm the F-Droid buildserver has compileSdk/platform 37, build-tools 36, JDK 17, Gradle 9.6.0
    and AGP 9.5.2. If not, the build fails before any policy review.
 4. 🚫 **Signing.** Confirm F-Droid's buildserver can produce and sign the APK from a build that currently falls back to
@@ -146,7 +148,7 @@ This is the most important user-facing consequence:
 
 1. Fork `fdroiddata`, add `metadata/nl.tufein.openconnect.yml` and the fastlane metadata.
 2. Run `fdroid rewritemeta nl.tufein.openconnect`, `fdroid lint nl.tufein.openconnect` and `fdroid build --test
-   nl.tufein.openconnect:93`.
+   nl.tufein.openconnect:94`.
 3. Open a merge request with the build log, the reproducibility result, the licence/asset notes and the anti-feature
    decision.
 4. Answer reviewer questions; do not publish or announce until the F-Droid index actually contains the app.
@@ -162,4 +164,4 @@ This repository does not submit to F-Droid automatically; there is no `fdroid` s
 - F-Droid package `net.openconnect_vpn.android` (the existing VPN app; observed 2026-11-25).
 - [NAME.md](NAME.md) for the name collision.
 
-_Last written: 2026-11-25, for v1.13.0 / versionCode 93. No F-Droid submission has been made._
+_Last written: 2026-11-25, for v1.13.1 / versionCode 94. Display name decided: Cercis. No F-Droid submission has been made._

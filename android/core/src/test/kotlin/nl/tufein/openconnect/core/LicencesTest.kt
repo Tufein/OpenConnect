@@ -24,7 +24,7 @@ class LicencesTest {
     @Test
     fun theThingsThatAreNotLibrariesAreThere() {
         val names = Licences.all.joinToString(" ") { it.name }
-        for (needed in listOf("OpenConnect", "Gadgetbridge", "Jersey 10", "IBM Plex")) {
+        for (needed in listOf("Cercis", "Gadgetbridge", "Jersey 10", "IBM Plex")) {
             assertTrue(needed in names, "$needed is missing")
         }
     }

@@ -2,9 +2,15 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
-## v1.13.1: de release-controles weer streng
+## v1.13.2: de release-controles weer streng
 
-Deze release verandert **niets aan wat de app doet**; de APK is dezelfde app als v1.13.0 met een nieuw versienummer. Wat verandert is het vangnet eromheen: de emulator-rooktest houdt een release weer tegen als hij faalt, de APK heeft een budget met ruimte (13 MiB, in plaats van 20 KB onder de oude grens) dat bij elke wijziging wordt gecontroleerd, en de release notes van vier eerdere versies …
+Deze release verandert **niets aan wat de app doet**; de APK is dezelfde app als v1.13.1 met een nieuw versienummer. Wat verandert is het vangnet eromheen: de emulator-rooktest houdt een release weer tegen als hij faalt, de APK heeft een budget met ruimte (13 MiB, in plaats van 20 KB onder de oude grens) dat bij elke wijziging wordt gecontroleerd, en de release notes van vier eerdere versies …
+
+[Release notes](docs/releases/v1.13.2.md)
+
+## v1.13.1: voortaan Cercis
+
+Vanaf deze release heet de app **Cercis**, niet meer OpenConnect. De oude naam botste met de bekende OpenConnect-VPN-client, waardoor zoeken in een winkel de verkeerde app kan opleveren. Alleen de weergavenaam verandert. De pakketnaam `nl.tufein.openconnect`, de repository, de APK-namen en de updater blijven; v1.13.0 werkt gewoon bij.
 
 [Release notes](docs/releases/v1.13.1.md)
 

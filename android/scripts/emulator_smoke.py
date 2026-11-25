@@ -23,6 +23,10 @@ import xml.etree.ElementTree as ET
 
 PKG = "nl.tufein.openconnect"
 FAKE_KEY = "sk-ant-api03-" + "A" * 60
+# The app is called Cercis since v1.13.1 and OpenConnect before. Both are accepted, so a published APK from before the
+# rename can still be walked (emulator.yml, input `published`) to compare it with today's.
+WELCOME = ("Welcome to Cercis", "Welcome to OpenConnect")
+ABOUT = ("About Cercis", "About OpenConnect")
 
 
 class Smoke(Exception):
@@ -298,9 +302,9 @@ def main(apk, out):
         adb("shell", "pm", "grant", PKG, "android.permission.POST_NOTIFICATIONS", check=False)
 
         run.start()
-        first = run.wait("Welcome to OpenConnect", "Load demo data", timeout=150)
+        first = run.wait(*WELCOME, "Load demo data", timeout=150)
         run.shot("first-screen")
-        if first.text == "Welcome to OpenConnect":
+        if first.text in WELCOME:
             # The Start button is under the device list, below the fold on a small screen, and a node that is
             # not on screen is not in the uiautomator dump: scroll to it first.
             run.tap(run.scroll_to("Start"))
@@ -323,7 +327,7 @@ def main(apk, out):
             print(f"{tab}: ok")
 
         run.tap(run.scroll_to("About and licences"))
-        run.wait("About OpenConnect")
+        run.wait(*ABOUT)
         run.shot("about")
         run.back()
         run.wait("About and licences")

@@ -1,6 +1,6 @@
 # Security and maintenance
 
-OpenConnect holds your health history and, optionally, AI provider keys and Garmin or Oura logins. Treat the
+Cercis holds your health history and, optionally, AI provider keys and Garmin or Oura logins. Treat the
 database (`openconnect.db` on the server, the app's private storage on the phone) and any backup file as sensitive.
 Never attach them to an issue. For a problem report use **Settings, Share diagnostics** in the app: it shows the exact
 text first and leaves keys, tokens, names, health values and routes out (a test proves that with fake secrets). Read it

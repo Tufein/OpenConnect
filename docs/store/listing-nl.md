@@ -6,13 +6,13 @@ de **watchface** en de **widget** (met glance).
 
 ## Watchface
 
-**Naam:** OpenConnect Watch Face
+**Naam:** Cercis Watch Face
 
 **Slogan:** Je Body Battery, hartslag, stress en stappen op een Clean-, Dashboard- of Retro-face.
 
 **Beschrijving:**
 
-OpenConnect Watch Face zet wat je horloge al weet op je pols, in drie ontwerpen die je kiest in Garmins Connect
+Cercis Watch Face zet wat je horloge al weet op je pols, in drie ontwerpen die je kiest in Garmins Connect
 IQ-app:
 
 - **Clean:** een ring om een grote tijd.
@@ -26,7 +26,7 @@ beneden hangt, om het scherm te sparen.
 Alles op de face wordt op het horloge zelf gelezen. Je hebt geen telefoon, geen account en geen internet nodig en er
 wordt niets verstuurd.
 
-Er is geen slaapveld: Garmin geeft horloge-apps geen slaapduur. OpenConnect is een onafhankelijk open-sourceproject
+Er is geen slaapveld: Garmin geeft horloge-apps geen slaapduur. Cercis is een onafhankelijk open-sourceproject
 (AGPL-3.0-or-later) en is niet gemaakt of goedgekeurd door Garmin. Garmin en Body Battery zijn handelsmerken van
 Garmin Ltd.
 
@@ -46,20 +46,20 @@ IQ-app, zoals bij elke watchface.
 
 ## Widget
 
-**Naam:** OpenConnect Widget
+**Naam:** Cercis Widget
 
 **Slogan:** Een glance en een scherm met je Body Battery, hartslag, stress, stappen en verdiepingen.
 
 **Beschrijving:**
 
-OpenConnect Widget voegt een glance toe aan de glance-lijst van je horloge: je eerste drie velden op één regel, zoals
+Cercis Widget voegt een glance toe aan de glance-lijst van je horloge: je eerste drie velden op één regel, zoals
 *Battery 72  HR 52  Stress 28*. Open hem voor één scherm met een ring, vier rijen en een lijn van je Body Battery over
 de laatste 12 uur.
 
 Kleur en velden stel je in met Garmins Connect IQ-app (dezelfde vijf kleuren en vijf velden als de watchface). Alle
 waarden komen van het horloge zelf: geen telefoon, geen account, geen internet.
 
-Er is geen slaapscherm: Garmin geeft horloge-apps geen slaapduur. OpenConnect is een onafhankelijk open-sourceproject
+Er is geen slaapscherm: Garmin geeft horloge-apps geen slaapduur. Cercis is een onafhankelijk open-sourceproject
 (AGPL-3.0-or-later) en is niet gemaakt of goedgekeurd door Garmin. Garmin en Body Battery zijn handelsmerken van
 Garmin Ltd.
 

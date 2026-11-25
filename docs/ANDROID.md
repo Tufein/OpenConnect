@@ -1,10 +1,10 @@
-# OpenConnect for Android
+# Cercis for Android
 
 A standalone Android app (`android/`). It needs **no server**: storage, FIT/GPX/TCX handling, the
 dashboard and the reports all run on the phone, and your data stays in the app's private storage.
 The Python server from v0.1.0 is unchanged and stays available for people who prefer to self-host.
 
-![OpenConnect on Android](img/v050-home.png)
+![Cercis on Android](img/v050-home.png)
 
 *These images are rendered on a computer by the app's own UI tests (Robolectric), not captured on a
 phone, so fonts and spacing on a real device can differ slightly.*
@@ -26,10 +26,10 @@ The look is editorial by default (see [DESIGN.md](DESIGN.md)): a calm page with 
 ### Where the data comes from
 
 1. **Demo data**: about 45 days of Garmin-like activities, sleep and daily health, generated on the phone.
-2. **File import**: pick FIT, GPX or TCX files from the phone, or share or open a file with OpenConnect.
+2. **File import**: pick FIT, GPX or TCX files from the phone, or share or open a file with Cercis.
    Importing the same file again does not create a duplicate (the activity id is derived from the content).
    **Archives (v1.3.0):** the same button takes a whole ZIP (also a ZIP inside a ZIP) or a gzip file, so Garmin Connect's
-   export, Strava's archive and OpenConnect's own *Export everything* go in as they are. The archive is streamed
+   export, Strava's archive and Cercis's own *Export everything* go in as they are. The archive is streamed
    (`core/ArchiveImport.kt`), an activity that is already there (same id, or another activity starting within 90
    seconds) is never overwritten, files that are not activities are skipped and counted, and Settings shows the report.
    Since v1.4.0 the names in Strava's `activities.csv` and Garmin's `summarizedActivities.json` are applied, and the report can be

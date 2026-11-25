@@ -77,7 +77,7 @@ private fun CopyReport(report: ArchiveImport.Report) {
     var copied by remember(report) { mutableStateOf(false) }
     QuietButton(onClick = {
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        clipboard.setPrimaryClip(ClipData.newPlainText("OpenConnect import report", report.diagnostics()))
+        clipboard.setPrimaryClip(ClipData.newPlainText("Cercis import report", report.diagnostics()))
         copied = true
     }) { Text(stringResource(if (copied) R.string.import_copied else R.string.import_copy)) }
 }

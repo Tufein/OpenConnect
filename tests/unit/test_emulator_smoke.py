@@ -242,3 +242,13 @@ def test_without_adb_the_recording_is_skipped_and_the_walk_still_reports(monkeyp
     monkeypatch.setattr(smoke, "adb", _lost_at_install)
     monkeypatch.setattr(smoke.subprocess, "Popen", no_adb)
     assert smoke.main("app.apk", str(tmp_path)) == smoke.EXIT_EMULATOR_LOST
+
+
+# The app was renamed from OpenConnect to Cercis in v1.13.1. The *Emulator smoke* workflow can walk
+# published APKs to tell an app regression from a runner problem, and every APK before v1.13.1
+# greets with the old name: the walk must recognise both, or the comparison fails on the name.
+
+
+def test_the_walk_knows_the_first_screen_and_the_about_screen_under_both_names():
+    assert set(smoke.WELCOME) == {"Welcome to Cercis", "Welcome to OpenConnect"}
+    assert set(smoke.ABOUT) == {"About Cercis", "About OpenConnect"}

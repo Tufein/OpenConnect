@@ -123,10 +123,10 @@ generate() {
     # it must never change.
     app_id="$(printf 'openconnect-store-%s' "$kind" | md5sum | cut -c1-32)"
     prods="$products"
-    if [ "$kind" = "widget" ]; then app_name="OpenConnect Widget"; else app_name="OpenConnect"; fi
+    if [ "$kind" = "widget" ]; then app_name="Cercis Widget"; else app_name="Cercis Watch Face"; fi
   else
     app_id="$(printf 'openconnect-%s-%s' "$id_part" "$hex" | md5sum | cut -c1-32)"
-    app_name="OpenConnect ${label}"
+    app_name="Cercis ${label}"
   fi
   block=""
   for p in $(echo "$prods" | tr ',' ' '); do block="${block}            <iq:product id=\"$p\" />"$'\n'; done

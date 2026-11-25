@@ -182,7 +182,7 @@ jobs:
             # A fixed front matter (install, check, what is tested) above the notes, so a stranger needs no README.
             sed "s/@TAG@/${TAG}/g" .github/release-header.md > "${RUNNER_TEMP}/notes.md"
             cat "$notes" >> "${RUNNER_TEMP}/notes.md"
-            gh release create "$TAG" dist/* apk/* --target "$GITHUB_SHA" --title "OpenConnect ${TAG}" $flags --notes-file "${RUNNER_TEMP}/notes.md"
+            gh release create "$TAG" dist/* apk/* --target "$GITHUB_SHA" --title "Cercis ${TAG}" $flags --notes-file "${RUNNER_TEMP}/notes.md"
           else
-            gh release create "$TAG" dist/* apk/* --target "$GITHUB_SHA" --title "OpenConnect ${TAG}" $flags --generate-notes
+            gh release create "$TAG" dist/* apk/* --target "$GITHUB_SHA" --title "Cercis ${TAG}" $flags --generate-notes
           fi

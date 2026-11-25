@@ -64,7 +64,7 @@ object Diagnostics {
     }
 
     fun report(input: DiagnosticInput, now: Instant): String = buildString {
-        appendLine("OpenConnect diagnostics")
+        appendLine("Cercis diagnostics")
         appendLine("App: ${input.appVersion} · Android ${input.androidVersion} (API ${input.sdk}) · ${redact(input.device)}")
         appendLine("Made: $now · language: ${input.language}")
         appendLine("Sources switched on: ${input.sourcesOn.joinToString(", ").ifBlank { "none" }}")

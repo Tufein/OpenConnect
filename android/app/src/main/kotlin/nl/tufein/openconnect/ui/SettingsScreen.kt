@@ -455,7 +455,7 @@ fun SettingsScreen(
             FoldableCard("settings-about", stringResource(R.string.settings_about)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     LogoMark(size = 40.dp)
-                    Text("OpenConnect ${ui.versionName}", style = MaterialTheme.typography.titleMedium)
+                    Text("Cercis ${ui.versionName}", style = MaterialTheme.typography.titleMedium)
                 }
                 Text(stringResource(R.string.about_body), style = MaterialTheme.typography.bodyMedium)
                 Text("github.com/Tufein/OpenConnect", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

@@ -270,5 +270,5 @@ private fun openKeyPage(context: Context) {
 
 private fun copyToClipboard(context: Context, text: String) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return
-    clipboard.setPrimaryClip(ClipData.newPlainText("OpenConnect Garmin sync", text))
+    clipboard.setPrimaryClip(ClipData.newPlainText("Cercis Garmin sync", text))
 }

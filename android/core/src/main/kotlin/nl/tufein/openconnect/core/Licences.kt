@@ -9,8 +9,8 @@ data class Licence(val name: String, val licence: String, val note: String, val 
 object Licences {
     val all: List<Licence> = listOf(
         Licence(
-            "OpenConnect", "AGPL-3.0-or-later",
-            "Copyright (C) 2025-2026 Tufein and OpenConnect contributors. Releases up to v0.5.0 were MIT.",
+            "Cercis", "AGPL-3.0-or-later",
+            "Copyright (C) 2025-2026 Tufein and OpenConnect contributors. Cercis was called OpenConnect up to v1.13.0; releases up to v0.5.0 were MIT.",
             "https://github.com/Tufein/OpenConnect",
         ),
         Licence(

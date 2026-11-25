@@ -62,7 +62,7 @@ object ExportAll {
     }
 
     private fun readme(now: Instant, activities: Int, fit: Int, gpx: Int): String = """
-        OpenConnect export, ${now.atZone(ZoneOffset.UTC).toLocalDate()}
+        Cercis export, ${now.atZone(ZoneOffset.UTC).toLocalDate()}
 
         daily.csv                  one row per day: steps, heart rate, stress, Body Battery, sleep and more
         activities.csv             one row per activity ($activities in this export)

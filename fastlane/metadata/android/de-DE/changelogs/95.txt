@@ -1,0 +1,1 @@
+An der App selbst ändert sich nichts. Im Hintergrund wird jede Veröffentlichung wieder auf einem Android-Emulator durchgespielt, bevor sie erscheint, und der Download hat ein Größenbudget, das bei jeder Änderung geprüft wird.
