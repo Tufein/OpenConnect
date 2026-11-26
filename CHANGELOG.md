@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.13.5: de horlogebatterij blijft niet meer hangen
+
+De batterijkaart van het horloge bleef op een oude waarde staan wanneer de watch een nieuwe lading zelf doorgaf, of wanneer een sync via een al openstaande Bluetooth-verbinding liep. Deze release neemt die twee routes mee. Gericht op de **Garmin Fenix 8 51mm**, maar de fix geldt voor elke Garmin die zijn lading via hetzelfde protocol meldt.
+
+[Release notes](docs/releases/v1.13.5.md)
+
 ## v1.13.4: rustige ringen en een batterij die meteen bijwerkt
 
 De vier scores op **Gezondheid** hebben nu dezelfde rustige ring in plaats van een horizontale balk. Daarnaast blijft de lading van je horloge niet meer een sync achter: zodra het horloge antwoordt, leest de batterijkaart het nieuwe cijfer.
