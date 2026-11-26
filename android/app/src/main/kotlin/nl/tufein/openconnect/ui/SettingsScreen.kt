@@ -141,6 +141,7 @@ fun SettingsScreen(
     onHomeBattery: (Boolean) -> Unit = {},
     onHomeJournal: (Boolean) -> Unit = {},
     onHomeLast7: (Boolean) -> Unit = {},
+    onHomeLive: (Boolean) -> Unit = {},
     /** A launcher icon was picked. */
     onAppIcon: (AppIcon) -> Unit = {},
     onBackup: () -> Unit = {},
@@ -297,6 +298,11 @@ fun SettingsScreen(
                 }
                 SwitchRow(checked = ui.home.last7, onCheckedChange = onHomeLast7) {
                     Text(stringResource(R.string.last_7_days), style = MaterialTheme.typography.bodyMedium)
+                }
+                if (ui.sources.garmin) {
+                    SwitchRow(checked = ui.home.live, onCheckedChange = onHomeLive) {
+                        Text(stringResource(R.string.home_switch_live), style = MaterialTheme.typography.bodyMedium)
+                    }
                 }
                 Text(stringResource(R.string.look_colours), style = MaterialTheme.typography.titleMedium)
                 val darkNow = MaterialTheme.colorScheme.background.luminance() < 0.5f

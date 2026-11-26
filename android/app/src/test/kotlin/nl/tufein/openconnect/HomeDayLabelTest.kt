@@ -34,10 +34,21 @@ class HomeDayLabelTest : AppTestBase() {
      * just outside the viewport, and "Today" also names today's row in the journal further down; scroll to a fact that
      * is inside the same card, then read the title from the unmerged tree (the tappable card merges its children).
      */
-    /** The editorial gauge only exists once the day is loaded; it sits above the detailed cards, so it makes a good anchor. */
+    /**
+     * The editorial gauge only exists once the day is loaded. The live heart-rate card now sits above it, so the gauge
+     * can be outside the viewport on the first frame; scroll to it while the data is still arriving instead of assuming
+     * it is already composed.
+     */
     private fun waitForLoadedHome() {
         val gauge = ApplicationProvider.getApplicationContext<Context>().getString(R.string.editorial_active_calories).uppercase()
-        waitForText(gauge, substring = true)
+        rule.waitUntil(15_000) {
+            try {
+                scrollToText(gauge, substring = true)
+                true
+            } catch (_: Throwable) {
+                false
+            }
+        }
     }
 
     private fun assertDayTitle(expected: String) {

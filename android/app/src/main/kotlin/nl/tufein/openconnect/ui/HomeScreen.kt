@@ -4,6 +4,8 @@ import nl.tufein.openconnect.core.ChartMetric
 import nl.tufein.openconnect.core.DayAge
 import nl.tufein.openconnect.core.DayFreshness
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.ui.draw.clip
@@ -37,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -58,6 +61,10 @@ import nl.tufein.openconnect.garmin.GarminSyncUi
 import nl.tufein.openconnect.garmin.GarminUi
 import nl.tufein.openconnect.garmin.SyncBadge
 import nl.tufein.openconnect.garmin.syncBadge
+import nl.tufein.openconnect.watch.BleSensor
+import nl.tufein.openconnect.watch.LiveUi
+import nl.tufein.openconnect.watch.bluetoothPermissions
+import nl.tufein.openconnect.watch.hasBluetoothPermissions
 import java.time.Instant
 import java.time.ZoneId
 
@@ -94,6 +101,12 @@ fun HomeScreen(
     homePrefs: HomePrefs = HomePrefs(),
     /** The card under the battery was picked in the sheet on this screen. */
     onHomeMetric: (String) -> Unit = {},
+    /** The live heart-rate session; the Watch screen and this card share the one connection in the controller. */
+    live: LiveUi = LiveUi(),
+    onScanLive: () -> Unit = {},
+    onConnectLive: (BleSensor) -> Unit = {},
+    onStopLive: () -> Unit = {},
+    onSaveLive: () -> Unit = {},
 ) {
     val editorial = LocalStyle.current == Style.EDITORIAL
     val badge = syncBadge(garmin).takeIf { useGarmin }
@@ -108,6 +121,21 @@ fun HomeScreen(
     var choosingMetric by rememberSaveable { mutableStateOf(false) }
     // Remembered per sync, not forever: after the next successful sync the card is worth seeing again.
     var syncToastHiddenFor by rememberSaveable { mutableStateOf(0L) }
+    // The live card asks for the Bluetooth permission itself, like the Watch screen does, then starts the scan.
+    val context = LocalContext.current
+    var livePermissionDenied by rememberSaveable { mutableStateOf(false) }
+    val livePermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
+        livePermissionDenied = !granted.values.all { it }
+        if (!livePermissionDenied) onScanLive()
+    }
+    fun startLiveHeartRate() {
+        if (hasBluetoothPermissions(context)) {
+            livePermissionDenied = false
+            onScanLive()
+        } else {
+            livePermissionLauncher.launch(bluetoothPermissions())
+        }
+    }
 
     // The five orbs over the photo: real values from the latest day; a dash keeps the row's rhythm when a source is silent.
     val orbToday = state.overview?.today
@@ -222,9 +250,24 @@ fun HomeScreen(
                     )
                 }
             }
+            fun liveBlock() = block("home-live") {
+                HomeLiveHeartRateCard(
+                    live = live,
+                    permissionDenied = livePermissionDenied,
+                    onScan = ::startLiveHeartRate,
+                    onConnect = onConnectLive,
+                    onStop = onStopLive,
+                    onSave = onSaveLive,
+                    onOpenWatch = onWatch,
+                )
+            }
+            val noData = state.loaded && (!state.hasData || state.overview == null)
+            // With data on the front page the live card sits directly under the hero and the sync status: compact when
+            // idle, the pulse itself while a watch streams. A fresh install keeps the way in (demo or import) and the
+            // connect cards first; there the live card follows them, so onboarding is not pushed off the first screen.
+            if (state.loaded && !noData && useGarmin && homePrefs.live) liveBlock()
             // On an empty front page the way in (demo data or an import) sits directly under the hero, so it is the first
             // thing a new install sees instead of the bottom of a long page. The devices stay just below it.
-            val noData = state.loaded && (!state.hasData || state.overview == null)
             if (editorial && noData) block("home-empty-early") { EmptyState(onDemo, onImport) }
             // The charge of the devices themselves, high on the front page: a dead watch or ring is worth noticing early.
             if (homePrefs.battery && (useGarmin || onOura != null)) block("home-battery") {
@@ -236,6 +279,9 @@ fun HomeScreen(
             if (useGarmin && (!state.hasData || overview == null)) block("home-connect") { ConnectCard(garmin.hasKey, onWatch, onGarmin) }
             if (!state.hasData || overview == null) {
                 if (!editorial) block("home-empty") { EmptyState(onDemo, onImport) }
+                // On an empty front page the live card stays, below the way in and the connect card: the first screen
+                // keeps its onboarding, and the card is still one scroll away instead of only on the Watch tab.
+                if (useGarmin && homePrefs.live) liveBlock()
                 return@LazyColumn
             }
             val today = overview.today

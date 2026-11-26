@@ -1,0 +1,1 @@
+Live heart rate now has its own card on the front page: start, choose the watch, see bpm with min/avg/max and duration, then stop or save without opening Watch.

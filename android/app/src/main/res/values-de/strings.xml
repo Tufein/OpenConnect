@@ -184,6 +184,7 @@
     <string name="watch_live_avg">Durchschnitt</string>
     <string name="watch_live_max">Höchster</string>
     <string name="watch_live_hrv">HRV (RMSSD)</string>
+    <string name="watch_live_bpm_description">Puls %1$d bpm</string>
     <string name="watch_live_time">Zeit</string>
     <string name="watch_live_save">Als Aktivität speichern</string>
     <string name="watch_live_saved">Als Aktivität gespeichert</string>
@@ -901,6 +902,12 @@
     <string name="settings_home_card">Karte</string>
     <string name="home_switch_battery">Akku-Karte</string>
     <string name="home_switch_journal">Journal</string>
+    <string name="home_switch_live">Live-Puls-Karte</string>
+    <string name="home_live_start">Live-Puls starten</string>
+    <string name="home_live_start_again">Erneut starten</string>
+    <string name="home_live_idle_body">Deine Garmin-Uhr sendet deinen Puls direkt an diese Karte.</string>
+    <string name="home_live_badge">Live</string>
+    <string name="home_live_open_watch">Uhr öffnen</string>
     <string name="home_metric_change">Veränderung</string>
     <string name="home_choose_title">Karte der Startseite</string>
     <string name="home_choose_body">Wähle die Karte, die unter dem Akku sitzt.</string>

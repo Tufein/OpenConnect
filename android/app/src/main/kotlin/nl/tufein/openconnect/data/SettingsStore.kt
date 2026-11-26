@@ -150,6 +150,11 @@ class SettingsStore(
         get() = prefs.getBoolean(KEY_HOME_LAST7, true)
         set(value) = prefs.edit().putBoolean(KEY_HOME_LAST7, value).apply()
 
+    /** Whether the live heart-rate card is drawn on the front page. On by default for someone with a Garmin watch. */
+    var homeLive: Boolean
+        get() = prefs.getBoolean(KEY_HOME_LIVE, true)
+        set(value) = prefs.edit().putBoolean(KEY_HOME_LIVE, value).apply()
+
     /** The record of the last syncs, as the text [nl.tufein.openconnect.core.SyncLog] writes. */
     var syncLogText: String
         get() = prefs.getString(KEY_SYNC_LOG, "") ?: ""
@@ -475,6 +480,7 @@ class SettingsStore(
         private const val KEY_HOME_BATTERY = "home_battery"
         private const val KEY_HOME_JOURNAL = "home_journal"
         private const val KEY_HOME_LAST7 = "home_last7"
+        private const val KEY_HOME_LIVE = "home_live"
         private const val KEY_OURA_CLIENT = "oura_client_id"
         private const val KEY_OURA_SECRET = "oura_client_secret"
         private const val KEY_OURA_REDIRECT = "oura_redirect"

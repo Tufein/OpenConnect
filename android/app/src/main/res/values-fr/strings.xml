@@ -184,6 +184,7 @@
     <string name="watch_live_avg">Moyenne</string>
     <string name="watch_live_max">Maximum</string>
     <string name="watch_live_hrv">HRV (RMSSD)</string>
+    <string name="watch_live_bpm_description">Fréquence cardiaque %1$d bpm</string>
     <string name="watch_live_time">Durée</string>
     <string name="watch_live_save">Enregistrer comme activité</string>
     <string name="watch_live_saved">Enregistré comme activité</string>
@@ -903,6 +904,12 @@
     <string name="settings_home_card">Carte</string>
     <string name="home_switch_battery">Carte de batterie</string>
     <string name="home_switch_journal">Journal</string>
+    <string name="home_switch_live">Carte de fréquence cardiaque en direct</string>
+    <string name="home_live_start">Démarrer le direct</string>
+    <string name="home_live_start_again">Redémarrer</string>
+    <string name="home_live_idle_body">Votre montre Garmin envoie votre fréquence cardiaque directement sur cette carte.</string>
+    <string name="home_live_badge">En direct</string>
+    <string name="home_live_open_watch">Ouvrir la montre</string>
     <string name="home_metric_change">Changer</string>
     <string name="home_choose_title">Carte de la page d\'accueil</string>
     <string name="home_choose_body">Choisissez la carte qui se trouve sous la batterie.</string>

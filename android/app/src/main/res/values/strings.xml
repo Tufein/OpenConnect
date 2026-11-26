@@ -184,6 +184,7 @@
     <string name="watch_live_avg">Average</string>
     <string name="watch_live_max">Highest</string>
     <string name="watch_live_hrv">HRV (RMSSD)</string>
+    <string name="watch_live_bpm_description">Heart rate %1$d bpm</string>
     <string name="watch_live_time">Time</string>
     <string name="watch_live_save">Save as activity</string>
     <string name="watch_live_saved">Saved as an activity</string>
@@ -907,6 +908,12 @@
     <string name="settings_home_card">Card</string>
     <string name="home_switch_battery">Battery card</string>
     <string name="home_switch_journal">Journal</string>
+    <string name="home_switch_live">Live heart rate card</string>
+    <string name="home_live_start">Start live heart rate</string>
+    <string name="home_live_start_again">Start again</string>
+    <string name="home_live_idle_body">Your Garmin watch sends your heart rate straight to this card.</string>
+    <string name="home_live_badge">Live</string>
+    <string name="home_live_open_watch">Open Watch</string>
     <string name="home_metric_change">Change</string>
     <string name="home_choose_title">Front page card</string>
     <string name="home_choose_body">Pick the card that sits under the battery.</string>

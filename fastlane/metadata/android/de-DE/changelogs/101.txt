@@ -1,0 +1,1 @@
+Der Live-Puls hat jetzt eine eigene Karte auf der Startseite: starten, Uhr wählen, bpm mit Min./Durchschn./Max. und Dauer sehen, dann stoppen oder speichern, ohne Watch zu öffnen.

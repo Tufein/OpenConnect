@@ -7,11 +7,13 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.13.7.** **New in v1.13.7:** the live heart rate from a Garmin watch now really starts: the app asks
-> Garmin's real-time service only after the watch has sent its configuration, instead of during the first handshake.
-> The Watch screen offers the watch next to a chest strap and the standard broadcast; beats per minute, min/avg/max
-> and the recording work as before. Garmin's real-time service has no beat-to-beat intervals, so HRV stays empty for
-> this source.
+> **Status: v1.13.8.** **New in v1.13.8:** live heart rate now has its own card on the front page: start, pick a
+> watch, see the bpm and lowest/average/highest, stop and save without opening Watch first. The card is on by default
+> and can be switched under Settings → Appearance → Front page.
+> **Since v1.13.7:** the live heart rate from a Garmin watch really starts: the app asks Garmin's real-time service
+> only after the watch has sent its configuration, instead of during the first handshake. The Watch screen offers the
+> watch next to a chest strap and the standard broadcast; beats per minute, min/avg/max and the recording work as
+> before. Garmin's real-time service has no beat-to-beat intervals, so HRV stays empty for this source.
 > **Since v1.13.5:** the watch’s charge no longer gets stuck on an old value: the app accepts battery reports the
 > watch sends by itself, asks again when a sync starts, and waits briefly after `SYNC_COMPLETE` for a late answer.
 > **Since v1.13.4:** the four scores on Health are the same quiet ring instead of separate horizontal bars, and a
@@ -30,7 +32,7 @@ Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 > name is legally cleared, and an account, testers, real screenshots and store declarations are still missing.
 > Everything from v1.12.0 stays, including the privacy register and the four languages; the German and French texts
 > remain machine-drafted, not native-reviewed.
-> [Release notes](docs/releases/v1.13.7.md).
+> [Release notes](docs/releases/v1.13.8.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

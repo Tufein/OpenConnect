@@ -1,0 +1,1 @@
+Live hartslag heeft nu een eigen kaart op de voorpagina: start, kies het horloge, zie bpm met min/gem/max en duur, en stop of bewaar zonder eerst Watch te openen.

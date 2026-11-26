@@ -40,8 +40,6 @@ import nl.tufein.openconnect.watch.BleSensor
 import nl.tufein.openconnect.core.watch.BleSync
 import nl.tufein.openconnect.watch.GarminBleWatch
 import nl.tufein.openconnect.watch.GarminStep
-import nl.tufein.openconnect.watch.LivePhase
-import nl.tufein.openconnect.watch.LiveUi
 import nl.tufein.openconnect.watch.SyncFailure
 import nl.tufein.openconnect.watch.SyncSource
 import nl.tufein.openconnect.watch.SyncStatus
@@ -602,88 +600,5 @@ private fun SyncResult(sync: SyncStatus, source: SyncSource) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.error,
         )
-    }
-}
-
-@Composable
-private fun LiveControls(
-    live: LiveUi,
-    permissionDenied: Boolean,
-    onScan: () -> Unit,
-    onConnect: (BleSensor) -> Unit,
-    onStop: () -> Unit,
-    onSave: () -> Unit,
-) {
-    val busy = live.phase == LivePhase.SCANNING || live.phase == LivePhase.CONNECTING || live.phase == LivePhase.STREAMING ||
-        live.phase == LivePhase.RECONNECTING
-    if (live.phase == LivePhase.IDLE || live.phase == LivePhase.SCANNING || live.phase == LivePhase.STOPPED) {
-        PrimaryButton(
-            onClick = if (live.phase == LivePhase.SCANNING) onStop else onScan,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(stringResource(if (live.phase == LivePhase.SCANNING) R.string.watch_live_stop else R.string.watch_live_search))
-        }
-    }
-    if (permissionDenied) {
-        Text(stringResource(R.string.watch_live_permission), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
-    }
-    if (live.phase == LivePhase.SCANNING) {
-        Text(
-            stringResource(if (live.sensors.isEmpty()) R.string.watch_live_none else R.string.watch_live_searching),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        for (sensor in live.sensors) {
-            SecondaryButton(onClick = { onConnect(sensor) }, modifier = Modifier.fillMaxWidth()) { Text(sensor.name) }
-        }
-    }
-    if (live.phase == LivePhase.CONNECTING) {
-        Text(stringResource(R.string.watch_live_connecting, live.sensorName.orEmpty()), style = MaterialTheme.typography.bodyMedium)
-        PixelProgress(Modifier.fillMaxWidth())
-    }
-    if (live.phase == LivePhase.RECONNECTING) {
-        Text(stringResource(R.string.watch_live_reconnecting, live.reconnectAttempt), style = MaterialTheme.typography.bodyMedium)
-        PixelProgress(Modifier.fillMaxWidth())
-    }
-    if (live.phase == LivePhase.STREAMING || live.phase == LivePhase.RECONNECTING || live.hasData) {
-        Text(
-            when (live.phase) {
-                LivePhase.STREAMING -> stringResource(R.string.watch_live_connected, live.sensorName.orEmpty())
-                LivePhase.RECONNECTING -> stringResource(R.string.watch_live_connected, live.sensorName.orEmpty())
-                else -> stringResource(R.string.watch_live_stopped)
-            },
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Row(verticalAlignment = androidx.compose.ui.Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(live.bpm?.toString() ?: "–", style = MaterialTheme.typography.displayLarge, color = MaterialTheme.colorScheme.primary)
-            Text("bpm", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = 10.dp))
-        }
-        TileRow(
-            { StatTile(stringResource(R.string.watch_live_min), live.min?.toString() ?: "–", it) },
-            { StatTile(stringResource(R.string.watch_live_avg), live.avg?.toString() ?: "–", it) },
-        )
-        TileRow(
-            { StatTile(stringResource(R.string.watch_live_max), live.max?.toString() ?: "–", it) },
-            { StatTile(stringResource(R.string.watch_live_hrv), live.rmssdMs?.toString() ?: "–", it, unit = "ms") },
-        )
-        Text(
-            stringResource(R.string.watch_live_time) + ": " + Fmt.duration(live.seconds.toDouble()),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-    if (live.error != null && live.phase == LivePhase.STOPPED) {
-        Text(stringResource(R.string.watch_live_disconnected, live.error), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
-    }
-    if (busy && live.phase != LivePhase.SCANNING) {
-        SecondaryButton(onClick = onStop, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.watch_live_stop)) }
-    }
-    if (live.phase == LivePhase.STOPPED && live.hasData) {
-        if (live.saved) {
-            Text(stringResource(R.string.watch_live_saved), style = MaterialTheme.typography.bodyMedium)
-        } else {
-            PrimaryButton(onClick = onSave, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.watch_live_save)) }
-        }
     }
 }

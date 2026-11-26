@@ -282,6 +282,8 @@ data class HomePrefs(
     val battery: Boolean = true,
     val journal: Boolean = true,
     val last7: Boolean = true,
+    /** The card that starts and shows a live heart rate from the Garmin watch. On by default. */
+    val live: Boolean = true,
 )
 
 /** Which devices the person uses. [onboarded] is false until the first-start questions are answered. */
@@ -384,6 +386,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         container.settings.homeBattery,
         container.settings.homeJournal,
         container.settings.homeLast7,
+        container.settings.homeLive,
     )
 
     private val _homePrefs = MutableStateFlow(homePrefsNow())
@@ -409,6 +412,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setHomeLast7(show: Boolean) {
         container.settings.homeLast7 = show
+        _homePrefs.value = homePrefsNow()
+    }
+
+    fun setHomeLive(show: Boolean) {
+        container.settings.homeLive = show
         _homePrefs.value = homePrefsNow()
     }
 
@@ -769,6 +777,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun saveLive(name: String) {
         if (container.watch.saveLive(name, Sport.OTHER)) tell(text(R.string.watch_live_saved))
     }
+
+    /** Saves a recording from the card on the front page under the same name the Watch screen uses. */
+    fun saveLiveRecording() = saveLive(text(R.string.watch_live_name))
 
     /** A watch was plugged in: show the watch screen. */
     fun onWatchAttached() {

@@ -184,6 +184,7 @@
     <string name="watch_live_avg">Gemiddeld</string>
     <string name="watch_live_max">Hoogste</string>
     <string name="watch_live_hrv">HRV (RMSSD)</string>
+    <string name="watch_live_bpm_description">Hartslag %1$d bpm</string>
     <string name="watch_live_time">Tijd</string>
     <string name="watch_live_save">Opslaan als activiteit</string>
     <string name="watch_live_saved">Opgeslagen als activiteit</string>
@@ -907,6 +908,12 @@
     <string name="settings_home_card">Kaart</string>
     <string name="home_switch_battery">Batterijkaart</string>
     <string name="home_switch_journal">Journaal</string>
+    <string name="home_switch_live">Livehartslagkaart</string>
+    <string name="home_live_start">Start live hartslag</string>
+    <string name="home_live_start_again">Opnieuw starten</string>
+    <string name="home_live_idle_body">Je Garmin-horloge stuurt je hartslag rechtstreeks naar deze kaart.</string>
+    <string name="home_live_badge">Live</string>
+    <string name="home_live_open_watch">Open horloge</string>
     <string name="home_metric_change">Wijzigen</string>
     <string name="home_choose_title">Kaart voor het voorblad</string>
     <string name="home_choose_body">Kies de kaart die onder de batterij staat.</string>

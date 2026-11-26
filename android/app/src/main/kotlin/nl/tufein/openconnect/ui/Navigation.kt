@@ -394,6 +394,9 @@ fun OpenConnectRoot(
             modifier = Modifier.fillMaxSize().wrapContentWidth(Alignment.CenterHorizontally).widthIn(max = 640.dp),
         ) {
             composable(Tab.Home.route) {
+                // Leaving the front page ends a live heart-rate connection, exactly as leaving the Watch screen does;
+                // the session never stays open in the background because a tab was tapped.
+                androidx.compose.runtime.DisposableEffect(Unit) { onDispose { vm.stopLive() } }
                 HomeScreen(
                     state = home,
                     garmin = garmin,
@@ -416,6 +419,11 @@ fun OpenConnectRoot(
                     onOura = if (sources.oura) ::openOura else null,
                     homePrefs = homePrefs,
                     onHomeMetric = vm::setHomeMetric,
+                    live = watch.live,
+                    onScanLive = vm::scanSensors,
+                    onConnectLive = vm::connectSensor,
+                    onStopLive = vm::stopLive,
+                    onSaveLive = vm::saveLiveRecording,
                 )
             }
             composable(Tab.Activities.route) {
@@ -477,6 +485,7 @@ fun OpenConnectRoot(
                     onHomeBattery = vm::setHomeBattery,
                     onHomeJournal = vm::setHomeJournal,
                     onHomeLast7 = vm::setHomeLast7,
+                    onHomeLive = vm::setHomeLive,
                     onLetters = vm::setLetters,
                     onStyle = vm::setStyle,
                     onSignals = vm::setSignals,

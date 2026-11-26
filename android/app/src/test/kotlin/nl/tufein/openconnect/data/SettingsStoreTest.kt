@@ -69,16 +69,19 @@ class SettingsStoreTest {
         assertTrue(s.homeBattery, "the battery card is on by default")
         assertTrue(s.homeJournal, "the journal is on by default")
         assertTrue(s.homeLast7, "Last 7 days is on by default")
+        assertTrue(s.homeLive, "the live heart-rate card is on by default")
 
         s.homeMetric = "sleep"
         s.homeBattery = false
         s.homeJournal = false
         s.homeLast7 = false
+        s.homeLive = false
         val again = store() // the app was restarted
         assertEquals("sleep", again.homeMetric)
         assertFalse(again.homeBattery)
         assertFalse(again.homeJournal)
         assertFalse(again.homeLast7)
+        assertFalse(again.homeLive)
 
         // A key from a newer version, or a typo, falls back to the card a fresh install has; it never breaks the page.
         s.homeMetric = "blood_oxygen"
