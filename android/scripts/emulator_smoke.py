@@ -334,8 +334,10 @@ def main(apk, out):
             run.tap(run.scroll_to("Start"))
         run.tap(run.scroll_to("Load demo data"))
         run.gone("Load demo data")
-        # The editorial front page prints the section labels in capitals ("READINESS"); accept both spellings.
-        run.wait("Readiness", "READINESS", contains=True)
+        # The editorial front page prints the section labels in capitals ("READINESS"). Since v1.13.8 the live
+        # heart-rate card sits above it, so Readiness can start below the fold; scroll to it instead of waiting
+        # for a node that a lazy list has not composed yet.
+        run.scroll_to("READINESS", contains=True)
         run.shot("home")
         print("Home with demo data: ok")
 
