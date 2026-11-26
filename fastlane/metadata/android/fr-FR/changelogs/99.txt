@@ -1,0 +1,1 @@
+La fréquence cardiaque en direct peut venir directement de votre montre Garmin via Bluetooth, sans mode diffusion ; la VFC reste vide pour cette source.

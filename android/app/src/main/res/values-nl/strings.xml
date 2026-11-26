@@ -171,7 +171,7 @@
     <string name="watch_fail_files">Het horloge is verbonden, maar heeft geen GARMIN-map met gegevens.</string>
     <string name="watch_fail_other">Het uitlezen van het horloge stopte: %1$s</string>
     <string name="watch_live_title">Live hartslag</string>
-    <string name="watch_live_body">Toont je hartslag live van een Garmin-horloge dat die uitzendt, of van een borstband. Zoek op het horloge naar Sensoren &amp; accessoires, Hartslag via pols, Hartslag uitzenden (de namen verschillen per model).</string>
+    <string name="watch_live_body">Toont je hartslag live rechtstreeks van een Garmin-horloge via Bluetooth, zonder uitzendmodus, of van een Garmin-horloge dat die uitzendt of een borstband. Voor uitzenden zoek je op het horloge naar Sensoren &amp; accessoires, Hartslag via pols, Hartslag uitzenden (de namen verschillen per model).</string>
     <string name="watch_live_search">Zoeken naar sensoren</string>
     <string name="watch_live_searching">Zoeken…</string>
     <string name="watch_live_none">Nog geen sensor gevonden</string>

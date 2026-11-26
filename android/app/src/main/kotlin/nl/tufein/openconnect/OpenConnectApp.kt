@@ -321,14 +321,7 @@ class OpenConnectApp : Application() {
             val apps = AndroidInstalledApps(this)
             val trail = nl.tufein.openconnect.notify.ForwardTrail()
             val batteryChanges = MutableStateFlow(0)
-            AppContainer(
-            SqliteRepository(this),
-            settingsStore,
-            UsbWatchLink(this),
-            BleHeartRateLink(this),
-            folder = SafFolderLink(this),
-            backgroundSync = WorkManagerBackgroundSync(this),
-            garminBle = AndroidGarminBleLink(
+            val garminBle = AndroidGarminBleLink(
                 this,
                 archiveAfterRead = { settingsStore.garminBle.archiveAfterRead },
                 registry = registry,
@@ -344,7 +337,18 @@ class OpenConnectApp : Application() {
                     settingsStore.watchBatteryAt = System.currentTimeMillis()
                     batteryChanges.value++
                 },
+            )
+            AppContainer(
+            SqliteRepository(this),
+            settingsStore,
+            UsbWatchLink(this),
+            nl.tufein.openconnect.watch.CombinedHeartRateLink(
+                BleHeartRateLink(this),
+                nl.tufein.openconnect.watch.GarminHeartRateLink(garminBle),
             ),
+            folder = SafFolderLink(this),
+            backgroundSync = WorkManagerBackgroundSync(this),
+            garminBle = garminBle,
             batteryChanges = batteryChanges,
             bleBackgroundSync = WorkManagerBleBackgroundSync(this),
             nudgeNotifier = AndroidNudgeNotifier(this),

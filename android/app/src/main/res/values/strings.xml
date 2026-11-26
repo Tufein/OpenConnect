@@ -171,7 +171,7 @@
     <string name="watch_fail_files">The watch connected, but it has no GARMIN folder with data.</string>
     <string name="watch_fail_other">Reading the watch stopped: %1$s</string>
     <string name="watch_live_title">Live heart rate</string>
-    <string name="watch_live_body">Shows your heart rate live from a Garmin watch that broadcasts it, or from a chest strap. On the watch, look for Sensors &amp; accessories, Wrist heart rate, Broadcast heart rate (the names differ per model).</string>
+    <string name="watch_live_body">Shows your heart rate live directly from a Garmin watch over Bluetooth, without broadcast mode, or from a Garmin watch that broadcasts it or a chest strap. For broadcast mode, look on the watch for Sensors &amp; accessories, Wrist heart rate, Broadcast heart rate (the names differ per model).</string>
     <string name="watch_live_search">Search for sensors</string>
     <string name="watch_live_searching">Searching…</string>
     <string name="watch_live_none">No sensor found yet</string>

@@ -1,0 +1,1 @@
+Live hartslag kan nu rechtstreeks van je Garmin-horloge via Bluetooth, zonder Broadcast Heart Rate; HRV blijft leeg bij deze bron.

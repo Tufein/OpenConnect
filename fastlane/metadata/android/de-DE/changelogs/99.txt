@@ -1,0 +1,1 @@
+Der Live-Puls kommt jetzt direkt von deiner Garmin-Uhr über Bluetooth, ohne Übertragungsmodus; die HRV bleibt bei dieser Quelle leer.

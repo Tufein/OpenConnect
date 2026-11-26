@@ -67,6 +67,8 @@ class GarminBleSession(
     private val heartbeatMs: Long = HEARTBEAT_MS,
     /** How long the watch gets to answer an announcement (the tests make it short). */
     private val answerWaitMs: Long = GarminNotifications.ANSWER_WAIT_MS,
+    /** Offer Garmin's real-time heart-rate service on this connection (see [startHeartRate]). */
+    private val heartRate: Boolean = false,
 ) {
     private val lock = Any()
     private val cobs = CobsStream()
@@ -92,6 +94,16 @@ class GarminBleSession(
      */
     @Volatile
     var onBatteryReported: (Int) -> Unit = {}
+
+    private val heartRateReady = CompletableFuture<Unit>()
+    private var heartRateHandle: Int? = null
+
+    /** The listener for Garmin's real-time heart-rate service, if one is subscribed. */
+    @Volatile
+    private var heartRateListener: ((bpm: Int, restingBpm: Int?) -> Unit)? = null
+
+    @Volatile
+    private var heartRateEnded: ((String?) -> Unit)? = null
 
     private var gfdiHandle: Int? = null
     private var mlr: MlrChannel? = null
@@ -164,6 +176,52 @@ class GarminBleSession(
         batteryPercent
     }
 
+    /**
+     * Waits until the watch has given a handle for its real-time heart-rate service and the subscription went out.
+     * Only meaningful on a session made with `heartRate = true`.
+     */
+    fun awaitHeartRate(timeoutMs: Long = 5_000) {
+        if (!heartRate) throw GarminBleException(GarminBleException.Reason.REFUSED, "Heart rate is not enabled on this connection")
+        try {
+            heartRateReady.get(timeoutMs, TimeUnit.MILLISECONDS)
+        } catch (e: TimeoutException) {
+            throw GarminBleException(GarminBleException.Reason.TIMEOUT, "The watch did not start its heart-rate service")
+        } catch (e: ExecutionException) {
+            throw (e.cause as? GarminBleException) ?: GarminBleException(GarminBleException.Reason.REFUSED, e.cause?.message ?: "Heart rate was refused")
+        }
+    }
+
+    /**
+     * Subscribes to the watch's own heart-rate stream. Unlike the standard Bluetooth heart-rate service, this works
+     * without "broadcast heart rate" on the watch. It carries beats per minute and, when known, the resting rate;
+     * it has no beat-to-beat intervals, so HRV stays empty.
+     *
+     * Close the result to stop the stream. [onEnded] is told when the session ends; a deliberate stop passes null.
+     */
+    fun startHeartRate(
+        onBpm: (bpm: Int, restingBpm: Int?) -> Unit,
+        onEnded: (String?) -> Unit = {},
+    ): AutoCloseable {
+        if (!heartRate) throw GarminBleException(GarminBleException.Reason.REFUSED, "Heart rate is not enabled on this connection")
+        heartRateListener = onBpm
+        heartRateEnded = onEnded
+        subscribeHeartRate(true)
+        return AutoCloseable {
+            if (heartRateListener === onBpm) {
+                heartRateListener = null
+                heartRateEnded = null
+                subscribeHeartRate(false)
+            }
+        }
+    }
+
+    private fun subscribeHeartRate(on: Boolean) {
+        val handle = synchronized(lock) { heartRateHandle } ?: return
+        if (closed) return
+        pipe.write(byteArrayOf(handle.toByte(), if (on) 1 else 0))
+        log(if (on) "real-time heart rate: subscribed on handle $handle" else "real-time heart rate: stopped on handle $handle")
+    }
+
     fun onNotification(packet: ByteArray) {
         if (closed || packet.isEmpty()) return
         lastHeardMs = now().toEpochMilli()
@@ -173,11 +231,22 @@ class GarminBleSession(
             return
         }
         val handle = packet[0].toInt() and 0xFF
+        val heart = synchronized(lock) { heartRateHandle }
         when {
             handle == 0 -> onManagement(packet)
+            handle == heart -> onHeartRateBytes(packet.copyOfRange(1, packet.size))
             handle == gfdi -> onGfdiBytes(packet.copyOfRange(1, packet.size))
             else -> log("packet for unknown handle $handle")
         }
+    }
+
+    /** Garmin's real-time heart-rate payload: [padding, bpm, resting bpm]; resting is 0 when it is not known. */
+    private fun onHeartRateBytes(payload: ByteArray) {
+        if (payload.size < 3) return
+        val bpm = payload[1].toInt() and 0xFF
+        if (bpm !in 1..250) return
+        val resting = (payload[2].toInt() and 0xFF).takeIf { it in 1..250 }
+        heartRateListener?.invoke(bpm, resting)
     }
 
     /** The phone lost the connection: everything waiting fails. */
@@ -202,7 +271,12 @@ class GarminBleSession(
         heartbeat?.cancel()
         notifier?.close()
         readyFuture.completeExceptionally(error)
+        heartRateReady.completeExceptionally(error)
+        val hrEnded = heartRateEnded
+        heartRateEnded = null
+        heartRateListener = null
         pending?.result?.completeExceptionally(error)
+        hrEnded?.let { callback -> runCatching { callback(if (error.reason == GarminBleException.Reason.CLOSED) null else error.message) } }
         runCatching { onEnded(error) } // a listener that throws must not break the shutdown
     }
 
@@ -216,10 +290,25 @@ class GarminBleSession(
                     mlr?.close()
                     mlr = null
                     gfdiHandle = null
+                    heartRateHandle = null
                 }
                 registerGfdi(useMlr)
             }
             is MultiLink.Management.Registered -> {
+                if (m.service == MultiLink.SERVICE_REALTIME_HR) {
+                    if (m.status != 0) {
+                        log("real-time heart rate refused (status ${m.status})")
+                        heartRateReady.completeExceptionally(
+                            GarminBleException(GarminBleException.Reason.REFUSED, "The watch refused its heart-rate service (status ${m.status})"),
+                        )
+                        return
+                    }
+                    synchronized(lock) { heartRateHandle = m.handle }
+                    log("real-time heart rate on handle ${m.handle}")
+                    heartRateReady.complete(Unit)
+                    if (heartRateListener != null) subscribeHeartRate(true)
+                    return
+                }
                 if (m.service != MultiLink.SERVICE_GFDI) return
                 if (m.status != 0) {
                     log("GFDI registration refused (status ${m.status})")
@@ -244,8 +333,17 @@ class GarminBleSession(
                     }
                 }
                 log("GFDI on handle ${m.handle}${if (m.reliable) " (reliable)" else ""}")
+                registerHeartRate()
             }
             is MultiLink.Management.HandleClosed -> {
+                val heart = synchronized(lock) { m.service == MultiLink.SERVICE_REALTIME_HR && m.handle == heartRateHandle }
+                if (heart) {
+                    synchronized(lock) { heartRateHandle = null }
+                    log("the watch closed its real-time heart rate")
+                    heartRateReady.completeExceptionally(
+                        GarminBleException(GarminBleException.Reason.DISCONNECTED, "The watch closed its heart-rate service"),
+                    )
+                }
                 val ours = synchronized(lock) { m.service == MultiLink.SERVICE_GFDI && m.handle == gfdiHandle }
                 if (ours) {
                     log("the watch closed GFDI; registering again")
@@ -262,6 +360,12 @@ class GarminBleSession(
 
     private fun registerGfdi(reliable: Boolean) {
         pipe.write(MultiLink.register(MultiLink.SERVICE_GFDI, reliable))
+    }
+
+    private fun registerHeartRate() {
+        if (!heartRate) return
+        val already = synchronized(lock) { heartRateHandle }
+        if (already == null) pipe.write(MultiLink.register(MultiLink.SERVICE_REALTIME_HR, reliable = false))
     }
 
     private fun onGfdiBytes(bytes: ByteArray) {

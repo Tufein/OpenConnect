@@ -27,11 +27,13 @@ class GarminBleSessionTest {
         watch: FakeGarminWatch,
         useMlr: Boolean = true,
         firstConnect: Boolean = false,
+        heartRate: Boolean = false,
     ): GarminBleSession {
         watches += watch
         val session = GarminBleSession(
             watch.pipe, phone, scheduler, maxWrite = 20, useMlr = useMlr, firstConnect = firstConnect,
             now = { Instant.parse("2026-11-13T09:00:00Z") }, zone = { ZoneId.of("Europe/Brussels") }, log = { log += it },
+            heartRate = heartRate,
         )
         watch.phone = session
         session.start()
@@ -250,6 +252,31 @@ class GarminBleSessionTest {
         watch.drain()
         assertEquals(64, session.batteryPercent)
         assertTrue(reported.contains(64), "the unsolicited charge reaches the card: $reported")
+        session.close()
+    }
+
+    @Test
+    fun `the watch sends its own heart rate without broadcast mode`() {
+        val watch = FakeGarminWatch(files = emptyMap())
+        val session = connect(watch, heartRate = true)
+        val readings = java.util.concurrent.CopyOnWriteArrayList<Pair<Int, Int?>>()
+        session.awaitReady(5_000)
+        val stream = session.startHeartRate(onBpm = { bpm, resting -> readings += bpm to resting })
+        session.awaitHeartRate(2_000)
+        watch.drain()
+
+        assertTrue(watch.heartRateSubscribed, "the watch got the 0x01 subscription")
+        assertEquals(listOf(80 to 55), readings.toList())
+
+        watch.heartRateLevel = 73
+        watch.heartRateResting = 52
+        watch.sendHeartRate()
+        watch.drain()
+        assertEquals(73 to 52, readings.last())
+
+        stream.close()
+        watch.drain()
+        assertTrue(!watch.heartRateSubscribed, "closing the stream sends 0x00")
         session.close()
     }
 

@@ -171,7 +171,7 @@
     <string name="watch_fail_files">La montre s\'est connectée, mais elle n\'a pas de dossier GARMIN contenant des données.</string>
     <string name="watch_fail_other">La lecture de la montre s\'est arrêtée : %1$s</string>
     <string name="watch_live_title">Fréquence cardiaque en direct</string>
-    <string name="watch_live_body">Affiche votre fréquence cardiaque en direct depuis une montre Garmin qui la diffuse, ou depuis une ceinture pectorale. Sur la montre, cherchez Capteurs et accessoires, Fréquence cardiaque au poignet, Diffuser la fréquence cardiaque (les noms varient selon le modèle).</string>
+    <string name="watch_live_body">Affiche votre fréquence cardiaque en direct directement depuis une montre Garmin via Bluetooth, sans mode diffusion, ou depuis une montre Garmin qui la diffuse ou une ceinture pectorale. Pour la diffusion, cherchez sur la montre Capteurs et accessoires, Fréquence cardiaque au poignet, Diffuser la fréquence cardiaque (les noms varient selon le modèle).</string>
     <string name="watch_live_search">Rechercher des capteurs</string>
     <string name="watch_live_searching">Recherche…</string>
     <string name="watch_live_none">Aucun capteur trouvé pour l\'instant</string>

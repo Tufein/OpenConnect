@@ -171,7 +171,7 @@
     <string name="watch_fail_files">Die Uhr wurde verbunden, aber sie hat keinen GARMIN-Ordner mit Daten.</string>
     <string name="watch_fail_other">Auslesen der Uhr abgebrochen: %1$s</string>
     <string name="watch_live_title">Live-Puls</string>
-    <string name="watch_live_body">Zeigt deinen Puls live von einer Garmin-Uhr, die ihn überträgt, oder von einem Brustgurt. Suche auf der Uhr nach Sensoren &amp; Zubehör, Handgelenk-Herzfrequenz, Herzfrequenz übertragen (die Bezeichnungen unterscheiden sich je nach Modell).</string>
+    <string name="watch_live_body">Zeigt deinen Puls live direkt von einer Garmin-Uhr über Bluetooth, ohne Übertragungsmodus, oder von einer Garmin-Uhr, die ihn überträgt, oder von einem Brustgurt. Für den Übertragungsmodus suche auf der Uhr nach Sensoren &amp; Zubehör, Handgelenk-Herzfrequenz, Herzfrequenz übertragen (die Bezeichnungen unterscheiden sich je nach Modell).</string>
     <string name="watch_live_search">Nach Sensoren suchen</string>
     <string name="watch_live_searching">Suche läuft…</string>
     <string name="watch_live_none">Noch kein Sensor gefunden</string>

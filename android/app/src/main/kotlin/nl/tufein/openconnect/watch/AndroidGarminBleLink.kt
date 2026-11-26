@@ -168,12 +168,47 @@ class AndroidGarminBleLink(
         }
     }
 
+    override suspend fun openHeartRate(
+        watch: GarminBleWatch,
+        onBpm: (bpm: Int, restingBpm: Int?) -> Unit,
+        onClosed: (String?) -> Unit,
+        onStep: (GarminStep) -> Unit,
+    ): AutoCloseable = withContext(Dispatchers.IO) {
+        // Notifications already keep a connection open: use it instead of asking the watch for a second phone.
+        registry.sharedFor(watch.address)?.let { live ->
+            return@withContext live.startHeartRate(onBpm, onClosed)
+        }
+        val sync = registry.beginSync()
+        val link = try {
+            establish(watch, onStep, notifications = null, log = { diagnostics("heart rate: $it") }, heartRate = true)
+        } catch (e: Throwable) {
+            sync.close()
+            throw e
+        }
+        try {
+            link.session.awaitHeartRate(5_000)
+            val stream = link.session.startHeartRate(onBpm, onClosed)
+            AutoCloseable {
+                stream.close()
+                link.shutdown()
+                sync.close()
+            }
+        } catch (e: Throwable) {
+            link.shutdown()
+            sync.close()
+            throw when (e) {
+                is WatchLinkException -> e
+                else -> WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, e.message ?: "The watch did not start its heart rate")
+            }
+        }
+    }
+
     override suspend fun openNotifications(
         watch: GarminBleWatch,
         listener: NotifyListener,
         onStep: (GarminStep) -> Unit,
     ): WatchNotifyConnection = withContext(Dispatchers.IO) {
-        val link = establish(watch, onStep, notificationOptions(), log = listener::onLog)
+        val link = establish(watch, onStep, notificationOptions(), log = listener::onLog, heartRate = true)
         val notifier = link.session.notifier
         if (notifier == null) {
             link.shutdown()
@@ -199,6 +234,7 @@ class AndroidGarminBleLink(
                 usable = { !ended.get() },
                 finishSync = { link.session.finishSync() },
                 refreshBattery = { askBattery(link.session) },
+                startHeartRate = { onBpm, onEnded -> link.session.startHeartRate(onBpm, onEnded) },
             ),
         )
         link.session.onEnded = { error ->
@@ -251,6 +287,7 @@ class AndroidGarminBleLink(
         onStep: (GarminStep) -> Unit,
         notifications: NotificationOptions?,
         log: (String) -> Unit,
+        heartRate: Boolean = false,
     ): Established {
         val adapter = adapter?.takeIf { it.isEnabled }
             ?: throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, "Bluetooth is off")
@@ -287,6 +324,7 @@ class AndroidGarminBleLink(
             firstConnect = firstConnect,
             log = log,
             notifications = notifications,
+            heartRate = heartRate,
         )
         // The watch pushes later charges itself; every one of them must reach the battery card, not only the answer
         // to the request we sent during the handshake. Keep the Bluetooth callback thread free of preference writes.

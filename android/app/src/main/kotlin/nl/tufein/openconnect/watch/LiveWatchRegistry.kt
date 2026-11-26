@@ -21,6 +21,9 @@ class LiveWatchRegistry {
         val finishSync: () -> Unit,
         /** Asks the open connection for a fresh charge, so a sync through it does not leave the card on an old value. */
         val refreshBattery: () -> Unit = {},
+        /** Starts Garmin's real-time heart rate over this open connection; close the result to stop it. */
+        val startHeartRate: (onBpm: (Int, Int?) -> Unit, onEnded: (String?) -> Unit) -> AutoCloseable =
+            { _, _ -> AutoCloseable { } },
     )
 
     @Volatile private var live: Live? = null

@@ -67,6 +67,11 @@ class FakeGarminWatch(
     private var detailsCrc = 0
 
     private var handle = 0
+    private var heartRateHandle = 0
+    var heartRateSubscribed = false
+        private set
+    var heartRateLevel = 80
+    var heartRateResting = 55
     private var mlr: MlrChannel? = null
     private val cobs = CobsStream()
     private var serving: ByteArray? = null
@@ -108,6 +113,10 @@ class FakeGarminWatch(
         when {
             channel != null && first and 0x80 != 0 -> channel.onPacket(packet)
             first == 0 -> management(packet)
+            heartRateHandle != 0 && first == heartRateHandle -> {
+                heartRateSubscribed = packet.size > 1 && packet[1].toInt() == 1
+                if (heartRateSubscribed) sendHeartRate()
+            }
             first == handle -> gfdiBytes(packet.copyOfRange(1, packet.size))
         }
     }
@@ -127,6 +136,11 @@ class FakeGarminWatch(
                     toPhone(managementAnswer(1, client) { putShort(service.toShort()); put(1) })
                     return
                 }
+                if (service == MultiLink.SERVICE_REALTIME_HR) {
+                    heartRateHandle = 0x02
+                    toPhone(managementAnswer(1, client) { putShort(service.toShort()); put(0); put(heartRateHandle.toByte()); put(0) })
+                    return
+                }
                 val useReliable = wantsReliable && reliable
                 handle = if (useReliable) 0x81 else 0x01
                 mlr = if (useReliable) MlrChannel(handle, 20, ::toPhone, ::gfdiBytes, scheduler) else null
@@ -143,6 +157,13 @@ class FakeGarminWatch(
         buf.putLong(client)
         buf.body()
         return buf.array().copyOf(buf.position())
+    }
+
+    /** One real-time heart-rate sample, as the watch sends it on its service handle. */
+    fun sendHeartRate(bpm: Int = heartRateLevel, resting: Int = heartRateResting) {
+        val routing = heartRateHandle
+        if (routing == 0) return
+        toPhone(byteArrayOf(routing.toByte(), 0, bpm.toByte(), resting.toByte()))
     }
 
     private fun send(message: GfdiMessage) {

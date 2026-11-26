@@ -86,6 +86,18 @@ interface GarminBleLink {
         onStep: (GarminStep) -> Unit = {},
     ): nl.tufein.openconnect.notify.WatchNotifyConnection =
         throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, "Notifications are not available")
+
+    /**
+     * Streams the watch's own heart rate over Garmin's Bluetooth connection, without the watch's "broadcast heart
+     * rate" mode. The service gives beats per minute and sometimes a resting rate, but no beat-to-beat intervals.
+     * If a notification connection is already open, the stream goes over that same connection.
+     */
+    suspend fun openHeartRate(
+        watch: GarminBleWatch,
+        onBpm: (bpm: Int, restingBpm: Int?) -> Unit,
+        onClosed: (String?) -> Unit = {},
+        onStep: (GarminStep) -> Unit = {},
+    ): AutoCloseable = throw WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, "Heart rate over the watch is not available")
 }
 
 /**

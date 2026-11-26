@@ -32,6 +32,9 @@ object MultiLink {
 
     const val SERVICE_GFDI = 1
 
+    /** Garmin's real-time heart-rate service: subscribe by writing 0x01 to the handle it gets. */
+    const val SERVICE_REALTIME_HR = 6
+
     // request and response types on handle 0
     const val REGISTER_REQ = 0
     const val REGISTER_RESP = 1

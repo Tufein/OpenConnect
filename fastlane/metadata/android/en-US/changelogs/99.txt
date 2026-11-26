@@ -1,0 +1,1 @@
+Live heart rate can now come straight from your Garmin watch over Bluetooth, without Broadcast Heart Rate; HRV stays empty for this source.
