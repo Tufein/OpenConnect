@@ -4,7 +4,7 @@ Waar Cercis staat en hoe het verder groeit. Opnieuw geschreven op 2026-11-20, na
 v1.2.0) met een **thematische koerswissel** (paragraaf 4b, "Je geschiedenis is van jou") en op **2026-11-24 (na
 v1.11.0)** met een nieuwe **koers naar 2.0** in paragraaf 6b: geen lijst met losse ideeën, maar vier fasen en vijf
 poorten. Op **2026-11-25 (na v1.13.0)** is de winkelvariant als code toegevoegd, zonder publicatie; in **v1.13.1**
-kreeg de app de weergavenaam **Cercis**, terwijl pakketnaam, repository en updater `openconnect` bleven. Daarna kwamen **v1.13.2** (strengere release-controles en een APK-budget), **v1.13.3** (Compose 1.13 en stabielere schermtests) en **v1.13.4** (ringen op Gezondheid en een horlogebatterij die meteen bijwerkt). 1.0 is uitgebracht; dit plan zegt wat de volgorde is. Alles is **test-first** gebouwd: eerst de test, dan de
+kreeg de app de weergavenaam **Cercis**, terwijl pakketnaam, repository en updater `openconnect` bleven. Daarna kwamen **v1.13.2** (strengere release-controles en een APK-budget), **v1.13.3** (Compose 1.13 en stabielere schermtests), **v1.13.4** (ringen op Gezondheid en een horlogebatterij die meteen bijwerkt) en **v1.13.5** (batterijberichten die het horloge zelf stuurt, een vraag bij de start van de sync en een korte wachttijd na `SYNC_COMPLETE`). 1.0 is uitgebracht; dit plan zegt wat de volgorde is. Alles is **test-first** gebouwd: eerst de test, dan de
 code, en niets gaat uit zonder dat CI groen is. Wat zonder horloge, ring of telefoon niet te controleren is, staat er
 eerlijk bij.
 
@@ -13,7 +13,7 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
 
 **Legenda:** ✅ klaar · 🔜 volgende · 🧪 gebouwd en getest met nepgegevens, nog nooit op echte hardware of tegen de echte dienst · ❓ heeft iets nodig dat alleen de eigenaar kan geven · **S/M/L** = klein (een sessie), middel, groot (meerdere releases)
 
-## 1. Waar we staan (v1.13.4, 2026-11-25)
+## 1. Waar we staan (v1.13.5, 2026-11-26)
 
 - **13 minorreleases sinds 1.0** (v1.1.0 tot en met v1.13.0, met tientallen kandidaten en patchreleases daartussen;
   v1.13.1 is de naamswijziging), ruim 1.400 tests
@@ -63,6 +63,10 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   zijn waarde tegen TalkBack, past op 320 dp en laat bij een ontbrekende score een lege ring met streepje zien. De
   horlogebatterij op de batterijkaart wordt nu meteen na het batterijantwoord gelezen, ook als dat antwoord pas na de
   syncstatus binnenkomt.
+- **Sinds v1.13.5:** de batterijkaart accepteert ook ladingberichten die het horloge zelf stuurt, vraagt bij de start van
+  elke sync opnieuw en houdt de verbinding na `SYNC_COMPLETE` maximaal vijf seconden open voor een laat antwoord. Een
+  open meldingenverbinding wordt elke vijftien minuten gevraagd. Gericht op de Fenix 8 51mm, maar nog niet op echte
+  hardware bevestigd; het Watch-logboek is de volgende stap als het daar nog achterloopt.
 - **Zwak voor het verdere verhaal:**
   1. Op één bron na (de Garmin-account, die live is geprobeerd) is **niets op een echte telefoon, horloge of ring geproefd**. Zie het register in paragraaf 7; M9 is dat spoor.
   2. Of de meldingen op de fenix 8 nu bij elk bericht trillen, wacht op een nieuw logboek; v1.0.1 pakte de meest waarschijnlijke oorzaak aan.
@@ -363,7 +367,7 @@ naast of over elkaar installeren is niet op een toestel geprobeerd.
 |------|----------|----------|------|----------|
 | **1. Zichtbaar en eigen** ✅ | De app voelt als één rustig geheel en jij bepaalt hoe hij eruitziet: editorial-look, signaalkleuren, ringen, foto, thema's, iconen en een voorblad dat je zelf samenstelt | v1.9.0 – v1.9.3 | M | — |
 | **2. Het denkt mee** ✅ | Het schema past zich aan als je week anders liep: één voorstel met Toepassen/Niet nu; de coach bespreekt alleen dat voorstel en verandert niets | v1.10.0 | L | niets |
-| **3. Bereik en uitleg** | Duits en Frans, één pagina *Wat verlaat je telefoon* per bron, ringen op Gezondheid, en een winkelversie die naast de GitHub-versie kan staan | v1.11.0, v1.12.0, v1.13.0, v1.13.1, v1.13.2, v1.13.3, v1.13.4, v1.15.0 | M | juridische naamcontrole, account/testers, echte schermafbeeldingen en verklaringen voor publicatie |
+| **3. Bereik en uitleg** | Duits en Frans, één pagina *Wat verlaat je telefoon* per bron, ringen op Gezondheid, en een winkelversie die naast de GitHub-versie kan staan | v1.11.0, v1.12.0, v1.13.0, v1.13.1, v1.13.2, v1.13.3, v1.13.4, v1.13.5, v1.15.0 | M | juridische naamcontrole, account/testers, echte schermafbeeldingen en verklaringen voor publicatie |
 | **4. Geschiedenis en analyse** | Garmin's protobuf-sync en de rest van de exportvelden; Training Effect, hersteltijd en Performance Condition uit je eigen FIT | v1.14.0 of later | L ❓ | een echte Garmin-export en één fenix 8-opname van Stefan |
 | **Sluiten** | Alle vijf poorten groen; geen nieuwe functie, alleen bewijs en reparaties | v2.0.0 | XL | de vier fasen |
 
@@ -383,6 +387,7 @@ echte hardware daarom vraagt. **S/M/L/XL** zoals in de legenda.
 | **v1.13.2** ✅ | 3 | Strengere release-controles: de emulator-rooktest houdt een release weer tegen en de APK heeft een budget van 13 MiB | S |
 | **v1.13.3** ✅ | 3 | Compose 1.13 (BOM 2026.11.01, compileSdk 37.1) en schermtests op de v2-regel, zodat ze niet meer wisselend vastlopen | S |
 | **v1.13.4** ✅ | 3 | Vier ringen op Gezondheid in plaats van losse balken, met dezelfde vorm in elke stijl en tests voor 320 dp, TalkBack en ontbrekende scores; de horlogebatterij leest meteen na het batterijantwoord in plaats van te wachten op de syncstatus | S |
+| **v1.13.5** ✅ | 3 | Horlogebatterij: zelfgestuurde ladingberichten, een nieuwe vraag bij de start van de sync, vijf seconden respijt na `SYNC_COMPLETE` en periodiek verversen op een open meldingenverbinding | S |
 | **v1.14.0** | 4 | Training Effect, hersteltijd en Performance Condition uit FIT, met een register dat zegt wanneer het op echte data is bevestigd | L ❓ |
 | **v1.15.0** | 3 | Laatste loodjes: winkelpublicatie, schermafbeeldingen van een echte telefoon, installatiegids en de juridische naamcontrole | S/M |
 | **v2.0.0** | Slot | De vijf poorten hierboven groen; geen nieuwe functie | XL |
@@ -522,6 +527,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.13.2 | Strengere release-controles: de emulator-rooktest houdt een release weer tegen en de APK heeft een budget van 13 MiB |
 | v1.13.3 | Compose 1.13 (BOM 2026.11.01, compileSdk 37.1) en schermtests op de v2-regel, zodat ze niet meer wisselend vastlopen |
 | v1.13.4 | Vier ringen op Gezondheid in plaats van losse balken, met dezelfde vorm in elke stijl en tests voor 320 dp, TalkBack en ontbrekende scores; de horlogebatterij leest meteen na het batterijantwoord in plaats van te wachten op de syncstatus |
+| v1.13.5 | Horlogebatterij: zelfgestuurde ladingberichten worden bewaard, bij de start van een sync wordt opnieuw gevraagd, de verbinding blijft na `SYNC_COMPLETE` vijf seconden open voor een laat antwoord en een open meldingenverbinding ververst elke vijftien minuten; gericht op de Fenix 8 51mm, nog niet op echte hardware bevestigd |
 | v1.11.0 | Vier talen: Engels, Nederlands, Duits en Frans, met een taalkeuze los van de rapporttaal, lokale datums/getallen, Duitse/Franse widget- en meldingsteksten, een opgeruimde Oura-tab en een voorblad dat de dag volgt; de nieuwe talen zijn machine-draft zonder native review |
 
 ## 9. Hoe releases werken

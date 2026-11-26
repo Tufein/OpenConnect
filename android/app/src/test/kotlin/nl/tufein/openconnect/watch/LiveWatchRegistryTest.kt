@@ -18,8 +18,12 @@ class LiveWatchRegistryTest {
         override fun download(index: Int) = ByteArray(0)
     }
 
-    private fun live(address: String = "AA:BB:CC:DD:EE:FF", usable: () -> Boolean = { true }, finish: () -> Unit = {}) =
-        LiveWatchRegistry.Live(address, "fenix 8", files, usable, finish)
+    private fun live(
+        address: String = "AA:BB:CC:DD:EE:FF",
+        usable: () -> Boolean = { true },
+        finish: () -> Unit = {},
+        refresh: () -> Unit = {},
+    ) = LiveWatchRegistry.Live(address, "fenix 8", files, usable, finish, refresh)
 
     @Test
     fun `nothing is shared until a connection is published`() {
@@ -60,6 +64,15 @@ class LiveWatchRegistryTest {
         val registry = LiveWatchRegistry()
         registry.publish(live()).close()
         assertNull(registry.sharedFor("AA:BB:CC:DD:EE:FF"))
+    }
+
+    @Test
+    fun `a sync through the shared connection can ask for a fresh charge`() {
+        var asked = 0
+        val registry = LiveWatchRegistry()
+        registry.publish(live(refresh = { asked++ }))
+        registry.sharedFor("AA:BB:CC:DD:EE:FF")?.refreshBattery()
+        assertEquals(1, asked)
     }
 
     @Test

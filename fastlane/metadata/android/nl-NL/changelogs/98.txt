@@ -1,0 +1,1 @@
+De batterijkaart van het horloge accepteert nu ladingberichten die het horloge zelf stuurt, vraagt opnieuw bij de start van een sync en wacht na de sync op een laat antwoord.

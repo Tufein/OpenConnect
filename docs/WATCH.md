@@ -43,11 +43,14 @@ From the FIT files in the watch's `GARMIN` folder:
 Not read yet: the `Metrics` folder (VO2 max, training status, recovery time), `Settings`, `Workouts` and
 `Courses`. Achievements and badges are not stored on the watch in a form we can use.
 
-Since v1.8.0 the Watch tab also shows the watch's **charge** (since v1.8.1 the same card sits high on Home): right after the Bluetooth handshake the app sends Garmin's
-battery question once (the same protobuf request Gadgetbridge sends on the device-status service) and keeps the answer
-with the time it arrived. A watch that does not answer within two seconds is not asked again for that connection and
-simply shows a dash; nothing else waits on it. **This has not been seen on a real watch yet** — the protobuf request
-and the parsing of the answer are covered by tests with hand-built bytes.
+Since v1.8.0 the Watch tab also shows the watch's **charge** (since v1.8.1 the same card sits high on Home): the app
+sends Garmin's battery question on the device-status service (the same protobuf request Gadgetbridge sends) after the
+Bluetooth handshake and keeps the answer with the time it arrived. Since v1.13.5 it also accepts the charge reports the
+watch sends by itself, asks again when a sync starts, waits up to five seconds after `SYNC_COMPLETE` for a late answer,
+and asks every fifteen minutes while a notification connection stays open. A watch that never answers simply shows a
+dash; nothing else waits on it. **This has still not been confirmed on a real Fenix 8 51mm** — the protobuf request and
+the parsing are covered by tests with hand-built bytes and a fake watch, and the Watch log is the next step if a real
+watch lags.
 
 ## How it works in the code
 

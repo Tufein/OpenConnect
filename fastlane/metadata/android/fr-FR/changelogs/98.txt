@@ -1,0 +1,1 @@
+La carte de batterie de la montre accepte désormais les mises à jour qu'elle envoie elle-même, redemande au début d'une synchro et attend une réponse tardive après la synchro.

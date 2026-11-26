@@ -57,6 +57,9 @@ class FakeGarminWatch(
     /** The names of apps the watch asked for, package to name. */
     val appNames = java.util.concurrent.ConcurrentHashMap<String, String>()
 
+    /** The charge the fake watch reports when the phone asks; the test can change it before a refresh. */
+    @Volatile var batteryLevel: Int = 80
+
     /** The payload of the phone's answer to the watch's last notification subscription. */
     @Volatile var subscriptionReply: ByteArray? = null
     private val details = java.io.ByteArrayOutputStream()
@@ -196,6 +199,7 @@ class FakeGarminWatch(
                 }
             }
             GfdiType.CONFIGURATION -> if (notifications) send(GfdiMessage(GfdiType.NOTIFICATION_SUBSCRIPTION, byteArrayOf(1, 0)))
+            GfdiType.PROTOBUF_REQUEST -> onProtobufRequest(message)
             GfdiType.NOTIFICATION_UPDATE -> onNotificationUpdate(message.payload)
             GfdiType.NOTIFICATION_DATA -> onNotificationData(message)
             GfdiType.DOWNLOAD_REQUEST -> {
@@ -216,6 +220,22 @@ class FakeGarminWatch(
             }
         }
     }
+
+    /** Sends a charge the phone did not ask for, as a Fenix 8 does after "enable battery updates". */
+    fun reportBattery(level: Int, requestId: Int = 0xBEEF) = thread.execute {
+        send(GarminProtobuf.response(requestId and 0xFFFF, batterySmart(level)))
+    }
+
+    /** Answers the battery question; other protobuf questions are left to the test that sent them. */
+    private fun onProtobufRequest(message: GfdiMessage) {
+        val chunk = runCatching { GarminProtobuf.parse(message) }.getOrNull() ?: return
+        if (!chunk.data.contentEquals(GarminProtobuf.BATTERY_QUESTION)) return
+        send(GarminProtobuf.response(chunk.requestId, batterySmart(batteryLevel)))
+    }
+
+    /** Smart.device_status_service { remote_device_battery_status_response { battery_level: N } } */
+    private fun batterySmart(level: Int): ByteArray =
+        byteArrayOf(0x42, 0x04, 0x1A, 0x02, 0x10, level.coerceIn(0, 100).toByte())
 
     /** The phone announced a notification: note it, acknowledge it and (like a real watch) ask what it says. */
     private fun onNotificationUpdate(payload: ByteArray) {

@@ -1,0 +1,1 @@
+Die Batteriekarte der Uhr übernimmt jetzt Ladeupdates, die die Uhr selbst sendet, fragt beim Sync-Start erneut und wartet nach dem Sync auf eine späte Antwort.

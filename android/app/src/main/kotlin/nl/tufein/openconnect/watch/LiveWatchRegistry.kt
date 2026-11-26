@@ -19,6 +19,8 @@ class LiveWatchRegistry {
         val usable: () -> Boolean,
         /** Tells the watch a sync is over. */
         val finishSync: () -> Unit,
+        /** Asks the open connection for a fresh charge, so a sync through it does not leave the card on an old value. */
+        val refreshBattery: () -> Unit = {},
     )
 
     @Volatile private var live: Live? = null

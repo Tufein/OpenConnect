@@ -80,6 +80,19 @@ class GarminBleSession(
     var batteryPercent: Int? = null
         private set
 
+    /** Wall-clock time of the latest charge the watch reported, including its own updates. */
+    @Volatile
+    var batteryReportedAt: Long = 0L
+        private set
+
+    /**
+     * Called with every charge the watch reports, including updates it sends by itself after the first answer. The
+     * future-based [awaitBattery] only covers answers to our own request, so this is how a long-lived notification
+     * connection keeps the battery card current.
+     */
+    @Volatile
+    var onBatteryReported: (Int) -> Unit = {}
+
     private var gfdiHandle: Int? = null
     private var mlr: MlrChannel? = null
     private var triedPlain = false
@@ -354,18 +367,26 @@ class GarminBleSession(
     private fun onProtobuf(message: GfdiMessage) {
         val chunk = GarminProtobuf.parse(message)
         val asked = synchronized(lock) { batteryRequestId }
-        if (message.type == GfdiType.PROTOBUF_RESPONSE && asked != null && chunk.requestId == asked) {
-            // our own answer: confirm it as kept, and take the level when this is the last piece
+        if (message.type == GfdiType.PROTOBUF_RESPONSE) {
             val level = if (chunk.last) GarminProtobuf.batteryLevel(chunk.data) else null
-            send(GarminProtobuf.accepted(message.type, chunk))
+            // Garmin sends fresh charges on its own too ("enable battery updates" in Gadgetbridge). That response
+            // does not carry our request id, so accepting only our own id made the card miss every later update.
             if (level != null) {
+                synchronized(lock) { if (batteryRequestId == chunk.requestId) batteryRequestId = null }
+                send(GarminProtobuf.accepted(message.type, chunk))
                 batteryPercent = level
+                batteryReportedAt = System.currentTimeMillis()
+                onBatteryReported(level)
                 batteryFuture.complete(level)
                 log("watch battery: $level%")
-            } else if (chunk.last) {
-                log("watch battery: no level in the answer")
+                return
             }
-            return
+            if (asked != null && chunk.requestId == asked) {
+                // our own answer without a level: confirm it as kept, as before
+                send(GarminProtobuf.accepted(message.type, chunk))
+                if (chunk.last) log("watch battery: no level in the answer")
+                return
+            }
         }
         val reply = if (message.type == GfdiType.PROTOBUF_REQUEST && chunk.offset == 0 && chunk.last) GarminProtobuf.replyTo(chunk.data) else null
         if (reply != null) {

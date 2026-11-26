@@ -1,0 +1,1 @@
+The watch's battery card now accepts charge updates the watch sends by itself, asks again when a sync starts, and waits for a late answer after the sync.

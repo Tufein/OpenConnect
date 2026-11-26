@@ -75,11 +75,14 @@ class AndroidGarminBleLink(
         private const val CONNECT_TIMEOUT_S = 30L
         private const val HANDSHAKE_TIMEOUT_MS = 30_000L
 
-        /** How long the watch gets to answer the battery question before the sync goes on without it. */
-        private const val BATTERY_WAIT_MS = 2_000L
-
         /** A second question after this pause, because a Garmin can settle on a percent higher just after connecting. */
         private const val SECOND_BATTERY_ASK_MS = 2_000L
+
+        /** A notification connection stays up all day; ask again now and then so its battery card does not fossilise. */
+        private const val BATTERY_REFRESH_MS = 15 * 60_000L
+
+        /** How long a sync waits after SYNC_COMPLETE for a battery answer the watch had not sent during the sync. */
+        private const val BATTERY_GRACE_MS = 5_000L
 
         /** A write Android has not confirmed after this long is given up on; the link's own resending covers what was lost. */
         private const val WRITE_STUCK_MS = 4_000L
@@ -134,6 +137,9 @@ class AndroidGarminBleLink(
     override suspend fun open(watch: GarminBleWatch, onStep: (GarminStep) -> Unit): OpenedWatch = withContext(Dispatchers.IO) {
         // Notifications are being forwarded: the watch is connected to us already, so read through that connection.
         registry.sharedFor(watch.address)?.let { live ->
+            // The connection is already up for notifications, so establish() did not ask the watch again. Ask now: the
+            // card otherwise keeps the charge from the day the notification connection opened.
+            live.refreshBattery()
             return@withContext OpenedWatch(GarminBleWatchSource(live.files, live.name, archiveAfterRead())) {
                 runCatching { live.finishSync() } // "sync complete", but the link stays: notifications still need it
             }
@@ -145,8 +151,17 @@ class AndroidGarminBleLink(
             sync.close()
             throw e
         }
+        // Gadgetbridge asks again when a sync starts: Garmin may only settle its gauge at that boundary.
+        val batteryBeforeSync = link.session.batteryReportedAt
+        askBattery(link.session)
         OpenedWatch(GarminBleWatchSource(link.session.asFileAccess(), link.name, archiveAfterRead())) {
             runCatching { link.session.finishSync() }
+            // The answer can come just after SYNC_COMPLETE. Do not close the link before it had a chance to arrive;
+            // a fresh answer during the sync means there is nothing to wait for.
+            if (link.session.batteryReportedAt == batteryBeforeSync) {
+                askBattery(link.session)
+                runCatching { link.session.awaitBattery(BATTERY_GRACE_MS) }
+            }
             Thread.sleep(300) // let "sync complete" leave before the link goes
             link.shutdown()
             sync.close()
@@ -168,6 +183,14 @@ class AndroidGarminBleLink(
         notifier.onChange = listener::onStatus
         notifier.onUndelivered = listener::onUndelivered
         val ended = java.util.concurrent.atomic.AtomicBoolean(false)
+        val batteryHandler = Handler(Looper.getMainLooper())
+        val periodicBattery = object : Runnable {
+            override fun run() {
+                if (ended.get() || link.session.isEnded) return
+                askBattery(link.session)
+                batteryHandler.postDelayed(this, BATTERY_REFRESH_MS)
+            }
+        }
         val published = registry.publish(
             LiveWatchRegistry.Live(
                 address = watch.address,
@@ -175,14 +198,17 @@ class AndroidGarminBleLink(
                 files = link.session.asFileAccess(),
                 usable = { !ended.get() },
                 finishSync = { link.session.finishSync() },
+                refreshBattery = { askBattery(link.session) },
             ),
         )
         link.session.onEnded = { error ->
             ended.set(true)
+            batteryHandler.removeCallbacks(periodicBattery)
             published.close()
             // Closing it ourselves is not news; a lost link is.
             if (error.reason != GarminBleException.Reason.CLOSED) listener.onLost(error.message)
         }
+        batteryHandler.postDelayed(periodicBattery, BATTERY_REFRESH_MS)
         if (link.session.isEnded) { // it ended before the callback was in place
             ended.set(true)
             published.close()
@@ -198,6 +224,7 @@ class AndroidGarminBleLink(
 
             override fun close() {
                 ended.set(true)
+                batteryHandler.removeCallbacks(periodicBattery)
                 published.close()
                 link.shutdown()
             }
@@ -261,6 +288,9 @@ class AndroidGarminBleLink(
             log = log,
             notifications = notifications,
         )
+        // The watch pushes later charges itself; every one of them must reach the battery card, not only the answer
+        // to the request we sent during the handshake. Keep the Bluetooth callback thread free of preference writes.
+        session.onBatteryReported = { level -> CompletableFuture.runAsync { onBattery(level) } }
         connection.onNotification = session::onNotification
         connection.onLost = { session.onDisconnected() }
         try {
@@ -271,14 +301,10 @@ class AndroidGarminBleLink(
             session.start()
             val info = session.awaitReady(HANDSHAKE_TIMEOUT_MS)
             log("handshake done with ${info.deviceName} ${info.deviceModel}")
-            // the charge comes a moment later; a watch that stays quiet must not hold up the sync
-            CompletableFuture.runAsync { session.awaitBattery(BATTERY_WAIT_MS)?.let(onBattery) }
+            // The charge comes a moment later through onBatteryReported; a watch that stays quiet must not hold up the sync.
             // Ask once more while the sync runs: Garmin settles its gauge just after connecting, and the first answer can
             // be a percent lower than the watch's own display. The card keeps the newest answer.
-            Handler(Looper.getMainLooper()).postDelayed(
-                { CompletableFuture.runAsync { session.refreshBattery(); session.awaitBattery(BATTERY_WAIT_MS)?.let(onBattery) } },
-                SECOND_BATTERY_ASK_MS,
-            )
+            Handler(Looper.getMainLooper()).postDelayed({ askBattery(session) }, SECOND_BATTERY_ASK_MS)
             // the name the watch gives itself, else the model its product number stands for, else what the scan showed
             return Established(session, connection, scheduler, info.nameOr(watch.name))
         } catch (e: Exception) {
@@ -293,6 +319,11 @@ class AndroidGarminBleLink(
                 else -> WatchLinkException(WatchLinkException.Reason.CANNOT_OPEN, e.message)
             }
         }
+    }
+
+    /** Asks a ready session for its charge; the answer arrives through [GarminBleSession.onBatteryReported]. */
+    private fun askBattery(session: GarminBleSession) {
+        runCatching { session.refreshBattery() }
     }
 
     private fun bondText(state: Int) = when (state) {

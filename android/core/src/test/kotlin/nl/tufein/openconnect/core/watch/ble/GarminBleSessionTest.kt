@@ -214,6 +214,46 @@ class GarminBleSessionTest {
     }
 
     @Test
+    fun `the battery is asked at the handshake and a refresh takes the newer answer`() {
+        val watch = FakeGarminWatch(files = emptyMap())
+        val session = connect(watch)
+        val reported = java.util.concurrent.CopyOnWriteArrayList<Int>()
+        session.onBatteryReported = { reported += it }
+        session.awaitReady(5_000)
+        assertEquals(80, session.awaitBattery(2_000))
+        watch.drain()
+        val firstRequests = watch.fromPhone.count { it.type == GfdiType.PROTOBUF_REQUEST }
+        assertTrue(firstRequests >= 1, "the watch was asked for its charge")
+
+        watch.batteryLevel = 57
+        session.refreshBattery()
+        assertEquals(57, session.awaitBattery(2_000))
+        watch.drain()
+        assertTrue(
+            watch.fromPhone.count { it.type == GfdiType.PROTOBUF_REQUEST } > firstRequests,
+            "a refresh asks again instead of reusing the first answer",
+        )
+        assertTrue(reported.contains(57), "every answer reaches the card: $reported")
+        session.close()
+    }
+
+    @Test
+    fun `a charge the watch sends by itself is kept without waiting for a request`() {
+        val watch = FakeGarminWatch(files = emptyMap())
+        val session = connect(watch)
+        val reported = java.util.concurrent.CopyOnWriteArrayList<Int>()
+        session.onBatteryReported = { reported += it }
+        session.awaitReady(5_000)
+        watch.drain()
+
+        watch.reportBattery(64, requestId = 4242)
+        watch.drain()
+        assertEquals(64, session.batteryPercent)
+        assertTrue(reported.contains(64), "the unsolicited charge reaches the card: $reported")
+        session.close()
+    }
+
+    @Test
     fun `download before the handshake is refused`() {
         val session = GarminBleSession({ }, phone, scheduler)
         assertEquals(GarminBleException.Reason.NOT_READY, assertFailsWith<GarminBleException> { session.download(0) }.reason)
