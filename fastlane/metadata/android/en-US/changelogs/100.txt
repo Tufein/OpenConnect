@@ -1,0 +1,1 @@
+The Garmin live heart-rate stream now starts after the watch configuration; without this fix a Fenix 8 showed no beats.

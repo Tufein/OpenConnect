@@ -1,0 +1,1 @@
+Der Live-Puls der Garmin-Uhr startet jetzt erst nach der Konfiguration der Uhr; ohne diesen Fix zeigte eine Fenix 8 keine Werte.

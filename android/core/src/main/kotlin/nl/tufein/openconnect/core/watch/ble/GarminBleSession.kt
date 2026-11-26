@@ -333,7 +333,8 @@ class GarminBleSession(
                     }
                 }
                 log("GFDI on handle ${m.handle}${if (m.reliable) " (reliable)" else ""}")
-                registerHeartRate()
+                // The real-time service is registered at the end of the handshake, not here: a fenix 8 ignores
+                // service registrations that arrive before it has sent its configuration.
             }
             is MultiLink.Management.HandleClosed -> {
                 val heart = synchronized(lock) { m.service == MultiLink.SERVICE_REALTIME_HR && m.handle == heartRateHandle }
@@ -585,6 +586,8 @@ class GarminBleSession(
             scheduleHeartbeat()
         }
         readyFuture.complete(device ?: GarminDeviceInfo(0, 0, 0, 0, 0, "", "Garmin", ""))
+        // Only now is the watch ready for another service; registering earlier is ignored by a fenix 8.
+        registerHeartRate()
     }
 
     /**

@@ -6,6 +6,7 @@ import java.nio.ByteOrder
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * A pretend Garmin watch on the other end of the Bluetooth link, written from the protocol notes rather than from the
@@ -68,6 +69,8 @@ class FakeGarminWatch(
 
     private var handle = 0
     private var heartRateHandle = 0
+    /** A fenix 8 ignores service registrations before it has sent its configuration. */
+    private val configurationSent = AtomicBoolean(false)
     var heartRateSubscribed = false
         private set
     var heartRateLevel = 80
@@ -137,6 +140,10 @@ class FakeGarminWatch(
                     return
                 }
                 if (service == MultiLink.SERVICE_REALTIME_HR) {
+                    if (!configurationSent.get()) {
+                        toPhone(managementAnswer(1, client) { putShort(service.toShort()); put(1) })
+                        return
+                    }
                     heartRateHandle = 0x02
                     toPhone(managementAnswer(1, client) { putShort(service.toShort()); put(0); put(heartRateHandle.toByte()); put(0) })
                     return
@@ -208,8 +215,10 @@ class FakeGarminWatch(
                 val original = r.short()
                 when {
                     // the phone's full answer to our introduction (the plain ACK is 3 bytes)
-                    original == GfdiType.DEVICE_INFORMATION && message.payload.size > 3 ->
+                    original == GfdiType.DEVICE_INFORMATION && message.payload.size > 3 -> {
+                        configurationSent.set(true)
                         send(GfdiMessage.build(GfdiType.CONFIGURATION) { byte(2); byte(0xFF); byte(0x01) })
+                    }
                     original == GfdiType.FILE_TRANSFER_DATA -> {
                         r.byte()
                         val status = r.byte()

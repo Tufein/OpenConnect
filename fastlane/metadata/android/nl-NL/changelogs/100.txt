@@ -1,0 +1,1 @@
+De live hartslag via de Garmin-watch start nu pas nadat het horloge zijn configuratie heeft gestuurd; zonder deze fix gaf een Fenix 8 geen beats.

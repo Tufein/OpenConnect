@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.13.7: live hartslag start nu echt
+
+De live-hartslagbron uit v1.13.6 werd op een echte Fenix 8 niet zichtbaar. De app vroeg Garmins real-time hartslagdienst (Multi-Link-service 6) al tijdens de eerste handshake aan, voordat het horloge zijn configuratie had gestuurd. Een Fenix 8 negeert die vroege aanvraag, waardoor de Watch-kaart wel de watch kon tonen maar nooit een hartslag ontving.
+
+[Release notes](docs/releases/v1.13.7.md)
+
 ## v1.13.6: live hartslag via je Garmin-horloge
 
 De Watch-kaart kan je hartslag nu ook rechtstreeks uit een Garmin-horloge lezen, over de eigen Bluetoothverbinding. Je hoeft daarvoor **Broadcast Heart Rate** op het horloge niet meer aan te zetten. Gericht op de **Garmin Fenix 8 51mm**, maar de route werkt voor Garmins die dezelfde real-time service hebben.

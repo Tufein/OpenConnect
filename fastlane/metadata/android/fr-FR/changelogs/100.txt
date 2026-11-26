@@ -1,0 +1,1 @@
+La fréquence cardiaque en direct de la montre Garmin ne démarre désormais qu’après la configuration de la montre ; sans ce correctif, une Fenix 8 n’affichait aucune mesure.

@@ -15,7 +15,7 @@ Garmin's FIT encoder. It is not a capture from a real phone or watch.*
 |-------|------------------------------|-----------|-----|
 | **USB cable, watch files (FIT)** | Yes | **Built** | Most Garmin watches show up as a USB storage (MTP) device with a `GARMIN` folder full of FIT files. Those files hold everything the watch records. |
 | **Bluetooth heart rate profile** | Yes | **Built** | Watches that can broadcast heart rate (and chest straps) speak the standard Bluetooth Heart Rate Service. Live heart rate and beat-to-beat intervals. |
-| **Garmin real-time heart rate** | Yes | **Built in v1.13.6** (untested on a real watch) | Garmin's own Multi-Link service `REAL_TIME_HR` (6) gives beats per minute over the watch's existing Bluetooth connection, without `Broadcast Heart Rate`. No beat-to-beat intervals, so no HRV. |
+| **Garmin real-time heart rate** | Yes | **Built in v1.13.6, fixed in v1.13.7** (untested on a real watch) | Garmin's own Multi-Link service `REAL_TIME_HR` (6) gives beats per minute over the watch's existing Bluetooth connection, without `Broadcast Heart Rate`. The request now waits until the watch has sent its configuration; a Fenix 8 ignores it earlier. No beat-to-beat intervals, so no HRV. |
 | Garmin Health SDK (Standard / Companion) | Yes | Not possible | Only for approved enterprise partners: request form, licence, minimum device order. Not available to a hobby project. |
 | Android Health Connect | No (it needs Garmin Connect to write into it) | Not built | Garmin Connect can write steps, sleep, heart rate and activities into Health Connect, but that needs the Garmin Connect app and account, has no Body Battery or stress, and is not real time. Worth adding later as an *extra* source. |
 | Garmin's own Bluetooth protocol (what Gadgetbridge does) | Yes | **Built in v0.6.0** (untested on a real watch) | Ported from Gadgetbridge, which is why the project became AGPL-3.0. Downloads the watch's FIT files over Bluetooth. See [BLUETOOTH.md](BLUETOOTH.md). |
@@ -126,7 +126,9 @@ start the stream (`0x00` stops it), and reads the payload `[padding, bpm, restin
 watch has not established one. Garmin's service sends no RR intervals, so the HRV field stays empty for this source;
 the recording and the min/avg/max values work as with a strap. When the notification connection is already open, the
 stream goes over that same connection, because a Garmin watch accepts one phone at a time; otherwise the app opens a
-connection for the stream and closes it when you stop. This follows the protocol notes in
+connection for the stream and closes it when you stop. Since **v1.13.7** the service request waits until the watch has
+sent its configuration; a Fenix 8 ignores the request during the first handshake, which is why v1.13.6 showed no
+beats. This follows the protocol notes in
 [gwerneckp/garmin-ble](https://github.com/gwerneckp/garmin-ble) (service 6, `heart_rate.py`), not an official Garmin
 document. It has not been tried on a real Fenix 8 yet.
 
