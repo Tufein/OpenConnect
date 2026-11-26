@@ -69,7 +69,7 @@ class PlanAndLockScreenTest : AppTestBase() {
         waitForText("Week of", substring = true)
         clickChip("More")
         clickChip("Plan")
-        scrollToText("Create plan")
+        scrollToCreatePlan()
         waitForText("Create plan")
         shot("33-plan-setup")
         clickText("10K")
@@ -84,8 +84,20 @@ class PlanAndLockScreenTest : AppTestBase() {
         scrollToText("All weeks")
         shot("35-plan-weeks")
         clickText("Delete plan")
-        scrollToText("Create plan")
+        scrollToCreatePlan()
         waitForText("Create plan")
+    }
+
+    /** The plan card is built after the tab and chip switch; retry the scroll until its text is composed, not just once. */
+    private fun scrollToCreatePlan() {
+        rule.waitUntil(15_000) {
+            try {
+                scrollToText("Create plan")
+                hasText("Create plan", substring = false)
+            } catch (_: Throwable) {
+                false
+            }
+        }
     }
 
     @Test

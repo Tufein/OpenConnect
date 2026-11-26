@@ -105,6 +105,10 @@ class GarminBleSession(
     @Volatile
     private var heartRateEnded: ((String?) -> Unit)? = null
 
+    /** Whether the watch already got the subscribe byte for the current handle, so a start and a registration cannot both send it. */
+    @Volatile
+    private var heartRateSubscribed = false
+
     private var gfdiHandle: Int? = null
     private var mlr: MlrChannel? = null
     private var triedPlain = false
@@ -216,8 +220,13 @@ class GarminBleSession(
     }
 
     private fun subscribeHeartRate(on: Boolean) {
-        val handle = synchronized(lock) { heartRateHandle } ?: return
-        if (closed) return
+        val handle = synchronized(lock) {
+            if (closed) return
+            val current = heartRateHandle ?: return
+            if (on == heartRateSubscribed) return
+            heartRateSubscribed = on
+            current
+        }
         pipe.write(byteArrayOf(handle.toByte(), if (on) 1 else 0))
         log(if (on) "real-time heart rate: subscribed on handle $handle" else "real-time heart rate: stopped on handle $handle")
     }
@@ -275,6 +284,7 @@ class GarminBleSession(
         val hrEnded = heartRateEnded
         heartRateEnded = null
         heartRateListener = null
+        heartRateSubscribed = false
         pending?.result?.completeExceptionally(error)
         hrEnded?.let { callback -> runCatching { callback(if (error.reason == GarminBleException.Reason.CLOSED) null else error.message) } }
         runCatching { onEnded(error) } // a listener that throws must not break the shutdown
@@ -291,6 +301,7 @@ class GarminBleSession(
                     mlr = null
                     gfdiHandle = null
                     heartRateHandle = null
+                    heartRateSubscribed = false
                 }
                 registerGfdi(useMlr)
             }
@@ -303,7 +314,10 @@ class GarminBleSession(
                         )
                         return
                     }
-                    synchronized(lock) { heartRateHandle = m.handle }
+                    synchronized(lock) {
+                        heartRateHandle = m.handle
+                        heartRateSubscribed = false
+                    }
                     log("real-time heart rate on handle ${m.handle}")
                     heartRateReady.complete(Unit)
                     if (heartRateListener != null) subscribeHeartRate(true)
