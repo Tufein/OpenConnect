@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.13.9: live hartslag start vanzelf
+
+De live hartslag start nu automatisch wanneer je Cercis opent. De app onthoudt de laatste sensor; is er geen, dan zoekt hij een horloge of band. De opname blijft lopen als je van tab wisselt. Zo hoef je niets meer aan te tikken; stoppen kan via de kaart of de melding.
+
+[Release notes](docs/releases/v1.13.9.md)
+
 ## v1.13.8: live hartslag op de voorpagina
 
 De live hartslag heeft nu een eigen kaart op de voorpagina. Je start, kiest en stopt dezelfde opname als op Watch, en ziet de bpm, bron, min/avg/max en duur zonder eerst naar Watch te gaan. De kaart staat standaard aan en is in te stellen onder Instellingen → Weergave → Voorpagina.

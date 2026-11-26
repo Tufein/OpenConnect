@@ -48,6 +48,8 @@ class WatchControllerTest {
         reconnectDelay: suspend (Int) -> Unit = {},
         maxReconnects: Int = 5,
         keeper: LiveRecordingKeeper = NoLiveRecordingKeeper,
+        liveMemory: LiveSensorMemory = InMemoryLiveSensorMemory(),
+        liveOptions: LiveOptions = InMemoryLiveOptions(),
     ) = WatchController(
         repo = repo,
         usb = usb,
@@ -61,6 +63,8 @@ class WatchControllerTest {
         reconnectDelay = reconnectDelay,
         maxReconnects = maxReconnects,
         keeper = keeper,
+        liveMemory = liveMemory,
+        liveOptions = liveOptions,
     )
 
     private val forerunner = WatchInfo("usb-1", "Forerunner 265")
@@ -171,6 +175,54 @@ class WatchControllerTest {
     // ------------------------------------------------------------------------------ live heart rate
 
     private fun hr(bpm: Int, rr: List<Double> = emptyList()) = HeartRateMeasurement(bpm, SensorContact.DETECTED, rr, null)
+
+    @Test
+    fun `a remembered sensor starts without a tap when the app opens`() {
+        val memory = InMemoryLiveSensorMemory(BleSensor("AA:01", "Strap"))
+        val c = controller(FakeUsb { opened() }, liveMemory = memory)
+        c.startAutomatically()
+
+        assertEquals(LivePhase.CONNECTING, c.state.value.live.phase)
+        assertEquals(1, ble.connectCalls)
+        assertEquals("AA:01", ble.connected?.address)
+    }
+
+    @Test
+    fun `without a remembered sensor the automatic start scans and picks the first one`() {
+        val c = controller(FakeUsb { opened() })
+        c.startAutomatically()
+        assertEquals(LivePhase.SCANNING, c.state.value.live.phase)
+
+        ble.onFound!!(BleSensor("AA:01", "Forerunner 265 1234"))
+        assertEquals(LivePhase.CONNECTING, c.state.value.live.phase)
+        assertEquals(1, ble.connectCalls, "the first sensor is taken, not every sensor in the scan")
+        assertEquals("AA:01", ble.connected?.address)
+    }
+
+    @Test
+    fun `automatic start can be switched off and does not overrule a stop`() {
+        val off = controller(FakeUsb { opened() }, liveOptions = InMemoryLiveOptions(autoStart = false))
+        off.startAutomatically()
+        assertEquals(LivePhase.IDLE, off.state.value.live.phase)
+        assertFalse(ble.scanning)
+
+        val memory = InMemoryLiveSensorMemory(BleSensor("AA:01", "Strap"))
+        val c = controller(FakeUsb { opened() }, liveMemory = memory)
+        c.startAutomatically()
+        c.stopLive()
+        c.startAutomatically()
+        assertEquals(LivePhase.STOPPED, c.state.value.live.phase)
+        assertEquals(1, ble.connectCalls, "the second start is not a new attempt")
+    }
+
+    @Test
+    fun `connecting remembers the sensor for the next app start`() {
+        val memory = InMemoryLiveSensorMemory()
+        val c = controller(FakeUsb { opened() }, liveMemory = memory)
+        val sensor = BleSensor("AA:09", "HRM-Dual")
+        c.connect(sensor)
+        assertEquals(sensor, memory.load())
+    }
 
     @Test
     fun `scanning lists each sensor once`() {

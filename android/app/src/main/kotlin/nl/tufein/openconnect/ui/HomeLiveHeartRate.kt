@@ -33,7 +33,7 @@ import nl.tufein.openconnect.watch.LiveUi
  *
  * The card only exists for someone who uses Garmin (Home checks that) and follows the front-page switch. The live
  * connection itself lives in [nl.tufein.openconnect.watch.WatchController], so the Watch screen and this card never
- * hold two sessions.
+ * hold two sessions, and changing tabs does not end the recording.
  */
 @Composable
 fun HomeLiveHeartRateCard(

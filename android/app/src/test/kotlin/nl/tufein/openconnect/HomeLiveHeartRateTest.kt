@@ -35,7 +35,7 @@ import kotlin.test.assertTrue
 /**
  * The live heart-rate card on the front page, with a fake Bluetooth radio: starting the scan, picking the watch and
  * reading its beats all go through the real controller. The card is the one from the Watch screen, so the same live
- * state is shown in both places and leaving the front page ends the connection instead of leaving the radio on.
+ * state is shown in both places and switching tabs leaves the session running, like an always-on recording.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], qualifiers = "w411dp-h891dp-night-xxhdpi", application = OpenConnectApp::class)
@@ -132,19 +132,27 @@ class HomeLiveHeartRateTest : AppTestBase() {
     }
 
     @Test
-    fun leavingTheFrontPageEndsTheLiveConnection() {
+    fun theRememberedSensorStartsWhenTheAppOpens() {
+        grantBluetooth()
+        launchWithBle { settings -> settings.liveSensor.save(sensor) }
+        rule.waitUntil(5_000) { ble.connectCalls == 1 }
+        waitForText("Connecting to ${sensor.name}…")
+    }
+
+    @Test
+    fun switchingTabsKeepsTheLiveConnection() {
         launchWithBle()
         grantBluetooth()
         startAndConnect(81)
         assertNotNull(ble.connected, "the fake radio is connected while the card streams")
 
         tab("Health").performClick()
-        rule.waitUntil(5_000) { ble.connected == null }
         waitForText("Scores")
+        assertNotNull(ble.connected, "the recording keeps running when the front page goes away")
         assertEquals(
-            LivePhase.STOPPED,
+            LivePhase.STREAMING,
             ApplicationProvider.getApplicationContext<OpenConnectApp>().container.watch.state.value.live.phase,
-            "the controller stopped the session when the front page went away",
+            "the controller kept the session alive across the tab switch",
         )
     }
 

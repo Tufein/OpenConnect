@@ -6,6 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import nl.tufein.openconnect.core.WeeklyGoals
 import nl.tufein.openconnect.core.reports.AiVendor
 import nl.tufein.openconnect.i18n.AppLocale
+import nl.tufein.openconnect.watch.BleSensor
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -87,6 +88,24 @@ class SettingsStoreTest {
         s.homeMetric = "blood_oxygen"
         assertEquals("calories", s.homeMetric)
         assertEquals("calories", store().homeMetric)
+    }
+
+    @Test
+    fun `the live sensor is remembered and automatic start is on by default`() {
+        val s = store()
+        assertTrue(s.liveOptions.autoStart, "a fresh install starts the live heart rate when the app opens")
+        assertNull(s.liveSensor.load())
+
+        val sensor = BleSensor("AA:BB:CC:DD:EE:FF", "fenix 8", garmin = true)
+        s.liveSensor.save(sensor)
+        s.liveOptions.autoStart = false
+
+        val again = store() // the app was restarted
+        assertEquals(sensor, again.liveSensor.load())
+        assertFalse(again.liveOptions.autoStart)
+
+        again.liveSensor.save(null)
+        assertNull(store().liveSensor.load())
     }
 
     @Test

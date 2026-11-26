@@ -1,0 +1,1 @@
+La fréquence cardiaque en direct démarre désormais à l’ouverture de Cercis, avec le dernier capteur ou le premier trouvé, et continue lorsque vous changez d’onglet. Arrêt via la carte ou la notification.

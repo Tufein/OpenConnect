@@ -14,6 +14,9 @@ import nl.tufein.openconnect.notify.NudgeSettings
 import nl.tufein.openconnect.watch.GarminBleOptions
 import nl.tufein.openconnect.watch.GarminBleWatch
 import nl.tufein.openconnect.watch.GarminWatchMemory
+import nl.tufein.openconnect.watch.BleSensor
+import nl.tufein.openconnect.watch.LiveOptions
+import nl.tufein.openconnect.watch.LiveSensorMemory
 import java.util.Locale
 
 /**
@@ -397,6 +400,37 @@ class SettingsStore(
             set(value) = prefs.edit().putBoolean(KEY_BLE_BACKGROUND, value).apply()
     }
 
+    /** The sensor that last streamed a live heart rate, and whether the app starts it by itself. */
+    val liveSensor: LiveSensorMemory = object : LiveSensorMemory {
+        override fun load(): BleSensor? {
+            val address = prefs.getString(KEY_LIVE_ADDRESS, null) ?: return null
+            return BleSensor(
+                address,
+                prefs.getString(KEY_LIVE_NAME, null) ?: address,
+                garmin = prefs.getBoolean(KEY_LIVE_GARMIN, false),
+            )
+        }
+
+        override fun save(sensor: BleSensor?) {
+            prefs.edit().apply {
+                if (sensor == null) {
+                    remove(KEY_LIVE_ADDRESS)
+                    remove(KEY_LIVE_NAME)
+                } else {
+                    putString(KEY_LIVE_ADDRESS, sensor.address)
+                    putString(KEY_LIVE_NAME, sensor.name)
+                    putBoolean(KEY_LIVE_GARMIN, sensor.garmin)
+                }
+            }.apply()
+        }
+    }
+
+    val liveOptions: LiveOptions = object : LiveOptions {
+        override var autoStart: Boolean
+            get() = prefs.getBoolean(KEY_LIVE_AUTO, true)
+            set(value) = prefs.edit().putBoolean(KEY_LIVE_AUTO, value).apply()
+    }
+
     /** The notification switch (off by default) and the record of nudges already sent. */
     val nudges: NudgeSettings = object : NudgeSettings {
         override var enabled: Boolean
@@ -516,6 +550,10 @@ class SettingsStore(
         private const val KEY_NUDGES_SENT = "nudges_sent"
         private const val KEY_BLE_ARCHIVE = "ble_archive_after_read"
         private const val KEY_BLE_BACKGROUND = "ble_background"
+        private const val KEY_LIVE_ADDRESS = "live_sensor_address"
+        private const val KEY_LIVE_NAME = "live_sensor_name"
+        private const val KEY_LIVE_GARMIN = "live_sensor_garmin"
+        private const val KEY_LIVE_AUTO = "live_auto_start"
         private const val KEY_GOAL_INTENSITY = "goal_intensity_minutes"
         private const val KEY_GOAL_DISTANCE = "goal_distance_km"
         private const val KEY_GOAL_ACTIVITIES = "goal_activities"

@@ -1,0 +1,1 @@
+Live hartslag start nu vanzelf wanneer Cercis opent, met de laatste sensor of de eerste die hij vindt, en blijft lopen als je van tab wisselt. Stoppen kan via de kaart of de melding.

@@ -1,0 +1,1 @@
+Der Live-Puls startet jetzt beim Öffnen von Cercis von selbst, mit dem letzten oder dem ersten gefundenen Sensor, und läuft beim Tabwechsel weiter. Stoppen über die Karte oder die Meldung.

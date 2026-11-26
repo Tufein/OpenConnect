@@ -394,9 +394,6 @@ fun OpenConnectRoot(
             modifier = Modifier.fillMaxSize().wrapContentWidth(Alignment.CenterHorizontally).widthIn(max = 640.dp),
         ) {
             composable(Tab.Home.route) {
-                // Leaving the front page ends a live heart-rate connection, exactly as leaving the Watch screen does;
-                // the session never stays open in the background because a tab was tapped.
-                androidx.compose.runtime.DisposableEffect(Unit) { onDispose { vm.stopLive() } }
                 HomeScreen(
                     state = home,
                     garmin = garmin,
@@ -573,8 +570,6 @@ fun OpenConnectRoot(
                 // navigation root also refreshes it, but opening this screen after a test or a setting changed must
                 // show the values already stored.
                 LaunchedEffect(watch, oura.lastSync) { vm.refreshBattery() }
-                // Leaving the screen, by the back button or the arrow, ends a live heart-rate connection.
-                androidx.compose.runtime.DisposableEffect(Unit) { onDispose { vm.stopLive() } }
                 WatchScreen(
                     ui = watch,
                     battery = battery,
@@ -585,6 +580,7 @@ fun OpenConnectRoot(
                     onConnect = vm::connectSensor,
                     onStopLive = vm::stopLive,
                     onSaveLive = vm::saveLive,
+                    onAutoLive = vm::setAutoLive,
                     onReadFolder = vm::readFolder,
                     onFindGarmin = vm::findGarmin,
                     onStopFindGarmin = vm::stopFindGarmin,

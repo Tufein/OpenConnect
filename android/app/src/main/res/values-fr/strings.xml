@@ -172,6 +172,8 @@
     <string name="watch_fail_other">La lecture de la montre s\'est arrêtée : %1$s</string>
     <string name="watch_live_title">Fréquence cardiaque en direct</string>
     <string name="watch_live_body">Affiche votre fréquence cardiaque en direct directement depuis une montre Garmin via Bluetooth, sans mode diffusion, ou depuis une montre Garmin qui la diffuse ou une ceinture pectorale. Pour la diffusion, cherchez sur la montre Capteurs et accessoires, Fréquence cardiaque au poignet, Diffuser la fréquence cardiaque (les noms varient selon le modèle).</string>
+    <string name="watch_live_auto">Démarrer automatiquement à l’ouverture de Cercis</string>
+    <string name="watch_live_auto_body">Cercis mémorise le dernier capteur ; s’il n’y en a pas, il cherche une montre ou une ceinture. L’enregistrement continue lorsque vous changez d’onglet.</string>
     <string name="watch_live_search">Rechercher des capteurs</string>
     <string name="watch_live_searching">Recherche…</string>
     <string name="watch_live_none">Aucun capteur trouvé pour l\'instant</string>

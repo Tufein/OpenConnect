@@ -83,6 +83,8 @@ data class WatchUi(
     val live: LiveUi = LiveUi(),
     val syncSource: SyncSource = SyncSource.USB,
     val garmin: GarminBleUi = GarminBleUi(),
+    /** Start the remembered live sensor (or look for one) when the app opens. On by default. */
+    val autoLive: Boolean = true,
 )
 
 /**
@@ -117,8 +119,20 @@ class WatchController(
     private val reconnectDelay: suspend (attempt: Int) -> Unit = { attempt -> delay(minOf(2_000L * attempt, 10_000L)) },
     /** Keeps the recording alive while the screen is off. The real one shows a notification; tests use a fake. */
     private val keeper: LiveRecordingKeeper = NoLiveRecordingKeeper,
+    /** The sensor that last streamed, and whether the app may start it without a tap. */
+    private val liveMemory: LiveSensorMemory = InMemoryLiveSensorMemory(),
+    private val liveOptions: LiveOptions = InMemoryLiveOptions(),
 ) {
-    private val _state = MutableStateFlow(WatchUi(garmin = GarminBleUi(remembered = garminMemory.load(), archiveAfterRead = garminOptions.archiveAfterRead, background = garminOptions.background)))
+    private val _state = MutableStateFlow(
+        WatchUi(
+            garmin = GarminBleUi(
+                remembered = garminMemory.load(),
+                archiveAfterRead = garminOptions.archiveAfterRead,
+                background = garminOptions.background,
+            ),
+            autoLive = liveOptions.autoStart,
+        ),
+    )
 
     /** True while the recording notification is shown; [keep] moves it with the live state. */
     private var keeping = false
@@ -333,15 +347,46 @@ class WatchController(
     private var generation = 0
     private val lock = Any()
 
-    fun startScan() {
+    /** Only one automatic start per app process; a manual start or a stop must not be undone on the next resume. */
+    private var autoStartTried = false
+
+    /**
+     * Starts the last sensor (or looks for one) when the app opens, unless the person turned it off. A watch that is
+     * off or out of range ends as a normal stopped session; the person can start a scan by hand then.
+     */
+    fun startAutomatically() {
+        if (autoStartTried) return
+        autoStartTried = true
+        if (!liveOptions.autoStart) return
+        if (_state.value.live.phase != LivePhase.IDLE) return
+        val remembered = liveMemory.load()
+        if (remembered != null) connect(remembered) else startScan(autoConnect = true)
+    }
+
+    /** Turns the automatic start on or off; it takes effect at the next start of the app. */
+    fun setAutoLive(on: Boolean) {
+        liveOptions.autoStart = on
+        _state.update { it.copy(autoLive = on) }
+    }
+
+    fun startScan(autoConnect: Boolean = false) {
         stopScan()
         _state.update { it.copy(live = LiveUi(phase = LivePhase.SCANNING)) }
         scan = ble.scan(
             onFound = { sensor ->
+                var connectNow = false
                 _state.update { ui ->
                     val live = ui.live
-                    if (live.sensors.any { it.address == sensor.address }) ui else ui.copy(live = live.copy(sensors = live.sensors + sensor))
+                    val sensors = if (live.sensors.any { it.address == sensor.address }) live.sensors else live.sensors + sensor
+                    if (autoConnect && live.phase == LivePhase.SCANNING) {
+                        // Claim the phase here, so a second sensor arriving in the same scan cannot also auto-connect.
+                        connectNow = true
+                        ui.copy(live = live.copy(phase = LivePhase.CONNECTING, sensors = sensors, sensorName = sensor.name))
+                    } else {
+                        ui.copy(live = live.copy(sensors = sensors))
+                    }
                 }
+                if (connectNow) connect(sensor)
             },
             onError = { message ->
                 stopScan()
@@ -361,6 +406,7 @@ class WatchController(
     fun connect(sensor: BleSensor) {
         scan?.close()
         scan = null
+        liveMemory.save(sensor)
         synchronized(lock) {
             generation++
             connection?.close()

@@ -227,6 +227,8 @@ class AppContainer(
         garminOptions = bleOptions,
         onBleBackgroundWanted = bleBackgroundSync::set,
         keeper = keeper,
+        liveMemory = settings.liveSensor,
+        liveOptions = settings.liveOptions,
     )
 
     /** Sends phone notifications to the watch (the card on the Watch screen). */

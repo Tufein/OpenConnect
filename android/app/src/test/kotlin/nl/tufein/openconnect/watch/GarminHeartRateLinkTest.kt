@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 /** The watch's own heart rate is a second live source next to a chest strap or Garmin's broadcast mode. */
 class GarminHeartRateLinkTest {
     private val fenix = GarminBleWatch("AA:BB:CC:DD:EE:FF", "fenix 8", paired = true)
-    private val watch = BleSensor(fenix.address, fenix.name)
+    private val watch = BleSensor(fenix.address, fenix.name, garmin = true)
 
     private class Listener : HeartRateListener {
         val measurements = CopyOnWriteArrayList<HeartRateMeasurement>()

@@ -144,6 +144,7 @@ import nl.tufein.openconnect.watch.BleSensor
 import nl.tufein.openconnect.watch.GarminBleWatch
 import nl.tufein.openconnect.watch.WatchInfo
 import nl.tufein.openconnect.watch.WatchUi
+import nl.tufein.openconnect.watch.hasBluetoothPermissions
 import java.io.IOException
 import java.io.InputStream
 import java.time.Instant
@@ -363,6 +364,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         settings.onboarded = true
         _sources.value = sourcesNow()
         container.applySources()
+        autoStartLive()
         loadDays()
         if (oura) container.oura.syncIfDue(OPEN_GAP)
     }
@@ -593,7 +595,23 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { container.ai.state.collect { container.coach.refresh() } }
         // The watch may answer its battery question after the sync has already finished; re-read it then too.
         viewModelScope.launch { container.batteryChanges.collect { refreshBattery() } }
+        autoStartLive()
         container.garmin.autoSyncIfDue()
+    }
+
+    /**
+     * The app opened: continue the live heart rate without a tap when a sensor was remembered, or look for one. It is
+     * deliberately one attempt per process; a person who stops the recording is not overruled on the next resume.
+     */
+    private var autoLiveTried = false
+
+    private fun autoStartLive() {
+        if (autoLiveTried) return
+        val settings = container.settings
+        if (!settings.onboarded || !settings.useGarmin || !settings.liveOptions.autoStart) return
+        if (!hasBluetoothPermissions(getApplication())) return
+        autoLiveTried = true
+        container.watch.startAutomatically()
     }
 
     /**
@@ -602,6 +620,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
      */
     fun onResume() {
         _now.value = Instant.now()
+        autoStartLive()
         syncAccounts(OPEN_GAP)
         ticker?.cancel()
         // Off the main thread: a ten-minute wait has no business in the UI's queue.
@@ -696,6 +715,9 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     fun scanSensors() = container.watch.startScan()
 
     fun connectSensor(sensor: BleSensor) = container.watch.connect(sensor)
+
+    /** Turns the automatic live-heart-rate start on or off; the switch is on the Watch screen. */
+    fun setAutoLive(on: Boolean) = container.watch.setAutoLive(on)
 
     fun stopLive() = container.watch.stopLive()
 

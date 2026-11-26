@@ -60,6 +60,7 @@ fun WatchScreen(
     onConnect: (BleSensor) -> Unit,
     onStopLive: () -> Unit,
     onSaveLive: (name: String) -> Unit,
+    onAutoLive: (Boolean) -> Unit = {},
     onReadFolder: (Uri) -> Unit,
     onFindGarmin: () -> Unit = {},
     onStopFindGarmin: () -> Unit = {},
@@ -179,6 +180,14 @@ fun WatchScreen(
         item {
             FoldableCard("watch-live", stringResource(R.string.watch_live_title)) {
                 Text(stringResource(R.string.watch_live_body), style = MaterialTheme.typography.bodyMedium)
+                SwitchRow(checked = ui.autoLive, onCheckedChange = onAutoLive) {
+                    Text(stringResource(R.string.watch_live_auto), style = MaterialTheme.typography.bodyMedium)
+                }
+                Text(
+                    stringResource(R.string.watch_live_auto_body),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 LiveControls(
                     live = ui.live,
                     permissionDenied = permissionDenied,

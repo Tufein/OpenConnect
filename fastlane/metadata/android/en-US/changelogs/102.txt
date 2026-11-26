@@ -1,0 +1,1 @@
+Live heart rate now starts by itself when Cercis opens, using the last sensor or the first one found, and keeps running when you switch tabs. Stop it from the card or the notification.

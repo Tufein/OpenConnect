@@ -34,7 +34,7 @@ fun interface FolderLink {
     suspend fun open(treeUri: String): OpenedWatch
 }
 
-data class BleSensor(val address: String, val name: String)
+data class BleSensor(val address: String, val name: String, /** True for the watch's own Garmin service, false for the standard heart-rate profile. */ val garmin: Boolean = false)
 
 interface HeartRateListener {
     fun onConnected()
@@ -125,6 +125,28 @@ class InMemoryGarminWatchMemory(private var watch: GarminBleWatch? = null) : Gar
         this.watch = watch
     }
 }
+
+/** Remembers the sensor that last streamed a live heart rate, so the app can pick it up again when it starts. */
+interface LiveSensorMemory {
+    fun load(): BleSensor?
+
+    fun save(sensor: BleSensor?)
+}
+
+class InMemoryLiveSensorMemory(private var sensor: BleSensor? = null) : LiveSensorMemory {
+    override fun load() = sensor
+
+    override fun save(sensor: BleSensor?) {
+        this.sensor = sensor
+    }
+}
+
+/** The live-heart-rate switch: start the remembered sensor (or look for one) when the app opens. */
+interface LiveOptions {
+    var autoStart: Boolean
+}
+
+class InMemoryLiveOptions(override var autoStart: Boolean = true) : LiveOptions
 
 object NoGarminBleLink : GarminBleLink {
     override fun find(onFound: (GarminBleWatch) -> Unit, onError: (String) -> Unit): AutoCloseable {

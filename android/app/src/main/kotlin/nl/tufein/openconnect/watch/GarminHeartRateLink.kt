@@ -25,7 +25,7 @@ class GarminHeartRateLink(
 ) : HeartRateLink {
     override fun scan(onFound: (BleSensor) -> Unit, onError: (String) -> Unit): AutoCloseable =
         garmin.find(
-            onFound = { watch -> onFound(BleSensor(watch.address, watch.name)) },
+            onFound = { watch -> onFound(BleSensor(watch.address, watch.name, garmin = true)) },
             onError = onError,
         )
 
@@ -86,5 +86,5 @@ class CombinedHeartRateLink(
     }
 
     override fun connect(sensor: BleSensor, listener: HeartRateListener): AutoCloseable =
-        if (garminAddresses.contains(sensor.address)) garmin.connect(sensor, listener) else standard.connect(sensor, listener)
+        if (sensor.garmin || garminAddresses.contains(sensor.address)) garmin.connect(sensor, listener) else standard.connect(sensor, listener)
 }
