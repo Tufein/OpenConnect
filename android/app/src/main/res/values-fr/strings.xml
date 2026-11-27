@@ -680,6 +680,12 @@
     <string name="oura_temp">température %1$s °C</string>
     <string name="oura_sleep_hours">Sommeil (heures)</string>
     <string name="oura_lowest_hr_title">Fréquence cardiaque la plus basse</string>
+    <string name="oura_heart_title">Fréquence cardiaque</string>
+    <string name="oura_heart_average">bpm · moyenne pendant le sommeil</string>
+    <string name="oura_heart_lowest">bpm · minimum pendant le sommeil</string>
+    <string name="oura_heart_lowest_value">Minimum %1$d bpm</string>
+    <string name="oura_heart_note">Mesurée pendant le sommeil. L’API d’Oura ne fournit pas de fréquence cardiaque en direct.</string>
+    <string name="oura_heart_none">Pas encore de fréquence cardiaque de la bague.</string>
     <string name="oura_temp_title">Température cutanée (écart)</string>
     <string name="oura_average">Moyenne : %1$s</string>
     <string name="oura_workouts">Entraînements de la bague</string>

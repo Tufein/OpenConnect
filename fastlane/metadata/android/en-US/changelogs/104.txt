@@ -1,0 +1,1 @@
+The Oura tab now shows the average and lowest heart rate of the last night in its own card. Oura measures during sleep; its API has no live heart rate.

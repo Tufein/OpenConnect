@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.13.11: hartslag op de Oura-tab
+
+De Oura-tab toont nu een eigen hartslagkaart met het gemiddelde en de laagste hartslag van de laatste nacht. Oura meet tijdens de slaap; de API geeft geen live hartslag, en dat zegt de kaart er ook bij.
+
+[Release notes](docs/releases/v1.13.11.md)
+
 ## v1.13.10: Oura ververst bij openen
 
 De Oura-tab synchroniseert nu vanzelf wanneer je hem opent en de laatste sync te oud is. Je hoeft niet meer eerst op **Sync now** te tikken; de knop blijft er voor een directe sync.

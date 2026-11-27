@@ -682,6 +682,12 @@
     <string name="oura_temp">temperatuur %1$s °C</string>
     <string name="oura_sleep_hours">Slaap (uren)</string>
     <string name="oura_lowest_hr_title">Laagste hartslag</string>
+    <string name="oura_heart_title">Hartslag</string>
+    <string name="oura_heart_average">bpm · gemiddeld tijdens de slaap</string>
+    <string name="oura_heart_lowest">bpm · laagste tijdens de slaap</string>
+    <string name="oura_heart_lowest_value">Laagste %1$d bpm</string>
+    <string name="oura_heart_note">Gemeten tijdens de slaap. De API van Oura geeft geen live hartslag.</string>
+    <string name="oura_heart_none">Nog geen hartslag van de ring.</string>
     <string name="oura_temp_title">Huidtemperatuur (verschil)</string>
     <string name="oura_average">Gemiddeld: %1$s</string>
     <string name="oura_workouts">Workouts van de ring</string>

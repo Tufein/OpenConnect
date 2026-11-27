@@ -1,0 +1,1 @@
+Der Oura-Tab zeigt jetzt die durchschnittliche und niedrigste Herzfrequenz der letzten Nacht in einer eigenen Karte. Oura misst im Schlaf; die API hat keine Live-Herzfrequenz.

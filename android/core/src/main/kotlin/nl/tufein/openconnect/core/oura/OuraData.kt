@@ -51,6 +51,8 @@ data class OuraDay(
     val remS: Int? = null,
     val awakeS: Int? = null,
     val lowestHr: Int? = null,
+    /** The average heart rate over the main sleep, as Oura reports it for that night. */
+    val averageHr: Int? = null,
     val averageHrv: Int? = null,
     val breathAvg: Double? = null,
     val spo2Avg: Double? = null,
@@ -96,6 +98,7 @@ object OuraDemo {
             remS = sleep * 3 / 10,
             awakeS = 1_800,
             lowestHr = 48 - wave / 2,
+            averageHr = 61 - wave / 2,
             averageHrv = 58 + wave,
             breathAvg = 14.2 + wave / 10.0,
             spo2Avg = 96.5,

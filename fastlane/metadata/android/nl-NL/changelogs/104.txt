@@ -1,0 +1,1 @@
+De Oura-tab toont nu de gemiddelde en laagste hartslag van de laatste nacht in een eigen kaart. Oura meet tijdens de slaap; de API heeft geen live hartslag.

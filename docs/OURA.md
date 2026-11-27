@@ -34,15 +34,16 @@ keys, and are only sent to `api.ouraring.com`. Oura's refresh tokens work once: 
 | `daily_readiness` | the readiness score and the skin temperature difference |
 | `daily_sleep` | the sleep score |
 | `daily_activity` | the activity score, steps and active calories |
-| `sleep` (the longest `long_sleep`/`sleep` of each day) | last night (asleep, deep, light, REM, awake), lowest heart rate, HRV, breathing |
+| `sleep` (the longest `long_sleep`/`sleep` of each day) | last night (asleep, deep, light, REM, awake), average and lowest heart rate, HRV, breathing |
 | `daily_spo2` | average blood oxygen |
 | `workout` | the ring's workouts |
 | `ring_battery_level?latest=true` | the charge on the front page's and Watch tab's battery card (with when it was reported) |
 
 Everything goes into its own table (`oura_days`, one row per day) and is **never mixed** into the watch's days, nights
 or activities, so nothing is counted twice and the Health, Home and Insights screens stay the watch's. The tab shows the
-latest day's three scores (tap one to jump to its chart), last night, 30-day charts you can read by touch, and the last
-ten workouts. Backups include the ring's days.
+latest day's three scores (tap one to jump to its chart), a heart-rate card with the last night's average and lowest
+beat, last night, 30-day charts you can read by touch, and the last ten workouts. Oura measures heart rate during sleep
+and its API has no live stream; the Garmin watch or a chest strap is the live source. Backups include the ring's days.
 
 Coming from v0.16.0, which filled the ring's numbers into empty fields of the watch's days: the update removes the
 ring's workouts from the activity list. Numbers it filled into the watch's days cannot be told apart and stay.

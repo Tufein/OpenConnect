@@ -249,6 +249,39 @@ private fun LazyListScope.ouraDashboard(
             }
         }
     }
+    section("heart") {
+        SurfaceCard(Modifier.testTag("oura-heart-card")) {
+            Text(stringResource(R.string.oura_heart_title), style = MaterialTheme.typography.titleMedium)
+            val average = last.averageHr
+            val lowest = last.lowestHr
+            if (average == null && lowest == null) {
+                Text(stringResource(R.string.oura_heart_none), style = MaterialTheme.typography.bodyMedium)
+            } else {
+                Text(
+                    "${average ?: lowest}",
+                    style = MaterialTheme.typography.displayLarge,
+                    color = OpenConnectColors.metrics.heart,
+                )
+                Text(
+                    stringResource(if (average != null) R.string.oura_heart_average else R.string.oura_heart_lowest),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (average != null && lowest != null) {
+                    Text(
+                        stringResource(R.string.oura_heart_lowest_value, lowest),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Text(
+                    stringResource(R.string.oura_heart_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
     val charts = listOf(
         OuraChart("readiness", R.string.oura_readiness, series { it.readiness }, metrics.readiness, bars = false, goal = null) { "${Math.round(it)}" },
         OuraChart("sleep", R.string.oura_sleep_hours, series { it.sleepHours }, metrics.sleep, bars = true, goal = 8.0) { Fmt.oneDecimal(it) + " h" },

@@ -7,7 +7,9 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.13.10.** **New in v1.13.10:** the Oura tab syncs by itself when you open it and the last sync is due;
+> **Status: v1.13.11.** **New in v1.13.11:** the Oura tab has its own heart-rate card with the average and lowest
+> heart rate of the last night. Oura measures during sleep and its API gives no live heart rate; the card says so.
+> **Since v1.13.10:** the Oura tab syncs by itself when you open it and the last sync is due;
 > the Sync now button stays for a sync you want immediately.
 > **Since v1.13.9:** live heart rate starts by itself when Cercis opens. The app remembers the
 > last sensor, or looks for one, and keeps the recording running when you switch tabs; stop it from the card or the
@@ -36,7 +38,7 @@ Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 > name is legally cleared, and an account, testers, real screenshots and store declarations are still missing.
 > Everything from v1.12.0 stays, including the privacy register and the four languages; the German and French texts
 > remain machine-drafted, not native-reviewed.
-> [Release notes](docs/releases/v1.13.10.md).
+> [Release notes](docs/releases/v1.13.11.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

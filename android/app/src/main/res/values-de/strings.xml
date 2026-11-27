@@ -679,6 +679,12 @@
     <string name="oura_temp">Temperatur %1$s °C</string>
     <string name="oura_sleep_hours">Schlaf (Stunden)</string>
     <string name="oura_lowest_hr_title">Niedrigste Herzfrequenz</string>
+    <string name="oura_heart_title">Herzfrequenz</string>
+    <string name="oura_heart_average">bpm · Durchschnitt im Schlaf</string>
+    <string name="oura_heart_lowest">bpm · niedrigster Wert im Schlaf</string>
+    <string name="oura_heart_lowest_value">Niedrigster Wert %1$d bpm</string>
+    <string name="oura_heart_note">Im Schlaf gemessen. Die API von Oura liefert keine Live-Herzfrequenz.</string>
+    <string name="oura_heart_none">Noch keine Herzfrequenz vom Ring.</string>
     <string name="oura_temp_title">Hauttemperatur (Differenz)</string>
     <string name="oura_average">Durchschnitt: %1$s</string>
     <string name="oura_workouts">Trainings vom Ring</string>

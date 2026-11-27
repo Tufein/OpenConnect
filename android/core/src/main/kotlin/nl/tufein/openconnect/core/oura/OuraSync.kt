@@ -51,6 +51,7 @@ class OuraSync(private val client: OuraClient, private val repo: Repository) {
                 remS = night?.int("rem_sleep_duration"),
                 awakeS = night?.int("awake_time"),
                 lowestHr = night?.int("lowest_heart_rate"),
+                averageHr = night?.int("average_heart_rate"),
                 averageHrv = night?.int("average_hrv"),
                 breathAvg = night?.number("average_breath"),
                 spo2Avg = (spo2[date]?.get("spo2_percentage") as? JsonObject)?.number("average"),

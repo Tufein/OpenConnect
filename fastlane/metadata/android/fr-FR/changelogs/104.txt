@@ -1,0 +1,1 @@
+L’onglet Oura affiche désormais la fréquence cardiaque moyenne et minimale de la dernière nuit dans une carte dédiée. Oura mesure pendant le sommeil ; son API n’a pas de direct.

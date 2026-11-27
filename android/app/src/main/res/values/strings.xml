@@ -682,6 +682,12 @@
     <string name="oura_temp">temperature %1$s °C</string>
     <string name="oura_sleep_hours">Sleep (hours)</string>
     <string name="oura_lowest_hr_title">Lowest heart rate</string>
+    <string name="oura_heart_title">Heart rate</string>
+    <string name="oura_heart_average">bpm · average during sleep</string>
+    <string name="oura_heart_lowest">bpm · lowest during sleep</string>
+    <string name="oura_heart_lowest_value">Lowest %1$d bpm</string>
+    <string name="oura_heart_note">Measured during sleep. Oura\'s API does not provide a live heart rate.</string>
+    <string name="oura_heart_none">No heart rate from the ring yet.</string>
     <string name="oura_temp_title">Skin temperature (difference)</string>
     <string name="oura_average">Average: %1$s</string>
     <string name="oura_workouts">Workouts from the ring</string>

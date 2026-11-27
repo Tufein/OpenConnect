@@ -47,7 +47,7 @@ class FakeOura : OuraHttp {
         if (url == OuraAuth.TOKEN_URL) return OuraResponse(200, """{"access_token":"access-FAKE","expires_in":86400,"refresh_token":"refresh-FAKE"}""")
         val body = when (url.substringAfter("usercollection/").substringBefore('?')) {
             "daily_activity" -> """{"data":[{"day":"$day","steps":7777,"active_calories":300}]}"""
-            "sleep" -> """{"data":[{"day":"$day","type":"long_sleep","total_sleep_duration":26000,"lowest_heart_rate":48,"average_hrv":55}]}"""
+            "sleep" -> """{"data":[{"day":"$day","type":"long_sleep","total_sleep_duration":26000,"lowest_heart_rate":48,"average_heart_rate":62,"average_hrv":55}]}"""
             "workout" -> """{"data":[{"id":"w9","activity":"running","start_datetime":"${day}T18:00:00+00:00","end_datetime":"${day}T18:40:00+00:00","distance":6000}]}"""
             else -> """{"data":[]}"""
         }
@@ -99,6 +99,11 @@ class OuraAndTouchScreenTest : AppTestBase() {
         scrollToTop() // the setup list left the dashboard scrolled to the bottom
         // The ring's own dashboard on top of the tab, the link and what the sync brought below it.
         waitForText("Readiness")
+        // The night's heart rate has its own card, separate from the lowest-heart-rate chart below.
+        scrollToText("Heart rate")
+        waitForText("Heart rate")
+        rule.onNodeWithTag("oura-heart-card").assertIsDisplayed()
+        scrollToTop()
         // The day's three scores live in the hero's orbs; the duplicate tile row under it is gone.
         rule.onNodeWithTag("oura-hero-orbs").assertIsDisplayed()
         rule.onNodeWithTag("oura-section-night").assertIsDisplayed()
