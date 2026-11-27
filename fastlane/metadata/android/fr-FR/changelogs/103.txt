@@ -1,0 +1,1 @@
+L’onglet Oura se synchronise désormais à l’ouverture lorsque la dernière sync est due. « Sync now » reste disponible pour une sync immédiate.

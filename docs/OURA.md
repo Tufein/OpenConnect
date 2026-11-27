@@ -49,6 +49,6 @@ ring's workouts from the activity list. Numbers it filled into the watch's days 
 
 ## When it syncs
 
-Only while the Oura Ring is switched on. When the app comes to the front, every 10 minutes while it is open, and about every 15 minutes in the background (the
-shortest period Android allows; it may be later in battery saver or Doze). An automatic sync reads the last 2 days, or
+Only while the Oura Ring is switched on. When the app comes to the front, when you open the **Oura tab**, every 10 minutes while it is open, and about every 15 minutes in the background (the
+shortest period Android allows; it may be later in battery saver or Doze). Opening the tab or the app only syncs when the last sync is at least a minute old. An automatic sync reads the last 2 days, or
 7 days after a pause of 12 hours or more; *Sync now* and the first sync after the login read 30 days.

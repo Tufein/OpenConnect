@@ -1,0 +1,1 @@
+The Oura tab now syncs by itself when you open it and the last sync is due. Sync now stays for an immediate sync.

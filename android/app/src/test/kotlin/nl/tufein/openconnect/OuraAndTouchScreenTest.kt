@@ -119,6 +119,13 @@ class OuraAndTouchScreenTest : AppTestBase() {
         assertTrue(container().repository.listDaily(day, day).isEmpty(), "the ring is kept apart from the watch's days")
         assertEquals(null, container().repository.getActivity("oura-w9"), "and from the activities")
         scrollToText("Workouts from the ring")
+
+        // Opening the tab after the due time syncs without a tap on Sync now.
+        val asked = oura.urls.size
+        container().settings.oura.lastSyncMs = 0
+        tab("Home").performClick()
+        tab("Oura").performClick()
+        rule.waitUntil(10_000) { oura.urls.size > asked }
     }
 
     @Test

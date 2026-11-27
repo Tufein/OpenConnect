@@ -1,0 +1,1 @@
+Der Oura-Tab synchronisiert jetzt beim Öffnen von selbst, wenn der letzte Sync fällig ist. „Sync now“ bleibt für einen sofortigen Sync.

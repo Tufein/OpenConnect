@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.13.10: Oura ververst bij openen
+
+De Oura-tab synchroniseert nu vanzelf wanneer je hem opent en de laatste sync te oud is. Je hoeft niet meer eerst op **Sync now** te tikken; de knop blijft er voor een directe sync.
+
+[Release notes](docs/releases/v1.13.10.md)
+
 ## v1.13.9: live hartslag start vanzelf
 
 De live hartslag start nu automatisch wanneer je Cercis opent. De app onthoudt de laatste sensor; is er geen, dan zoekt hij een horloge of band. De opname blijft lopen als je van tab wisselt. Zo hoef je niets meer aan te tikken; stoppen kan via de kaart of de melding.

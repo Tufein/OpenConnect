@@ -1,0 +1,1 @@
+De Oura-tab synchroniseert nu vanzelf bij openen als de laatste sync te oud is. Sync now blijft voor een directe sync.

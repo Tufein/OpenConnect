@@ -833,6 +833,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     fun syncOura() = container.oura.sync()
 
+    /** Opening the Oura tab catches up when the last sync is due, without a tap on Sync now. */
+    fun syncOuraIfDue() {
+        if (container.settings.useOura) container.oura.syncIfDue(OPEN_GAP)
+    }
+
     fun disconnectOura() = container.oura.disconnect()
 
     fun forgetOura() = container.oura.forget()

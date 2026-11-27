@@ -349,6 +349,7 @@ fun OpenConnectRoot(
     var healthFocus by remember { mutableStateOf<nl.tufein.openconnect.core.ChartMetric?>(null) }
 
     fun openTab(tab: Tab) {
+        if (tab == Tab.Oura) vm.syncOuraIfDue()
         nav.navigate(tab.route) {
             popUpTo(nav.graph.findStartDestination().id) { saveState = true }
             launchSingleTop = true

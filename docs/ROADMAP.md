@@ -4,7 +4,7 @@ Waar Cercis staat en hoe het verder groeit. Opnieuw geschreven op 2026-11-20, na
 v1.2.0) met een **thematische koerswissel** (paragraaf 4b, "Je geschiedenis is van jou") en op **2026-11-24 (na
 v1.11.0)** met een nieuwe **koers naar 2.0** in paragraaf 6b: geen lijst met losse ideeën, maar vier fasen en vijf
 poorten. Op **2026-11-25 (na v1.13.0)** is de winkelvariant als code toegevoegd, zonder publicatie; in **v1.13.1**
-kreeg de app de weergavenaam **Cercis**, terwijl pakketnaam, repository en updater `openconnect` bleven. Daarna kwamen **v1.13.2** (strengere release-controles en een APK-budget), **v1.13.3** (Compose 1.13 en stabielere schermtests), **v1.13.4** (ringen op Gezondheid en een horlogebatterij die meteen bijwerkt), **v1.13.5** (batterijberichten die het horloge zelf stuurt, een vraag bij de start van de sync en een korte wachttijd na `SYNC_COMPLETE`), **v1.13.6** (live hartslag via de eigen Garmin-Bluetoothverbinding, zonder uitzendmodus), **v1.13.7** (de real-time-hartslaggienst wordt pas na de configuratie van het horloge aangevraagd, zodat een Fenix 8 hem niet negeert), **v1.13.8** (de live hartslag als eigen kaart op de voorpagina) en **v1.13.9** (de live hartslag start automatisch en blijft lopen bij een tabwissel). 1.0 is uitgebracht; dit plan zegt wat de volgorde is. Alles is **test-first** gebouwd: eerst de test, dan de
+kreeg de app de weergavenaam **Cercis**, terwijl pakketnaam, repository en updater `openconnect` bleven. Daarna kwamen **v1.13.2** (strengere release-controles en een APK-budget), **v1.13.3** (Compose 1.13 en stabielere schermtests), **v1.13.4** (ringen op Gezondheid en een horlogebatterij die meteen bijwerkt), **v1.13.5** (batterijberichten die het horloge zelf stuurt, een vraag bij de start van de sync en een korte wachttijd na `SYNC_COMPLETE`), **v1.13.6** (live hartslag via de eigen Garmin-Bluetoothverbinding, zonder uitzendmodus), **v1.13.7** (de real-time-hartslaggienst wordt pas na de configuratie van het horloge aangevraagd, zodat een Fenix 8 hem niet negeert), **v1.13.8** (de live hartslag als eigen kaart op de voorpagina), **v1.13.9** (de live hartslag start automatisch en blijft lopen bij een tabwissel) en **v1.13.10** (de Oura-tab synchroniseert bij openen wanneer de laatste sync te oud is). 1.0 is uitgebracht; dit plan zegt wat de volgorde is. Alles is **test-first** gebouwd: eerst de test, dan de
 code, en niets gaat uit zonder dat CI groen is. Wat zonder horloge, ring of telefoon niet te controleren is, staat er
 eerlijk bij.
 
@@ -13,7 +13,7 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
 
 **Legenda:** ✅ klaar · 🔜 volgende · 🧪 gebouwd en getest met nepgegevens, nog nooit op echte hardware of tegen de echte dienst · ❓ heeft iets nodig dat alleen de eigenaar kan geven · **S/M/L** = klein (een sessie), middel, groot (meerdere releases)
 
-## 1. Waar we staan (v1.13.9, 2026-11-26)
+## 1. Waar we staan (v1.13.10, 2026-11-27)
 
 - **13 minorreleases sinds 1.0** (v1.1.0 tot en met v1.13.0, met tientallen kandidaten en patchreleases daartussen;
   v1.13.1 is de naamswijziging), ruim 1.400 tests
@@ -67,6 +67,9 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   Bluetooth-verbinding, zonder `Broadcast Heart Rate` op het horloge. De Garmin-service `REAL_TIME_HR` stuurt bpm en
   eventueel een rusthartslag, maar geen RR-intervallen; HRV blijft bij deze bron dus leeg. De bron gebruikt de al open
   meldingenverbinding als die er is, anders een eigen verbinding. Nog niet op een echte Fenix 8 bevestigd.
+- **Sinds v1.13.10:** de **Oura-tab** synchroniseert vanzelf wanneer je hem opent en de laatste sync langer dan een
+  minuut oud is. De knop *Sync now* blijft voor een directe sync; zonder login of tijdens een rate limit gebeurt er
+  niets extra's.
 - **Sinds v1.13.9:** de live hartslag start automatisch wanneer Cercis opent. De app onthoudt de laatste sensor; is
   er geen, dan zoekt hij een horloge of band. De opname blijft lopen bij een tabwissel en stopt alleen via de kaart of
   de melding; op Watch staat de schakelaar *Start automatically when Cercis opens* (standaard aan).
@@ -382,7 +385,7 @@ naast of over elkaar installeren is niet op een toestel geprobeerd.
 |------|----------|----------|------|----------|
 | **1. Zichtbaar en eigen** ✅ | De app voelt als één rustig geheel en jij bepaalt hoe hij eruitziet: editorial-look, signaalkleuren, ringen, foto, thema's, iconen en een voorblad dat je zelf samenstelt | v1.9.0 – v1.9.3 | M | — |
 | **2. Het denkt mee** ✅ | Het schema past zich aan als je week anders liep: één voorstel met Toepassen/Niet nu; de coach bespreekt alleen dat voorstel en verandert niets | v1.10.0 | L | niets |
-| **3. Bereik en uitleg** | Duits en Frans, één pagina *Wat verlaat je telefoon* per bron, ringen op Gezondheid, en een winkelversie die naast de GitHub-versie kan staan | v1.11.0, v1.12.0, v1.13.0, v1.13.1, v1.13.2, v1.13.3, v1.13.4, v1.13.5, v1.13.6, v1.13.7, v1.13.8, v1.13.9, v1.15.0 | M | juridische naamcontrole, account/testers, echte schermafbeeldingen en verklaringen voor publicatie |
+| **3. Bereik en uitleg** | Duits en Frans, één pagina *Wat verlaat je telefoon* per bron, ringen op Gezondheid, en een winkelversie die naast de GitHub-versie kan staan | v1.11.0, v1.12.0, v1.13.0, v1.13.1, v1.13.2, v1.13.3, v1.13.4, v1.13.5, v1.13.6, v1.13.7, v1.13.8, v1.13.9, v1.13.10, v1.15.0 | M | juridische naamcontrole, account/testers, echte schermafbeeldingen en verklaringen voor publicatie |
 | **4. Geschiedenis en analyse** | Garmin's protobuf-sync en de rest van de exportvelden; Training Effect, hersteltijd en Performance Condition uit je eigen FIT | v1.14.0 of later | L ❓ | een echte Garmin-export en één fenix 8-opname van Stefan |
 | **Sluiten** | Alle vijf poorten groen; geen nieuwe functie, alleen bewijs en reparaties | v2.0.0 | XL | de vier fasen |
 
@@ -407,6 +410,7 @@ echte hardware daarom vraagt. **S/M/L/XL** zoals in de legenda.
 | **v1.13.7** ✅ | 3 | De real-time-hartslaggienst wordt pas na de configuratie van het horloge aangevraagd; een Fenix 8 negeert de eerdere aanvraag tijdens de handshake, waardoor v1.13.6 geen beats gaf. Een nepwatch weigert de vroege aanvraag nu als regressietest | S |
 | **v1.13.8** ✅ | 3 | De live hartslag als eigen kaart op de voorpagina: starten/scannen/sensorkeuze, bpm met min/avg/max en duur, stoppen en opslaan zonder eerst naar Watch te gaan; standaard aan en uit te zetten onder Weergave → Voorpagina | M |
 | **v1.13.9** ✅ | 3 | De live hartslag start automatisch bij het openen van de app: de laatste sensor wordt onthouden, anders wordt er gezocht en de eerste sensor gekozen; de opname blijft lopen bij een tabwissel en is op Watch uit te zetten | S |
+| **v1.13.10** ✅ | 3 | De Oura-tab synchroniseert vanzelf bij openen wanneer de laatste sync ouder is dan een minuut; de knop Sync now blijft voor een directe sync | S |
 | **v1.14.0** | 4 | Training Effect, hersteltijd en Performance Condition uit FIT, met een register dat zegt wanneer het op echte data is bevestigd | L ❓ |
 | **v1.15.0** | 3 | Laatste loodjes: winkelpublicatie, schermafbeeldingen van een echte telefoon, installatiegids en de juridische naamcontrole | S/M |
 | **v2.0.0** | Slot | De vijf poorten hierboven groen; geen nieuwe functie | XL |
@@ -551,6 +555,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.13.7 | Live hartslag start nu echt: de real-time-hartslaggienst wordt pas na de configuratie van het horloge aangevraagd, niet meer tijdens de eerste handshake; een nepwatch weigert de vroege aanvraag als regressietest; nog niet op echte hardware bevestigd |
 | v1.13.8 | Live hartslag op de voorpagina: een eigen kaart start, scant en kiest dezelfde bron als Watch, toont bpm met min/avg/max en duur, stopt en bewaart de opname; standaard aan en uit te zetten onder Weergave → Voorpagina; stopt bij het verlaten van Home; nog niet op echte hardware bevestigd |
 | v1.13.9 | Live hartslag start automatisch bij het openen van de app: de laatste sensor wordt onthouden, anders wordt er gezocht en de eerste sensor gekozen; de opname blijft lopen bij een tabwissel, met een schakelaar op Watch om dit uit te zetten; nog niet op echte hardware bevestigd |
+| v1.13.10 | De Oura-tab synchroniseert vanzelf bij openen wanneer de laatste sync ouder is dan een minuut; de knop Sync now blijft voor een directe sync; alleen tegen een fake Oura getest |
 | v1.11.0 | Vier talen: Engels, Nederlands, Duits en Frans, met een taalkeuze los van de rapporttaal, lokale datums/getallen, Duitse/Franse widget- en meldingsteksten, een opgeruimde Oura-tab en een voorblad dat de dag volgt; de nieuwe talen zijn machine-draft zonder native review |
 
 ## 9. Hoe releases werken
