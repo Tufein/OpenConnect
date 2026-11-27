@@ -1,5 +1,8 @@
 package nl.tufein.openconnect
 
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.performClick
 import nl.tufein.openconnect.core.DemoData
 import org.junit.Test
@@ -60,8 +63,7 @@ class LookBackScreenTest : AppTestBase() {
 
         // Running is the default sport; the chips for all sports and for the others are there to pick.
         waitForText("All sports")
-        fun picked(tag: String) = rule.onNode(androidx.compose.ui.test.hasTestTag(tag)).fetchSemanticsNode()
-            .config.getOrNull(androidx.compose.ui.semantics.SemanticsProperties.Selected) == true
+        fun picked(tag: String) = rule.onNode(hasTestTag(tag)).fetchSemanticsNode().config.getOrNull(SemanticsProperties.Selected) == true
         rule.waitUntil(15_000) { picked("lookback-sport-running") }
         clickTag("lookback-sport-all")
         rule.waitUntil(15_000) { picked("lookback-sport-all") && !picked("lookback-sport-running") }
