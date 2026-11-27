@@ -318,11 +318,22 @@ private fun YearCard(summary: YearSummary, locale: Locale) {
     }
 }
 
-private fun recordValue(event: RecordEvent, value: Double, locale: Locale): String = when (event.kind) {
-    RecordKind.LONGEST_DISTANCE -> Fmt.km(value, locale) + " km"
+private fun recordValue(event: RecordEvent, value: Double, locale: Locale, fine: Boolean = false): String = when (event.kind) {
+    RecordKind.LONGEST_DISTANCE -> if (fine) String.format(locale, "%.3f", value / 1000) + " km" else Fmt.km(value, locale) + " km"
     RecordKind.LONGEST_DURATION -> Fmt.duration(value)
-    RecordKind.MOST_ELEVATION -> Math.rint(value).toInt().toString() + " m"
+    RecordKind.MOST_ELEVATION -> if (fine) Fmt.oneDecimal(value, locale) + " m" else Math.rint(value).toInt().toString() + " m"
     RecordKind.FASTEST_PACE -> Fmt.pace(value) + " /km"
+}
+
+/**
+ * The new value and the one it beat, as text. A record can be beaten by less than the display rounds to (50.4 m against
+ * 50.2 m reads "50 m, before 50 m"); then both get one more digit so the line shows the step instead of looking like a bug.
+ */
+internal fun recordValues(event: RecordEvent, locale: Locale): Pair<String, String> {
+    val now = recordValue(event, event.value, locale)
+    val before = recordValue(event, event.previousValue, locale)
+    if (now != before) return now to before
+    return recordValue(event, event.value, locale, fine = true) to recordValue(event, event.previousValue, locale, fine = true)
 }
 
 @Composable
@@ -346,6 +357,7 @@ private fun RecordsCard(records: List<RecordEvent>, onOpenActivity: (String) -> 
             return@SurfaceCard
         }
         for (event in records.take(RECORDS_SHOWN)) {
+            val values = recordValues(event, locale)
             Column(Modifier.fillMaxWidth().clickable { onOpenActivity(event.activityId) }.padding(vertical = 6.dp)) {
                 Text(
                     stringResource(
@@ -359,8 +371,8 @@ private fun RecordsCard(records: List<RecordEvent>, onOpenActivity: (String) -> 
                 Text(
                     stringResource(
                         R.string.lookback_record_value,
-                        recordValue(event, event.value, locale),
-                        recordValue(event, event.previousValue, locale),
+                        values.first,
+                        values.second,
                         Fmt.date(event.previousDate, locale),
                     ),
                     style = MaterialTheme.typography.bodySmall,
