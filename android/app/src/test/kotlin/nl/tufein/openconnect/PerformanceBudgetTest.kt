@@ -70,6 +70,12 @@ class PerformanceBudgetTest : AppTestBase() {
         tabOpens("Activities", "Easy Run")
         tabOpens("Health", "Scores")
         tabOpens("Insights", "Week of", substring = true)
+        // v1.13.12: Look back reads every activity, sorts them and builds the grid, the years and the record timeline.
+        val lookBack = timed("Look back over five years") {
+            clickChip("Look back")
+            waitForText("so far, against", substring = true)
+        }
+        if (lookBack > budgetMs) slow += "Look back took $lookBack ms"
         clickChip("More")
         clickChip("Map")
         val map = timed("map of the newest 300 routes") { waitForText("routes with a position", substring = true) }

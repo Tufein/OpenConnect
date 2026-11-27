@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.13.12: Terugblik, je hele geschiedenis naast elkaar
+
+Onder **Inzichten → Terugblik** zie je nu dit jaar tegenover vorig jaar, elke maand van elk jaar in één raster, elk jaar op zich en de records die onderweg zijn gebroken. Het is gemaakt voor wie jaren aan Garmin- of Strava-geschiedenis heeft binnengehaald (v1.3.0 en v1.4.0): dat verleden kon je wel importeren, maar er was nergens een plek om het terug te kijken.
+
+[Release notes](docs/releases/v1.13.12.md)
+
 ## v1.13.11: hartslag op de Oura-tab
 
 De Oura-tab toont nu een eigen hartslagkaart met het gemiddelde en de laagste hartslag van de laatste nacht. Oura meet tijdens de slaap; de API geeft geen live hartslag, en dat zegt de kaart er ook bij.
