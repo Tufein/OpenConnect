@@ -3,6 +3,7 @@ package nl.tufein.openconnect
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.performClick
 import nl.tufein.openconnect.core.DemoData
 import org.junit.Test
@@ -73,19 +74,38 @@ class LookBackScreenTest : AppTestBase() {
         scrollToText("Every month, every year")
     }
 
+    /** The sentence under the grid that names the heaviest month; its figure changes unit with the chosen metric. */
+    private fun heaviestLine(): String? = rule.onAllNodesWithText("Heaviest month:", substring = true).fetchSemanticsNodes()
+        .firstOrNull()?.config?.getOrNull(SemanticsProperties.Text)?.joinToString(" ") { it.text }
+
+    private fun waitForHeaviest(unit: Regex) {
+        try {
+            rule.waitUntil(15_000) { heaviestLine()?.let(unit::containsMatchIn) == true }
+        } catch (e: Throwable) {
+            throw AssertionError("expected the heaviest month to match $unit but it reads: ${heaviestLine()}", e)
+        }
+    }
+
     @Test
     fun theGridCanBeSwitchedToTimeAndToActivities() {
         launchFresh(prepare = ::seedThreeYears)
         waitForText("Readiness", substring = true)
         openLookBack()
-        waitForText("Every month, every year", substring = false)
+        // The grid sits below the comparison in a lazy list: wait for what is on top, then scroll to the grid.
+        val year = LocalDate.now(ZoneOffset.UTC).year
+        waitForText("$year so far, against ${year - 1}")
         scrollToText("Every month, every year")
+        scrollToText("Heaviest month:", substring = true)
+        waitForHeaviest(Regex(", [\\d.,]+ km$"))
         clickTag("lookback-metric-time")
-        rule.waitUntil(15_000) { hasText("Heaviest month:", substring = true) }
+        scrollToText("Heaviest month:", substring = true)
+        waitForHeaviest(Regex(", [\\d.,]+ h$"))
         clickTag("lookback-metric-count")
-        rule.waitUntil(15_000) { hasText("Heaviest month:", substring = true) }
+        scrollToText("Heaviest month:", substring = true)
+        waitForHeaviest(Regex(", [\\d.,]+$"))
         clickTag("lookback-metric-distance")
         scrollToText("Heaviest month:", substring = true)
+        waitForHeaviest(Regex(", [\\d.,]+ km$"))
     }
 
     @Test
