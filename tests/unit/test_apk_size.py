@@ -20,7 +20,7 @@ tool = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(tool)
 
 MIB = 1024 * 1024
-V1_13_0_APK_BYTES = 12_562_016  # the published openconnect-v1.13.0.apk
+V1_13_11_APK_BYTES = 13_156_021  # the published openconnect-v1.13.11.apk
 
 
 def make_apk(path: Path, **sizes: int) -> Path:
@@ -40,14 +40,14 @@ def make_apk(path: Path, **sizes: int) -> Path:
 
 
 def test_the_budget_leaves_room_above_the_latest_release():
-    assert tool.BUDGET_BYTES == 13 * MIB
-    headroom = tool.BUDGET_BYTES - V1_13_0_APK_BYTES
+    assert tool.BUDGET_BYTES == 14 * MIB
+    headroom = tool.BUDGET_BYTES - V1_13_11_APK_BYTES
     assert headroom >= 512 * 1024, "less than half a MiB of headroom is one feature from failing"
 
 
 def test_the_docs_state_the_same_budget_as_the_script():
     docs = (ROOT / "docs" / "PERFORMANCE.md").read_text()
-    assert re.search(r"\*\*13 MiB\*\*", docs), "docs/PERFORMANCE.md must say the budget is 13 MiB"
+    assert re.search(r"\*\*14 MiB\*\*", docs), "docs/PERFORMANCE.md must say the budget is 14 MiB"
     assert "12 MB**" not in docs, "the old 12 MB limit is still in docs/PERFORMANCE.md"
 
 

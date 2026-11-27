@@ -33,10 +33,11 @@ the newest 300 routes and thins each to 500 positions, however much history ther
 | v0.58.0 (shrunk with R8) | 9.8 MB |
 | v1.4.0 | 9.9 MB |
 | v1.12.0 and v1.13.0 | 12.56 MB (12,562,016 bytes), 20 KB under the old 12 MiB limit |
-| v1.13.3 (Compose 1.13) | 13.10 MB (13,097,301 bytes in the pull request build), 96 percent of the 13 MiB budget |
+| v1.13.3 (Compose 1.13) | 13.10 MB (13,097,301 bytes in the pull request build), 96 percent of the old 13 MiB budget |
+| v1.13.11 (live heart rate, Oura card) | 13.16 MB (13,156,021 bytes, the published APK), 96.5 percent of the old 13 MiB budget, 475 KB of room |
 
 The earlier statement in the roadmap that the APK was 11 MB was wrong; it had never been measured. The budget is now
-**13 MiB** (13,631,488 bytes), kept in one place, `android/scripts/check_apk_size.py`. Both the *Release* workflow and the
+**14 MiB** (14,680,064 bytes; it was 13 MiB until v1.13.12), kept in one place, `android/scripts/check_apk_size.py`. Both the *Release* workflow and the
 *Android* workflow (on every push and pull request) run it, so a change that makes the APK too big is found when it is made,
 not at release time. It prints where the bytes are, writes that to the run summary, warns from 95 percent and fails above
 the budget. A test (`tests/unit/test_apk_size.py`) keeps this page and the script on the same number.
@@ -46,11 +47,26 @@ uncompressed, which is what the Android Gradle Plugin does for minSdk 28 and new
 strings of four languages and the layouts), 0.48 MB is `res/` (five fonts of about 0.3 MB, a 44 KB photo, nine-patches) and
 0.04 MB is the native `libandroidx.graphics.path.so` for four ABIs. The code grew by about 2.6 MB over the eight releases
 from v1.4.0 to v1.12.0 (the editorial look, the privacy register, plan adaptation, two more languages), roughly 0.3 MB a
-release, so 13 MiB is about three releases of room, not a permanent answer.
+release, so the 13 MiB of that time was about three releases of room, not a permanent answer.
 
 v1.13.3 used most of that room in one go: Compose 1.13 (with material3 1.5) added about 0.54 MB, almost all of it code
 (`classes.dex` 8.4 MB and `classes2.dex` 2.8 MB, 11.26 MB together). That leaves about 0.53 MB, so the check now warns on
-every build, and the next release that adds a feature of any size will need one of the two ways below first.
+every build, and the next release that adds a feature of any size will need one of the two ways below first (or, as
+v1.13.12 did, a bigger budget).
+
+**v1.13.12 raised the budget from 13 to 14 MiB.** v1.13.4 to v1.13.11 (rings, the watch's own live heart rate, the Oura
+cards) added only 59 KB together, but the 475 KB that were left cannot carry a screen with a chart, a grid and a record
+list, which is what *Look back* (milestone M15) is. The budget is a guard we set ourselves, not a limit of Android or of
+the release channels (the GitHub APK is downloaded by the updater, the store build is an AAB that Play slims down), so
+moving it by one MiB is a decision about how much download we find acceptable, made on purpose and written here. It
+stays one number, and the test below still checks that the docs and the script agree.
+
+Measured on the published v1.13.11 APK (a small parser that adds up the instruction bytes per package in both dex files,
+2026-11-27, so a rough guide rather than a ledger): the instructions come to 5.2 MB, of which Compose is 1.95 MB (ui 0.77,
+foundation 0.52, runtime 0.29, animation 0.11) and the app's own code 1.44 MB. Material3 is only 0.27 MB of that, about
+5 percent, and the app uses a small part of it (`Text`, `MaterialTheme`, `OutlinedTextField`, `AlertDialog`, the snackbar
+and pull-to-refresh), so replacing those with the app's own components might return roughly half a MB; that is a
+guess to measure, not a promise.
 
 Two ways to get a lot back when it is needed, neither taken yet because they cannot be tried on a real phone from here:
 compress the dex files in the APK (`useLegacyPackaging` for dex: the APK would be about 6 MB smaller, at the price of the

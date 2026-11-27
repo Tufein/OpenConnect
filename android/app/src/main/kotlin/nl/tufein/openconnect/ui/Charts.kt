@@ -161,7 +161,10 @@ private fun spoken(description: String, values: List<Double?>, format: (Double) 
     return stringResource(R.string.chart_summary, description, summary.count, format(summary.lowest), format(summary.highest), format(summary.latest))
 }
 
-/** A line chart; missing values (null) break the line. */
+/**
+ * A line chart; missing values (null) break the line. [compare] is a second, thinner line with the same number of points
+ * on the same scale (last year next to this year); it has no fill and is not inspected, only drawn.
+ */
 @Composable
 fun LineChart(
     values: List<Double?>,
@@ -173,6 +176,8 @@ fun LineChart(
     labels: List<String>? = null,
     highlight: Int? = null,
     maxLabels: Int = AxisTicks.DEFAULT_MAX,
+    compare: List<Double?>? = null,
+    compareColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     format: (Double) -> String = defaultChartFormat(),
 ) {
     val gridColor = MaterialTheme.colorScheme.outlineVariant
@@ -187,28 +192,37 @@ fun LineChart(
     Canvas(Modifier.fillMaxWidth().height(height).then(extra).semantics { contentDescription = spokenDescription }) {
         grid(gridColor)
         val present = values.filterNotNull()
-        if (values.size < 2 || present.isEmpty()) return@Canvas
-        var lo = present.min()
-        var hi = present.max()
+        val presentCompare = compare?.filterNotNull().orEmpty()
+        if (values.size < 2 || (present.isEmpty() && presentCompare.isEmpty())) return@Canvas
+        val both = present + presentCompare
+        var lo = both.min()
+        var hi = both.max()
         if (includeZero) lo = min(lo, 0.0)
         if (hi - lo < 1e-9) hi = lo + 1
         val inset = 4.dp.toPx()
         fun x(i: Int) = inset + (size.width - 2 * inset) * i / (values.size - 1)
         fun y(v: Double) = size.height - inset - (size.height - 2 * inset) * ((v - lo) / (hi - lo)).toFloat()
-        val path = Path()
-        var open = false
-        values.forEachIndexed { i, v ->
-            if (v == null) {
-                open = false
-            } else if (!open) {
-                path.moveTo(x(i), y(v))
-                open = true
-            } else {
-                path.lineTo(x(i), y(v))
+        fun linePath(points: List<Double?>): Path {
+            val line = Path()
+            var open = false
+            points.forEachIndexed { i, v ->
+                if (v == null) {
+                    open = false
+                } else if (!open) {
+                    line.moveTo(x(i), y(v))
+                    open = true
+                } else {
+                    line.lineTo(x(i), y(v))
+                }
             }
+            return line
         }
+        val path = linePath(values)
         // The line draws itself from left to right when the chart appears.
         clipRect(right = size.width * reveal) {
+            if (compare != null && compare.size == values.size) {
+                drawPath(linePath(compare), compareColor, style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Square, join = StrokeJoin.Miter))
+            }
             // Under the line a scan-line fill: thin vertical bars, like the shading of an old LCD, instead of a smooth gradient.
             val columnWidth = 2.dp.toPx()
             val pitch = 4.dp.toPx()

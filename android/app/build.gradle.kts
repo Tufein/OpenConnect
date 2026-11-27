@@ -15,8 +15,8 @@ android {
         applicationId = "nl.tufein.openconnect"
         minSdk = 28
         targetSdk = 36
-        versionCode = 104
-        versionName = "1.13.11"
+        versionCode = 105
+        versionName = "1.13.12"
     }
 
     // Two channels from one code base. The GitHub build keeps the in-app updater (the install permission and the

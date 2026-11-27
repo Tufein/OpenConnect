@@ -7,7 +7,11 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.13.11.** **New in v1.13.11:** the Oura tab has its own heart-rate card with the average and lowest
+> **Status: v1.13.12.** **New in v1.13.12:** **Look back** under Insights. This year against last year to the same day,
+> a grid of every month of every year, each year on its own (sports, busiest week, quiet weeks) and a timeline of the
+> records you broke, for one sport or all of them, worked out on the phone from the activities you have stored. On an
+> empty install it can load three years of demo data to show how it looks.
+> **Since v1.13.11:** the Oura tab has its own heart-rate card with the average and lowest
 > heart rate of the last night. Oura measures during sleep and its API gives no live heart rate; the card says so.
 > **Since v1.13.10:** the Oura tab syncs by itself when you open it and the last sync is due;
 > the Sync now button stays for a sync you want immediately.
@@ -29,7 +33,7 @@ Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 > old Compose test rule running the screens' coroutines on background threads, so the tests now use the v2 rule, which
 > runs them on the main thread as a phone does. Nothing in the app was changed on purpose.
 > **Since v1.13.2:** the emulator smoke test stops a release when it fails (the walk uses `swangle_indirect`), and the
-> APK has a 13 MiB budget checked on every pull request.
+> APK has a 14 MiB budget checked on every pull request.
 > **Since v1.13.1:** the app is called **Cercis**, so it no longer shares its name with the OpenConnect VPN
 > client. Only the display name changed: the Android package id `nl.tufein.openconnect`, the GitHub repository and the
 > release asset names (`openconnect-vX.Y.Z.apk`) stay the same, and the GitHub build keeps its updater. A phone on
@@ -38,7 +42,7 @@ Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 > name is legally cleared, and an account, testers, real screenshots and store declarations are still missing.
 > Everything from v1.12.0 stays, including the privacy register and the four languages; the German and French texts
 > remain machine-drafted, not native-reviewed.
-> [Release notes](docs/releases/v1.13.11.md).
+> [Release notes](docs/releases/v1.13.12.md).
 > It runs end to end on demo data with no account. **Only the Garmin account route has been tried live; nothing else has been tried on a real phone, watch, ring
 > or band yet** (see [what is tested](#what-is-tested)). The checks that remain are listed in
 > [docs/PUBLIC_RELEASE.md](docs/PUBLIC_RELEASE.md); the plan is in [docs/ROADMAP.md](docs/ROADMAP.md).

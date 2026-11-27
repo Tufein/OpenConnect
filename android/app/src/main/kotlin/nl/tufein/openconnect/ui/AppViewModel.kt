@@ -24,6 +24,9 @@ import nl.tufein.openconnect.core.ActivityAround
 import nl.tufein.openconnect.core.ActivityAroundCalculator
 import nl.tufein.openconnect.core.BandSource
 import nl.tufein.openconnect.core.BodyEntry
+import nl.tufein.openconnect.core.DemoDataset
+import nl.tufein.openconnect.core.LookBackCalculator
+import nl.tufein.openconnect.core.LookBackReport
 import nl.tufein.openconnect.core.WaterEntry
 import nl.tufein.openconnect.core.BandWorkout
 import nl.tufein.openconnect.core.BandWorkouts
@@ -570,6 +573,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     /** The year in twelve months: steps, sleep, resting heart rate and trainings. */
     val year: StateFlow<YearState> = _year.asStateFlow()
 
+    private val _lookBack = MutableStateFlow(LookBackState())
+
+    /** Looking back over every year: this year against last, the month grid, the years and the records broken (v1.13.12). */
+    val lookBack: StateFlow<LookBackState> = _lookBack.asStateFlow()
+
     private val _map = MutableStateFlow(MapState())
 
     /** The heatmap of all routes. Worked out when the Map tab is opened, and again after the data changes. */
@@ -862,6 +870,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadJournal()
         loadScore(_score.value.selected)
         loadYear(_year.value.selected)
+        if (_lookBack.value.loaded) loadLookBack()
         loadTrophies()
         container.oura.refreshDays()
         currentActivityId?.let { openActivity(it) }
@@ -1133,6 +1142,23 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
 
+    /**
+     * Everything for the Look back tab, worked out from the stored activities (they carry no track, so this stays light
+     * even with ten years of history). With no argument it keeps the sport that was picked, or the default one.
+     */
+    fun loadLookBack(
+        sport: Sport? = _lookBack.value.report?.sport,
+        chosen: Boolean = _lookBack.value.report?.chosen ?: false,
+    ) = io {
+        val activities = repo.listActivities(limit = 100_000)
+        // Days in the look-back figures are UTC days, so "today" is the UTC day too.
+        val report = LookBackCalculator.report(activities, LocalDate.now(ZoneOffset.UTC), sport, chosen)
+        _lookBack.value = LookBackState(loaded = true, report = report)
+    }
+
+    /** A tap on a sport chip; null is "All sports". */
+    fun chooseLookBackSport(sport: Sport?) = loadLookBack(sport, chosen = true)
+
     fun loadJournal() = io {
         val book = JournalBook.decode(container.settings.journal)
         val first = book.days.keys.minOrNull()
@@ -1401,8 +1427,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         container.dataChanged.tryEmit(Unit)
     }
 
-    fun loadDemo() = io {
-        val data = DemoData.generate(LocalDate.now(ZoneOffset.UTC))
+    fun loadDemo() = io { storeDemo(DemoData.generate(LocalDate.now(ZoneOffset.UTC))) }
+
+    /** Three years of demo days (about 550 activities), for Look back, which compares years; the normal demo is 45 days. */
+    fun loadDemoYears() = io { storeDemo(DemoData.generate(LocalDate.now(ZoneOffset.UTC), days = 3 * 365)) }
+
+    private fun storeDemo(data: DemoDataset) {
         repo.inTransaction {
             DemoData.store(repo, data)
             // Ring days too, for someone who chose the Oura Ring; they stay apart from the watch's demo days.
@@ -1678,6 +1708,9 @@ data class CalendarState(
 data class ScoreState(val loaded: Boolean = false, val years: List<Int> = emptyList(), val selected: Int? = null, val score: YearScore? = null)
 
 data class YearState(val loaded: Boolean = false, val years: List<Int> = emptyList(), val selected: Int? = null, val overview: YearOverview? = null)
+
+/** The Look back tab: the report for the chosen sport, or null until it was first worked out. */
+data class LookBackState(val loaded: Boolean = false, val report: LookBackReport? = null)
 
 data class MapState(val loaded: Boolean = false, val grid: HeatGrid? = null)
 

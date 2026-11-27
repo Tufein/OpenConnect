@@ -4,7 +4,7 @@ Waar Cercis staat en hoe het verder groeit. Opnieuw geschreven op 2026-11-20, na
 v1.2.0) met een **thematische koerswissel** (paragraaf 4b, "Je geschiedenis is van jou") en op **2026-11-24 (na
 v1.11.0)** met een nieuwe **koers naar 2.0** in paragraaf 6b: geen lijst met losse ideeën, maar vier fasen en vijf
 poorten. Op **2026-11-25 (na v1.13.0)** is de winkelvariant als code toegevoegd, zonder publicatie; in **v1.13.1**
-kreeg de app de weergavenaam **Cercis**, terwijl pakketnaam, repository en updater `openconnect` bleven. Daarna kwamen **v1.13.2** (strengere release-controles en een APK-budget), **v1.13.3** (Compose 1.13 en stabielere schermtests), **v1.13.4** (ringen op Gezondheid en een horlogebatterij die meteen bijwerkt), **v1.13.5** (batterijberichten die het horloge zelf stuurt, een vraag bij de start van de sync en een korte wachttijd na `SYNC_COMPLETE`), **v1.13.6** (live hartslag via de eigen Garmin-Bluetoothverbinding, zonder uitzendmodus), **v1.13.7** (de real-time-hartslaggienst wordt pas na de configuratie van het horloge aangevraagd, zodat een Fenix 8 hem niet negeert), **v1.13.8** (de live hartslag als eigen kaart op de voorpagina), **v1.13.9** (de live hartslag start automatisch en blijft lopen bij een tabwissel), **v1.13.10** (de Oura-tab synchroniseert bij openen wanneer de laatste sync te oud is) en **v1.13.11** (een hartslagkaart met de gemiddelde en laagste hartslag van de laatste Oura-nacht). 1.0 is uitgebracht; dit plan zegt wat de volgorde is. Alles is **test-first** gebouwd: eerst de test, dan de
+kreeg de app de weergavenaam **Cercis**, terwijl pakketnaam, repository en updater `openconnect` bleven. Daarna kwamen **v1.13.2** (strengere release-controles en een APK-budget), **v1.13.3** (Compose 1.13 en stabielere schermtests), **v1.13.4** (ringen op Gezondheid en een horlogebatterij die meteen bijwerkt), **v1.13.5** (batterijberichten die het horloge zelf stuurt, een vraag bij de start van de sync en een korte wachttijd na `SYNC_COMPLETE`), **v1.13.6** (live hartslag via de eigen Garmin-Bluetoothverbinding, zonder uitzendmodus), **v1.13.7** (de real-time-hartslaggienst wordt pas na de configuratie van het horloge aangevraagd, zodat een Fenix 8 hem niet negeert), **v1.13.8** (de live hartslag als eigen kaart op de voorpagina), **v1.13.9** (de live hartslag start automatisch en blijft lopen bij een tabwissel), **v1.13.10** (de Oura-tab synchroniseert bij openen wanneer de laatste sync te oud is) **v1.13.11** (een hartslagkaart met de gemiddelde en laagste hartslag van de laatste Oura-nacht) en **v1.13.12** (**Terugblik**: dit jaar tegenover vorig jaar, een raster van elke maand van elk jaar, elk jaar op zich en de gebroken records; het APK-budget gaat van 13 naar 14 MiB). 1.0 is uitgebracht; dit plan zegt wat de volgorde is. Alles is **test-first** gebouwd: eerst de test, dan de
 code, en niets gaat uit zonder dat CI groen is. Wat zonder horloge, ring of telefoon niet te controleren is, staat er
 eerlijk bij.
 
@@ -13,7 +13,7 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
 
 **Legenda:** ✅ klaar · 🔜 volgende · 🧪 gebouwd en getest met nepgegevens, nog nooit op echte hardware of tegen de echte dienst · ❓ heeft iets nodig dat alleen de eigenaar kan geven · **S/M/L** = klein (een sessie), middel, groot (meerdere releases)
 
-## 1. Waar we staan (v1.13.11, 2026-11-27)
+## 1. Waar we staan (v1.13.12, 2026-11-27)
 
 - **13 minorreleases sinds 1.0** (v1.1.0 tot en met v1.13.0, met tientallen kandidaten en patchreleases daartussen;
   v1.13.1 is de naamswijziging), ruim 1.400 tests
@@ -67,6 +67,12 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   Bluetooth-verbinding, zonder `Broadcast Heart Rate` op het horloge. De Garmin-service `REAL_TIME_HR` stuurt bpm en
   eventueel een rusthartslag, maar geen RR-intervallen; HRV blijft bij deze bron dus leeg. De bron gebruikt de al open
   meldingenverbinding als die er is, anders een eigen verbinding. Nog niet op een echte Fenix 8 bevestigd.
+- **Sinds v1.13.12:** **Inzichten → Terugblik** (M15). Dit jaar tot vandaag tegenover vorig jaar tot dezelfde dag (afstand,
+  tijd en aantal, met verschil en percentage, en twee lijnen met het lopende totaal per maand), een raster van elke maand
+  van elk jaar (afstand, tijd of aantal, de zwaarste maand gemarkeerd), elk jaar op zich (totalen, elke sport op één
+  regel, drukste week, weken zonder activiteit) en de tijdlijn van gebroken records. Alles per sport of voor alle sporten,
+  op de telefoon uitgerekend uit de opgeslagen activiteiten; er gaat niets naar buiten. Het APK-budget is van 13 naar
+  14 MiB gegaan omdat er na v1.13.11 nog 475 KB over was.
 - **Sinds v1.13.11:** de **Oura-tab** heeft een eigen hartslagkaart met de gemiddelde en laagste hartslag van de
   laatste nacht. Oura meet tijdens de slaap en geeft via de API geen live hartslag; de kaart zegt dat erbij.
 - **Sinds v1.13.10:** de **Oura-tab** synchroniseert vanzelf wanneer je hem opent en de laatste sync langer dan een
@@ -294,7 +300,7 @@ Klaar als: een Strava-archief met CSV namen geeft, een nagemaakte Garmin-export 
 
 Stappen, rusthartslag en slaap uit Garmin's dagbestanden, gevuld waar de app nog niets heeft (nooit over iets heen dat horloge, ring of band gaf), en het `daily.csv` uit *Alles exporteren* weer inlezen. De lezer wordt pas gebouwd als een echte export de sleutelnamen heeft laten zien; het rapport uit v1.4.0 is daar de ingang voor. Tot dan blijft het 🧪 en staat er niets in je gezondheidsgeschiedenis dat ergens op gegokt is.
 
-### M15: "Terugblik" 🔜 v1.5.0 (M)
+### M15: "Terugblik" ✅ v1.13.12 (M)
 
 Lange geschiedenis moet je ook kunnen zien. Er is nu geen jaar-op-jaar.
 
@@ -303,6 +309,14 @@ Lange geschiedenis moet je ook kunnen zien. Er is nu geen jaar-op-jaar.
 - **Alle jaren per sport** op één regel, en per jaar de rustige en de drukke weken.
 - **Tijdlijn van hi-scores:** wanneer is welk record gevestigd, over alle jaren, niet alleen de huidige stand.
 - Alles getest op het vijfjarige demo-archief (en een gegenereerd archief van tien jaar); een prestatiebudget zoals bij M5.
+
+**Gebouwd in v1.13.12** (`core/LookBack.kt`, `ui/LookBackScreen.kt`): alle vier de punten, per sport of voor alle sporten.
+De berekeningen zijn zuivere functies met 25 tests; het scherm heeft een schermtest op drie jaar demodata, en het
+prestatiebudget opent Terugblik op vijf jaar geschiedenis. Dagen zijn UTC-kalenderdagen, net als Jaaroverzicht en de
+records. Een record dat voor het eerst wordt gezet telt niet als "gebroken" (er was niets te verbreken). **Bewust niet
+gedaan:** de test op een gegenereerd archief van tien jaar (vijf jaar is wat het budget dekt) en een jaar-op-jaar voor
+gezondheid (stappen, slaap); beide kunnen later zonder het model te wijzigen. **Niet gecontroleerd:** tegen een echte
+Garmin- of Strava-export en op een echte telefoon.
 
 ### M16: "Open en koppelbaar" 🔜 (L, in stukken)
 
@@ -414,6 +428,7 @@ echte hardware daarom vraagt. **S/M/L/XL** zoals in de legenda.
 | **v1.13.9** ✅ | 3 | De live hartslag start automatisch bij het openen van de app: de laatste sensor wordt onthouden, anders wordt er gezocht en de eerste sensor gekozen; de opname blijft lopen bij een tabwissel en is op Watch uit te zetten | S |
 | **v1.13.10** ✅ | 3 | De Oura-tab synchroniseert vanzelf bij openen wanneer de laatste sync ouder is dan een minuut; de knop Sync now blijft voor een directe sync | S |
 | **v1.13.11** ✅ | 3 | Een eigen hartslagkaart op de Oura-tab met de gemiddelde en laagste hartslag van de laatste nacht; Oura levert geen live hartslag via de API, en dat staat erbij | S |
+| **v1.13.12** ✅ | 4 | Terugblik (M15): dit jaar tegenover vorig jaar, een raster van elke maand van elk jaar, elk jaar op zich en de gebroken records; het APK-budget gaat naar 14 MiB | M |
 | **v1.14.0** | 4 | Training Effect, hersteltijd en Performance Condition uit FIT, met een register dat zegt wanneer het op echte data is bevestigd | L ❓ |
 | **v1.15.0** | 3 | Laatste loodjes: winkelpublicatie, schermafbeeldingen van een echte telefoon, installatiegids en de juridische naamcontrole | S/M |
 | **v2.0.0** | Slot | De vijf poorten hierboven groen; geen nieuwe functie | XL |
@@ -560,6 +575,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.13.9 | Live hartslag start automatisch bij het openen van de app: de laatste sensor wordt onthouden, anders wordt er gezocht en de eerste sensor gekozen; de opname blijft lopen bij een tabwissel, met een schakelaar op Watch om dit uit te zetten; nog niet op echte hardware bevestigd |
 | v1.13.10 | De Oura-tab synchroniseert vanzelf bij openen wanneer de laatste sync ouder is dan een minuut; de knop Sync now blijft voor een directe sync; alleen tegen een fake Oura getest |
 | v1.13.11 | Een eigen hartslagkaart op de Oura-tab met de gemiddelde en laagste hartslag van de laatste nacht; Oura levert geen live hartslag via de API, en dat staat erbij; alleen tegen een fake Oura getest |
+| v1.13.12 | Terugblik (M15): dit jaar tegenover vorig jaar tot dezelfde dag, een maandenraster over alle jaren, elk jaar op zich en de gebroken records; APK-budget van 13 naar 14 MiB; op de JVM getest, niet tegen een echte export |
 | v1.11.0 | Vier talen: Engels, Nederlands, Duits en Frans, met een taalkeuze los van de rapporttaal, lokale datums/getallen, Duitse/Franse widget- en meldingsteksten, een opgeruimde Oura-tab en een voorblad dat de dag volgt; de nieuwe talen zijn machine-draft zonder native review |
 
 ## 9. Hoe releases werken
