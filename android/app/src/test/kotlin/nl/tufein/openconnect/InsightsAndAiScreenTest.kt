@@ -161,7 +161,8 @@ class InsightsAndAiScreenTest : AppTestBase() {
         tab("Insights").performClick()
         tab("Trophies").performClick()
         waitForText("trophies won", substring = true)
-        waitForText("Press Start")
+        // Since v1.17.0 the hi-score table sits between the level and the trophies, so the first trophy can be below the fold.
+        scrollToText("Press Start")
         assertTrue(hasText("Level ", substring = true))
         shot("23-trophies")
     }

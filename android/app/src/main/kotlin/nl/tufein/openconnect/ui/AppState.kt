@@ -164,6 +164,10 @@ data class ReportsState(
     val records: Map<Sport, Map<String, RecordEntry>> = emptyMap(),
     /** The best times over 1 km, 5 km, 10 km and up, over all runs. */
     val efforts: List<Effort> = emptyList(),
+    /** The hi-score table (v1.17.0): the five fastest runs per distance, fastest first. */
+    val hiScores: Map<Double, List<Effort>> = emptyMap(),
+    /** The three letters on that table, AAA until chosen. */
+    val initials: String = nl.tufein.openconnect.core.retro.Initials.DEFAULT,
 )
 
 /**

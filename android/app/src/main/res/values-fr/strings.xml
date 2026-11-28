@@ -726,6 +726,13 @@
     <string name="levelup_trophy">Trophée débloqué : %1$s</string>
     <string name="levelup_trophies">%1$d trophées débloqués</string>
     <string name="levelup_level">Niveau supérieur ! Vous êtes maintenant niveau %1$d</string>
+    <string name="hiscore_title">Tableau d\'honneur</string>
+    <string name="hiscore_note">Vos cinq courses les plus rapides par distance, chaque course une fois. Touchez une ligne pour ouvrir la course.</string>
+    <string name="hiscore_row">Place %1$d : %2$s le %3$s, %4$s</string>
+    <string name="hiscore_edit">Saisir les initiales</string>
+    <string name="hiscore_done">Terminé</string>
+    <string name="hiscore_up">Lettre suivante en position %1$d</string>
+    <string name="hiscore_down">Lettre précédente en position %1$d</string>
     <string name="palette_group_sport">Sport</string>
     <string name="palette_graphite">Graphite</string>
     <string name="palette_track">Piste</string>

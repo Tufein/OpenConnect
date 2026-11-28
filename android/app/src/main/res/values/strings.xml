@@ -728,6 +728,13 @@
     <string name="levelup_trophy">Trophy unlocked: %1$s</string>
     <string name="levelup_trophies">%1$d trophies unlocked</string>
     <string name="levelup_level">Level up! You reached level %1$d</string>
+    <string name="hiscore_title">Hall of fame</string>
+    <string name="hiscore_note">Your five fastest runs over each distance, each run once. Tap a row to open the run.</string>
+    <string name="hiscore_row">Place %1$d: %2$s on %3$s, %4$s</string>
+    <string name="hiscore_edit">Enter initials</string>
+    <string name="hiscore_done">Done</string>
+    <string name="hiscore_up">Next letter for position %1$d</string>
+    <string name="hiscore_down">Previous letter for position %1$d</string>
     <string name="palette_group_sport">Sport</string>
     <string name="palette_graphite">Graphite</string>
     <string name="palette_track">Track</string>

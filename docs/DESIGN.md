@@ -54,7 +54,11 @@ system sound). No image or sound file is added to the APK. Since v1.16.0 a third
 announces a trophy or a level that new data unlocks: `core/retro/LevelUp.kt` compares the trophies before and after a
 refresh, names a single trophy, counts several, and stays quiet on the first count after opening and on a jump of more
 than three trophies or two levels (an import, the demo). With the sounds on, a trophy plays the record tune and a level
-the goal tune. The message is a normal snackbar, so TalkBack reads it and there is no animation to switch off.
+the goal tune. The message is a normal snackbar, so TalkBack reads it and there is no animation to switch off. Since v1.17.0 the
+Trophies tab has a **hall of fame** (`HiScoreCard.kt`): per distance the five fastest runs from
+`BestEfforts.highScores` (each run once), places in cabinet style ("1ST" to "5TH", the same in every language; TalkBack
+reads each row as a sentence instead) and three initials (`core/retro/Initials`, A to Z only, AAA until chosen) set on a
+name entry with an arrow up and down per letter. It is not called "Hi-score" because the year card already has that name.
 
 Shapes and layout are the same in all of them. A theme is a pair of `Keys` in `PaletteKeys` (`Theme.kt`): primary,
 secondary, tertiary, background, panel and text colour, and from them `scheme()` builds the whole Material colour scheme.

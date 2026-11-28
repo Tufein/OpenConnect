@@ -99,6 +99,7 @@ fun InsightsScreen(
     onLookBackSport: (Sport?) -> Unit = {},
     onLoadDemoYears: () -> Unit = {},
     day: DayState = DayState(),
+    onInitials: (String) -> Unit = {},
 ) {
     Column(Modifier.fillMaxSize().padding(top = contentPadding.calculateTopPadding())) {
         Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -125,7 +126,7 @@ fun InsightsScreen(
         when (tab) {
             InsightsTab.Week -> WeekContent(reports, busy, active, onShiftWeek, onPeriod, onGenerate, onOpenActivity, contentPadding, onOpenHealth, onOpenActivities)
             InsightsTab.Day -> DayContent(day, contentPadding, onOpenActivity)
-            InsightsTab.Trophies -> TrophiesContent(trophies, contentPadding)
+            InsightsTab.Trophies -> TrophiesContent(trophies, contentPadding, reports.hiScores, reports.initials, onInitials, onOpenActivity)
             InsightsTab.Coach -> CoachContent(coach, active, onAsk, onClearCoach, onOpenAiSettings, contentPadding)
             InsightsTab.Plan -> PlanContent(
                 state = plan,

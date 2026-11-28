@@ -208,6 +208,11 @@ class SettingsStore(
         get() = prefs.getString(KEY_WORKOUTS, "") ?: ""
         set(value) = prefs.edit().putString(KEY_WORKOUTS, value).apply()
 
+    /** The three letters on the hi-score table (v1.17.0); empty until chosen, shown as AAA. In the backup. */
+    var initials: String
+        get() = prefs.getString(KEY_INITIALS, "") ?: ""
+        set(value) = prefs.edit().putString(KEY_INITIALS, value).apply()
+
     /** The charge of the things this app talks to; -1 or 0 time means it was never reported. */
     var watchBattery: Int
         get() = prefs.getInt(KEY_WATCH_BATTERY, -1)
@@ -231,7 +236,7 @@ class SettingsStore(
         set(value) = prefs.edit().putBoolean(KEY_RING_BATTERY_REFUSED, value).apply()
 
     /** What the person wrote or chose (journal, shoes, plan, race, max heart rate, goals) for the backup. No keys. */
-    fun userData() = nl.tufein.openconnect.core.UserData(journal, gear, trainingPlan, raceGoal, maxHr, weeklyGoals, workouts)
+    fun userData() = nl.tufein.openconnect.core.UserData(journal, gear, trainingPlan, raceGoal, maxHr, weeklyGoals, workouts, initials)
 
     /** Stores what a restore merged ([nl.tufein.openconnect.core.UserData.mergedWith]); each field only changes if it differs. */
     fun applyUserData(data: nl.tufein.openconnect.core.UserData) {
@@ -242,11 +247,12 @@ class SettingsStore(
         if (data.maxHr != maxHr) maxHr = data.maxHr
         if (data.weeklyGoals != weeklyGoals) weeklyGoals = data.weeklyGoals
         if (data.workouts != workouts) workouts = data.workouts
+        if (data.initials != initials) initials = data.initials
     }
 
     /**
      * Removes everything the person wrote or chose, so that *Delete all data* is true for the settings side too:
-     * the journal, shoes, training plan, race, maximum heart rate, weekly goals, work-outs, the sync log, the Health
+     * the journal, shoes, training plan, race, maximum heart rate, weekly goals, work-outs, hi-score initials, the sync log, the Health
      * Connect ledger and the record of nudges already sent.
      *
      * Keys, tokens, onboarding, theme, language, app lock and the device switches stay: the key vault is cleared by
@@ -264,6 +270,7 @@ class SettingsStore(
             .remove(KEY_GOAL_DISTANCE)
             .remove(KEY_GOAL_ACTIVITIES)
             .remove(KEY_WORKOUTS)
+            .remove(KEY_INITIALS)
             .remove(KEY_SYNC_LOG)
             .remove(KEY_HEALTH_LEDGER)
             .remove(KEY_NUDGES_SENT)
@@ -524,6 +531,7 @@ class SettingsStore(
         private const val KEY_SCANLINES = "retro_scanlines"
         private const val KEY_RETRO_SOUNDS = "retro_sounds"
         private const val KEY_LEVEL_UPS = "retro_level_ups"
+        private const val KEY_INITIALS = "retro_initials"
         private const val KEY_STYLE = "theme_style"
         private const val KEY_SIGNALS = "theme_signals"
         private const val KEY_RINGS = "theme_rings"
