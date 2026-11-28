@@ -20,6 +20,11 @@ ruff format --check src tests
 pytest --cov=openconnect --cov-report=term-missing --cov-fail-under=85
 ```
 
+Before a push, `tools/prepush.sh` runs in seconds what most often turned CI red after a push: ruff (lint and
+format, including `tools/`), `CHANGELOG.md` against `docs/releases`, and one version in `pyproject.toml`, the server,
+the API test and `android/app/build.gradle.kts` (with its release note). Let git run it on every push with
+`git config core.hooksPath .githooks`; `git push --no-verify` skips it once.
+
 CI runs exactly these on Python 3.11, 3.12 and 3.13, then builds a wheel, smoke-tests the CLI
 (`openconnect sync --days 14`) and a Docker image. Coverage may not drop below 85%.
 

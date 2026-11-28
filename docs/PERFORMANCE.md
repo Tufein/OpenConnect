@@ -35,9 +35,21 @@ the newest 300 routes and thins each to 500 positions, however much history ther
 | v1.12.0 and v1.13.0 | 12.56 MB (12,562,016 bytes), 20 KB under the old 12 MiB limit |
 | v1.13.3 (Compose 1.13) | 13.10 MB (13,097,301 bytes in the pull request build), 96 percent of the old 13 MiB budget |
 | v1.13.11 (live heart rate, Oura card) | 13.16 MB (13,156,021 bytes, the published APK), 96.5 percent of the old 13 MiB budget, 475 KB of room |
+| v1.13.12 (Look back) | 13.26 MB (13,255,229 bytes), 90 percent of the 14 MiB budget of that time |
+| **v1.14.0 (dex compressed in the APK)** | **6.44 MB** (6,439,365 bytes in a local release build: dex 4.57 MB, resources.arsc 1.21 MB, res/ 0.48 MB), 77 percent of the new 8 MiB budget |
+
+**v1.14.0 compresses the dex files in the APK** (`packaging { dex.useLegacyPackaging = true }` in
+`android/app/build.gradle.kts`). For minSdk 28 and newer the Android Gradle Plugin stores dex uncompressed by default, so
+Android could map the code straight from the APK; the price is a download twice as large. Android compiles the app when it
+installs (and again in the background) either way; with compressed dex the installer unpacks the code once, which costs a
+few MB of storage that the uncompressed APK did not need, and nothing at run time. The two dex files went from 11.4 MB to
+4.57 MB, the APK from 13.26 MB to 6.44 MB, and the in-app updater downloads half as much. The emulator smoke test installs
+and walks this very APK on every pull request and release. The budget went **down** from 14 MiB to 8 MiB, so a build that
+loses the compression fails at once instead of slowly eating the room; `tests/unit/test_apk_size.py` checks both the
+number and the line in the build file.
 
 The earlier statement in the roadmap that the APK was 11 MB was wrong; it had never been measured. The budget is now
-**14 MiB** (14,680,064 bytes; it was 13 MiB until v1.13.12), kept in one place, `android/scripts/check_apk_size.py`. Both the *Release* workflow and the
+**8 MiB** (8,388,608 bytes; it was 14 MiB in v1.13.12 and 13 MiB before that), kept in one place, `android/scripts/check_apk_size.py`. Both the *Release* workflow and the
 *Android* workflow (on every push and pull request) run it, so a change that makes the APK too big is found when it is made,
 not at release time. It prints where the bytes are, writes that to the run summary, warns from 95 percent and fails above
 the budget. A test (`tests/unit/test_apk_size.py`) keeps this page and the script on the same number.
@@ -68,10 +80,9 @@ foundation 0.52, runtime 0.29, animation 0.11) and the app's own code 1.44 MB. M
 and pull-to-refresh), so replacing those with the app's own components might return roughly half a MB; that is a
 guess to measure, not a promise.
 
-Two ways to get a lot back when it is needed, neither taken yet because they cannot be tried on a real phone from here:
-compress the dex files in the APK (`useLegacyPackaging` for dex: the APK would be about 6 MB smaller, at the price of the
-phone decompressing them when the app is installed), or let R8 optimise instead of only shrinking (it would also rename,
-which makes a stack trace in an issue unreadable unless the mapping file is kept).
+Two ways to get a lot back were written down here in v1.13.12. The first, compressing the dex files in the APK, is taken
+in v1.14.0 (above). The second is still open: let R8 optimise instead of only shrinking (it would also rename, which makes
+a stack trace in an issue unreadable unless the mapping file is kept with each release).
 
 R8 shrinks only (it removes unused code and resources, it does not rename or optimise: `proguard-rules.pro`), so a stack
 trace in an issue still reads. The risk of shrinking is a class that is only reached by name (Work manager, JSON

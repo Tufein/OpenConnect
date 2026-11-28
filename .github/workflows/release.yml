@@ -63,7 +63,7 @@ jobs:
           bash android/scripts/verify-apk-signer.sh android/app/build/outputs/apk/github/release/app-github-release.apk \
             "$OPENCONNECT_KEYSTORE" "$OPENCONNECT_KEY_ALIAS" "$OPENCONNECT_KEYSTORE_PASSWORD"
       - name: Keep the APK small
-        # The budget (14 MiB) lives in android/scripts/check_apk_size.py, which the Android workflow runs on every change
+        # The budget (8 MiB since v1.14.0) lives in android/scripts/check_apk_size.py, which the Android workflow runs on every change
         # too. It was 30 MB before R8 shrinking (v0.58.0) and is 12.56 MB at v1.13.0, nearly all of it code.
         run: |
           python3 android/scripts/check_apk_size.py android/app/build/outputs/apk/github/release/app-github-release.apk \

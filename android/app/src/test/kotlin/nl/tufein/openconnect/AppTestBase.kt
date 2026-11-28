@@ -170,11 +170,44 @@ abstract class AppTestBase {
         rule.onNodeWithText(text).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
     }
 
-    /** Scroll the first scrollable list until [text] has been composed. */
+    /**
+     * Scroll the main list until [text] has been composed, waiting up to 45 s for it to exist at all.
+     *
+     * Home gains a card now and then, and every time one or two screen tests broke: they waited for a card by its text
+     * (`waitForText`), but a lazy list only composes what is on screen, so a card pushed below the fold was never found;
+     * or they scrolled once before the screen had loaded and found nothing to scroll to. This one helper covers both:
+     * it keeps trying until the text is on screen, scrolling the main list to it on every try, and after a try that did
+     * not find it goes back to the top, so a list that was searched to its end does not hide a card that loads at the top.
+     * Use it for anything that is not at the top of a screen.
+     */
     protected fun scrollToText(text: String, substring: Boolean = false) {
-        if (!hasText(text, substring)) {
-            mainScrollable().performScrollToNode(androidx.compose.ui.test.hasText(text, substring))
+        if (hasText(text, substring)) return
+        var lastError: Throwable? = null
+        try {
+            rule.waitUntil(45_000) {
+                hasText(text, substring) || tryScrollTo(text, substring) { lastError = it }
+            }
+        } catch (e: Throwable) {
+            println("--- screen when scrolling to \"$text\" ---\n" + rule.onRoot().printToString(maxDepth = 100))
+            throw AssertionError("\"$text\" did not appear within 45 s, not even after scrolling the main list", lastError ?: e)
         }
+    }
+
+    /** One attempt for [scrollToText]: true when [text] is composed after scrolling, false (and back to the top) when not. */
+    private fun tryScrollTo(text: String, substring: Boolean, failed: (Throwable) -> Unit): Boolean = try {
+        if (rule.onAllNodes(hasScrollAction()).fetchSemanticsNodes().isEmpty()) {
+            false
+        } else {
+            mainScrollable().performScrollToNode(androidx.compose.ui.test.hasText(text, substring))
+            hasText(text, substring)
+        }
+    } catch (e: AssertionError) {
+        failed(e)
+        runCatching { mainScrollable().performScrollToIndex(0) }
+        false
+    } catch (e: IllegalStateException) {
+        failed(e)
+        false
     }
 
     /** Click a tagged tile/card through the nearest click action, even when the tag is hidden in the merged tree. */
@@ -193,9 +226,7 @@ abstract class AppTestBase {
 
     /** Lists compose lazily, so an item below the fold is not in the tree until it has been scrolled to. */
     protected fun clickText(text: String) {
-        if (!hasText(text, substring = false)) {
-            mainScrollable().performScrollToNode(hasText(text))
-        }
+        if (!hasText(text, substring = false)) scrollToText(text)
         // A tile or button can keep its click on a parent while its text is a child without an OnClick action: walk up
         // and invoke the nearest click action, so a tile behind the navigation bar is clicked through semantics too.
         var node: androidx.compose.ui.semantics.SemanticsNode? = rule.onNodeWithText(text).fetchSemanticsNode()
