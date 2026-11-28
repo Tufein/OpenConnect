@@ -35,16 +35,25 @@ class SourceLabelsTest {
     }
 
     /**
-     * The honest state on the day of v0.55.0. To change this list there must be a real trial to point at: a date and a
-     * version, and a line in docs/PUBLIC_RELEASE.md section 2. A source never goes to tested because its tests are green.
+     * The honest state. To change this list there must be a real trial to point at: a date and a version, and a line in
+     * docs/PUBLIC_RELEASE.md section 2. A source never goes to tested because its tests are green. The Garmin account
+     * was tried live on 2026-11-12; Stefan confirmed Bluetooth and live heart rate on his fenix 8 on 2026-11-28.
      */
     @Test
-    fun onlyTheGarminAccountHasBeenTriedOnARealDevice() {
+    fun onlyWhatWasTriedOnARealDeviceIsLabelledTested() {
         val tested = SourceLabels.all.filter { it.tested }.map { it.kind }
-        assertEquals(listOf(DataSourceKind.GARMIN_ACCOUNT), tested)
+        assertEquals(listOf(DataSourceKind.GARMIN_ACCOUNT, DataSourceKind.WATCH_BLUETOOTH, DataSourceKind.LIVE_HEART_RATE), tested)
         val garmin = SourceLabels.status(DataSourceKind.GARMIN_ACCOUNT)
         assertEquals(LocalDate.of(2026, 11, 12), garmin.testedOn)
         assertEquals("0.4.0", garmin.version)
+        for (kind in listOf(DataSourceKind.WATCH_BLUETOOTH, DataSourceKind.LIVE_HEART_RATE)) {
+            assertEquals(LocalDate.of(2026, 11, 28), SourceLabels.status(kind).testedOn, "$kind")
+            assertEquals("1.13.12", SourceLabels.status(kind).version, "$kind")
+        }
+        // the USB cable, the ring and the AI keys were not part of that trial, so they stay experimental
+        for (kind in listOf(DataSourceKind.WATCH_USB, DataSourceKind.OURA, DataSourceKind.AI_CLAUDE, DataSourceKind.HEALTH_CONNECT)) {
+            assertNull(SourceLabels.status(kind).testedOn, "$kind")
+        }
     }
 
     @Test

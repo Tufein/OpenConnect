@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.13.13: bevestigd op de Fenix 8, en zeven fouten uit de fuzz-tests
+
+Stefan meldde op 2026-11-28 dat Cercis op zijn fenix 8 en zijn eigen telefoon "allemaal heel goed" werkt: Bluetooth-sync, de horlogebatterij, meldingen op het horloge en de live hartslag uit de eigen Garmin-dienst. Dat staat nu in de app en in de documentatie als getest op echte hardware. Daarnaast zijn alle bestandslezers van app en server met duizenden beschadigde bestanden bestookt; dat vond …
+
+[Release notes](docs/releases/v1.13.13.md)
+
 ## v1.13.12: Terugblik, je hele geschiedenis naast elkaar
 
 Onder **Inzichten → Terugblik** zie je nu dit jaar tegenover vorig jaar, elke maand van elk jaar in één raster, elk jaar op zich en de records die onderweg zijn gebroken. Het is gemaakt voor wie jaren aan Garmin- of Strava-geschiedenis heeft binnengehaald (v1.3.0 en v1.4.0): dat verleden kon je wel importeren, maar er was nergens een plek om het terug te kijken.

@@ -15,7 +15,7 @@ Stand op 2026-11-25, na v1.13.0: nog niets aangevinkt dat van een echt apparaat 
 - [ ] Bijwerken over een oudere versie heen, gegevens blijven staan, en de updater onder Instellingen (T4)
 - [ ] Garmin-account met een eigen sleutel (T5)
 - [ ] Een Garmin-horloge over USB, bij Stefan de fenix 8 (T6)
-- [ ] Een Garmin-horloge over Bluetooth, bij Stefan de fenix 8 (T7)
+- [x] Een Garmin-horloge over Bluetooth, bij Stefan de fenix 8 (T7) — **bevestigd door Stefan op 2026-11-28 met v1.13.12** (sync, batterij, live hartslag en meldingen: "werkt allemaal heel goed")
 - [ ] Live hartslag met het scherm uit (T8)
 - [ ] Health Connect lezen en schrijven (T9)
 - [ ] Back-up, alles wissen, terugzetten (T13)
@@ -91,6 +91,13 @@ Noteer bij elke stap de **versie van de app** (die staat in Instellingen) en de 
 | T15 | Kopieer een training van je plan naar het horloge (USB, `GARMIN/NewFiles`) en open hem op het horloge | De training staat in de lijst en start | Of het horloge hem weigert, met de naam van het bestand |
 | T16 | Laat de app een dag draaien met je bronnen aan (Garmin, eventueel Oura) en een uur *Live hartslag*. Open daarna Android, Instellingen, Batterij, Cercis | Een batterijverbruik dat je niet hoeft op te merken (Android toont het in procenten en per uur) | Het percentage en wat je aan had staan |
 | T17 | Zet *Watch, Meldingen op het horloge* aan, geef toegang tot meldingen (op Android 13 of nieuwer eerst *Beperkte instellingen toestaan* in de app-info), kies één chat-app en druk op *Stuur een test naar het horloge*. Stuur jezelf daarna een bericht in die app | De test en het bericht staan op het horloge, met titel en tekst; wegvegen op het horloge veegt het ook op de telefoon weg; een app die je niet koos komt niet door | Wat het horloge toont (of niets), het stappenlijstje en het logboek onder *Wat gebeurt er?* (kopieer het), de regel *Laatste melding niet verstuurd* in de app, en of de Garmin Connect-app daarna nog verbinding kreeg |
+
+**Uitgevoerd:**
+
+| Datum | Versie | Stap | Uitkomst |
+|-------|--------|------|----------|
+| 2026-11-12 | 0.4.0 | T5 | Garmin-account met eigen sleutel live geprobeerd: token, alle dagtypes, één activiteit |
+| 2026-11-28 | 1.13.12 | T7, T17, live hartslag | Stefan op zijn fenix 8 en eigen telefoon: Bluetooth-sync, horlogebatterij, meldingen op het horloge en de live hartslag uit de eigen Garmin-dienst "werken allemaal heel goed". Er is geen logboek per stap bij; T6 (USB), T8 (scherm uit, tien minuten), T9 en verder zijn daarmee niet afgevinkt |
 
 Een stap die niet kan (geen ring, geen band) hoef je niet te doen: die bron blijft dan *Experimenteel* in 1.0, en dat staat in de app.
 

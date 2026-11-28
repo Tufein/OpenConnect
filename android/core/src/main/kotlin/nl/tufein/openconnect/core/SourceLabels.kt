@@ -39,11 +39,14 @@ object SourceLabels {
     fun status(kind: DataSourceKind): SourceStatus = when (kind) {
         // Run live against a real Garmin account on 2026-11-12 (token, all data types, one activity download).
         DataSourceKind.GARMIN_ACCOUNT -> SourceStatus(kind, LocalDate.of(2026, 11, 12), "0.4.0")
+        // Stefan, 2026-11-28, on his fenix 8 and his own phone with v1.13.12: Bluetooth sync, battery, notifications on
+        // the watch and live heart rate from the watch's own service "all work very well" (docs/PUBLIC_RELEASE.md, T7/T17).
+        DataSourceKind.WATCH_BLUETOOTH,
+        DataSourceKind.LIVE_HEART_RATE,
+        -> SourceStatus(kind, LocalDate.of(2026, 11, 28), "1.13.12")
         DataSourceKind.GARMIN_ACCOUNT_ACTIVITIES,
         DataSourceKind.WATCH_USB,
         DataSourceKind.WATCH_FOLDER,
-        DataSourceKind.WATCH_BLUETOOTH,
-        DataSourceKind.LIVE_HEART_RATE,
         DataSourceKind.WORKOUTS_TO_WATCH,
         DataSourceKind.HEALTH_CONNECT,
         DataSourceKind.OURA,
