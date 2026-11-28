@@ -56,6 +56,7 @@ import nl.tufein.openconnect.core.Csv
 import nl.tufein.openconnect.core.DataOverview
 import nl.tufein.openconnect.core.SyncLog
 import nl.tufein.openconnect.core.retro.Chiptune
+import nl.tufein.openconnect.core.retro.Initials
 import nl.tufein.openconnect.core.retro.LevelUp
 import nl.tufein.openconnect.core.SyncLogEntry
 import nl.tufein.openconnect.core.ArchiveImport
@@ -1191,9 +1192,17 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun loadEfforts() = io {
-        val efforts = BestEfforts.personalBests(repo)
-        _reports.update { it.copy(efforts = efforts) }
+        // One pass over the runs gives both: the best efforts are the top line of the hi-score table.
+        val table = BestEfforts.highScores(repo)
+        val initials = Initials.shown(container.settings.initials)
+        _reports.update { it.copy(efforts = table.values.map { places -> places.first() }, hiScores = table, initials = initials) }
         publishRace()
+    }
+
+    /** The three letters on the hi-score table; anything but A to Z is dropped. */
+    fun setInitials(text: String) {
+        container.settings.initials = Initials.clean(text)
+        _reports.update { it.copy(initials = Initials.shown(container.settings.initials)) }
     }
 
     // ------------------------------------------------------------------------------- actions

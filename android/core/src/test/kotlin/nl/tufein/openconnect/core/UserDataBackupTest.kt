@@ -46,6 +46,24 @@ class UserDataBackupTest {
     }
 
     @Test
+    fun `work-outs made in the app come back`() {
+        // v1.17.0: the work-outs (v1.6.0) were in UserData and merged on restore, but the file never held them, so a new
+        // phone lost every work-out that was made in the app.
+        val workouts = WorkoutBook(listOf(OwnWorkout("w1", "Tempo | 3x10"), OwnWorkout("w2", "Lang rustig"))).encode()
+        assertEquals(workouts, roundTrip(everything.copy(workouts = workouts)).workouts)
+        val mine = WorkoutBook(listOf(OwnWorkout("w3", "Heuvels"))).encode()
+        val merged = WorkoutBook.decode(roundTrip(UserData(workouts = workouts), UserData(workouts = mine)).workouts)
+        assertEquals(listOf("w3", "w1", "w2"), merged.workouts.map { it.id }, "this phone's own work-outs stay, the backup's are added")
+    }
+
+    @Test
+    fun `the hi-score initials come back, and this phone's own initials win`() {
+        assertEquals("SVB", roundTrip(everything.copy(initials = "SVB")).initials)
+        assertEquals("ABC", roundTrip(UserData(initials = "SVB"), UserData(initials = "ABC")).initials)
+        assertEquals("", roundTrip(UserData()).initials)
+    }
+
+    @Test
     fun `the days of the Oura Ring, WHOOP and Hume Band come back as well as the watch`() {
         val source = InMemoryRepository()
         OuraDemo.days(day, 5).forEach(source::upsertOuraDay)

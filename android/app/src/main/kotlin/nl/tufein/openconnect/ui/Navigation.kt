@@ -469,6 +469,7 @@ fun OpenConnectRoot(
                     onLookBackSport = vm::chooseLookBackSport,
                     onLoadDemoYears = vm::loadDemoYears,
                     day = days,
+                    onInitials = vm::setInitials,
                     onShiftWeek = vm::shiftWeek,
                     onPeriod = vm::setReportPeriod,
                     onGenerate = vm::generateWeeklyReport,

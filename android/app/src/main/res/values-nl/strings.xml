@@ -728,6 +728,13 @@
     <string name="levelup_trophy">Trofee vrijgespeeld: %1$s</string>
     <string name="levelup_trophies">%1$d trofeeën vrijgespeeld</string>
     <string name="levelup_level">Level up! Je bent nu level %1$d</string>
+    <string name="hiscore_title">Eregalerij</string>
+    <string name="hiscore_note">Je vijf snelste runs per afstand, elke run één keer. Tik op een regel om de run te openen.</string>
+    <string name="hiscore_row">Plaats %1$d: %2$s op %3$s, %4$s</string>
+    <string name="hiscore_edit">Initialen invoeren</string>
+    <string name="hiscore_done">Klaar</string>
+    <string name="hiscore_up">Volgende letter op positie %1$d</string>
+    <string name="hiscore_down">Vorige letter op positie %1$d</string>
     <string name="palette_group_sport">Sport</string>
     <string name="palette_graphite">Graphite</string>
     <string name="palette_track">Baan</string>

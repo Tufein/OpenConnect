@@ -20,7 +20,7 @@ De afvinklijst voor proeven op echte apparaten en het terugdraaiplan staan in
 echte dienst · ❓ heeft iets nodig dat alleen de eigenaar (of iemand buiten het project) kan geven · **S/M/L/XL** =
 klein (een sessie), middel, groot (meerdere releases), heel groot
 
-## 1. Waar we staan (v1.16.0, 2026-11-28)
+## 1. Waar we staan (v1.17.0, 2026-11-28)
 
 - **Wat Cercis is.** Een Android-app die je Garmin-horloge, je Garmin-account, een Oura Ring, Health Connect en je
   eigen bestanden (FIT, GPX, TCX, hele archieven van Garmin en Strava) op je eigen telefoon samenbrengt, zonder server
@@ -46,6 +46,9 @@ klein (een sessie), middel, groot (meerdere releases), heel groot
 - **Sinds v1.16.0: level-up.** Speelt nieuwe data een trofee of een nieuw level vrij, dan zegt de app dat in een korte
   melding, met een eigen deuntje als de 8-bit-geluiden aan staan. Standaard uit; een grote import of de demo blijft
   stil, zodat je niet twintig felicitaties achter elkaar krijgt.
+- **Sinds v1.17.0: de eregalerij.** Op de tab Trofeeën staan per afstand je vijf snelste runs, met de drie letters die
+  je zelf kiest, zoals de tabel op een arcadekast. Bij het bouwen bleek dat de back-up je zelfgemaakte workouts nooit
+  bewaarde (sinds v1.6.0); dat is gerepareerd.
 - **Wat nog zwak is:**
   1. **De meeste bronnen zijn nooit op echte hardware geprobeerd:** USB, Health Connect, Oura, de AI-sleutels, de
      updater, de archief-import met een echte export en de winkelvariant. Dat is spoor B, D, E en F, en de rij in
@@ -217,12 +220,12 @@ de contrasttest.
 | G1 | **Trofeeënkast in pixels:** de bestaande trofeeën krijgen eigen 16×16-pixelbadges (als vector, dus geen APK-groei), met de datum waarop je ze haalde | Schermtest; elke trofee heeft een tekening en een TalkBack-tekst | M | — |
 | G2 | ✅ v1.15.0 **CRT-look:** een optionele laag met scanlijnen voor de stijl Retro (een zachte gloed kan later) | Contrasttest en schermafbeelding in de test | S/M | — |
 | G3 | ✅ v1.15.0 **LCD-palet:** vier tinten groen zoals een oud handheld-scherm, als zevende palet | Contrasttest op elke tekstkleur | S | — |
-| G4 | ✅ v1.16.0 voor trofeeën en levels (record en weekdoel volgen in v1.18.0) **Level-up:** een korte felicitatie bij een nieuwe trofee, een nieuw level, een nieuw record of een gehaald weekdoel | Schermtest; geen animatie, dus niets uit te zetten bij *Animaties verwijderen*; TalkBack leest de melding voor | S | — |
+| G4 | ✅ v1.16.0 voor trofeeën en levels (record en weekdoel volgen in v1.19.0) **Level-up:** een korte felicitatie bij een nieuwe trofee, een nieuw level, een nieuw record of een gehaald weekdoel | Schermtest; geen animatie, dus niets uit te zetten bij *Animaties verwijderen*; TalkBack leest de melding voor | S | — |
 | G5 | ✅ v1.15.0 en v1.16.0 (bij een sync, een trofee en een level) **8-bit-geluidjes** bij een record of een afgeronde sync, op de telefoon zelf opgewekt (geen geluidsbestanden), standaard uit | Test op de toongenerator; geluid alleen als het aan staat | S | — |
 | G6 | **"Continue?"** na een gemiste week: het voorstel van het schema dat meedenkt, als speels scherm met Toepassen of Niet nu | Schermtest op beide knoppen | S | — |
 | G7 | **Pixel-heatmap:** de heatmap als blokjeskaart in de stijl Retro | Schermtest | S | — |
 | G8 | **Widgets in elke stijl,** ook Retro en LCD | Glance-test per stijl | S | G3 |
-| G9 | **Highscore-tabel per afstand** met initialen die je zelf kiest (drie letters), naast de bestaande records | Schermtest; back-up bewaart de initialen | S | — |
+| G9 | ✅ v1.17.0 (als *Eregalerij* op de tab Trofeeën; de naam Hi-score was al van de jaarkaart) **Highscore-tabel per afstand** met initialen die je zelf kiest (drie letters), naast de bestaande records | Schermtest; back-up bewaart de initialen | S | — |
 | G10 | Echte schermafbeeldingen en een TalkBack-proef (T14) | Gedateerde rij in `PUBLIC_RELEASE.md` | S | ❓ Stefan |
 
 ### H. Privacy en beveiliging
@@ -291,25 +294,26 @@ schuift het naar voren. Versienummers worden pas bij het uitbrengen gegeven.
 | **v1.14.0** ✅ | Schoon fundament | APK 6,4 MB en budget 8 MiB (A2), pre-push (A3), scroll-helper (A4), AppViewModel stap 1 (A5), deze roadmap (L1) | M |
 | **v1.15.0** ✅ | Retro, deel 1 | LCD-palet (G3), scanlijnen (G2), 8-bit-deuntjes na een sync met iets nieuws (G5) | S/M |
 | **v1.16.0** ✅ | Retro, deel 2: level-up | Een melding bij een nieuwe trofee of een nieuw level (G4), met het record- of doeldeuntje als de geluiden aan staan (G5); een grote import blijft stil | S |
-| **v1.17.0** | Zonder waarschuwingen | Eigen sleutelkluis (H3), nul waarschuwingen als poort (A6), StrictMode (A13), configuratiecache (A10) | M |
-| **v1.18.0** | Retro, deel 3 | Pixeltrofeeën (G1), level-up bij een record en een gehaald weekdoel (rest van G4), "Continue?" (G6), highscores met initialen (G9) | M |
-| **v1.19.0** | Looptechniek | Grade-adjusted pace (C1), rondes en intervallen (C2), cadans en paslengte (C6), splits op dezelfde route (C10) | M |
-| **v1.20.0** | Drempel | Drempelschatting (C3), tempozones (C4), trainingsstatus (C5) | M |
-| **v1.21.0** | Gezondheid door de jaren | Jaar op jaar (D1), HRV-nacht (D2), slaapregelmaat (D3), ziek of geblesseerd (D4), ademhaling en SpO2 (D6) | M |
-| **v1.22.0** | Open formaat | Open JSON (K1), schema als agenda (K2), prullenbak (E4), achteraf bewerken (E5) | M |
-| **v1.23.0** | Horloge praat terug | Agenda (B4), zoek mijn telefoon (B5), muziekbediening (B6): met nepwatch getest, op de fenix 8 te bevestigen | M/L |
-| **v1.24.0** | Eerlijke coach | Coach zonder AI (F1), zien wat er weggaat (F2), "Waarom zegt de app dit?" (F3), modellen bij (F4) | M |
-| **v1.25.0** | Op de achtergrond | Synchroniseren zonder de app te openen (B3), meer dan één horloge (B11) | L |
-| **v1.26.0** | Geschiedenis heel | Samenvoegen en splitsen (E3), dubbelen-rapport (E6), op deze dag (E7) | M |
-| **v1.27.0** | Koppelbaar | Tasker en Home Assistant (K3), server-import (J2), Python 3.14 (J4) | M |
-| **v1.28.0** | Thuisbasis | Telefoon naar eigen server (J3), webhook (K4), versleutelde back-up (H4) | L |
-| **v1.29.0** | Herkomst | Netwerktest (H5), vastgepinde Actions en verificatie (H6), SBOM (H7), reproduceerbare build (H8) | M/L |
-| **v1.30.0** | Echte data ❓ | Training Effect en co (B2), dagen uit de export (D8), bevestigde archief-import (E2): zodra Stefans opname en export er zijn | L ❓ |
-| **v1.31.0** | Winkelklaar ❓ | Naam (I1), Play-account (I2), F-Droid (I3), native talen (I4), echte schermafbeeldingen (I5, G10) | M ❓ |
+| **v1.17.0** ✅ | Retro, deel 3: eregalerij | Je vijf snelste runs per afstand met je eigen initialen (G9); de back-up bewaart eindelijk ook je zelfgemaakte workouts | S |
+| **v1.18.0** | Zonder waarschuwingen | Eigen sleutelkluis (H3), nul waarschuwingen als poort (A6), StrictMode (A13), configuratiecache (A10) | M |
+| **v1.19.0** | Retro, deel 4 | Pixeltrofeeën (G1), level-up bij een record en een gehaald weekdoel (rest van G4), "Continue?" (G6) | M |
+| **v1.20.0** | Looptechniek | Grade-adjusted pace (C1), rondes en intervallen (C2), cadans en paslengte (C6), splits op dezelfde route (C10) | M |
+| **v1.21.0** | Drempel | Drempelschatting (C3), tempozones (C4), trainingsstatus (C5) | M |
+| **v1.22.0** | Gezondheid door de jaren | Jaar op jaar (D1), HRV-nacht (D2), slaapregelmaat (D3), ziek of geblesseerd (D4), ademhaling en SpO2 (D6) | M |
+| **v1.23.0** | Open formaat | Open JSON (K1), schema als agenda (K2), prullenbak (E4), achteraf bewerken (E5) | M |
+| **v1.24.0** | Horloge praat terug | Agenda (B4), zoek mijn telefoon (B5), muziekbediening (B6): met nepwatch getest, op de fenix 8 te bevestigen | M/L |
+| **v1.25.0** | Eerlijke coach | Coach zonder AI (F1), zien wat er weggaat (F2), "Waarom zegt de app dit?" (F3), modellen bij (F4) | M |
+| **v1.26.0** | Op de achtergrond | Synchroniseren zonder de app te openen (B3), meer dan één horloge (B11) | L |
+| **v1.27.0** | Geschiedenis heel | Samenvoegen en splitsen (E3), dubbelen-rapport (E6), op deze dag (E7) | M |
+| **v1.28.0** | Koppelbaar | Tasker en Home Assistant (K3), server-import (J2), Python 3.14 (J4) | M |
+| **v1.29.0** | Thuisbasis | Telefoon naar eigen server (J3), webhook (K4), versleutelde back-up (H4) | L |
+| **v1.30.0** | Herkomst | Netwerktest (H5), vastgepinde Actions en verificatie (H6), SBOM (H7), reproduceerbare build (H8) | M/L |
+| **v1.31.0** | Echte data ❓ | Training Effect en co (B2), dagen uit de export (D8), bevestigde archief-import (E2): zodra Stefans opname en export er zijn | L ❓ |
+| **v1.32.0** | Winkelklaar ❓ | Naam (I1), Play-account (I2), F-Droid (I3), native talen (I4), echte schermafbeeldingen (I5, G10) | M ❓ |
 | **v2.0.0-rc.1** | Bevriezen | Geen nieuwe functie meer; alleen bewijs en reparaties | M |
 | **v2.0.0** | Twee punt nul | De zeven poorten van paragraaf 3 groen | XL |
 
-**Waarom deze volgorde:** de eerste twee delen van het retro-pakket kwamen vóór de sleutelkluis omdat ze klein zijn,
+**Waarom deze volgorde:** de eerste drie delen van het retro-pakket kwamen vóór de sleutelkluis omdat ze klein zijn,
 volledig in tests te controleren en niets aan je opgeslagen sleutels raken. De sleutelkluis (H3) verhuist je AI-,
 Garmin- en Oura-sleutels naar een nieuwe opslag; een fout daarin kost je die sleutels, dus die release krijgt een eigen
 proef op een echte telefoon voordat hij uitgaat. Daarna eerst wat de basis gezond maakt (geen
@@ -331,13 +335,13 @@ Tussendoor komen patchreleases als een proef of een melding daarom vraagt.
 |---------|-----|--------------------------------|
 | **Zo snel mogelijk** | De ondertekeningssleutel in GitHub-secrets zetten, een offline kopie bewaren en de privé-conceptrelease `signing-key` verwijderen (H1). **Vervang de sleutel niet** | Alleen de eigenaar beheert secrets en bewaart een kopie; een nieuwe sleutel breekt het bijwerken van elke geïnstalleerde app |
 | Zo snel mogelijk | Privé melden van kwetsbaarheden aanzetten (H2) | Instelling van de eigenaar |
-| Bij v1.30.0 | Eén activiteit van je fenix 8 als FIT aanleveren, liefst een harde training (B2) | Alleen jouw horloge levert Training Effect, hersteltijd en Performance Condition |
-| Bij v1.30.0 | Je export bij Garmin Connect en eventueel Strava aanvragen, één keer importeren en *Rapport kopiëren* in een melding plakken (E2, D8) | De veldnamen van die exporten staan nergens beschreven |
+| Bij v1.31.0 | Eén activiteit van je fenix 8 als FIT aanleveren, liefst een harde training (B2) | Alleen jouw horloge levert Training Effect, hersteltijd en Performance Condition |
+| Bij v1.31.0 | Je export bij Garmin Connect en eventueel Strava aanvragen, één keer importeren en *Rapport kopiëren* in een melding plakken (E2, D8) | De veldnamen van die exporten staan nergens beschreven |
 | Wanneer het uitkomt | De proeven T6 (USB), T8 (scherm tien minuten uit), T14 (TalkBack) en T16 (batterij) uit `PUBLIC_RELEASE.md` | Alleen jij hebt de apparaten |
 | Wanneer het uitkomt | Oura, Health Connect en de AI-sleutels een keer echt proberen (D9, F6) | Alleen jij hebt de accounts en sleutels |
-| Bij v1.23.0 | Agenda, zoek mijn telefoon en muziekbediening op de fenix 8 proberen (B4 tot en met B6) | Het protocol is alleen op een echt horloge te bevestigen |
+| Bij v1.24.0 | Agenda, zoek mijn telefoon en muziekbediening op de fenix 8 proberen (B4 tot en met B6) | Het protocol is alleen op een echt horloge te bevestigen |
 | Vóór B7 | Kiezen of het weer naar het horloge mag (netwerkverkeer naar Open-Meteo) | Een privacykeuze |
-| Bij v1.31.0 | Juridische naamcontrole, Play-account met testers, echte schermafbeeldingen, moedertaalsprekers voor Duits en Frans (I1 tot en met I5) | Account-, merk- en bewijsstukken |
+| Bij v1.32.0 | Juridische naamcontrole, Play-account met testers, echte schermafbeeldingen, moedertaalsprekers voor Duits en Frans (I1 tot en met I5) | Account-, merk- en bewijsstukken |
 | Vóór 3.0 | Kiezen over een eigen Connect IQ-dataveld, delen binnen een huishouden en een webweergave op de server | Richtingkeuzes |
 | ✅ 2026-11-28 | Bevestigd dat de app op de fenix 8 en je telefoon werkt | Gedaan; staat in de app en in paragraaf 7 |
 | ✅ 2026-11-25 | Weergavenaam Cercis gekozen | Gedaan; de juridische controle staat nog open |
@@ -454,6 +458,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.14.0 | Schoon fundament: de dex-bestanden gecomprimeerd in de APK (13,3 naar 6,4 MB, budget van 14 naar 8 MiB), één scroll-helper voor de schermtests, een pre-push-controle (ruff, CHANGELOG, versie op vier plekken), AppViewModel opgesplitst zonder gedragswijziging (toestanden en doorgeefluiken naar eigen bestanden) en een nieuwe roadmap met twaalf sporen; de oude staat in `ROADMAP-HISTORIE.md` |
 | v1.15.0 | Retro, deel 1: LCD-palet in vier tinten groen (eigen tinten), scanlijnen over de stijl Retro (wisselen bouwt het scherm niet opnieuw op) en 8-bit-deuntjes na een sync met iets nieuws, alleen terwijl de app op het scherm staat; alles standaard uit en zonder beeld- of geluidsbestanden |
 | v1.16.0 | Retro, deel 2: level-up-meldingen bij een nieuwe trofee (met de naam) of een nieuw level, met het record- of doeldeuntje als de 8-bit-geluiden aan staan; de eerste berekening na het openen en een sprong van meer dan drie trofeeën of twee levels (een import, de demo) blijven stil; standaard uit |
+| v1.17.0 | Retro, deel 3: eregalerij op de tab Trofeeën (per afstand de vijf snelste runs, elke run één keer, met eigen initialen via een naaminvoer met pijltjes, standaard AAA); de back-up bewaart nu ook de zelfgemaakte workouts (zaten sinds v1.6.0 wel in de gegevens maar nooit in het bestand) en de initialen |
 
 ## 9. Hoe releases werken
 

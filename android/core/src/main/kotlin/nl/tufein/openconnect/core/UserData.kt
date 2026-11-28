@@ -16,6 +16,8 @@ data class UserData(
     val weeklyGoals: WeeklyGoals = WeeklyGoals(),
     /** Work-outs made in the app, as [WorkoutBook] writes them. Added in v1.6.0. */
     val workouts: String = "",
+    /** The three letters on the hi-score table, empty until chosen ([nl.tufein.openconnect.core.retro.Initials]). Added in v1.17.0. */
+    val initials: String = "",
 ) {
     /**
      * This phone's data with a backup's added to it, and nothing of this phone's overwritten:
@@ -31,6 +33,7 @@ data class UserData(
         maxHr = if (maxHr > 0) maxHr else backup.maxHr,
         weeklyGoals = if (weeklyGoals == WeeklyGoals()) backup.weeklyGoals else weeklyGoals,
         workouts = mergeWorkouts(workouts, backup.workouts),
+        initials = initials.ifBlank { backup.initials },
     )
 
     private companion object {

@@ -39,7 +39,7 @@ data class RestoreReport(
 
 /**
  * One file with everything the app holds: activities with their tracks, daily summaries, sleep, the watch's readings, the
- * days of the Oura Ring, WHOOP and Hume Band, and (since v0.56.0) the journal, shoes, training plan, race and goals. No
+ * days of the Oura Ring, WHOOP and Hume Band, and (since v0.56.0) the journal, shoes, training plan, race and goals (since v1.17.0 also the work-outs made in the app and the hi-score initials). No
  * key, token or password is ever in it. It is JSON, compressed with gzip. Restoring merges into what is there (same activity, day or reading is replaced by the
  * backup's copy) and never deletes anything. AI reports and the record of which watch files were read are not part of it:
  * reports can be written again and the next sync simply reads the watch files again.
@@ -168,6 +168,9 @@ object Backup {
         put("raceGoal", u.raceGoal)
         put("maxHr", u.maxHr)
         put("goals", buildJsonArray { listOf(u.weeklyGoals.intensityMinutes, u.weeklyGoals.distanceKm, u.weeklyGoals.activities).forEach { add(JsonPrimitive(it)) } })
+        // Since v1.17.0. The work-outs were in UserData from v1.6.0 but never written here, so a restore lost them.
+        put("workouts", u.workouts)
+        put("initials", u.initials)
     }
 
     private fun userDataOf(o: JsonObject): UserData {
@@ -179,6 +182,8 @@ object Backup {
             raceGoal = o.str("raceGoal").orEmpty(),
             maxHr = o["maxHr"]?.jsonPrimitive?.intOrNull ?: 0,
             weeklyGoals = if (goals.size == 3) WeeklyGoals(goals[0], goals[1], goals[2]).coerced() else WeeklyGoals(),
+            workouts = o.str("workouts").orEmpty(),
+            initials = nl.tufein.openconnect.core.retro.Initials.clean(o.str("initials")),
         )
     }
 

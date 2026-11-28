@@ -105,13 +105,21 @@ private fun progressText(trophy: Trophy): String {
 }
 
 @Composable
-fun TrophiesContent(state: TrophiesState, contentPadding: PaddingValues = PaddingValues()) {
+fun TrophiesContent(
+    state: TrophiesState,
+    contentPadding: PaddingValues = PaddingValues(),
+    hiScores: Map<Double, List<nl.tufein.openconnect.core.Effort>> = emptyMap(),
+    initials: String = nl.tufein.openconnect.core.retro.Initials.DEFAULT,
+    onInitials: (String) -> Unit = {},
+    onOpenActivity: (String) -> Unit = {},
+) {
     LazyColumn(
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = contentPadding.calculateBottomPadding() + 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         val achievements = state.achievements ?: return@LazyColumn
         item { LevelCard(achievements.player, achievements.trophies.count { it.unlocked }, achievements.trophies.size) }
+        if (hiScores.isNotEmpty()) item(key = "hiscore") { HiScoreCard(hiScores, initials, onInitials, onOpenActivity) }
         // Won trophies first, then the ones closest to being won.
         val ordered = achievements.trophies.sortedWith(compareByDescending<Trophy> { it.unlocked }.thenByDescending { it.progress })
         items(ordered, key = { it.key.name }) { TrophyCard(it) }

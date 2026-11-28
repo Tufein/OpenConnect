@@ -725,6 +725,13 @@
     <string name="levelup_trophy">Trophäe freigeschaltet: %1$s</string>
     <string name="levelup_trophies">%1$d Trophäen freigeschaltet</string>
     <string name="levelup_level">Level up! Du bist jetzt Level %1$d</string>
+    <string name="hiscore_title">Ruhmeshalle</string>
+    <string name="hiscore_note">Deine fünf schnellsten Läufe je Distanz, jeder Lauf einmal. Tippe auf eine Zeile, um den Lauf zu öffnen.</string>
+    <string name="hiscore_row">Platz %1$d: %2$s am %3$s, %4$s</string>
+    <string name="hiscore_edit">Initialen eingeben</string>
+    <string name="hiscore_done">Fertig</string>
+    <string name="hiscore_up">Nächster Buchstabe an Stelle %1$d</string>
+    <string name="hiscore_down">Vorheriger Buchstabe an Stelle %1$d</string>
     <string name="palette_group_sport">Sport</string>
     <string name="palette_graphite">Graphit</string>
     <string name="palette_track">Bahn</string>

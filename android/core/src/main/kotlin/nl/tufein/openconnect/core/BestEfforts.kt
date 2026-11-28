@@ -22,6 +22,7 @@ object BestEfforts {
     val DISTANCES = listOf(1000.0, 5000.0, 10_000.0, 21_097.5, 42_195.0)
     const val MAX_SPEED_MPS = 9.0
     const val MAX_RUNS = 300
+    const val HI_SCORES = 5
     private const val MIN_LAP_M = 100.0
 
     private class Series(val t: DoubleArray, val d: DoubleArray, val hr: IntArray, val ele: DoubleArray)
@@ -95,18 +96,24 @@ object BestEfforts {
         return laps
     }
 
-    /** The best time for each distance over the most recent [MAX_RUNS] runs that have a track. Fastest first per distance. */
-    fun personalBests(repo: Repository): List<Effort> {
-        val best = HashMap<Double, Effort>()
+    /** The best time for each distance over the most recent [MAX_RUNS] runs that have a track, in [DISTANCES] order. */
+    fun personalBests(repo: Repository): List<Effort> = highScores(repo, top = 1).values.map { it.first() }
+
+    /**
+     * The hi-score table (v1.17.0): for each distance the [top] fastest runs over the most recent [MAX_RUNS], fastest
+     * first, each run at most once per distance. Only distances someone ran are in it, in [DISTANCES] order. Equal times
+     * keep the order the runs were listed in (newest first), so the newer run takes the higher place, as before.
+     */
+    fun highScores(repo: Repository, top: Int = HI_SCORES): Map<Double, List<Effort>> {
+        val all = HashMap<Double, MutableList<Effort>>()
         for (summary in repo.listActivities(sport = Sport.RUNNING, limit = MAX_RUNS)) {
             if (summary.distanceM < DISTANCES.first()) continue
             val run = if (summary.track.isNotEmpty()) summary else repo.getActivity(summary.id) ?: continue
             val date = run.startTime.atZone(ZoneOffset.UTC).toLocalDate()
             for (e in efforts(run.track)) {
-                val current = best[e.distanceM]
-                if (current == null || e.seconds < current.seconds) best[e.distanceM] = e.copy(activityId = run.id, name = run.name, date = date)
+                all.getOrPut(e.distanceM) { ArrayList() } += e.copy(activityId = run.id, name = run.name, date = date)
             }
         }
-        return DISTANCES.mapNotNull { best[it] }
+        return DISTANCES.mapNotNull { d -> all[d]?.sortedBy { it.seconds }?.take(top)?.let { d to it } }.toMap()
     }
 }

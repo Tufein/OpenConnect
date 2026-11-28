@@ -7,7 +7,10 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.16.0.** **New in v1.16.0:** level-up messages. When new data unlocks a trophy or a new level, the app says
+> **Status: v1.17.0.** **New in v1.17.0:** a hall of fame on the Trophies tab: your five fastest runs over each
+> distance, with three initials you pick on an arcade-style name entry. Backups now also keep the work-outs you made in
+> the app, which they silently left out since v1.6.0 ([release notes](docs/releases/v1.17.0.md)).
+> **Since v1.16.0:** level-up messages. When new data unlocks a trophy or a new level, the app says
 > so in a short message, with its own 8-bit tune when the sounds are on. Off until you switch it on; a big import stays
 > quiet ([release notes](docs/releases/v1.16.0.md)).
 > **Since v1.15.0:** the first part of the retro pack, all of it off until you switch it on: an

@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.17.0: retro, deel 3: de eregalerij (en je workouts in de back-up)
+
+Het derde deel van het retro-pakket (spoor G, onderdeel G9): een **eregalerij** op de tab Trofeeën, met per afstand je vijf snelste runs en drie letters die je zelf kiest, zoals de tabel op een arcadekast tussen twee spelletjes door. En een fout die bij het bouwen boven kwam: **de back-up bewaarde je zelfgemaakte workouts niet.**
+
+[Release notes](docs/releases/v1.17.0.md)
+
 ## v1.16.0: retro, deel 2: level-up
 
 Het tweede deel van het retro-pakket (spoor G, onderdeel G4). Speelt nieuwe data een trofee of een nieuw level vrij, dan zegt de app dat meteen, zoals een oud spel dat doet: *Trofee vrijgespeeld: 5K-baas* of *Level up! Je bent nu level 3*. Staan de 8-bit-geluidjes uit v1.15.0 aan, dan hoort er een eigen deuntje bij. Standaard uit, eigen ontwerp, geen enkel bestand erbij.

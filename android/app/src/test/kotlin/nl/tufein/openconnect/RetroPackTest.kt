@@ -2,6 +2,8 @@ package nl.tufein.openconnect
 
 import android.content.Context
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import nl.tufein.openconnect.core.ManualActivity
@@ -32,7 +34,8 @@ import kotlin.test.assertTrue
  * v1.15.0, the first part of the retro pack: an LCD palette in four shades of green, scanlines for the Retro style and
  * 8-bit tunes when a sync brings something new. Everything is our own design and off until chosen; the contrast of
  * every palette, the LCD one included, is checked by [ThemesLettersAndIconTest]. v1.16.0 adds level-up messages: a trophy
- * or a level that new data unlocks is announced, with its own tune when the sounds are on.
+ * or a level that new data unlocks is announced, with its own tune when the sounds are on. v1.17.0 adds the hi-score
+ * table with initials picked on a cabinet-style name entry.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], qualifiers = "w411dp-h891dp-night-xxhdpi", application = OpenConnectApp::class)
@@ -180,6 +183,7 @@ class RetroPackTest : AppTestBase() {
         rule.waitUntil(5_000) { played.size == 2 }
         assertEquals(listOf("record", "goal"), played.toList())
     }
+
     @Test
     fun openingTheAppShowsNoErrorMessage() {
         // v1.16.0 before release: the lock for the trophy count was declared below the view model's init block, so the
@@ -194,5 +198,39 @@ class RetroPackTest : AppTestBase() {
             Thread.sleep(25)
         }
         waitForText("Load demo data")
+    }
+
+    /** The arrows can sit behind the navigation bar at the bottom of the card, so they are pressed through semantics. */
+    private fun arrow(description: String) =
+        rule.onNodeWithContentDescription(description).performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.OnClick)
+
+    @Test
+    fun theHiScoreTableShowsTheFastestRunsWithInitialsThatCanBeChanged() {
+        launchFresh { app -> app.containerOverride = container(app) }
+        loadDemo()
+        tab("Insights").performClick()
+        tab("Trophies").performClick()
+        scrollToText("Hall of fame")
+        scrollToText("1ST")
+        assertTrue(hasText("AAA", substring = false), "no initials chosen yet: AAA, like a cabinet")
+        assertEquals("", settings().initials)
+        var table = emptyMap<Double, List<nl.tufein.openconnect.core.Effort>>()
+        scenario.onActivity { table = it.viewModel.reports.value.hiScores }
+        assertTrue(table.isNotEmpty(), "the demo has runs with a track")
+        for ((_, places) in table) {
+            assertTrue(places.size <= 5)
+            assertTrue(places.zipWithNext().all { (a, b) -> a.seconds <= b.seconds }, "fastest first")
+        }
+
+        clickText("Enter initials")
+        arrow("Next letter for position 1")
+        rule.waitUntil(5_000) { settings().initials == "BAA" }
+        arrow("Previous letter for position 3")
+        rule.waitUntil(5_000) { settings().initials == "BAZ" }
+        waitForText("BAZ")
+        shot("92-hiscore-initials")
+        clickText("Done")
+        rule.waitUntil(5_000) { hasText("Enter initials", substring = false) }
+        assertTrue(hasText("BAZ", substring = false), "the table shows the new initials")
     }
 }
