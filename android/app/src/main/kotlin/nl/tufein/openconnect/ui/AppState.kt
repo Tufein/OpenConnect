@@ -168,7 +168,8 @@ data class ReportsState(
 
 /**
  * The colour theme ([Palette] key), the letters ([Letters] key), the style ([Style] key), signal colours, ring weight
- * and photo tone; since v1.15.0 also the retro pack: [scanlines] over the Retro style and 8-bit [sounds].
+ * and photo tone; since v1.15.0 also the retro pack: [scanlines] over the Retro style and 8-bit [sounds], and since
+ * v1.16.0 [levelUps], a message when new data unlocks a trophy or a level.
  */
 data class Look(
     val palette: String = "olive",
@@ -179,6 +180,7 @@ data class Look(
     val hero: String = "auto",
     val scanlines: Boolean = false,
     val sounds: Boolean = false,
+    val levelUps: Boolean = false,
 )
 
 /**

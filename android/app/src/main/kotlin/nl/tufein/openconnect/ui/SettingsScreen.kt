@@ -133,6 +133,8 @@ fun SettingsScreen(
     onSounds: (on: Boolean) -> Unit = {},
     /** Play the sync tune once. */
     onPlayTune: () -> Unit = {},
+    /** Level-up messages were switched on or off. */
+    onLevelUps: (on: Boolean) -> Unit = {},
     /** The style was switched between editorial, sleek, retro and classic. */
     onStyle: (style: String) -> Unit = {},
     /** The signals were switched between the theme's soft colours and one clear colour each. */
@@ -260,6 +262,10 @@ fun SettingsScreen(
                 if (ui.look.sounds) {
                     PixelChip(selected = false, onClick = onPlayTune, label = { Text(stringResource(R.string.look_sounds_play)) })
                 }
+                SwitchRow(checked = ui.look.levelUps, onCheckedChange = onLevelUps) {
+                    Text(stringResource(R.string.levelup_switch), style = MaterialTheme.typography.bodyMedium)
+                }
+                Text(stringResource(R.string.levelup_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 // Each signal can keep the theme's quiet family or get its own clear colour; the dots show the result at once.
                 Text(stringResource(R.string.look_signals), style = MaterialTheme.typography.titleMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

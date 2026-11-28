@@ -494,6 +494,7 @@ fun OpenConnectRoot(
                     onScanlines = vm::setScanlines,
                     onSounds = vm::setRetroSounds,
                     onPlayTune = vm::playTune,
+                    onLevelUps = vm::setLevelUps,
                     onStyle = vm::setStyle,
                     onSignals = vm::setSignals,
                     onRings = vm::setRings,

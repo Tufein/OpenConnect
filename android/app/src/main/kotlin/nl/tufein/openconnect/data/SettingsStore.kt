@@ -130,6 +130,11 @@ class SettingsStore(
         get() = prefs.getBoolean(KEY_RETRO_SOUNDS, false)
         set(value) = prefs.edit().putBoolean(KEY_RETRO_SOUNDS, value).apply()
 
+    /** A short message (and, with [retroSounds], a tune) when new data unlocks a trophy or a level (v1.16.0); off by default. */
+    var levelUps: Boolean
+        get() = prefs.getBoolean(KEY_LEVEL_UPS, false)
+        set(value) = prefs.edit().putBoolean(KEY_LEVEL_UPS, value).apply()
+
     /** The thickness of the metric rings: "thin" (the default) or "bold". */
     var rings: String
         get() = prefs.getString(KEY_RINGS, "thin")?.takeIf { it == "thin" || it == "bold" } ?: "thin"
@@ -518,6 +523,7 @@ class SettingsStore(
         private const val KEY_LETTERS = "theme_letters"
         private const val KEY_SCANLINES = "retro_scanlines"
         private const val KEY_RETRO_SOUNDS = "retro_sounds"
+        private const val KEY_LEVEL_UPS = "retro_level_ups"
         private const val KEY_STYLE = "theme_style"
         private const val KEY_SIGNALS = "theme_signals"
         private const val KEY_RINGS = "theme_rings"

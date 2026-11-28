@@ -50,7 +50,11 @@ over the whole app (`Modifier.scanlines()` in `Retro.kt`: one 1 dp line of 10 % 
 contrast). The content always sits in the same `Box`, lines or not, so switching them never rebuilds the screen. In every
 style a switch plays a short **8-bit tune** when a sync brings something new while the app is on screen
 (`core/retro/Chiptune.kt` computes a 25 % pulse wave with soft note edges; `AudioTrackChiptunePlayer` plays it as a
-system sound). No image or sound file is added to the APK.
+system sound). No image or sound file is added to the APK. Since v1.16.0 a third switch, **level-up messages**,
+announces a trophy or a level that new data unlocks: `core/retro/LevelUp.kt` compares the trophies before and after a
+refresh, names a single trophy, counts several, and stays quiet on the first count after opening and on a jump of more
+than three trophies or two levels (an import, the demo). With the sounds on, a trophy plays the record tune and a level
+the goal tune. The message is a normal snackbar, so TalkBack reads it and there is no animation to switch off.
 
 Shapes and layout are the same in all of them. A theme is a pair of `Keys` in `PaletteKeys` (`Theme.kt`): primary,
 secondary, tertiary, background, panel and text colour, and from them `scheme()` builds the whole Material colour scheme.

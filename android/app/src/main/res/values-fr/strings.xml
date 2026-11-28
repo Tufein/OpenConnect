@@ -721,6 +721,11 @@
     <string name="look_sounds">Sons 8 bits</string>
     <string name="look_sounds_note">Un court air quand une synchronisation apporte du nouveau, pendant que Cercis est ouvert. Créé sur le téléphone même, sans fichier son ; désactivé tant que vous ne l\'activez pas.</string>
     <string name="look_sounds_play">Écouter l\'air</string>
+    <string name="levelup_switch">Messages de niveau</string>
+    <string name="levelup_note">Un court message quand de nouvelles données débloquent un trophée ou un nouveau niveau, avec son propre air si les sons 8 bits sont activés. Une grosse importation reste silencieuse.</string>
+    <string name="levelup_trophy">Trophée débloqué : %1$s</string>
+    <string name="levelup_trophies">%1$d trophées débloqués</string>
+    <string name="levelup_level">Niveau supérieur ! Vous êtes maintenant niveau %1$d</string>
     <string name="palette_group_sport">Sport</string>
     <string name="palette_graphite">Graphite</string>
     <string name="palette_track">Piste</string>
