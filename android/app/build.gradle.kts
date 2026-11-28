@@ -15,8 +15,8 @@ android {
         applicationId = "nl.tufein.openconnect"
         minSdk = 28
         targetSdk = 36
-        versionCode = 106
-        versionName = "1.13.13"
+        versionCode = 107
+        versionName = "1.14.0"
     }
 
     // Two channels from one code base. The GitHub build keeps the in-app updater (the install permission and the
@@ -84,6 +84,11 @@ android {
 
     packaging {
         resources.excludes += setOf("/META-INF/{AL2.0,LGPL2.1}", "META-INF/DEPENDENCIES")
+        // Since v1.14.0 the dex files are compressed in the APK. For minSdk 28 and newer the plugin stores them
+        // uncompressed by default (so Android could map them straight from the APK), and they were 11 of the 13 MB.
+        // Android compiles the app at install time either way; compressed, the download (and the updater's) is about
+        // half, and the phone unpacks the code once when it installs. The emulator smoke walks this very APK.
+        dex.useLegacyPackaging = true
     }
 
     testOptions {

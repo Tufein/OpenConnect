@@ -1,6 +1,6 @@
 # Verhuizen naar OpenConnect / Moving to OpenConnect
 
-*Sinds v1.3.0. Roadmap: [M13 en M14](ROADMAP.md#4b-nieuw-thema-je-geschiedenis-is-van-jou-2026-11-22).*
+*Sinds v1.3.0. Roadmap: [M13 en M14](ROADMAP-HISTORIE.md#4b-nieuw-thema-je-geschiedenis-is-van-jou-2026-11-22).*
 
 ## Nederlands
 

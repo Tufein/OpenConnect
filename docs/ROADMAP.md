@@ -1,486 +1,340 @@
-# Cercis: roadmap naar 2.0
+# Cercis: roadmap van v1.14 naar 2.0 en verder
 
-Waar Cercis staat en hoe het verder groeit. Opnieuw geschreven op 2026-11-20, na v1.0.4, op 2026-11-22 (na
-v1.2.0) met een **thematische koerswissel** (paragraaf 4b, "Je geschiedenis is van jou") en op **2026-11-24 (na
-v1.11.0)** met een nieuwe **koers naar 2.0** in paragraaf 6b: geen lijst met losse ideeën, maar vier fasen en vijf
-poorten. Op **2026-11-25 (na v1.13.0)** is de winkelvariant als code toegevoegd, zonder publicatie; in **v1.13.1**
-kreeg de app de weergavenaam **Cercis**, terwijl pakketnaam, repository en updater `openconnect` bleven. Daarna kwamen **v1.13.2** (strengere release-controles en een APK-budget), **v1.13.3** (Compose 1.13 en stabielere schermtests), **v1.13.4** (ringen op Gezondheid en een horlogebatterij die meteen bijwerkt), **v1.13.5** (batterijberichten die het horloge zelf stuurt, een vraag bij de start van de sync en een korte wachttijd na `SYNC_COMPLETE`), **v1.13.6** (live hartslag via de eigen Garmin-Bluetoothverbinding, zonder uitzendmodus), **v1.13.7** (de real-time-hartslaggienst wordt pas na de configuratie van het horloge aangevraagd, zodat een Fenix 8 hem niet negeert), **v1.13.8** (de live hartslag als eigen kaart op de voorpagina), **v1.13.9** (de live hartslag start automatisch en blijft lopen bij een tabwissel), **v1.13.10** (de Oura-tab synchroniseert bij openen wanneer de laatste sync te oud is) **v1.13.11** (een hartslagkaart met de gemiddelde en laagste hartslag van de laatste Oura-nacht) en **v1.13.12** (**Terugblik**: dit jaar tegenover vorig jaar, een raster van elke maand van elk jaar, elk jaar op zich en de gebroken records; het APK-budget gaat van 13 naar 14 MiB). 1.0 is uitgebracht; dit plan zegt wat de volgorde is. Alles is **test-first** gebouwd: eerst de test, dan de
-code, en niets gaat uit zonder dat CI groen is. Wat zonder horloge, ring of telefoon niet te controleren is, staat er
-eerlijk bij.
+Waar Cercis staat, waar het heen gaat en in welke volgorde. **Opnieuw geschreven op 2026-11-28, bij v1.14.0**, nadat
+Stefan bevestigde dat de app op zijn fenix 8 en zijn telefoon "allemaal heel goed" werkt. De vorige roadmap (de weg
+naar 1.0, de mijlpalen M1 tot en met M16, het 1.1-programma en de eerste koers naar 2.0) staat ongewijzigd in
+**[ROADMAP-HISTORIE.md](ROADMAP-HISTORIE.md)**. Het register van wat niet is gecontroleerd (paragraaf 7), de lijst
+*Klaar per versie* (paragraaf 8) en de uitleg over releases (paragraaf 9) zijn meegegaan.
 
-De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparaten en het terugdraaiplan staan in
+Dit plan heeft twaalf **sporen** (A tot en met L) met genummerde onderdelen, een **ladder** die die onderdelen in
+releases giet, zeven **poorten** voor 2.0 en een **richting voor 3.0**. Een onderdeel kan van plaats wisselen op de
+ladder; het nummer blijft, zodat een release note of een melding er altijd naar kan wijzen (bijvoorbeeld "B4").
+
+Alles blijft **test-first**: eerst de test, dan de code, en niets gaat uit zonder groene CI. Wat zonder horloge, ring,
+telefoon of account niet te controleren is, staat er eerlijk bij.
+
+De afvinklijst voor proeven op echte apparaten en het terugdraaiplan staan in
 **[PUBLIC_RELEASE.md](PUBLIC_RELEASE.md)**. Dit bestand is het plan; dat bestand is de lijst die je afvinkt.
 
-**Legenda:** ✅ klaar · 🔜 volgende · 🧪 gebouwd en getest met nepgegevens, nog nooit op echte hardware of tegen de echte dienst · ❓ heeft iets nodig dat alleen de eigenaar kan geven · **S/M/L** = klein (een sessie), middel, groot (meerdere releases)
-
-## 1. Waar we staan (v1.13.13, 2026-11-28)
-
-- **13 minorreleases sinds 1.0** (v1.1.0 tot en met v1.13.0, met tientallen kandidaten en patchreleases daartussen;
-  v1.13.1 is de naamswijziging), ruim 1.400 tests
-  (Python, `core` en de app), AGPL-3.0, openbare repository, een Android-app die zonder server werkt en een
-  Python-server voor wie die liever zelf draait. Nederlands, Engels, Duits en Frans; de laatste twee zijn
-  machine-draft en nog niet native nagekeken.
-- **Bronnen:** Garmin-horloge (USB, Bluetooth, map met bestanden), Garmin-account met een eigen sleutel, Oura Ring,
-  Health Connect (sinds v1.2.0 ook op de achtergrond aangevuld), bestanden (FIT, GPX, TCX), Claude en Gemini voor de
-  coach. Sinds v1.8.3 zijn de WHOOP- en Hume Band eruit; hun geschiedenis blijft leesbaar.
-- **Sterk:** alles is test-first, gegevens blijven op de telefoon, horloge en ring worden nooit door elkaar gemengd, elke release zegt eerlijk
-  wat niet is gecontroleerd, en de **GitHub-versie** is met een in-app-updater te bijwerken met SHA-256-controle.
-- **Sinds 1.0** gingen de releases over zeven dingen: meldingen op het horloge (v1.0.1), het uiterlijk (van Graphite
-  naar de **editorial**-look in v1.9.0, met signaalkleuren, ringdikte en een voorbladfoto die je zelf kiest), kleine
-  slices op Health (HRV-status, slaapfases, gewicht, water, Health Connect op de achtergrond), je eigen geschiedenis
-  (archief-import, namen, zelf een training en work-out invoeren), **terugkijken** (het jaaroverzicht in v1.9.3) en een
-  **schema dat meedenkt** (v1.10.0): één voorstel na een gemiste afgesloten week, jij kiest Toepassen of Niet nu, en
-  de coach bespreekt dat voorstel maar verandert niets. In v1.9.3 is ook de gereedschapsketen naar Gradle 9.6, AGP 9.5
-  en compileSdk 37 gegaan. In v1.13.0 kwamen daar de twee Android-kanalen bij; in v1.13.1 kreeg de app de
-  weergavenaam **Cercis**.
-- **Sinds v1.11.0:** vier talen met een taalkeuze in Instellingen, lokale datums en getallen, en Duitse/Franse
-  widget- en meldingsteksten. De Oura-tab is opgeruimd en de voorbladfoto volgt de dag met vier composities.
-  De Duitse en Franse teksten zijn automatisch opgesteld en niet native nagekeken; dat staat ook in de app en
-  in [LANGUAGES.md](LANGUAGES.md).
-- **Sinds v1.12.0:** **Wat je telefoon verlaat** met twaalf bronpagina’s uit één `PrivacyRegister`; de pagina noemt
-  bestemming, trigger, velden, opslag, toestemming en wat nooit meegaat. De oude tekst is gecorrigeerd (WHOOP/Hume
-  alleen legacy, Health Connect alleen stappen/slaap/gewicht, Oura inclusief tokens/SpO2/work-outs/ringbatterij,
-  AI zonder GPS/dagboek/notities), en **Delete all data** wist nu ook lichaam, water, dagboek, schoenen, plan,
-  race, doelen, work-outs, log en ledger. Machinevertaling blijft een known issue.
-- **Sinds v1.13.0:** de Android-app heeft twee kanalen uit één codebase. `github` houdt de updater,
-  `REQUEST_INSTALL_PACKAGES` en de FileProvider; `store` laat die drie weg en verbergt de updater. targetSdk staat op
-  36. De store-AAB en -APK worden gebouwd en gecontroleerd, maar **niet gepubliceerd**: de naam, een
-  Play-ontwikkelaarsaccount met testers, echte schermafbeeldingen en de winkelverklaringen staan nog open. De app is
-  dus niet in een winkel te vinden.
-- **Sinds v1.13.1:** de app heet **Cercis** en niet meer OpenConnect, om niet met de gelijknamige VPN-client te worden
-  verward. Alleen de weergavenaam veranderde; de pakketnaam `nl.tufein.openconnect`, de repository, de APK-namen
-  (`openconnect-vX.Y.Z.apk`) en de updater bleven, dus v1.13.0 werkt gewoon bij naar v1.13.1. De juridische controle
-  van de nieuwe naam staat nog open; de winkelpublicatie blijft daarom geblokkeerd.
-- **Sinds v1.13.2:** de emulator-rooktest houdt een release weer tegen (één herkansing op een verse emulator). Hij
-  was sinds v1.11.0 rood omdat de standaardweergave van de emulator (`swiftshader_indirect`) wegviel bij de eerste
-  veeg op Home; met `swangle_indirect` loopt dezelfde APK de hele app door. De APK heeft een budget van 13 MiB dat
-  ook elk pull request controleert.
-- **Sinds v1.13.3:** de app staat op Compose 1.13 (BOM 2026.11.01, compileSdk 37.1). De schermtests liepen daarmee
-  wisselend vast omdat de oude Compose-testregel de coroutines van de schermen op achtergrondthreads liet lopen; ze
-  gebruiken nu de v2-testregel, die dat net als een telefoon op de hoofdthread doet.
-- **Sinds v1.13.4:** de vier scores op **Gezondheid** zijn dezelfde rustige ring (100 dp, 9 dp stroke) in plaats van
-  losse horizontale balken; editorial, sleek en classic gebruiken een vloeiende boog, retro 40 segmenten. De ring zegt
-  zijn waarde tegen TalkBack, past op 320 dp en laat bij een ontbrekende score een lege ring met streepje zien. De
-  horlogebatterij op de batterijkaart wordt nu meteen na het batterijantwoord gelezen, ook als dat antwoord pas na de
-  syncstatus binnenkomt.
-- **Sinds v1.13.6:** de Watch-kaart voor live hartslag leest nu ook de **eigen hartslag van een Garmin-horloge** via de
-  Bluetooth-verbinding, zonder `Broadcast Heart Rate` op het horloge. De Garmin-service `REAL_TIME_HR` stuurt bpm en
-  eventueel een rusthartslag, maar geen RR-intervallen; HRV blijft bij deze bron dus leeg. De bron gebruikt de al open
-  meldingenverbinding als die er is, anders een eigen verbinding. Nog niet op een echte Fenix 8 bevestigd.
-- **Sinds v1.13.13 (2026-11-28):** **de Fenix 8 is op echte hardware bevestigd.** Stefan meldde op 2026-11-28 dat
-  de app op zijn fenix 8 en zijn eigen telefoon "allemaal heel goed" werkt: Bluetooth-sync, horlogebatterij, meldingen op
-  het horloge en de live hartslag uit de eigen Garmin-dienst. In de app dragen *Horloge via Bluetooth* en *Live hartslag*
-  nu het label *Getest op echt apparaat* (2026-11-28, v1.13.12). Daarnaast repareert v1.13.13 zeven fouten die
-  fuzz-tests vonden: beschadigde FIT-, GPX- en TCX-bestanden, horlogebestanden met een onmogelijke tijdzone en
-  Garmin-antwoorden met `NaN` gaven een onverklaarde crash of onzinwaarden in plaats van een nette weigering.
-- **Sinds v1.13.12:** **Inzichten → Terugblik** (M15). Dit jaar tot vandaag tegenover vorig jaar tot dezelfde dag (afstand,
-  tijd en aantal, met verschil en percentage, en twee lijnen met het lopende totaal per maand), een raster van elke maand
-  van elk jaar (afstand, tijd of aantal, de zwaarste maand gemarkeerd), elk jaar op zich (totalen, elke sport op één
-  regel, drukste week, weken zonder activiteit) en de tijdlijn van gebroken records. Alles per sport of voor alle sporten,
-  op de telefoon uitgerekend uit de opgeslagen activiteiten; er gaat niets naar buiten. Het APK-budget is van 13 naar
-  14 MiB gegaan omdat er na v1.13.11 nog 475 KB over was.
-- **Sinds v1.13.11:** de **Oura-tab** heeft een eigen hartslagkaart met de gemiddelde en laagste hartslag van de
-  laatste nacht. Oura meet tijdens de slaap en geeft via de API geen live hartslag; de kaart zegt dat erbij.
-- **Sinds v1.13.10:** de **Oura-tab** synchroniseert vanzelf wanneer je hem opent en de laatste sync langer dan een
-  minuut oud is. De knop *Sync now* blijft voor een directe sync; zonder login of tijdens een rate limit gebeurt er
-  niets extra's.
-- **Sinds v1.13.9:** de live hartslag start automatisch wanneer Cercis opent. De app onthoudt de laatste sensor; is
-  er geen, dan zoekt hij een horloge of band. De opname blijft lopen bij een tabwissel en stopt alleen via de kaart of
-  de melding; op Watch staat de schakelaar *Start automatically when Cercis opens* (standaard aan).
-- **Sinds v1.13.8:** de live hartslag heeft een eigen kaart op de **voorpagina**. Je start en kiest dezelfde bron als
-  op Watch, ziet de bpm, bron, min/avg/max en duur, en stopt of bewaart de opname zonder eerst naar Watch te gaan. De
-  kaart staat standaard aan en is uit te zetten onder Instellingen → Weergave → Voorpagina. Ze gebruikt dezelfde
-  verbinding als Watch en stopt bij het verlaten van Home.
-- **Sinds v1.13.7:** de real-time-hartslaggienst wordt pas aangevraagd **nadat** het horloge zijn configuratie heeft
-  gestuurd. Een Fenix 8 negeert de aanvraag tijdens de eerste handshake; daarom bleef de kaart in v1.13.6 zonder
-  beats. Een nepwatch weigert de vroege aanvraag nu, zodat de oude volgorde de test laat falen. Nog steeds geen echte
-  Fenix 8-proef.
-- **Sinds v1.13.5:** de batterijkaart accepteert ook ladingberichten die het horloge zelf stuurt, vraagt bij de start van
-  elke sync opnieuw en houdt de verbinding na `SYNC_COMPLETE` maximaal vijf seconden open voor een laat antwoord. Een
-  open meldingenverbinding wordt elke vijftien minuten gevraagd. Gericht op de Fenix 8 51mm, maar nog niet op echte
-  hardware bevestigd; het Watch-logboek is de volgende stap als het daar nog achterloopt.
-- **Zwak voor het verdere verhaal:**
-  1. **Drie bronnen zijn op echte hardware bevestigd** (de Garmin-account op 2026-11-12; Bluetooth-sync en live hartslag op een fenix 8 op 2026-11-28). USB, Health Connect, Oura, de AI-sleutels, de updater en de winkelvariant zijn dat nog niet. Zie het register in paragraaf 7; M9 is dat spoor.
-  2. ✅ De meldingen op de fenix 8 komen aan: Stefan bevestigde op 2026-11-28 dat het "allemaal heel goed" werkt.
-  3. De **juridische controle van de naam Cercis** staat nog open; de pakketnaam `nl.tufein.openconnect` blijft
-     ondertussen ongewijzigd (G6).
-  4. **De geschiedenis zit nog in Garmin Connect en Strava.** De app importeert één bestand tegelijk en haalt via de eigen sleutel een beperkt stuk terug, terwijl elk inzicht (vorm, VO2max, racevoorspelling, heatmap, seizoen) zo goed is als de geschiedenis eronder. Dat is het thema van 4b.
-  5. De twee Dependabot-voorstellen (#86 en #89) zijn in v1.9.3 opgelost met de bewuste compileSdk-37/AGP-9-stap (Gradle 9.6, AGP 9.5.2, Kotlin 2.4.21, Health Connect 1.2.0-alpha06).
-  6. De in-app-updater past niet in Google Play of F-Droid; de `store`-variant bestaat sinds v1.13.0 als code, maar
-     publicatie blijft geblokkeerd (naam, account/testers, echte schermafbeeldingen, verklaringen). Zie M10.
-  7. De Oura-ringbatterij werkt in de app, maar **Oura is nooit live geprobeerd**: login en ringdata zijn alleen tegen nep-antwoorden getest. De grootste rem op 2.0 is daarom niet code maar echte-hardwareproeven.
-
-## 2. Wat "1.0" betekent
-
-1.0 is de eerste versie die we aan een vreemde durven geven. Drie beloftes:
-
-1. **Het werkt op een echte telefoon, en wat niet getest is staat er in de app zelf bij.** Een bron die nooit op echte hardware draaide krijgt een zichtbaar label *Experimenteel*; een bron die wel is geprobeerd krijgt *Getest op echt apparaat* met datum en versie.
-2. **Je gegevens blijven van jou en gaan niet verloren bij een update.** Elke database van elke eerdere release migreert naar de nieuwe, de back-up komt terug, en alles is te exporteren.
-3. **Een vreemde kan het zelf installeren, begrijpen en vertrouwen.** Duidelijke README, privacyverklaring, een veilige sleutel, bekende bronnen van de code en een manier om een fout te melden zonder gezondheidsgegevens te delen.
-
-Na 1.0 geldt versiebeleid: `1.x` voegt toe en repareert, een databaseschema gaat nooit stuk (een migratie of een verwijderfunctie, nooit stilte), en
-**Android 9 is het minimum** (besloten op 2026-11-18, uitgebracht in v0.52.0) en blijft dat tot een grote versie zegt van niet.
-
-**Afbakening (aanname, zeg het als het anders moet):** het hart is de **Android-app**. De Python-server krijgt hetzelfde versienummer maar blijft voor
-wie zelf host, met zijn beschreven beperkingen ([SECURITY.md](../SECURITY.md)); vóór 1.0 kwam er alleen beveiligingswerk aan te pas, en de sporen hieronder
-raken de server alleen als dat nodig is.
-
-## 3. De zeven poorten
-
-1.0 gaat uit als **alle zeven** poorten groen zijn. Elke poort is controleerbaar; de afvinklijst staat in [PUBLIC_RELEASE.md](PUBLIC_RELEASE.md).
-
-| Poort | Moet waar zijn | Wie |
-|-------|----------------|-----|
-| **G1 Echt getest** | Installeren, bijwerken, demo, bestanden importeren, Garmin-sleutel, fenix 8 over USB en Bluetooth en Health Connect zijn op een echt apparaat geprobeerd en vastgelegd. Wat niet kon (de ring, als die er niet is) draagt het label *Experimenteel* in app en docs | Stefan probeert, Claude repareert |
-| **G2 Gegevens veilig** | Migratietest vanaf elke uitgebrachte schemaversie, terugzetten van een back-up, volledige export, geen verlies bij bijwerken | Claude |
-| **G3 Sleutel en beveiliging** | Sleutel in GitHub-secrets met een offline kopie, de conceptrelease weg, privé melden van kwetsbaarheden aan, `SECURITY.md` klopt, geen openstaande beveiligingsmeldingen van afhankelijkheden | Stefan (secrets), Claude (rest) |
-| **G4 Kwaliteit** | Drie CI-runs op rij groen zonder opnieuw starten, afhankelijkheden bij, prestatiebudgetten gehaald, geen bekende crash | Claude |
-| **G5 Begrijpelijk** | README opnieuw, installatiegids, privacyverklaring (NL en EN), schermafbeeldingen van een echte telefoon, uitleg bij de eerste start | Claude, Stefan levert schermafbeeldingen |
-| **G6 Juridisch en naam** | Overzicht van alle licenties in de app, Garmin-disclaimer in de app, **naamkeuze gemaakt: Cercis (2026-11-25)**; de juridische controle van die naam staat nog open | Stefan beslist |
-| **G7 Verspreiding** | **Besloten op 2026-11-18: alleen GitHub.** De release met APK, SHA-256 en uitleg over installeren, controleren en bijwerken (ook met Obtainium) is voor een vreemde te volgen | Claude |
-
-## 4. De mijlpalen
-
-Elke mijlpaal is een gewone release (pull request, groene CI, ondertekende APK, uitleg in het Nederlands). **Versienummers worden pas bij het uitbrengen gegeven:** er komen ook andere releases tussendoor (v0.44.0 tot en met v0.51.0 kwamen zo binnen terwijl dit plan werd geschreven), dus een mijlpaal krijgt het eerstvolgende vrije nummer. De eerste stap is al gezet: **v0.52.0 zette het minimum op Android 9.** De volgorde is gekozen op
-het **kritieke pad**: een proefronde op echte apparaten duurt het langst en hangt van Stefan af, dus alles wat die proefronde mogelijk
-maakt komt eerst (M1 en M2), en de rest loopt ernaast.
-
-### M1: "Schoon huis" ✅ v0.53.0 en v0.58.0 (S tot M)
-
-Doel: een opgeruimde basis waarop de rest veilig gebouwd kan worden.
-
-- **Afhankelijkheden bij:** de 13 open Dependabot-voorstellen in vier groepen (GitHub Actions, Android-bibliotheken, Robolectric en testhulp, Docker-basisimage), elke groep een eigen pull request met CI als scheidsrechter. De grote sprongen (Compose-BOM, navigation) apart en met extra aandacht voor schermen die verschuiven. Het Python 3.15-image alleen als alle pakketten bouwen.
-- **CI harder:** volledige uitzonderingen in testlogs (`testLogging`), de koude-start-time-out in `AppTestBase` omhoog zodat de vier bekende flakes verdwijnen, en `release.yml` krijgt een standaardwaarde die niet op `v0.9.0` blijft staan.
-- **README opnieuw:** kort en actueel (wat het is, installeren, vijf minuten starten, wat is getest, links). De lijst "New in v…" gaat naar een `CHANGELOG.md` die uit `docs/releases/` komt.
-- **`SECURITY.md` bijgewerkt** met wat sinds v0.47.0 klopt (optionele aanmelding, Ping/Pull-allowlist).
-- **Sleutel naar secrets (❓ Stefan):** het script ondersteunt het al; zodra de secrets er staan gebruikt één release ze, en daarna kan het concept weg.
-- **Versiebeleid** vastgelegd (`docs/VERSIONING.md`).
-
-Klaar als: alle voorstellen zijn samengevoegd of met reden gesloten, CI is groen zonder opnieuw starten, de README past op één scherm.
-
-**Besluit over de afhankelijkheden (2026-11-18, v0.58.0):** samengevoegd zijn de GitHub Actions (setup-java 6, download-artifact 8) en Robolectric 4.18. Uit de Android-bibliotheken is het deel genomen dat op de huidige gereedschapsketen past (AGP 8.7.3, Kotlin 2.0.21, compileSdk 35): `security-crypto` 1.1.0 (stabiel, de sleutelkluis), `work-runtime` 2.12.0, `core-ktx` 1.16.0. **Met reden gesloten** (Dependabot stelt die versies niet opnieuw voor): de Compose-BOM 2026 en navigation 2.10 (vijf schermtests faalden op de eerste proef met de nieuwe BOM, en de nieuwste versies vragen compileSdk 37), Health Connect 1.1.0-beta01 (de API verandert: `Metadata` krijgt fabrieksmethoden), Kotlin 2.4 met serialization 1.13 en coroutines 1.11 (een hele gereedschapssprong, en dan is lokaal testen zonder Maven-toegang niet meer mogelijk), Gradle 9.9 en AGP 9.5 (migratie), en het Python 3.15-image (de server wordt alleen op 3.11 tot 3.13 getest). **Die sprong is één aparte klus voor na 1.0** (AGP 9, Gradle 9, Kotlin 2.4, compileSdk 37, Compose-BOM 2026, Health Connect 1.1), met een eigen release en een volledige proefronde. **Die sprong is in v1.9.3 gedaan** (Gradle 9.6, AGP 9.5.2, compileSdk 37, Kotlin 2.4.21); de Compose-BOM 2026 (Compose 1.13, compileSdk 37.1) volgde in v1.13.3 en verving #92.
-
-### M2: "Eerlijk en te diagnosticeren" ✅ v0.55.0 (M)
-
-Doel: een proefronde die iets oplevert, en een app die zelf zegt wat getest is.
-
-- **"Over" wordt een eigen scherm:** nu is het één alinea in Instellingen. Het krijgt de versie, de licentie (AGPL-3.0), een link naar de broncode, een lijst van alle gebruikte licenties (Gadgetbridge, lettertypen, bibliotheken), de Garmin-disclaimer en de privacyverklaring.
-- **Label per bron:** *Getest op echt apparaat (datum, versie)* of *Experimenteel*, uit één lijst in `core` met een test die elke bron dwingt er een te hebben. Zichtbaar onder Instellingen, Je toestellen en bij de apparaatkeuze bij de eerste start.
-- **Diagnose-rapport:** een knop "Diagnose delen" met versie, Android-versie en toestel, de status van elke bron en de laatste regels van het synclogboek. **Sleutels, tokens, namen en gezondheidswaarden zijn eruit** en een test bewijst dat met nep-geheimen. Een GitHub-meldingssjabloon "Hardwaretest" verwacht dit rapport.
-- **Uitleg bij de eerste start:** wat op de telefoon blijft, wat naar een AI gaat als je een sleutel toevoegt, en wat het label *Experimenteel* betekent.
-
-Klaar als: Stefan een proefstap kan doen en een rapport kan terugsturen waar geen persoonlijke gegevens in staan.
-
-### M3: "Gegevens veilig" ✅ v0.56.0 (M)
-
-- **Migratietest vanaf elke uitgebrachte schemaversie:** per release een database-bestand als testgegeven, geopend door de huidige code, met controle dat er niets verdwijnt.
-- **Back-up en terugzetten bestaan al** (sleutels staan nooit in het bestand, terugzetten voegt toe zonder iets te verwijderen). Nieuw (v0.56.0): het dagboek, de schoenen, het trainingsplan, de wedstrijd, de maximale hartslag en de doelen zitten nu ook in het bestand (ze stonden er nooit in, een nieuwe telefoon verloor ze), een test per bron op de echte database, en een bewaker die faalt als een nieuwe tabel niet in de back-up zit of met reden is weggelaten. **Besluit: sleutels gaan in 1.x nooit mee**, ook niet versleuteld; opnieuw invoeren kost een minuut, een bestand met sleutels is een groter risico dan het waard is.
-- **Alles exporteren:** nu is er een CSV. Dat wordt één ZIP met de CSV, de originele FIT/GPX/TCX en JSON, met een test die dat weer inleest.
-- **Bijwerken zonder verlies:** de updater weigert een afwijkende SHA-256 of handtekening met een duidelijke melding, getest met een nep-GitHub.
-
-Klaar als: een database van elke eerdere release opent in de nieuwe versie met alle gegevens.
-
-### M4: "Toegankelijk en tweetalig" ✅ v0.57.0 (M)
-
-- **TalkBack en toegankelijkheid:** elk scherm doorgelopen, grafieken met een tekstsamenvatting, aanraakdoelen van minstens 48 dp (getest, ook in de pixelstijl), lettergrootte 200 procent zonder afgesneden tekst.
-- **Taalpariteit:** een test dat elke tekst in Nederlands en Engels bestaat, geen overgebleven Engelse tekst in het Nederlands, meervouden kloppen.
-- **Grotere schermen:** tablet en opgevouwen toestellen (vanaf 600 dp) zonder afgesneden of uitgerekte onderdelen.
-
-Klaar als: de toegankelijkheidstests en taalpariteit in CI staan en groen zijn.
-
-### M5: "Snel, klein en actueel" ✅ v0.58.0 (M)
-
-- **Prestatiebudget:** een gegenereerde historie van vijf jaar (ongeveer 1800 activiteiten met tracks en dagrijen) en een test op de openingstijd van elk tabblad en op het geheugen van de heatmap; opstarttijd gemeten.
-- **Verkleinen:** R8 en het verkleinen van resources beoordeeld. De APK was 30 MB (niet 11: dat was nooit gemeten), nu 9,8 MB. De test dat serialisatie, WorkManager en de sleutelkluis nog werken is een **rooktest op een echte Android** (emulator) die ook vóór elke release draait.
-- **targetSdk bijhouden:** nu 36 (sinds v1.13.0; compileSdk 37.1 sinds v1.13.3, omdat Compose 1.13 dat vraagt). Zonder Google Play is er geen verplichte datum; omhoog alleen als een nieuwe Android-versie het vraagt, met de lijst van gedragswijzigingen afgewerkt.
-- **Batterij:** niet te meten zonder telefoon. Wat er op de achtergrond draait staat met zijn frequentie in `docs/PERFORMANCE.md`; het cijfer van Android na een dag is proefstap T16 voor Stefan.
-
-Klaar als: het budget in CI staat en de APK niet groter is geworden dan 12 MiB (`release.yml` faalde erop; sinds v1.13.1 is het budget 13 MiB en staat het in `android/scripts/check_apk_size.py`, zie [PERFORMANCE.md](PERFORMANCE.md)).
-
-### M6: "Installeren en vertrouwen" ✅ v0.58.0, behalve de echte schermafbeeldingen (S tot M)
-
-Besloten op 2026-11-18: 1.0 verschijnt **alleen op GitHub**. De app houdt daarom haar updater en er komt geen aparte winkelvariant voor 1.0.
-
-- **Privacyverklaring** (`docs/PRIVACY.md`, Nederlands en Engels, ook in de app): niets gaat naar een server van ons, wat een AI-aanbieder krijgt als je een sleutel toevoegt, hoe Health Connect gebruikt wordt, hoe je alles wist.
-- **Installatiegids:** "zo installeer en update je OpenConnect" voor de GitHub-APK (ook met Obtainium), met de controle van de SHA-256 en een uitleg over "apps installeren toestaan".
-- **Releasepagina als voordeur:** een vaste kop in elke release met installeren, controleren en wat is getest, zodat een vreemde zonder de README toekan.
-- **Echte schermafbeeldingen** van Stefans telefoon in plaats van de Robolectric-plaatjes. ❓ Stefan. (De emulator-rooktest bewaart bij elke run schermafbeeldingen van een echte Android als bouwresultaat; die zijn een begin, maar niet van zijn telefoon.)
-
-Klaar als: iemand die het project niet kent de gids kan volgen tot een draaiende app.
-
-### M7: "Proefrondes" 🔜 (L, loopt vanaf M2, Stefan bepaalt het tempo)
-
-Stefan loopt de lijst in [PUBLIC_RELEASE.md](PUBLIC_RELEASE.md) af met het diagnose-rapport; Claude repareert wat misgaat en zet het label van een bron op *Getest op echt apparaat* zodra het klopt. Volgorde van belangrijkheid: (1) installeren, bijwerken, eerste start, demo, bestanden importeren; (2) Garmin-sleutel; (3) fenix 8 over USB; (4) fenix 8 over Bluetooth, live hartslag en de melding met scherm uit; (5) Health Connect; (6) Oura; (7) Claude en Gemini live.
-
-Klaar als: G1 groen is.
-
-### M8: v1.0.0-rc.1 ✅ 2026-11-18, rc.2 tot en met rc.7 ✅ 2026-11-19 en 2026-11-20, v1.0.0 ✅ 2026-11-20
-
-Op verzoek van Stefan is `v1.0.0` na rc.7 uitgebracht als eerste volledige release, met de moderne standaardstijl. De
-openstaande apparaatproeven (T1–T17) en go/no-go-vakjes in [PUBLIC_RELEASE.md](PUBLIC_RELEASE.md) blijven staan en zijn
-eerlijk opgenomen in de [releasenotes](releases/v1.0.0.md); de RC's en/of een latere versie kunnen die alsnog afdekken.
-
-De kandidaat `v1.0.0-rc.1` is uitgebracht als GitHub pre-release (zelfde code als v0.58.0, versie `1.0.0-rc.1`, `versionCode` 59). Wat nu nog moet is van Stefan: de wachttijd, de proefstappen T1 tot en met T17, de sleutel in GitHub-secrets, privé melden aanzetten, echte schermafbeeldingen en het besluit over de naam. Daarna kijkt Claude naar de poorten in PUBLIC_RELEASE.md en brengt `v1.0.0` uit.
-
-- **Code-bevriezing:** vanaf hier alleen reparaties en teksten. ✅ Vanaf `v1.0.0-rc.1`. **Zes uitzonderingen, op Stefans verzoek:** `v1.0.0-rc.2` (`versionCode` 60) herkent alle Garmin-families (zie [GARMIN_DEVICES.md](GARMIN_DEVICES.md)) en `v1.0.0-rc.3` (`versionCode` 61) stuurt meldingen van de telefoon door naar het horloge (zie [NOTIFICATIONS.md](NOTIFICATIONS.md)); `v1.0.0-rc.4` (`versionCode` 62) laat per stap zien waarom een melding niet aankomt en stuurt ze ook als het horloge er niet om vraagt; `v1.0.0-rc.5` (`versionCode` 63) herkent een Bluetooth-verbinding die stil is gevallen, beantwoordt alle berichten van het horloge zoals Gadgetbridge en laat in het logboek zien wat het horloge antwoordt; `v1.0.0-rc.6` (`versionCode` 64) beantwoordt de protobuf-vragen van het horloge zoals Gadgetbridge, zodat het niet blijft wachten, en verbindt opnieuw als het horloge vastloopt, met de gemiste melding nog een keer; de wachttijd van 7 dagen begint daarmee opnieuw voor het horloge; `v1.0.0-rc.7` (`versionCode` 65) is een doorloop van alle code: geannuleerde achtergrond-syncs blokkeren niets meer, een kapotte sleutelkluis laat de app niet crashen, TalkBack ziet aantikbare rijen als knop, een wachtwoord met een accent kan inloggen op de server en het sessiecookie hangt aan een afgeleide sleutel (zie [de notities](releases/v1.0.0-rc.7.md)).
-- ✅ **`release.yml` krijgt een voorlopig-optie** (v0.58.0, voor het eerst doorlopen bij rc.1), zodat een kandidaat als **GitHub pre-release** uitkomt en de updater die niet als nieuwste ziet (getest). De labelcontrole moet `1.0.0-rc.1` en `1.0.0rc1` aan elkaar kunnen koppelen.
-- **Wachttijd van minstens 7 dagen** met de kandidaat in dagelijks gebruik op Stefans eigen telefoon.
-- **Go/no-go:** alle poorten in PUBLIC_RELEASE.md groen, releasenotes in het Nederlands en Engels, de README definitief.
-- **v1.0.0** via dezelfde workflow, daarna de controle zoals altijd (SHA-256, handtekening, installeren over de kandidaat heen).
-
-### M9: proeven op echte apparaten 🔜 (S per proef, loopt, Stefan bepaalt het tempo)
-
-Het register in paragraaf 7 is de lijst. Per bron: installeren en bijwerken over de vorige versie, demo en import, de Garmin-sleutel, de fenix 8 over
-USB en over Bluetooth (sync, live hartslag, en voor de meldingen een **nieuw logboek** zodat blijkt of de reparaties van v1.0.1 houden), Health Connect,
-en Oura als die er is. Wat klopt, krijgt in de app het label *Getest op echt apparaat* met datum en versie; wat niet kan blijft
-*Experimenteel*. Reparaties komen als gewone 1.0.x-uitgaven; geen nieuwe features in dit spoor. Schermafbeeldingen van je eigen telefoon horen hier
-ook bij (G5), evenals het besluit over de naam (G6), dat Stefan alleen kan nemen.
-
-### M10: winkels 🧪 code klaar, publicatie geblokkeerd (L, ❓)
-
-Sinds v1.13.0 is de **`store`-variant** er als code: dezelfde `applicationId` als de GitHub-app, zonder updater en
-zonder `REQUEST_INSTALL_PACKAGES`/FileProvider, met eigen AAB- en APK-taken. De store-workflow bouwt en controleert die
-artefacten; de release-workflow publiceert alleen de GitHub-APK. Publicatie in F-Droid of Google Play is nog niet
-gebeurd en blijft geblokkeerd: de oude naam botste met een bestaande OpenConnect-VPN-app (sinds v1.13.1 heet de app
-Cercis, maar de juridische controle daarvan staat nog open), een Play-ontwikkelaarsaccount en de
-testersregel (12 testers, 14 dagen) staan open, echte schermafbeeldingen en een feature graphic ontbreken, en de
-verklaringen voor gegevensveiligheid, Health Connect en voorgrondservice zijn niet afgerond. Voor F-Droid komen daar de
-ontbrekende `v1.13.1`-tag, de toolchain op de buildserver en de ondertekening bij. F-Droid ondertekent met een eigen
-sleutel, dus die APK installeert niet over de GitHub-APK heen; dat hoort in de uitleg. Google Play vraagt eenmalig
-ongeveer 25 dollar voor een ontwikkelaarsaccount en een recent genoeg targetSdk (nu 36). De updater blijft gewoon in de
-GitHub-versie.
-
-### M11: inhoud na 1.0 🔜 (M-L)
-
-Geen belofte, wel de volgorde zoals die in paragraaf 6 stond:
-
-- **Dagboekvakjes uitbreiden** en een **trend van actieve tijd** (uit de app-vergelijking, sectie 7): klein en past bij wat er is.
-- **Garmin's nieuwere protobuf-synchronisatie** voor horloges die de klassieke map niet meer gebruiken.
-- **Het watchface** terug, als er een Garmin-ontwikkelaarsaccount en een eerste upload zijn (de Monkey C-map staat nog in `watch/` maar is nooit gecompileerd).
-
-### M12: opschonen en bereik 🔜 (M)
-
-- **Dependabot-voorstellen afwerken** (#43 tot en met #55), met de grote sprongen als eigen releases en de APK-maat- en prestatiebudgetten als poort. ❓ **Eerste poging (v1.0.5) teruggedraaid.** De sprong naar AGP 9.5.2 + Kotlin 2.4.21 + Gradle 9.9.2 + Compose-BOM 2026.11 + compile-SDK 37.1 (met Activity 1.13, Lifecycle 2.11, Navigation 2.10, core-ktx 1.19, Robolectric 4.18.1) kompilde en haalde lokaal alle 444 tests, maar op de CI-runner bleef Home daarna soms in de ongeladen stand (`loaded` bleef uit), 13 tests liepen op hun 45 s-timeout; een debugronde wees niet op een uitzondering en de oorzaak is niet gevonden. De sprong wacht op een CI-only debugronde (bijvoorbeeld tests met een langere wachttijd of een profiling-run) vóórdat hij opnieuw gaat; de Python-afhankelijkheden staan als vloer waaronder de nieuwste versies al voldoen.
-- **Meer talen** (Duits, Frans) zodra de tekstpariteitstest er is.
-- **Een eerlijke "wat gebeurt er met mijn gegevens"-pagina** in de app met een overzicht van elk verzoek dat naar buiten gaat.
-- **De naam beslissen** (houden of veranderen; de pakketnaam `nl.tufein.openconnect` verandert in elk geval niet) — dit is een vakje van Stefan, maar de voorbereiding kan hier.
-
-## 4b. Nieuw thema: je geschiedenis is van jou (2026-11-22)
-
-**De koerswissel in één zin:** van *meer meten en melden* naar *meenemen wat je al hebt, er jaren in terugkijken en het vrij kunnen gebruiken*.
-
-**Waarom dit thema.** OpenConnect wil een Garmin Connect-vervanger zijn, maar wie overstapt laat jaren aan activiteiten, slaap en vorm achter.
-De app kan nu één FIT-, GPX- of TCX-bestand tegelijk importeren; Garmin's en Strava's eigen exporten zijn één groot ZIP-bestand en blijven dus
-onbruikbaar. Alle inzichten die er al zijn (vorm en vermoeidheid, VO2max, racevoorspelling, seizoensplan, heatmap, dezelfde route, hi-scores)
-worden pas goed met een lange geschiedenis. En er is geen enkel overzicht van het ene jaar naast het andere. Dit thema heeft drie delen:
-**binnenhalen** (M13, M14, M14b), **terugkijken** (M15) en **vrij gebruiken** (M16). Het past ook bij wat er nog moet voor een vreemde (G5 en G7):
-een nieuwe gebruiker verhuist, anders begint hij met een lege app.
-
-**Waarom nu en zo.** Bijna alles hieraan loopt via bestanden, dus het is van begin tot eind met tests in CI te controleren, ook zonder horloge
-(waar de vorige reeks op vastliep). De 1.1-sporen hierboven blijven staan; de zwaardere delen daarvan (Training Effect en Recovery Time uit FIT,
-routes naar het horloge, protobuf-sync, watchface) wachten op een echt horloge en lopen niet voor op dit thema.
-
-### M13: "Verhuisdoos" ✅ v1.3.0 (M)
-
-Eén importknop die ook een heel archief aankan, zodat Garmin's en Strava's export in één keer binnenkomt.
-
-- **Wat erin mag:** een ZIP (ook een ZIP in een ZIP, zoals Garmin's `UploadedFiles_*.zip` in de export), een `.gz`, en losse FIT-, GPX- en TCX-bestanden; Strava's `activities/*.fit.gz`, `*.gpx` en `*.tcx.gz` horen erbij, net als OpenConnect's eigen *Alles exporteren*.
-- **Stromend, zonder het archief in het geheugen te zetten**, met grenzen tegen een ZIP-bom: 25 MB per bestand (ook na uitpakken), een totaal, een aantal bestanden en een diepte van drie ZIP's.
-- **Wat er al is blijft staan:** een activiteit met dezelfde id of die binnen 90 seconden na een bestaande begint (dezelfde training uit het horloge, de Garmin-account of een eerdere import) wordt niet overschreven en niet verdubbeld; een tweede keer dezelfde ZIP voegt niets toe.
-- **Eerlijk over wat niet telde:** routes, trainingen, foto's en CSV's worden overgeslagen en genoemd (geen foutmelding), één kapot bestand houdt de rest niet tegen, en het eindrapport (toegevoegd, al aanwezig, overgeslagen, mislukt met reden, periode) komt in het synchronisatieoverzicht.
-- **Voortgang** terwijl het loopt, en annuleren laat af wat al binnen is.
-- **Uitleg:** [MIGRATING.md](MIGRATING.md) met de stappen om je export bij Garmin en Strava aan te vragen en hier binnen te halen.
-
-Klaar als: een gemaakt archief met N activiteiten in drie formaten, deels geneste ZIP's en deels `.gz`, N activiteiten in de app oplevert, en dezelfde ZIP nog eens niets verandert. ✅ Zo getest in `ArchiveImportTest` (23 tests) en `ArchiveImportScreenTest`; **nooit met een echte export** (register, paragraaf 7).
-
-### M14: "Namen" ✅ v1.4.0 (M)
-
-De bestanden in een export hebben geen namen; die staan ernaast.
-
-- **Namen mee:** Strava's `activities.csv` (kolommen *Activity Name* en *Filename*) en Garmin's `summarizedActivities.json` (op starttijd, binnen 90 seconden) geven de activiteit haar eigen naam in plaats van "Running 2026-05-02", in welke volgorde de bestanden ook staan. Wat in v1.3.0 al binnenkwam krijgt zijn naam bij een tweede import, mits het nog de bedachte naam draagt; een naam van jou of van een andere bron blijft.
-- **Eerlijk over wat niet wordt gelezen:** de dagbestanden van Garmin (`UDSFile_*.json`, `*_sleepData.json`) zijn nergens openbaar beschreven. Ze worden niet geïmporteerd (gokken in je gezondheidsgeschiedenis); het rapport schrijft per soort het patroon van de bestandsnaam en de sleutelnamen op (nooit waarden of e-mailadressen) en heeft een knop *Rapport kopiëren*.
-
-Klaar als: een Strava-archief met CSV namen geeft, een nagemaakte Garmin-export namen geeft op starttijd, en het rapport sleutelnamen toont zonder één waarde. ✅ `ArchiveNamesTest` (14 tests); **nooit met een echte export**.
-
-### M14b: "Dagen" 🔜 (M, ❓ wacht op een echt rapport van Stefan)
-
-Stappen, rusthartslag en slaap uit Garmin's dagbestanden, gevuld waar de app nog niets heeft (nooit over iets heen dat horloge, ring of band gaf), en het `daily.csv` uit *Alles exporteren* weer inlezen. De lezer wordt pas gebouwd als een echte export de sleutelnamen heeft laten zien; het rapport uit v1.4.0 is daar de ingang voor. Tot dan blijft het 🧪 en staat er niets in je gezondheidsgeschiedenis dat ergens op gegokt is.
-
-### M15: "Terugblik" ✅ v1.13.12 (M)
-
-Lange geschiedenis moet je ook kunnen zien. Er is nu geen jaar-op-jaar.
-
-- **Dit jaar tegenover vorig jaar:** de lopende afstand en tijd als twee lijnen op dezelfde tijdas, met het verschil tot nu toe.
-- **Maandentabel over alle jaren** (afstand, tijd, aantal) als raster, de zwaarste maand gemarkeerd.
-- **Alle jaren per sport** op één regel, en per jaar de rustige en de drukke weken.
-- **Tijdlijn van hi-scores:** wanneer is welk record gevestigd, over alle jaren, niet alleen de huidige stand.
-- Alles getest op het vijfjarige demo-archief (en een gegenereerd archief van tien jaar); een prestatiebudget zoals bij M5.
-
-**Gebouwd in v1.13.12** (`core/LookBack.kt`, `ui/LookBackScreen.kt`): alle vier de punten, per sport of voor alle sporten.
-De berekeningen zijn zuivere functies met 25 tests; het scherm heeft een schermtest op drie jaar demodata, en het
-prestatiebudget opent Terugblik op vijf jaar geschiedenis. Dagen zijn UTC-kalenderdagen, net als Jaaroverzicht en de
-records. Een record dat voor het eerst wordt gezet telt niet als "gebroken" (er was niets te verbreken). **Bewust niet
-gedaan:** de test op een gegenereerd archief van tien jaar (vijf jaar is wat het budget dekt) en een jaar-op-jaar voor
-gezondheid (stappen, slaap); beide kunnen later zonder het model te wijzigen. **Niet gecontroleerd:** tegen een echte
-Garmin- of Strava-export en op een echte telefoon.
-
-### M16: "Open en koppelbaar" 🔜 (L, in stukken)
-
-- **Eigen open formaat:** een gedocumenteerd, versiebeheerd JSON-exportformaat naast CSV, dat de app ook weer inleest (met een test per schemaversie).
-- **Koppelen:** een alleen-lezen koppeling voor Tasker, Home Assistant en scripts (Android-intents of een ContentProvider), standaard uit, met de bijbehorende regel in de privacyverklaring.
-- **Server:** `openconnect import archief.zip` voor de Python-server, met dezelfde regels als M13, en een manier om de telefoon naar de eigen server te laten schrijven.
-- Elke schakelaar die gegevens buiten de app brengt krijgt een regel op de gegevenspagina uit M12.
-
-## 5. Wat alleen Stefan kan
-
-| Wanneer | Wat | Waarom het niet zonder jou kan |
-|---------|-----|--------------------------------|
-| Open | De sleutel in GitHub-secrets zetten en een offline kopie bewaren (de releases werken nu via secrets óf de privé-conceptrelease; G3 wil het eerste) | Alleen de eigenaar bewaart een kopie; secrets maak je in de instellingen van de repository |
-| Open | Privé melden van kwetsbaarheden aanzetten (Settings, Security) | Een instelling van de eigenaar |
-| Nu (M9 loopt) | De proefronde op echte apparaten: telefoon, fenix 8 en de Oura-ring, met een nieuw meldingenlogboek voor de reparaties van v1.0.1 | Alleen jij hebt de apparaten en de accounts |
-| ✅ 2026-11-18 | Gekozen waar 1.0 uitkomt: alleen GitHub | Gedaan: winkels (F-Droid, Google Play) komen in M10 |
-| ✅ 2026-11-18 | Minimum Android van 8.0 naar 9 | Gedaan in v0.52.0; telefoons met Android 8 blijven op v0.51.0 |
-| ✅ 2026-11-25 | Gekozen voor de weergavenaam **Cercis** (v1.13.1); de pakketnaam `nl.tufein.openconnect` blijft | Gedaan; de juridische controle van de naam staat nog open |
-| Bij M9 | Schermafbeeldingen van je eigen telefoon aanleveren | Mijn plaatjes komen uit een test, niet van een toestel |
-| Bij M13, M14 en M14b | Je export bij Garmin Connect (Account, Gegevensbeheer, *Je gegevens exporteren*) en eventueel Strava aanvragen en een keer in OpenConnect importeren; daarna in Instellingen op *Rapport kopiëren* drukken en dat in een melding op GitHub plakken (aantallen, bestandsnamen zonder e-mailadres, sleutelnamen, geen waarden) | De veldnamen van Garmin's export staan nergens beschreven; alleen een echte export kan bevestigen dat de lezer klopt |
-
-## 6. Na 1.0
-
-De vier sporen staan als **M9 tot en met M12** bij de mijlpalen (paragraaf 4); dit hoofdstuk blijft de korte samenvatting:
-M9 proeft alles op echte apparaten, M10 brengt winkelversies, M11 voegt inhoud toe (dagboekvakjes, actieve tijd, nieuwere
-protobuf-sync, watchface) en M12 ruimt op (afhankelijkheden, talen, gegevenspagina, naam).
-
-### 1.1-programma: de vijf sporen die Stefan miste (2026-11-21)
-
-Op Stefans verzoek ("we missen nog een hoop zaken") zijn de gaten in vijf sporen gezet. Per spoor eerst de dunne,
-testbare slice; daarna de zwaardere delen. Een ✅ betekent uitgebracht.
-
-| Spoor | Eerste slices | Zwaarder werk |
-|-------|----------------|----------------|
-| **Trainings- en herstelanalyse** | ✅ HRV-status (v1.0.6, eigen 7-vs-28-dagenvergelijking); ✅ slaapfases op Health (v1.0.7, data kwam al binnen) | Training Effect, Recovery Time en Performance Condition uit FIT lezen en tonen (vraagt een echte activiteit van een fenix 8 om de velden te bevestigen) |
-| **Work-outs en routes** | ✅ Vrije work-outbouwer bovenop de bestaande FIT-work-outs: naam, herhalingen, snel/rust, warming-up en cooldown, bewaard en met de verzendknop naar het horloge (v1.6.0) | Courses/routes naar het horloge; wat Garmin's API niet toestaat blijft lokale export |
-| **Lichaam en voeding** | ✅ Gewicht en vetpercentage met de hand invoeren, met 30-daagse lijn en back-up (v1.0.7); ✅ water loggen met een dagtotaal, lokaal en in de back-up (v1.1.0) | Lichaamssamenstelling uit de Garmin-account |
-| **Sync en invoer** | ✅ Ontbrekende stappen, slaap en gewicht automatisch uit Health Connect aanvullen, ook als de app dicht is (v1.2.0); ✅ een training met de hand invoeren, met eigen bron en in de back-up (v1.5.0) | Garmin's nieuwere protobuf-synchronisatie; watchface terug (vraagt een Garmin-ontwikkelaarsaccount) |
-| **UX en bereik** | ✅ Drie widgetformaten naast de bestaande widget: klein toont readiness en stappen, de gewone kaart je weekdoel, groot ook slaap en rusthartslag (v1.7.0); "Wat gaat er naar buiten"-pagina in de app | Duits en Frans |
-
-Bewust buiten scope, zoals eerder: segmenten en sociaal, LiveTrack, upload naar Strava of Intervals.icu, Wear OS.
-
-De volgende slices staan sinds 2026-11-23 niet meer los in dit hoofdstuk, maar in de **grote koers naar 2.0**
-(paragraaf 6b): eerst het schema dat meedenkt, dan Duits en Frans, de pagina *Wat verlaat je telefoon*, de geschiedenis
-en analyse, en de laatste loodjes. De work-outbouwer (v1.6.0) en het jaaroverzicht (v1.9.3) zijn klaar; de
-*"wat verlaat je telefoon"*-pagina staat er als v1.12.0 in, omdat ze pas waarde heeft als elke bron ook echt is
-geprobeerd of eerlijk gelabeld.
-
-**Bewust niet:** vermogensanalyse, een horlogecompanion, upload naar Intervals.icu of Strava (hun voorwaarden), segmenten en sociaal, labuitslagen, biologische leeftijd, Wear OS.
-
-### De grote koers naar 2.0 (2026-11-24)
-
-1.0 was de belofte dat een vreemde de app kan installeren en vertrouwen. **2.0 is de belofte dat je geen tweede app
-nodig hebt**: al je training, al je geschiedenis, alle inzichten en alle uitleg, op je eigen telefoon, zonder account
-en zonder abonnement. Drie dingen moeten dan waar zijn:
+**Legenda:** ✅ klaar · 🔜 volgende · 🧪 gebouwd en getest met nepgegevens, nog nooit op echte hardware of tegen de
+echte dienst · ❓ heeft iets nodig dat alleen de eigenaar (of iemand buiten het project) kan geven · **S/M/L/XL** =
+klein (een sessie), middel, groot (meerdere releases), heel groot
+
+## 1. Waar we staan (v1.14.0, 2026-11-28)
+
+- **Wat Cercis is.** Een Android-app die je Garmin-horloge, je Garmin-account, een Oura Ring, Health Connect en je
+  eigen bestanden (FIT, GPX, TCX, hele archieven van Garmin en Strava) op je eigen telefoon samenbrengt, zonder server
+  en zonder abonnement. Daarnaast een Python-server voor wie liever zelf host. AGPL-3.0, openbare repository,
+  Nederlands, Engels, Duits en Frans (de laatste twee machine-draft, niet native nagekeken).
+- **Op echte hardware bevestigd (drie bronnen):** de Garmin-account met eigen sleutel (2026-11-12), Bluetooth-sync met
+  horlogebatterij en live hartslag op een **fenix 8** (2026-11-28, v1.13.12), en meldingen van de telefoon op dat
+  horloge (zelfde dag). In de app dragen die bronnen het label *Getest op echt apparaat* met datum en versie; de rest
+  draagt *Experimenteel*. Zie het register in paragraaf 7.
+- **Kwaliteit:** ruim 1.400 tests over app, `core` en server, waarvan sinds v1.13.13 **fuzz-tests** die elke
+  bestandslezer en elke Bluetooth-lezer met tienduizenden beschadigde invoeren bestoken; dat vond zeven echte fouten,
+  die in v1.13.13 zijn gerepareerd. Een emulator-rooktest houdt elke release tegen.
+- **Klein:** sinds v1.14.0 is de APK **6,4 MB** in plaats van 13,3 MB, omdat de code (de dex-bestanden) gecomprimeerd
+  in de APK zit. Het budget ging van 14 naar **8 MiB**, met bijna 1,9 MB over.
+- **Onderhoudbaar:** sinds v1.14.0 staan de schermtoestanden in een eigen bestand (`ui/AppState.kt`) en de
+  doorgeefluiken naar horloge, Health Connect, meldingen, Garmin, Oura en AI in `ui/AppViewModelDevices.kt`;
+  `AppViewModel.kt` ging van 1.754 naar 1.402 regels, zonder gedragswijziging. Een **pre-push-controle**
+  (`tools/prepush.sh`) vangt opmaakfouten, een verouderde CHANGELOG en een versienummer dat niet overal gelijk is
+  voordat CI dat doet.
+- **Wat nog zwak is:**
+  1. **De meeste bronnen zijn nooit op echte hardware geprobeerd:** USB, Health Connect, Oura, de AI-sleutels, de
+     updater, de archief-import met een echte export en de winkelvariant. Dat is spoor B, D, E en F, en de rij in
+     paragraaf 6.
+  2. **De ondertekeningssleutel staat nog in een privé-conceptrelease** in plaats van in GitHub-secrets met een
+     offline kopie (H1). Alleen Stefan kan dat veranderen; de sleutel zelf mag **niet** worden vervangen, want dan
+     werkt geen enkele geïnstalleerde app nog bij.
+  3. **Vijftien compilerwaarschuwingen** in eigen code, waarvan negen omdat `EncryptedSharedPreferences` en `MasterKey`
+     door Google zijn afgeschreven (A6, H3).
+  4. **De naam Cercis is juridisch niet gecontroleerd** en er is geen Play-account; de winkelvariant blijft daarom
+     ongepubliceerd (I1, I2).
+  5. **`AppViewModel` is nog steeds één klasse voor alle schermen** (A5).
+
+## 2. Richting
+
+### Wat 1.0 beloofde (gehaald op 2026-11-20)
+
+Het werkt op een echte telefoon en wat niet getest is staat er in de app bij; je gegevens blijven van jou en gaan niet
+verloren bij een update; een vreemde kan het zelf installeren, begrijpen en vertrouwen.
+
+### Wat 2.0 belooft: je hebt geen tweede app nodig
 
 1. **Compleet.** Van je eerste run tot de training van gisteren staat erin, uit elke bron die je gebruikt, zonder gaten
    en zonder dubbelen. Wat er niet in staat, zegt de app eerlijk.
-2. **Het denkt mee.** De app zegt wat je vandaag het beste kunt doen en waarom, uit jouw cijfers — en durft te zeggen
-   dat het het niet weet.
+2. **Het denkt mee.** De app zegt wat je vandaag het beste kunt doen en waarom, uit jouw cijfers, en durft te zeggen
+   dat hij het niet weet. Ook zonder AI.
 3. **Het is uit te leggen.** Van elke tegel is te herleiden welke bron en welke berekening erachter zit, en van elk
    veld dat de telefoon verlaat staat erbij waar het heen gaat en waarom.
+4. **Het is gezond gebouwd.** Geen afgeschreven beveiligings-API's, geen compilerwaarschuwingen, elke lezer gefuzzd,
+   en een sleutel die veilig bewaard is.
+5. **Het is leuk.** Cercis heeft een eigen gezicht, met een retro-hart: pixelletters, trofeeën, een CRT- en een
+   LCD-look, en kleine beloningen die je zelf aan- of uitzet. Allemaal eigen ontwerp.
 
-#### De vijf poorten van 2.0
+### Waar 3.0 heen gaat: je eigen sportlab
 
-| Poort | Nu | Moet waar zijn |
-|-------|----|----------------|
-| **P1 Geschiedenis** | 🧪 | Elke bron die de app noemt importeert zonder verlies, een tweede import verdubbelt niets, en alles komt terug uit een back-up |
-| **P2 Echt** | 🧪 | Elke bron is op echte hardware geprobeerd en gedateerd, of draagt in de app het label *Experimenteel* |
-| **P3 Talen** | 🧪 | Nederlands, Engels, Duits en Frans zijn volledig; de taaltest faalt op een ontbrekende regel. De Duitse en Franse teksten zijn machine-draft en niet native nagekeken |
-| **P4 Uitleg** | 🧪 | Elke tegel noemt zijn bron en berekening; *Wat verlaat je telefoon* klopt met de code en met de netwerktest |
-| **P5 Bereik** | 🧪 | De app installeert en werkt zonder server, zonder netwerk en zonder updater; een winkelversie en de GitHub-versie botsen niet. De store-code bestaat sinds v1.13.0; een echte winkelpublicatie en winkelinstallatie zijn niet geprobeerd |
+Na 2.0 is de vraag niet meer "kan ik zonder Garmin Connect", maar "kan ik met mijn eigen gegevens alles wat ik wil".
+De richting, nog zonder belofte:
 
-Een poort gaat pas op groen als het bewijs in de repository staat (een test, een release note of een gedateerde
-proef), niet omdat het idee goed klinkt. **P5 is daarom nog niet groen:** de store-code bestaat sinds v1.13.0 en de
-builds zijn per kanaal getest, maar er is geen winkelpublicatie en geen echte installatie van een winkelbuild; ook het
-naast of over elkaar installeren is niet op een toestel geprobeerd.
+- **Al je eigen apparaten, niemand ertussen.** Telefoon, tablet en een eigen server houden elkaar bij, eind-tot-eind
+  versleuteld, met het open formaat (K1) als contract. Geen cloud van ons.
+- **Analyses als bouwstenen.** Elke berekening (vorm, VO2max, drempel, slaapritme) is nu al een zuivere functie met
+  tests. In 3.0 wordt dat een gedocumenteerde laag waar iemand anders een eigen analyse aan kan toevoegen, met dezelfde
+  testregels.
+- **Een eerlijke coach die op de telefoon blijft.** Regelgebaseerd waar dat kan, AI alleen als jij een sleutel geeft,
+  en altijd met de bron erbij.
+- **Beslissingen die bij Stefan liggen (❓):** een eigen Connect IQ-dataveld op het horloge (botst met *geen
+  horlogecompanion* uit paragraaf 10), synchroniseren tussen telefoons in één huishouden, en of de server een eigen
+  webweergave krijgt.
 
-#### De vier fasen
+## 3. De zeven poorten van 2.0
 
-| Fase | Uitkomst | Releases | Maat | Wacht op |
-|------|----------|----------|------|----------|
-| **1. Zichtbaar en eigen** ✅ | De app voelt als één rustig geheel en jij bepaalt hoe hij eruitziet: editorial-look, signaalkleuren, ringen, foto, thema's, iconen en een voorblad dat je zelf samenstelt | v1.9.0 – v1.9.3 | M | — |
-| **2. Het denkt mee** ✅ | Het schema past zich aan als je week anders liep: één voorstel met Toepassen/Niet nu; de coach bespreekt alleen dat voorstel en verandert niets | v1.10.0 | L | niets |
-| **3. Bereik en uitleg** | Duits en Frans, één pagina *Wat verlaat je telefoon* per bron, ringen op Gezondheid, en een winkelversie die naast de GitHub-versie kan staan | v1.11.0, v1.12.0, v1.13.0, v1.13.1, v1.13.2, v1.13.3, v1.13.4, v1.13.5, v1.13.6, v1.13.7, v1.13.8, v1.13.9, v1.13.10, v1.13.11, v1.15.0 | M | juridische naamcontrole, account/testers, echte schermafbeeldingen en verklaringen voor publicatie |
-| **4. Geschiedenis en analyse** | Garmin's protobuf-sync en de rest van de exportvelden; Training Effect, hersteltijd en Performance Condition uit je eigen FIT | v1.14.0 of later | L ❓ | een echte Garmin-export en één fenix 8-opname van Stefan |
-| **Sluiten** | Alle vijf poorten groen; geen nieuwe functie, alleen bewijs en reparaties | v2.0.0 | XL | de vier fasen |
+2.0 gaat uit als **alle zeven** poorten groen zijn. Een poort gaat pas op groen als het bewijs in de repository staat
+(een test, een release note of een gedateerde proef), niet omdat het idee goed klinkt.
 
-#### De ladder naar 2.0
+| Poort | Nu | Moet waar zijn | Sporen |
+|-------|----|----------------|--------|
+| **P1 Geschiedenis** | 🧪 | Elke bron die de app noemt importeert zonder verlies, een tweede import verdubbelt niets, alles komt terug uit een back-up, en de archief-import is met minstens één echte Garmin- of Strava-export bevestigd | E, K |
+| **P2 Echt** | 🧪 | Elke bron is op echte hardware of tegen de echte dienst geprobeerd en gedateerd, of draagt in de app het label *Experimenteel* | B, D, F |
+| **P3 Talen** | 🧪 | Nederlands, Engels, Duits en Frans volledig; de taaltest faalt op een ontbrekende regel; Duits en Frans native nagekeken | I |
+| **P4 Uitleg** | 🧪 | Elke tegel noemt zijn bron en berekening; *Wat verlaat je telefoon* klopt met de code en met een netwerktest | F, H |
+| **P5 Bereik** | 🧪 | De app werkt zonder server, netwerk en updater; een winkelversie en de GitHub-versie botsen niet; minstens één winkelinstallatie of een reproduceerbare F-Droid-build | I |
+| **P6 Fundament** | 🔜 | Nul compilerwaarschuwingen in eigen code als CI-poort, geen afgeschreven beveiligings-API's, fuzz-tests over elke lezer, drie CI-runs op rij groen zonder opnieuw starten, APK binnen budget | A, H |
+| **P7 Sleutel** | ❓ | De ondertekeningssleutel in GitHub-secrets met een offline kopie, de conceptrelease weg, privé melden van kwetsbaarheden aan | H |
 
-Deze volgorde is een voorstel, geen wet: elke release staat op zichzelf en mag van plaats wisselen als een proef op
-echte hardware daarom vraagt. **S/M/L/XL** zoals in de legenda.
+**Wat er al groen is binnen P6:** de fuzz-tests (v1.13.13) en het APK-budget (v1.14.0). Wat er nog mist: de
+waarschuwingen en de afgeschreven sleutelkluis.
 
-| Versie | Fase | Wat erin zit | Maat |
+## 4. De sporen
+
+Elk onderdeel heeft een nummer, wat het is, hoe we weten dat het klopt, een maat en waar het op wacht. Een ✅ noemt de
+versie waarin het uitkwam.
+
+### A. Kwaliteit en fundament
+
+| # | Wat | Hoe we weten dat het klopt | Maat | Wacht op |
+|---|-----|----------------------------|------|----------|
+| A1 | ✅ v1.13.13 Fuzz-tests over elke bestands- en Bluetooth-lezer (app, `core`, server) | Vaste seeds; elke andere uitzondering dan de eigen fout faalt | M | — |
+| A2 | ✅ v1.14.0 Dex gecomprimeerd in de APK: 13,3 naar 6,4 MB, budget 8 MiB | `check_apk_size.py` in elk pull request en elke release; zipalign en apksigner groen | S | — |
+| A3 | ✅ v1.14.0 Pre-push-controle: ruff, CHANGELOG, versie op vier plekken, release note bestaat | `tests/unit/test_prepush.py` | S | — |
+| A4 | ✅ v1.14.0 Eén scroll-helper voor schermtests (`scrollToText`, ook in `clickText`) | De Home-tests die wisselend faalden gebruiken hem | S | — |
+| A5 | AppViewModel per scherm: eigen ViewModels voor Home, Gezondheid, Inzichten, Activiteiten, Horloge en Instellingen, gedeelde toestand in de repository. Stap 1 (toestanden en doorgeefluiken naar eigen bestanden) is ✅ v1.14.0 | Elke schermtest blijft groen zonder aanpassing van de verwachting | M | — |
+| A6 | Nul compilerwaarschuwingen in `app` en `core`, daarna `allWarningsAsErrors` als CI-poort | De build faalt op een nieuwe waarschuwing | S/M | H3 |
+| A7 | Nachtelijke fuzz-run met nieuwe seeds (geplande workflow); een gevonden fout komt als test met die seed terug | De workflow draait elke nacht en bewaart de seed | S | — |
+| A8 | Mutatietests (PIT) op de inzichtberekeningen in `core`, met een minimumscore | Rapport als CI-artefact; een daling faalt | M | — |
+| A9 | Opstartprofiel (baseline profile) en een opstartbudget in de prestatietest | Koude start gemeten op de emulator, budget in `PERFORMANCE.md` | M | — |
+| A10 | Gradle-configuratiecache en buildcache in CI | CI-tijd per job vóór en na in de release note | S | — |
+| A11 | "Drie keer groen" meten: een script leest de laatste runs van `main` en zegt of G4/P6 haalbaar is | Script met een test op een opgenomen API-antwoord | S | — |
+| A12 | Register van wiebelende tests: elke herkansing komt in een bestand, doel nul | De rooktest en de schermtests schrijven hun herkansing weg | S | — |
+| A13 | StrictMode in debug-builds: schijf of netwerk op de hoofdthread is een fout | Robolectric-test die een overtreding opvangt | S | — |
+| A14 | Afhankelijkheden bij zonder sprongen: Dependabot per familie blijft, elke grote sprong een eigen release | CI groen, rooktest groen | S per keer | — |
+
+### B. Het horloge (fenix 8 en andere Garmins)
+
+| # | Wat | Hoe we weten dat het klopt | Maat | Wacht op |
+|---|-----|----------------------------|------|----------|
+| B1 | ✅ v1.13.13 Bluetooth-sync, horlogebatterij, meldingen en live hartslag bevestigd op een fenix 8 | Stefans melding van 2026-11-28 | — | — |
+| B2 | **Training Effect** (aeroob en anaeroob), **hersteltijd** en **Performance Condition** uit de FIT van een activiteit, met uitleg en een register dat zegt of het op echte data bevestigd is | Test met een echte fenix 8-FIT als vast bestand | L | ❓ één echte activiteit van Stefans fenix 8 |
+| B3 | **Synchroniseren zonder de app te openen:** koppelen via Android's CompanionDeviceManager, zodat het horloge op de achtergrond synct als het in de buurt komt; WorkManager als terugval | Robolectric met een neplink; echt: een nacht op Stefans telefoon | L | proef van Stefan |
+| B4 | **Agenda op het horloge:** het horloge vraagt nu al om afspraken en krijgt "geen afspraken"; met toestemming (standaard uit) krijgt het de echte afspraken van vandaag en morgen, met een regel in *Wat verlaat je telefoon* | Nepwatch stuurt de agendavraag; het antwoord bevat de afspraken | M | bevestiging op fenix 8 |
+| B5 | **Zoek mijn telefoon** vanaf het horloge: de telefoon gaat over, ook op stil | Nepwatch stuurt het verzoek; de app start het geluid | S/M | protocol bevestigen op fenix 8 |
+| B6 | **Muziekbediening** van de telefoon vanaf het horloge (afspelen, volgende, volume) | Nepwatch; Android MediaSession in Robolectric | M | bevestiging op fenix 8 |
+| B7 | **Weer op het horloge** via Open-Meteo (geen sleutel), standaard uit, alleen een afgeronde locatie | Neptijdserver; privacytest op velden | M | ❓ Stefan kiest of dit mag (netwerk) |
+| B8 | **Routes naar het horloge:** een GPX wordt een FIT-course en gaat via Bluetooth of USB naar het horloge | Course-FIT tegen de FIT-specificatie; echte proef | L | ❓ of een fenix 8 de course accepteert |
+| B9 | Garmin's nieuwere **protobuf-bestandssync** naast de bestaande GFDI-sync | Nepwatch met opgenomen berichten | L | ❓ een opname van Stefans horloge |
+| B10 | **Profiel en zones uit het horloge** lezen (gewicht, maximale hartslag, zones) en voorstellen om ze over te nemen | Nepwatch; nooit stil overschrijven | M | bevestiging op fenix 8 |
+| B11 | **Meer dan één horloge:** wisselen zonder opnieuw te koppelen, met per horloge een eigen batterij en log | Twee nepwatches in één test | M | — |
+| B12 | USB-proef (T6) en scherm-uit-proef (T8) en batterijproef (T16) uit `PUBLIC_RELEASE.md` | Gedateerde rij in het register | S | ❓ Stefan |
+
+### C. Training en analyse
+
+| # | Wat | Hoe we weten dat het klopt | Maat | Wacht op |
+|---|-----|----------------------------|------|----------|
+| C1 | **Grade-adjusted pace** (tempo gecorrigeerd voor helling) per activiteit en per kilometer | Zuivere functie met bekende hellingen en een gepubliceerde energiecurve | M | — |
+| C2 | **Rondes en intervallen:** de rondes uit de FIT tonen, en snelle en rustige blokken automatisch herkennen als er geen rondes zijn | Vaste FIT-bestanden met en zonder rondes | M | — |
+| C3 | **Drempelschatting:** een lactaatdrempel-hartslag uit je eigen inspanningen van 20 tot 60 minuten, als voorstel voor de zones | Tests op gegenereerde inspanningen; het blijft een vuistregel en dat staat erbij | M | — |
+| C4 | **Tempozones** naast de hartslagzones, per activiteit en per week | Tests zoals bij de hartslagzones | S | C3 |
+| C5 | **Trainingsstatus** (productief, onderhoud, te veel, te weinig) uit je eigen belasting en de trend van VO2max | Tabeltest per toestand; uitleg bij elke uitkomst | M | — |
+| C6 | **Cadans en paslengte** als de FIT ze heeft, met een trend | Vaste FIT; leeg als het veld ontbreekt | S | — |
+| C7 | **Zwemmen:** baantjes en slagen uit een zwembad-FIT | Vaste FIT | M | ❓ een echte zwem-FIT |
+| C8 | **Kracht:** sets en herhalingen uit de FIT | Vaste FIT | M | ❓ een echte kracht-FIT |
+| C9 | **Racedag:** een afbouwweek (taper) in het schema voor het racedoel, met het schema dat meedenkt | Tests op het plan | M | — |
+| C10 | **Splits vergelijken op dezelfde route:** per kilometer naast je beste en je vorige keer | Tests op twee gegenereerde routes | S | — |
+
+### D. Gezondheid
+
+| # | Wat | Hoe we weten dat het klopt | Maat | Wacht op |
+|---|-----|----------------------------|------|----------|
+| D1 | **Gezondheid door de jaren:** stappen, slaap en rusthartslag jaar op jaar, zoals Terugblik voor training (bewust buiten M15 gelaten) | Zuivere functies met tests; schermtest op demodata | M | — |
+| D2 | **HRV-nacht** als grafiek met je eigen normale band | Tests op de band | S | — |
+| D3 | **Slaapregelmaat** (Sleep Regularity Index) naast het slaapritme | Tests op bekende patronen | S | — |
+| D4 | **Ziek of geblesseerd** als dag in het dagboek: het schema en de vormberekening pauzeren in plaats van je te straffen | Tests op plan en vorm | M | — |
+| D5 | **Bloeddruk** met de hand invoeren en uit Health Connect lezen, met schemamigratie en back-up | Migratietest vanaf elke schemaversie | M | — |
+| D6 | **Ademhaling en SpO2** als trend met eerlijke grenzen en een "geen meting"-regel | Tests op lege en echte reeksen | S | — |
+| D7 | **Health Connect schrijven:** ook trainingen en hartslag, niet alleen stappen, slaap en gewicht | Fake Health Connect-client | M | proef op een echte telefoon |
+| D8 | **Dagen uit de Garmin-export** (het oude M14b): stappen, rusthartslag en slaap waar de app nog niets heeft | Lezer pas na een echt rapport | M | ❓ Stefans export en *Rapport kopiëren* |
+| D9 | Health Connect op een echte telefoon proberen | Gedateerde rij in het register | S | ❓ Stefan |
+
+### E. Je geschiedenis
+
+| # | Wat | Hoe we weten dat het klopt | Maat | Wacht op |
+|---|-----|----------------------------|------|----------|
+| E1 | ✅ Archief-import (v1.3.0), namen (v1.4.0), Terugblik (v1.13.12) | Zie paragraaf 8 | — | — |
+| E2 | **Echte export bevestigen:** een Garmin- en een Strava-export één keer importeren en het rapport delen | Rapport in een melding, zonder waarden | S | ❓ Stefan |
+| E3 | **Samenvoegen en splitsen:** twee opnames van dezelfde training (horloge en ring) samenvoegen, een vergeten stop afknippen | Tests op track, tijden en totalen; terug te draaien | M | — |
+| E4 | **Prullenbak:** een verwijderde activiteit blijft 30 dagen terug te halen | Schematest en back-uptest | S/M | — |
+| E5 | **Achteraf bewerken:** sport, naam, notitie en schoen van een activiteit | Schermtest; bron blijft zichtbaar | S | — |
+| E6 | **Dubbelen-rapport:** over alle bronnen heen tonen wat mogelijk dubbel is, met één tik om te houden of samen te voegen | Tests op de 90-secondenregel en verschillende bronnen | S | E3 |
+| E7 | **Op deze dag:** wat je een, twee of vijf jaar geleden vandaag deed, als kaart op Home (uit te zetten) | Tests op schrikkeljaren en lege dagen | S | — |
+
+### F. Coach en AI
+
+| # | Wat | Hoe we weten dat het klopt | Maat | Wacht op |
+|---|-----|----------------------------|------|----------|
+| F1 | **Coach zonder AI:** een weekterugblik en een advies voor vandaag uit regels, offline, met de bron per zin | Tabeltests op de regels | M | — |
+| F2 | **Zien wat er weggaat:** vóór een AI-vraag de exacte tekst tonen die naar Claude of Gemini gaat | Test dat het voorbeeld en het verzoek gelijk zijn | S | — |
+| F3 | **"Waarom zegt de app dit?"** bij elke tegel: bron, berekening en de cijfers erachter (P4) | Elke tegel heeft een uitleg; een test faalt op een tegel zonder | M | — |
+| F4 | **Modellen bij:** de nieuwste Claude- en Gemini-modellen als standaard, met een test die de lijst bewaakt | Unit-test op de modellijst | S | — |
+| F5 | **Kosten per vraag** (tokens in en uit) in de coach | Tests op het tellen | S | F4 |
+| F6 | AI met echte sleutels proberen | Gedateerde rij in het register | S | ❓ Stefan |
+
+### G. Uiterlijk en gevoel, met een retro-hart
+
+Eigen ontwerp, geen namaak van een bestaand spel: eigen pixeltekeningen, eigen kleuren, eigen geluidjes. Elke
+beweging volgt de systeeminstelling *Animaties verwijderen*, elk geluid staat standaard uit, en elk nieuw thema haalt
+de contrasttest.
+
+| # | Wat | Hoe we weten dat het klopt | Maat | Wacht op |
+|---|-----|----------------------------|------|----------|
+| G1 | **Trofeeënkast in pixels:** de bestaande trofeeën krijgen eigen 16×16-pixelbadges (als vector, dus geen APK-groei), met de datum waarop je ze haalde | Schermtest; elke trofee heeft een tekening en een TalkBack-tekst | M | — |
+| G2 | **CRT-look:** een optionele laag met scanlijnen en een zachte gloed voor de stijl Retro | Contrasttest en schermafbeelding in de test | S/M | — |
+| G3 | **LCD-palet:** vier tinten groen zoals een oud handheld-scherm, als zevende palet | Contrasttest op elke tekstkleur | S | — |
+| G4 | **Level-up:** een korte felicitatie bij een nieuw record of een gehaald weekdoel | Schermtest; uit bij *Animaties verwijderen* | S | — |
+| G5 | **8-bit-geluidjes** bij een record of een afgeronde sync, op de telefoon zelf opgewekt (geen geluidsbestanden), standaard uit | Test op de toongenerator; geluid alleen als het aan staat | S | — |
+| G6 | **"Continue?"** na een gemiste week: het voorstel van het schema dat meedenkt, als speels scherm met Toepassen of Niet nu | Schermtest op beide knoppen | S | — |
+| G7 | **Pixel-heatmap:** de heatmap als blokjeskaart in de stijl Retro | Schermtest | S | — |
+| G8 | **Widgets in elke stijl,** ook Retro en LCD | Glance-test per stijl | S | G3 |
+| G9 | **Highscore-tabel per afstand** met initialen die je zelf kiest (drie letters), naast de bestaande records | Schermtest; back-up bewaart de initialen | S | — |
+| G10 | Echte schermafbeeldingen en een TalkBack-proef (T14) | Gedateerde rij in `PUBLIC_RELEASE.md` | S | ❓ Stefan |
+
+### H. Privacy en beveiliging
+
+| # | Wat | Hoe we weten dat het klopt | Maat | Wacht op |
+|---|-----|----------------------------|------|----------|
+| H1 | **Sleutel naar GitHub-secrets** met een offline kopie, en de privé-conceptrelease `signing-key` weg. **Niet vervangen:** een nieuwe sleutel betekent dat geen geïnstalleerde app meer bijwerkt | De release-workflow leest de sleutel alleen nog uit secrets | S | ❓ Stefan |
+| H2 | **Privé melden van kwetsbaarheden** aanzetten (Settings, Security) | Link in `SECURITY.md` werkt | S | ❓ Stefan |
+| H3 | **Eigen sleutelkluis** op de Android Keystore (AES-GCM) in plaats van het afgeschreven `EncryptedSharedPreferences`, met een migratie die oude sleutels meeneemt | Robolectric-test: oude kluis in, nieuwe kluis uit, niets kwijt | M | — |
+| H4 | **Versleutelde back-up** met een wachtwoord (optioneel) | Test: zonder wachtwoord geen inhoud; fout wachtwoord nette fout | M | — |
+| H5 | **Netwerktest:** een test kent elke host die de app kan aanspreken en faalt op een nieuwe, gekoppeld aan *Wat verlaat je telefoon* | Unit-test over de bronnen | S/M | — |
+| H6 | **Herkomst:** GitHub Actions vastgepind op commit, Gradle-verificatie van afhankelijkheden | CI faalt op een gewijzigde afhankelijkheid | S/M | — |
+| H7 | **SBOM** (CycloneDX) als bijlage bij elke release | Release-workflow controleert dat hij er is | S | — |
+| H8 | **Reproduceerbare build:** dezelfde bron geeft dezelfde APK-bytes (op de handtekening na) | Twee builds in CI vergeleken | L | — |
+
+### I. Bereik en verspreiding
+
+| # | Wat | Hoe we weten dat het klopt | Maat | Wacht op |
+|---|-----|----------------------------|------|----------|
+| I1 | Juridische controle van de naam **Cercis** | Gedateerde regel in `PUBLIC_RELEASE.md` | S | ❓ Stefan |
+| I2 | Play-ontwikkelaarsaccount met testers (12 testers, 14 dagen bij een nieuw persoonlijk account) | Gesloten test loopt | M | ❓ Stefan |
+| I3 | **F-Droid:** metadata en een reproduceerbare build | F-Droid-build slaagt | M/L | H8 |
+| I4 | Duits en Frans **native nagekeken** | Lijst met nagekeken schermen in `LANGUAGES.md` | M | ❓ moedertaalsprekers |
+| I5 | Installatiegids met schermafbeeldingen van een echte telefoon | `INSTALL.md` met echte beelden | S | ❓ Stefan |
+| I6 | **Obtainium in één tik:** een link en QR-code die de repository en de juiste APK al invullen | Test op de link | S | — |
+| I7 | Engelstalige korte versie van dit plan in de README | Linkcontrole | S | — |
+
+### J. De server
+
+| # | Wat | Hoe we weten dat het klopt | Maat | Wacht op |
+|---|-----|----------------------------|------|----------|
+| J1 | ✅ v1.13.13 Fuzz-tests op de GPX-, TCX- en FIT-lezers | `tests/unit/test_formats_fuzz.py` | S | — |
+| J2 | **`openconnect import archief.zip`** met dezelfde regels als de app (nooit overschrijven of verdubbelen) | Dezelfde testarchieven als de app | M | — |
+| J3 | **De telefoon schrijft naar je eigen server** (opt-in, token, alleen HTTPS) | Integratietest app-formaat naar server | L | K1 |
+| J4 | Python 3.14 in de testmatrix | CI-matrix | S | — |
+| J5 | Docker-image voor arm64 (Raspberry Pi) naast amd64, als release-bijlage of in de pakketregistry van de repository | Build in CI op beide architecturen | S/M | — |
+| J6 | Zakelijke Garmin-OAuth (Developer Program) | Proef tegen Garmin | M | ❓ goedkeuring van Garmin |
+
+### K. Open en koppelbaar
+
+| # | Wat | Hoe we weten dat het klopt | Maat | Wacht op |
+|---|-----|----------------------------|------|----------|
+| K1 | **Eigen open formaat:** gedocumenteerd, versiebeheerd JSON naast CSV, dat de app ook weer inleest | Een test per schemaversie: export, import, gelijk | M | — |
+| K2 | **Het schema als agenda:** het trainingsplan exporteren als iCalendar-bestand | Test tegen de iCalendar-regels | S | — |
+| K3 | **Koppelen met Tasker en Home Assistant:** alleen lezen, standaard uit, met een regel op de privacypagina | Robolectric-test op de koppeling en de schakelaar | M | — |
+| K4 | **Webhook naar je eigen server** bij een nieuwe activiteit | Test met een nepserver | S/M | J3 |
+
+### L. Documentatie en community
+
+| # | Wat | Hoe we weten dat het klopt | Maat | Wacht op |
+|---|-----|----------------------------|------|----------|
+| L1 | ✅ v1.14.0 **Zo werk je verder:** paragraaf 9 legt stap voor stap uit hoe je bouwt, test en een release maakt | Een release volgens die stappen | S | — |
+| L2 | `ARCHITECTURE.md` bij met de opsplitsing van AppViewModel | Linkcontrole | S | A5 |
+| L3 | **Bijdragersgids per onderwerp:** een horlogemodel, een thema, een taal of een bron toevoegen | Elke gids verwijst naar de test die je moet uitbreiden | S | — |
+| L4 | Sjablonen voor meldingen per bron (de *Hardwaretest* bestaat) | Sjablonen in `.github/ISSUE_TEMPLATE` | S | — |
+
+## 5. De ladder
+
+Een voorstel, geen wet: elke release staat op zichzelf en mag van plaats wisselen als een proef op echte hardware
+daarom vraagt. Wat op Stefan wacht (❓) staat bewust laat, zodat het de rest niet ophoudt; komt het eerder binnen, dan
+schuift het naar voren. Versienummers worden pas bij het uitbrengen gegeven.
+
+| Versie | Naam | Wat erin zit | Maat |
 |--------|------|--------------|------|
-| **v1.9.3** ✅ | 1 | Jaaroverzicht, en de gereedschapsketen naar Gradle 9.6, AGP 9.5 en compileSdk 37 | M |
-| **v1.10.0** ✅ | 2 | Het schema past zich aan: een gemiste afgesloten week levert één voorstel met Toepassen/Niet nu; de coach bespreekt alleen dat voorstel en verandert niets | L |
-| **v1.11.0** ✅ | 3 | Duits en Frans, met een taaltest die elke tekst dekt en een keuze in de instellingen; de teksten zijn machine-draft en niet native nagekeken | M |
-| **v1.12.0** ✅ | 3 | *Wat verlaat je telefoon*: één pagina per bron met wat er wel en niet weggaat, plus een test die elk veld dekt | M |
-| **v1.13.0** ✅ | 3 | De winkelvariant als code: `github` en `store` uit één codebase, store zonder updater/installatietoestemming/FileProvider, targetSdk 36; AAB en APK gebouwd en gecontroleerd, niet gepubliceerd | S/M |
-| **v1.13.1** ✅ | 3 | Weergavenaam **Cercis** in plaats van OpenConnect; pakketnaam, repository, APK-namen en updater blijven, dus v1.13.0 werkt gewoon bij; juridische controle en winkelpublicatie staan nog open | S |
-| **v1.13.2** ✅ | 3 | Strengere release-controles: de emulator-rooktest houdt een release weer tegen en de APK heeft een budget van 13 MiB | S |
-| **v1.13.3** ✅ | 3 | Compose 1.13 (BOM 2026.11.01, compileSdk 37.1) en schermtests op de v2-regel, zodat ze niet meer wisselend vastlopen | S |
-| **v1.13.4** ✅ | 3 | Vier ringen op Gezondheid in plaats van losse balken, met dezelfde vorm in elke stijl en tests voor 320 dp, TalkBack en ontbrekende scores; de horlogebatterij leest meteen na het batterijantwoord in plaats van te wachten op de syncstatus | S |
-| **v1.13.5** ✅ | 3 | Horlogebatterij: zelfgestuurde ladingberichten, een nieuwe vraag bij de start van de sync, vijf seconden respijt na `SYNC_COMPLETE` en periodiek verversen op een open meldingenverbinding | S |
-| **v1.13.6** ✅ | 3 | Live hartslag rechtstreeks uit een Garmin-horloge via de eigen Bluetoothverbinding (`REAL_TIME_HR`, abonneren met `0x01`), zonder uitzendmodus; werkt over een bestaande meldingenverbinding of een eigen verbinding, zonder RR/HRV | S |
-| **v1.13.7** ✅ | 3 | De real-time-hartslaggienst wordt pas na de configuratie van het horloge aangevraagd; een Fenix 8 negeert de eerdere aanvraag tijdens de handshake, waardoor v1.13.6 geen beats gaf. Een nepwatch weigert de vroege aanvraag nu als regressietest | S |
-| **v1.13.8** ✅ | 3 | De live hartslag als eigen kaart op de voorpagina: starten/scannen/sensorkeuze, bpm met min/avg/max en duur, stoppen en opslaan zonder eerst naar Watch te gaan; standaard aan en uit te zetten onder Weergave → Voorpagina | M |
-| **v1.13.9** ✅ | 3 | De live hartslag start automatisch bij het openen van de app: de laatste sensor wordt onthouden, anders wordt er gezocht en de eerste sensor gekozen; de opname blijft lopen bij een tabwissel en is op Watch uit te zetten | S |
-| **v1.13.10** ✅ | 3 | De Oura-tab synchroniseert vanzelf bij openen wanneer de laatste sync ouder is dan een minuut; de knop Sync now blijft voor een directe sync | S |
-| **v1.13.11** ✅ | 3 | Een eigen hartslagkaart op de Oura-tab met de gemiddelde en laagste hartslag van de laatste nacht; Oura levert geen live hartslag via de API, en dat staat erbij | S |
-| **v1.13.12** ✅ | 4 | Terugblik (M15): dit jaar tegenover vorig jaar, een raster van elke maand van elk jaar, elk jaar op zich en de gebroken records; het APK-budget gaat naar 14 MiB | M |
-| **v1.13.13** ✅ | — | Fenix 8 bevestigd op echte hardware (labels in de app); zeven fouten uit fuzz-tests gerepareerd in de FIT-, GPX-, TCX- en Garmin-lezers van app en server; Dependabot: appcompat 1.8.0 | S |
-| **v1.14.0** | 4 | Training Effect, hersteltijd en Performance Condition uit FIT, met een register dat zegt wanneer het op echte data is bevestigd | L ❓ |
-| **v1.15.0** | 3 | Laatste loodjes: winkelpublicatie, schermafbeeldingen van een echte telefoon, installatiegids en de juridische naamcontrole | S/M |
-| **v2.0.0** | Slot | De vijf poorten hierboven groen; geen nieuwe functie | XL |
+| **v1.13.13** ✅ | Bevestigd | Fenix 8 bevestigd (B1), zeven fouten uit fuzz-tests (A1, J1), appcompat 1.8.0 | S |
+| **v1.14.0** ✅ | Schoon fundament | APK 6,4 MB en budget 8 MiB (A2), pre-push (A3), scroll-helper (A4), AppViewModel stap 1 (A5), deze roadmap (L1) | M |
+| **v1.15.0** | Zonder waarschuwingen | Eigen sleutelkluis (H3), nul waarschuwingen als poort (A6), StrictMode (A13), configuratiecache (A10) | M |
+| **v1.16.0** | Retro | Pixeltrofeeën (G1), CRT-look (G2), LCD-palet (G3), level-up (G4), 8-bit-geluidjes (G5), highscores met initialen (G9) | M |
+| **v1.17.0** | Looptechniek | Grade-adjusted pace (C1), rondes en intervallen (C2), cadans en paslengte (C6), splits op dezelfde route (C10) | M |
+| **v1.18.0** | Drempel | Drempelschatting (C3), tempozones (C4), trainingsstatus (C5) | M |
+| **v1.19.0** | Gezondheid door de jaren | Jaar op jaar (D1), HRV-nacht (D2), slaapregelmaat (D3), ziek of geblesseerd (D4), ademhaling en SpO2 (D6) | M |
+| **v1.20.0** | Open formaat | Open JSON (K1), schema als agenda (K2), prullenbak (E4), achteraf bewerken (E5) | M |
+| **v1.21.0** | Horloge praat terug | Agenda (B4), zoek mijn telefoon (B5), muziekbediening (B6): met nepwatch getest, op de fenix 8 te bevestigen | M/L |
+| **v1.22.0** | Eerlijke coach | Coach zonder AI (F1), zien wat er weggaat (F2), "Waarom zegt de app dit?" (F3), modellen bij (F4) | M |
+| **v1.23.0** | Op de achtergrond | Synchroniseren zonder de app te openen (B3), meer dan één horloge (B11) | L |
+| **v1.24.0** | Geschiedenis heel | Samenvoegen en splitsen (E3), dubbelen-rapport (E6), op deze dag (E7) | M |
+| **v1.25.0** | Koppelbaar | Tasker en Home Assistant (K3), server-import (J2), Python 3.14 (J4) | M |
+| **v1.26.0** | Thuisbasis | Telefoon naar eigen server (J3), webhook (K4), versleutelde back-up (H4) | L |
+| **v1.27.0** | Herkomst | Netwerktest (H5), vastgepinde Actions en verificatie (H6), SBOM (H7), reproduceerbare build (H8) | M/L |
+| **v1.28.0** | Echte data ❓ | Training Effect en co (B2), dagen uit de export (D8), bevestigde archief-import (E2): zodra Stefans opname en export er zijn | L ❓ |
+| **v1.29.0** | Winkelklaar ❓ | Naam (I1), Play-account (I2), F-Droid (I3), native talen (I4), echte schermafbeeldingen (I5, G10) | M ❓ |
+| **v2.0.0-rc.1** | Bevriezen | Geen nieuwe functie meer; alleen bewijs en reparaties | M |
+| **v2.0.0** | Twee punt nul | De zeven poorten van paragraaf 3 groen | XL |
 
-**Waarom deze volgorde:** eerst wat je elke dag ziet en zelf bestuurt (klaar), dan wat je training stuurt, dan bereik
-en uitleg, en pas daarna de zware geschiedenis en analyse. Die laatste twee wachten op een export en een opname van
-Stefan; ze schuiven door zonder de rest op te houden. v1.15.0 maakt de belofte af voordat 2.0 hem alleen nog hoeft te
-bewijzen.
+**Waarom deze volgorde:** eerst wat de basis gezond maakt (geen afgeschreven sleutelkluis meer onder je
+AI- en Garmin-sleutels), dan iets leuks dat je elke dag ziet, dan analyse die alleen je eigen bestanden nodig heeft, en
+daarna pas het werk dat op een echte opname, een export of een account wacht. Tussendoor komen patchreleases als een
+proef of een melding daarom vraagt.
 
-**Verschoven:** de Garmin-protobuf-sync en de rest van de archiefvelden stonden oorspronkelijk op v1.13.0. Ze zijn niet
-gedaan; die slice wacht nog op een echte Garmin-export en schuift naar v1.14.0 of later. v1.13.0 is de winkelvariant als
-code, zonder publicatie.
+### Na 2.0
 
-#### Wat 2.0 niet is
+| Versie | Richting | Wat |
+|--------|----------|-----|
+| **v2.x** | Verdiepen | De onderdelen die op ❓ bleven wachten; routes naar het horloge (B8), protobuf-sync (B9), profiel uit het horloge (B10), weer (B7) als Stefan daarvoor kiest, zwemmen en kracht (C7, C8) |
+| **v2.x** | Kwaliteit | Mutatietests (A8), opstartprofiel (A9), nachtelijke fuzz (A7), wiebelregister (A12) |
+| **v3.0.0** | Je eigen sportlab | Eind-tot-eind versleuteld bijhouden tussen je eigen apparaten, analyses als gedocumenteerde bouwstenen, een coach die op de telefoon blijft; zie paragraaf 2 |
 
-- Geen abonnement, advertenties of cloudopslag van gezondheidsgegevens.
-- Geen medische uitspraken of diagnose; de app legt uit wat je cijfers zijn, niet wat je moet doen alsof je arts bent.
-- Geen tweede app naast deze, geen horlogecompanion en geen Wear OS-versie.
-- Geen vermogensanalyse, segmenten of sociaal netwerk, geen upload naar Intervals.icu of Strava (hun voorwaarden),
-  geen labuitslagen en geen biologische leeftijd.
-- Geen watchface die een Garmin-account nodig heeft; wat wel kan, staat in fase 3.
-
-#### Wat Stefan moet leveren
+## 6. Wat alleen Stefan kan
 
 | Wanneer | Wat | Waarom het niet zonder jou kan |
 |---------|-----|--------------------------------|
-| Vóór de Garmin-protobuf-slice (v1.14.0 of later) | Je export bij Garmin Connect (Account, Gegevensbeheer, *Je gegevens exporteren*) en eventueel Strava, één keer in OpenConnect importeren, daarna *Rapport kopiëren* en als melding plakken (aantallen en bestandsnamen, geen waarden) | De veldnamen staan nergens beschreven; alleen een echte export bevestigt de lezer |
-| Vóór v1.14.0 | Eén echte fenix 8-opname met Training Effect, hersteltijd en Performance Condition | Alleen jouw horloge levert die velden |
-| Doorlopend | De proefronde op telefoon, fenix 8 en Oura-ring, met een nieuw meldingenlogboek | Alleen jij hebt de apparaten en de accounts |
-| Vóór winkelpublicatie | De gekozen naam **Cercis** juridisch laten controleren, een Play-ontwikkelaarsaccount met testers regelen, echte schermafbeeldingen en een feature graphic aanleveren, en de verklaringen (gegevensveiligheid, Health Connect, voorgrondservice) afronden | Account-, merk- en bewijsstukken die alleen de eigenaar kan geven; zonder die stukken gaat er niets naar Play of F-Droid |
-| Vóór v1.15.0 | De laatste winkelstukken uit de rij hierboven en de juridische naamcontrole | Mijn plaatjes komen uit een test; de naam is jouw merk |
-
-#### Klaar per release
-
-Elke release is klaar als: de tests eerst geschreven zijn en CI groen is; de release notes in het Nederlands zeggen wat
-er veranderd is en wat **niet** is gecontroleerd; de Engelse samenvatting klopt; een databaseschema migreert of er is
-een verwijderfunctie; en de demo-data de nieuwe functie laat zien. Voor 2.0 komt daar één regel bij: **geen poort groen
-zonder bewijs in de repository.**
-
-**Blijft buiten scope:** dezelfde lijst als hierboven, aangevuld met een abonnement of advertenties, cloudopslag van
-gezondheidsgegevens, medische uitspraken en een tweede app naast deze.
+| **Zo snel mogelijk** | De ondertekeningssleutel in GitHub-secrets zetten, een offline kopie bewaren en de privé-conceptrelease `signing-key` verwijderen (H1). **Vervang de sleutel niet** | Alleen de eigenaar beheert secrets en bewaart een kopie; een nieuwe sleutel breekt het bijwerken van elke geïnstalleerde app |
+| Zo snel mogelijk | Privé melden van kwetsbaarheden aanzetten (H2) | Instelling van de eigenaar |
+| Bij v1.28.0 | Eén activiteit van je fenix 8 als FIT aanleveren, liefst een harde training (B2) | Alleen jouw horloge levert Training Effect, hersteltijd en Performance Condition |
+| Bij v1.28.0 | Je export bij Garmin Connect en eventueel Strava aanvragen, één keer importeren en *Rapport kopiëren* in een melding plakken (E2, D8) | De veldnamen van die exporten staan nergens beschreven |
+| Wanneer het uitkomt | De proeven T6 (USB), T8 (scherm tien minuten uit), T14 (TalkBack) en T16 (batterij) uit `PUBLIC_RELEASE.md` | Alleen jij hebt de apparaten |
+| Wanneer het uitkomt | Oura, Health Connect en de AI-sleutels een keer echt proberen (D9, F6) | Alleen jij hebt de accounts en sleutels |
+| Bij v1.21.0 | Agenda, zoek mijn telefoon en muziekbediening op de fenix 8 proberen (B4 tot en met B6) | Het protocol is alleen op een echt horloge te bevestigen |
+| Vóór B7 | Kiezen of het weer naar het horloge mag (netwerkverkeer naar Open-Meteo) | Een privacykeuze |
+| Bij v1.29.0 | Juridische naamcontrole, Play-account met testers, echte schermafbeeldingen, moedertaalsprekers voor Duits en Frans (I1 tot en met I5) | Account-, merk- en bewijsstukken |
+| Vóór 3.0 | Kiezen over een eigen Connect IQ-dataveld, delen binnen een huishouden en een webweergave op de server | Richtingkeuzes |
+| ✅ 2026-11-28 | Bevestigd dat de app op de fenix 8 en je telefoon werkt | Gedaan; staat in de app en in paragraaf 7 |
+| ✅ 2026-11-25 | Weergavenaam Cercis gekozen | Gedaan; de juridische controle staat nog open |
+| ✅ 2026-11-18 | Alleen GitHub als verspreiding voor 1.0; minimum Android 9 | Gedaan |
 
 ## 7. Wat nog niet is gecontroleerd (register)
 
-De bron van waarheid voor poort G1. Een regel gaat pas naar ✅ als er een echte proef op staat met datum en versie.
+De bron van waarheid voor poort P2 (en vroeger G1). Een regel gaat pas naar ✅ als er een echte proef op staat met datum en versie.
 
 | Bron of onderdeel | Stand | Waar staat het |
 |-------------------|-------|----------------|
@@ -570,6 +424,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.9.2 | Vloeiende lijniconen in de onderbalk, zes rustige thema's rond Olive, opnieuw getekende launcher-iconen en een voorblad dat je zelf samenstelt: de meetkaart onder de batterij plus schakelaars voor batterij, journaal en de laatste 7 dagen |
 | v1.9.3 | Jaaroverzicht: twaalf maanden stappen, slaap, rusthartslag en trainingen naast elkaar met eerlijke "geen data"-regels; tegelijk de gereedschapsketen naar Gradle 9.6, AGP 9.5 en compileSdk 37, met Kotlin 2.4 als ingebouwde taal |
 | v1.10.0 | Een schema dat meedenkt: de nieuwste afgesloten gemiste week wordt één bron voor een begrensd sessiepatroon in een latere trainingsweek; Toepassen/Niet nu blijven bewaard, dubbele of oude acties doen niets, en de coach krijgt alleen die plan- en voorstelfacts om read-only te bespreken |
+| v1.11.0 | Vier talen: Engels, Nederlands, Duits en Frans, met een taalkeuze los van de rapporttaal, lokale datums/getallen, Duitse/Franse widget- en meldingsteksten, een opgeruimde Oura-tab en een voorblad dat de dag volgt; de nieuwe talen zijn machine-draft zonder native review |
 | v1.12.0 | Wat je telefoon verlaat: twaalf bronpagina’s uit één PrivacyRegister, met bestemming, trigger, velden, opslag en “nooit”-regels; de oude privacytekst is gecorrigeerd en Delete all data wist nu ook lichaam, water, dagboek, schoenen, plan, race, doelen, work-outs, log en ledger |
 | v1.13.0 | Twee Android-kanalen uit één codebase: GitHub met updater, installatietoestemming en FileProvider; store zonder die drie en met een verborgen updater; targetSdk 36; AAB en APK gebouwd en gecontroleerd maar niet gepubliceerd; Play/F-Droid geblokkeerd door naam, account/testers, echte schermafbeeldingen en verklaringen |
 | v1.13.1 | Weergavenaam **Cercis** in plaats van OpenConnect, om verwarring met de OpenConnect-VPN-client te voorkomen; pakketnaam `nl.tufein.openconnect`, repository, APK-namen en updater blijven, dus v1.13.0 werkt gewoon bij; juridische controle en winkelpublicatie staan nog open |
@@ -585,10 +440,47 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.13.11 | Een eigen hartslagkaart op de Oura-tab met de gemiddelde en laagste hartslag van de laatste nacht; Oura levert geen live hartslag via de API, en dat staat erbij; alleen tegen een fake Oura getest |
 | v1.13.12 | Terugblik (M15): dit jaar tegenover vorig jaar tot dezelfde dag, een maandenraster over alle jaren, elk jaar op zich en de gebroken records; APK-budget van 13 naar 14 MiB; op de JVM getest, niet tegen een echte export |
 | v1.13.13 | Fenix 8 op echte hardware bevestigd (Bluetooth-sync, batterij, meldingen, live hartslag; labels in de app); zeven fouten uit fuzz-tests gerepareerd in de FIT-, GPX-, TCX- en Garmin-lezers van app en server; appcompat 1.8.0 |
-| v1.11.0 | Vier talen: Engels, Nederlands, Duits en Frans, met een taalkeuze los van de rapporttaal, lokale datums/getallen, Duitse/Franse widget- en meldingsteksten, een opgeruimde Oura-tab en een voorblad dat de dag volgt; de nieuwe talen zijn machine-draft zonder native review |
+| v1.14.0 | Schoon fundament: de dex-bestanden gecomprimeerd in de APK (13,3 naar 6,4 MB, budget van 14 naar 8 MiB), één scroll-helper voor de schermtests, een pre-push-controle (ruff, CHANGELOG, versie op vier plekken), AppViewModel opgesplitst zonder gedragswijziging (toestanden en doorgeefluiken naar eigen bestanden) en een nieuwe roadmap met twaalf sporen; de oude staat in `ROADMAP-HISTORIE.md` |
 
 ## 9. Hoe releases werken
 
 Elke versie is een pull request, daarna een GitHub-release met de ondertekende APK (zelfde sleutel, dus de nieuwe versie
-installeert over de oude en houdt je gegevens). Er gaat niets uit zonder groene CI. Elke release legt uit wat er in de
-code is veranderd en wat niet is gecontroleerd. Voor 1.0 komt daar een voorlopige kandidaat bij (M8).
+installeert over de oude en houdt je gegevens). Er gaat niets uit zonder groene CI. Elke release legt in het Nederlands
+uit wat er veranderd is, wat er in de code veranderd is en wat **niet** is gecontroleerd.
+
+### Zo werk je verder (stap voor stap)
+
+1. **Bouwen en testen.** Python: `pip install -e '.[dev]'` en `pytest`. Android: in `android/`,
+   `./gradlew :core:test :app:testGithubDebugUnitTest` (zie [ANDROID.md](ANDROID.md); draai nooit twee Gradle-builds
+   tegelijk, dan raken de tussenbestanden van `core` beschadigd).
+2. **De pre-push-controle aanzetten:** `git config core.hooksPath .githooks`. Daarna draait `tools/prepush.sh` bij elke
+   push: ruff, de CHANGELOG en de versie op vier plekken.
+3. **Een nieuwe versie** staat op vier plekken die gelijk moeten zijn: `pyproject.toml`, `src/openconnect/__init__.py`,
+   `tests/integration/test_api.py` en `android/app/build.gradle.kts` (`versionName`, en `versionCode` één hoger). De
+   statusregel in `README.md` noemt hem ook.
+4. **De release note** schrijf je in `docs/releases/vX.Y.Z.md` (Nederlands; vaste kopjes *Wat je merkt*, *Wat er in de
+   code veranderd is*, *Getest en niet getest*, *Installeren*). Daarna `python3 tools/changelog.py` voor `CHANGELOG.md`,
+   en een regel in paragraaf 8 hieronder.
+5. **Pull request**, wachten tot alle checks groen zijn (Python 3.11 tot en met 3.13, de Android-build met alle tests,
+   de store-variant, vier emulator-rooktests, het APK-budget), dan samenvoegen.
+6. **Publiceren:** start de workflow *Release* (`release.yml`) op `main` met als invoer de tag, bijvoorbeeld `v1.15.0`.
+   De tag moet gelijk zijn aan de versie in `pyproject.toml` en in `build.gradle.kts`. De workflow bouwt, test, draait de
+   rooktest, ondertekent, controleert de handtekening en zet `openconnect-vX.Y.Z.apk` met zijn `.sha256` in de release.
+   Een tag pushen werkt ook.
+7. **Controleren:** download de APK, vergelijk de SHA-256 en kijk met `apksigner verify --print-certs` of de
+   ondertekenaar dezelfde is als bij de vorige release. De updater in de app weigert een APK met een andere
+   ondertekenaar of zonder checksum.
+
+## 10. Bewust niet
+
+- Geen abonnement, advertenties of cloudopslag van gezondheidsgegevens.
+- Geen medische uitspraken of diagnose; de app legt uit wat je cijfers zijn, niet wat je moet doen alsof hij je arts is.
+- Geen tweede app naast deze, geen horlogecompanion en geen Wear OS-versie (een eigen Connect IQ-dataveld is een
+  open vraag voor 3.0, zie paragraaf 2).
+- Geen vermogensanalyse, segmenten of sociaal netwerk, geen upload naar Intervals.icu of Strava (hun voorwaarden),
+  geen labuitslagen en geen biologische leeftijd.
+- Geen AI-model op de telefoon zelf: te groot voor het APK-budget en te zwaar voor de batterij.
+- Geen nieuwe machinevertaalde talen zolang Duits en Frans niet native zijn nagekeken.
+- **De ondertekeningssleutel niet vervangen.** Hij moet naar een veiliger plek (H1), maar een nieuwe sleutel zou elke
+  geïnstalleerde Cercis van updates afsnijden.
+- Geen namaak van bestaande spellen in de retro-look: eigen tekeningen, kleuren en geluiden.

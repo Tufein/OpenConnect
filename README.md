@@ -7,7 +7,13 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.13.13.** **New in v1.13.13:** confirmed on real hardware: Bluetooth sync, watch battery, phone
+> **Status: v1.14.0.** **New in v1.14.0:** a clean foundation. The APK is 6.4 MB instead of 13.3 MB because the
+> code (dex files) is now compressed inside it, and the size budget went from 14 to 8 MiB. One scroll helper steadies
+> the screen tests, a pre-push check catches formatting, a stale changelog and a version that differs between files,
+> and the view model is split into smaller files without changing behaviour. A new, much larger roadmap (twelve
+> tracks, a ladder to 2.0 and a direction for 3.0) replaces the old one, which is kept as `docs/ROADMAP-HISTORIE.md`
+> ([release notes](docs/releases/v1.14.0.md)).
+> **Since v1.13.13:** confirmed on real hardware: Bluetooth sync, watch battery, phone
 > notifications on the watch and live heart rate work on Stefan's fenix 8 and phone, and the app now labels those two
 > sources *Tested on a real device*. Fuzz tests found and fixed seven ways a damaged FIT, GPX or TCX file, a watch file
 > with an impossible time zone or a Garmin answer with `NaN` could crash the import or store nonsense

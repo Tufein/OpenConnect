@@ -4,8 +4,9 @@
     check_apk_size.py APK [--budget BYTES] [--summary FILE]
 
 The budget is one number, here, so the release workflow and the Android workflow cannot disagree about it. R8 took the APK
-from 30 MB to 9.8 MB (v0.58.0); v1.13.0 is 12.56 MB and v1.13.11 13.16 MB (the budget went from 13 to 14 MiB in v1.13.12), of which 10.7 MB is the two dex files (stored uncompressed, which is the
-Android Gradle Plugin default for minSdk 28 and newer), 1.15 MB is resources.arsc (four languages) and 0.3 MB is fonts.
+from 30 MB to 9.8 MB (v0.58.0); v1.13.12 was 13.26 MB, of which 11.4 MB were the two dex files, stored uncompressed (the
+Android Gradle Plugin default for minSdk 28 and newer). Since v1.14.0 the dex files are compressed in the APK and the APK
+is about 6.4 MB, so the budget went from 14 MiB down to 8 MiB: a build that loses the compression fails at once.
 docs/PERFORMANCE.md has the history and the reasons.
 
 Exit status: 0 inside the budget (a GitHub warning is printed from 95 percent), 1 over the budget, 2 when the file is missing.
@@ -18,7 +19,7 @@ import zipfile
 from pathlib import Path
 
 MIB = 1024 * 1024
-BUDGET_BYTES = 14 * MIB
+BUDGET_BYTES = 8 * MIB
 WARN_FROM = 0.95
 
 

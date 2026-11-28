@@ -25,9 +25,10 @@ class HomeBatteryTest : AppTestBase() {
             }
         })
 
-        waitForText("Battery")
-        waitForText("87%")
-        waitForText("64%")
+        // The battery card sits in the middle of Home; scroll to it rather than hope it is above the fold.
+        scrollToText("Battery")
+        scrollToText("87%")
+        scrollToText("64%")
         // the ring last reported two hours ago; the watch five minutes ago
         assertTrue(hasText("updated", substring = true))
         shot("17-home-batteries")
@@ -41,14 +42,14 @@ class HomeBatteryTest : AppTestBase() {
                 watchBatteryAt = System.currentTimeMillis() - 5 * 60_000
             }
         })
-        waitForText("87%")
+        scrollToText("87%")
 
         val app = ApplicationProvider.getApplicationContext<OpenConnectApp>()
         app.container.settings.watchBattery = 42
         app.container.settings.watchBatteryAt = System.currentTimeMillis()
         app.container.batteryChanges.value++
 
-        waitForText("42%")
+        scrollToText("42%")
     }
 
     @Test
@@ -57,7 +58,7 @@ class HomeBatteryTest : AppTestBase() {
             app.container.settings.ringBatteryRefused = true
         })
 
-        waitForText("Oura does not share", substring = true)
+        scrollToText("Oura does not share", substring = true)
         assertTrue(hasText("Open Oura", substring = false))
         shot("18-home-ring-refused")
     }
