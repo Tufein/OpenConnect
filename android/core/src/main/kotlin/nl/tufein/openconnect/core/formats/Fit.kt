@@ -265,11 +265,18 @@ internal object Fit {
                     val ts = v[253]
                     if (ts != null) {
                         val altRaw = v[78] ?: v[2]
+                        var lat = v[0]?.let { it * 180.0 / (1L shl 31) }
+                        var lon = v[1]?.let { it * 180.0 / (1L shl 31) }
+                        // A latitude past the pole (a damaged record) would draw a line across the map: no position then.
+                        if (lat == null || lon == null || !validLatLon(lat, lon)) {
+                            lat = null
+                            lon = null
+                        }
                         track.add(
                             TrackPoint(
                                 time = Instant.ofEpochSecond(ts + FIT_EPOCH_OFFSET),
-                                lat = v[0]?.let { it * 180.0 / (1L shl 31) },
-                                lon = v[1]?.let { it * 180.0 / (1L shl 31) },
+                                lat = lat,
+                                lon = lon,
                                 ele = altRaw?.let { it / 5.0 - 500.0 },
                                 hr = v[3]?.toInt(),
                                 cadence = v[4]?.toInt(),
@@ -280,7 +287,8 @@ internal object Fit {
                     }
                 }
                 SESSION_MSG -> if (session == null) {
-                    session = SESSION_FIELDS.mapNotNull { num -> v[num]?.let { num to it } }.toMap()
+                    // the session's own timestamp (when it ended) comes along, for a session that lacks its start time
+                    session = (SESSION_FIELDS + FitReader.FIELD_TIMESTAMP).mapNotNull { num -> v[num]?.let { num to it } }.toMap()
                 }
             }
         }
@@ -288,7 +296,13 @@ internal object Fit {
         val s = session
         if (s == null && track.isEmpty()) throw NoActivityData("FIT file contains no activity data")
 
-        val start = s?.get(2)?.let { Instant.ofEpochSecond(it + FIT_EPOCH_OFFSET) } ?: track.first().time
+        // The start: the session's start time, else the first track point, else the session's end minus its elapsed time.
+        // A session without a start time and without records (a damaged or hand-made file) used to end in an
+        // unexplained NoSuchElementException instead of a readable refusal.
+        val start = s?.get(2)?.let { Instant.ofEpochSecond(it + FIT_EPOCH_OFFSET) }
+            ?: track.firstOrNull()?.time
+            ?: s?.get(FitReader.FIELD_TIMESTAMP)?.let { end -> Instant.ofEpochSecond(end + FIT_EPOCH_OFFSET - (s[7] ?: 0L) / 1000) }
+            ?: throw NoActivityData("FIT session has no start time and no track points")
         var activity = Activity(id = "pending", source = "import", startTime = start, track = track, deviceName = device)
         if (s != null) {
             val timer = s[8]?.takeIf { it != 0L } ?: s[7] ?: 0L

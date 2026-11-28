@@ -9,7 +9,14 @@ from defusedxml import ElementTree as SafeET
 from defusedxml.common import DefusedXmlException
 
 from openconnect.domain import Activity, TrackPoint, ensure_utc, finalize_activity
-from openconnect.formats.common import FormatError, default_name, import_id, sport_from_text
+from openconnect.formats.common import (
+    FormatError,
+    check_position,
+    default_name,
+    finite_number,
+    import_id,
+    sport_from_text,
+)
 
 GPX_NS = "http://www.topografix.com/GPX/1/1"
 TPX_NS = "http://www.garmin.com/xmlschemas/TrackPointExtension/v1"
@@ -74,7 +81,11 @@ def _descendant_text(el: ET.Element, name: str) -> str | None:
 def parse_gpx(data: bytes) -> Activity:
     try:
         root = SafeET.fromstring(data)
-    except (ET.ParseError, DefusedXmlException) as exc:
+    except (
+        ET.ParseError,
+        DefusedXmlException,
+        LookupError,
+    ) as exc:  # LookupError: unknown encoding
         raise FormatError(f"Not a valid GPX file: {exc}") from exc
     if _local(root.tag) != "gpx":
         raise FormatError("Not a GPX file (root element is not <gpx>)")
@@ -89,21 +100,23 @@ def parse_gpx(data: bytes) -> Activity:
             if not time_text:
                 continue
             try:
-                lat, lon = float(pt.attrib["lat"]), float(pt.attrib["lon"])
+                lat, lon = finite_number(pt.attrib["lat"]), finite_number(pt.attrib["lon"])
                 when = datetime.fromisoformat(time_text.replace("Z", "+00:00"))
             except (KeyError, ValueError) as exc:
                 raise FormatError(f"Malformed track point: {exc}") from exc
-            ele = _child_text(pt, "ele")
-            hr = _descendant_text(pt, "hr")
-            cad = _descendant_text(pt, "cad")
+            if lat is None or lon is None:
+                raise FormatError("Malformed track point: missing lat/lon")
+            check_position(lat, lon)
+            hr = finite_number(_descendant_text(pt, "hr"))
+            cad = finite_number(_descendant_text(pt, "cad"))
             track.append(
                 TrackPoint(
                     time=when,
                     lat=lat,
                     lon=lon,
-                    ele=float(ele) if ele else None,
-                    hr=int(float(hr)) if hr else None,
-                    cadence=int(float(cad)) if cad else None,
+                    ele=finite_number(_child_text(pt, "ele")),
+                    hr=int(hr) if hr is not None else None,
+                    cadence=int(cad) if cad is not None else None,
                 )
             )
     if not track:

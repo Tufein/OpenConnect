@@ -7,7 +7,12 @@ activities and daily health data on your own device, with charts, insights, a co
 an AI with your own key. It reads a Garmin watch directly, your Garmin account with a key you make yourself, an Oura
 Ring, and FIT, GPX and TCX files. Built test-first, AGPL-3.0.
 
-> **Status: v1.13.12.** **New in v1.13.12:** **Look back** under Insights. This year against last year to the same day,
+> **Status: v1.13.13.** **New in v1.13.13:** confirmed on real hardware: Bluetooth sync, watch battery, phone
+> notifications on the watch and live heart rate work on Stefan's fenix 8 and phone, and the app now labels those two
+> sources *Tested on a real device*. Fuzz tests found and fixed seven ways a damaged FIT, GPX or TCX file, a watch file
+> with an impossible time zone or a Garmin answer with `NaN` could crash the import or store nonsense
+> ([release notes](docs/releases/v1.13.13.md)).
+> **Since v1.13.12:** **Look back** under Insights. This year against last year to the same day,
 > a grid of every month of every year, each year on its own (sports, busiest week, quiet weeks) and a timeline of the
 > records you broke, for one sport or all of them, worked out on the phone from the activities you have stored. On an
 > empty install it can load three years of demo data to show how it looks.

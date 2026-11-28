@@ -422,7 +422,7 @@ class GarminSyncService(
 
     private fun summary(o: JsonObject): Summary? {
         fun text(key: String) = (o[key] as? JsonPrimitive)?.contentOrNull
-        fun number(key: String) = (o[key] as? JsonPrimitive)?.doubleOrNull
+        fun number(key: String) = (o[key] as? JsonPrimitive)?.doubleOrNull?.takeIf { it.isFinite() } // "NaN" cannot be rounded
         val id = text("activityId")?.trim()?.takeIf { it.isNotEmpty() && it.all(Char::isDigit) } ?: return null
         val startTime = text("startTimeGMT")?.let(::parseUtc)
             ?: text("startTimeLocal")?.let { parseLocal(it) }

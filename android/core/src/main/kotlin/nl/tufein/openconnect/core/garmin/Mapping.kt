@@ -118,7 +118,8 @@ internal object DayLeaves {
 
 /** The plain values of one calendar day. */
 internal class DayFacts(private val leaves: Map<String, JsonPrimitive>) {
-    fun number(vararg keys: String): Double? = keys.firstNotNullOfOrNull { leaves[it]?.doubleOrNull }
+    /** A finite number: "NaN" or "Infinity" in an answer is no reading (rounding NaN used to throw and lose the whole day). */
+    fun number(vararg keys: String): Double? = keys.firstNotNullOfOrNull { leaves[it]?.doubleOrNull?.takeIf { d -> d.isFinite() } }
 
     fun int(vararg keys: String): Int? = number(*keys)?.roundToInt()
 

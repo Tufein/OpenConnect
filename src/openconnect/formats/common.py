@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import math
 
 from openconnect.domain import Activity, Sport
 
@@ -27,6 +28,33 @@ _SPORT_ALIASES = {
     "strength_training": Sport.STRENGTH,
     "yoga": Sport.YOGA,
 }
+
+
+def finite_number(text: str | None) -> float | None:
+    """A number from a file, or None when missing; FormatError when it is not a real number.
+
+    Python's float() accepts "nan" and "inf"; such a value used to slip into an activity, and
+    int() of it crashed the import."""
+    if text is None or not text.strip():
+        return None
+    try:
+        value = float(text.strip())
+    except ValueError as exc:
+        raise FormatError(f"Invalid number: {text!r}") from exc
+    if not math.isfinite(value):
+        raise FormatError(f"Not a real number: {text!r}")
+    return value
+
+
+def check_position(lat: float | None, lon: float | None) -> None:
+    """Refuse a coordinate pair that cannot exist on Earth."""
+    if (
+        lat is not None
+        and not -90.0 <= lat <= 90.0
+        or lon is not None
+        and not -180.0 <= lon <= 180.0
+    ):
+        raise FormatError(f"Invalid position: {lat}, {lon}")
 
 
 def sport_from_text(text: str | None) -> Sport:

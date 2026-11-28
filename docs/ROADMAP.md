@@ -13,7 +13,7 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
 
 **Legenda:** ✅ klaar · 🔜 volgende · 🧪 gebouwd en getest met nepgegevens, nog nooit op echte hardware of tegen de echte dienst · ❓ heeft iets nodig dat alleen de eigenaar kan geven · **S/M/L** = klein (een sessie), middel, groot (meerdere releases)
 
-## 1. Waar we staan (v1.13.12, 2026-11-27)
+## 1. Waar we staan (v1.13.13, 2026-11-28)
 
 - **13 minorreleases sinds 1.0** (v1.1.0 tot en met v1.13.0, met tientallen kandidaten en patchreleases daartussen;
   v1.13.1 is de naamswijziging), ruim 1.400 tests
@@ -67,6 +67,12 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   Bluetooth-verbinding, zonder `Broadcast Heart Rate` op het horloge. De Garmin-service `REAL_TIME_HR` stuurt bpm en
   eventueel een rusthartslag, maar geen RR-intervallen; HRV blijft bij deze bron dus leeg. De bron gebruikt de al open
   meldingenverbinding als die er is, anders een eigen verbinding. Nog niet op een echte Fenix 8 bevestigd.
+- **Sinds v1.13.13 (2026-11-28):** **de Fenix 8 is op echte hardware bevestigd.** Stefan meldde op 2026-11-28 dat
+  de app op zijn fenix 8 en zijn eigen telefoon "allemaal heel goed" werkt: Bluetooth-sync, horlogebatterij, meldingen op
+  het horloge en de live hartslag uit de eigen Garmin-dienst. In de app dragen *Horloge via Bluetooth* en *Live hartslag*
+  nu het label *Getest op echt apparaat* (2026-11-28, v1.13.12). Daarnaast repareert v1.13.13 zeven fouten die
+  fuzz-tests vonden: beschadigde FIT-, GPX- en TCX-bestanden, horlogebestanden met een onmogelijke tijdzone en
+  Garmin-antwoorden met `NaN` gaven een onverklaarde crash of onzinwaarden in plaats van een nette weigering.
 - **Sinds v1.13.12:** **Inzichten → Terugblik** (M15). Dit jaar tot vandaag tegenover vorig jaar tot dezelfde dag (afstand,
   tijd en aantal, met verschil en percentage, en twee lijnen met het lopende totaal per maand), een raster van elke maand
   van elk jaar (afstand, tijd of aantal, de zwaarste maand gemarkeerd), elk jaar op zich (totalen, elke sport op één
@@ -94,8 +100,8 @@ De checklist waarmee 1.0 echt gaat of niet gaat, de proefronde op echte apparate
   open meldingenverbinding wordt elke vijftien minuten gevraagd. Gericht op de Fenix 8 51mm, maar nog niet op echte
   hardware bevestigd; het Watch-logboek is de volgende stap als het daar nog achterloopt.
 - **Zwak voor het verdere verhaal:**
-  1. Op één bron na (de Garmin-account, die live is geprobeerd) is **niets op een echte telefoon, horloge of ring geproefd**. Zie het register in paragraaf 7; M9 is dat spoor.
-  2. Of de meldingen op de fenix 8 nu bij elk bericht trillen, wacht op een nieuw logboek; v1.0.1 pakte de meest waarschijnlijke oorzaak aan.
+  1. **Drie bronnen zijn op echte hardware bevestigd** (de Garmin-account op 2026-11-12; Bluetooth-sync en live hartslag op een fenix 8 op 2026-11-28). USB, Health Connect, Oura, de AI-sleutels, de updater en de winkelvariant zijn dat nog niet. Zie het register in paragraaf 7; M9 is dat spoor.
+  2. ✅ De meldingen op de fenix 8 komen aan: Stefan bevestigde op 2026-11-28 dat het "allemaal heel goed" werkt.
   3. De **juridische controle van de naam Cercis** staat nog open; de pakketnaam `nl.tufein.openconnect` blijft
      ondertussen ongewijzigd (G6).
   4. **De geschiedenis zit nog in Garmin Connect en Strava.** De app importeert één bestand tegelijk en haalt via de eigen sleutel een beperkt stuk terug, terwijl elk inzicht (vorm, VO2max, racevoorspelling, heatmap, seizoen) zo goed is als de geschiedenis eronder. Dat is het thema van 4b.
@@ -429,6 +435,7 @@ echte hardware daarom vraagt. **S/M/L/XL** zoals in de legenda.
 | **v1.13.10** ✅ | 3 | De Oura-tab synchroniseert vanzelf bij openen wanneer de laatste sync ouder is dan een minuut; de knop Sync now blijft voor een directe sync | S |
 | **v1.13.11** ✅ | 3 | Een eigen hartslagkaart op de Oura-tab met de gemiddelde en laagste hartslag van de laatste nacht; Oura levert geen live hartslag via de API, en dat staat erbij | S |
 | **v1.13.12** ✅ | 4 | Terugblik (M15): dit jaar tegenover vorig jaar, een raster van elke maand van elk jaar, elk jaar op zich en de gebroken records; het APK-budget gaat naar 14 MiB | M |
+| **v1.13.13** ✅ | — | Fenix 8 bevestigd op echte hardware (labels in de app); zeven fouten uit fuzz-tests gerepareerd in de FIT-, GPX-, TCX- en Garmin-lezers van app en server; Dependabot: appcompat 1.8.0 | S |
 | **v1.14.0** | 4 | Training Effect, hersteltijd en Performance Condition uit FIT, met een register dat zegt wanneer het op echte data is bevestigd | L ❓ |
 | **v1.15.0** | 3 | Laatste loodjes: winkelpublicatie, schermafbeeldingen van een echte telefoon, installatiegids en de juridische naamcontrole | S/M |
 | **v2.0.0** | Slot | De vijf poorten hierboven groen; geen nieuwe functie | XL |
@@ -481,8 +488,9 @@ De bron van waarheid voor poort G1. Een regel gaat pas naar ✅ als er een echte
 | Activiteiten via de sleutel, Ping/Pull-callbacks, snapshots, epoch summaries | 🧪 veldnamen en callbacklayouts niet tegen een echt account | [GARMIN.md](GARMIN.md) |
 | Server met zakelijke OAuth (Garmin Developer Program) | 🧪 ❓ nooit, vraagt goedkeuring van Garmin | [GARMIN.md](GARMIN.md) |
 | Horloge over USB (fenix 8) en een map met horlogebestanden | 🧪 niet op een echt horloge | [WATCH.md](WATCH.md) |
-| Bluetooth-sync en live hartslag (uit Gadgetbridge) | 🧪 niet op een echt horloge | [BLUETOOTH.md](BLUETOOTH.md) |
-| Voorgrondservice met melding bij live hartslag | 🧪 niet op een echte telefoon | [WATCH.md](WATCH.md) |
+| Bluetooth-sync, horlogebatterij en live hartslag uit de eigen Garmin-dienst | ✅ fenix 8 en Stefans telefoon, 2026-11-28, v1.13.12 ("werkt allemaal heel goed"; geen logboek per stap) | [BLUETOOTH.md](BLUETOOTH.md) |
+| Meldingen van de telefoon op het horloge | ✅ fenix 8, 2026-11-28, v1.13.12 (zelfde bevestiging) | [NOTIFICATIONS.md](NOTIFICATIONS.md) |
+| Voorgrondservice met melding bij live hartslag | ✅ in gebruik op Stefans telefoon sinds v1.13.8; de proef met het scherm tien minuten uit (T8) en de batterijproef (T16) zijn niet apart gemeten | [WATCH.md](WATCH.md) |
 | Trainingen naar `GARMIN/NewFiles` | 🧪 ❓ of een fenix 8 de bestanden accepteert | [WATCH.md](WATCH.md) |
 | Health Connect (lezen en schrijven) | 🧪 niet op een echte telefoon | [ANDROID.md](ANDROID.md) |
 | Oura Ring | 🧪 nooit tegen de echte dienst | [OURA.md](OURA.md) |
@@ -576,6 +584,7 @@ Wat elke versie bracht staat uitgebreid in `docs/releases/`. Nieuwe versies kome
 | v1.13.10 | De Oura-tab synchroniseert vanzelf bij openen wanneer de laatste sync ouder is dan een minuut; de knop Sync now blijft voor een directe sync; alleen tegen een fake Oura getest |
 | v1.13.11 | Een eigen hartslagkaart op de Oura-tab met de gemiddelde en laagste hartslag van de laatste nacht; Oura levert geen live hartslag via de API, en dat staat erbij; alleen tegen een fake Oura getest |
 | v1.13.12 | Terugblik (M15): dit jaar tegenover vorig jaar tot dezelfde dag, een maandenraster over alle jaren, elk jaar op zich en de gebroken records; APK-budget van 13 naar 14 MiB; op de JVM getest, niet tegen een echte export |
+| v1.13.13 | Fenix 8 op echte hardware bevestigd (Bluetooth-sync, batterij, meldingen, live hartslag; labels in de app); zeven fouten uit fuzz-tests gerepareerd in de FIT-, GPX-, TCX- en Garmin-lezers van app en server; appcompat 1.8.0 |
 | v1.11.0 | Vier talen: Engels, Nederlands, Duits en Frans, met een taalkeuze los van de rapporttaal, lokale datums/getallen, Duitse/Franse widget- en meldingsteksten, een opgeruimde Oura-tab en een voorblad dat de dag volgt; de nieuwe talen zijn machine-draft zonder native review |
 
 ## 9. Hoe releases werken

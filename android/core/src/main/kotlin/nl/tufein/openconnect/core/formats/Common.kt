@@ -47,6 +47,15 @@ fun sportFromText(text: String?): Sport {
 
 private val ISO_SECONDS = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").withZone(ZoneOffset.UTC)
 
+/**
+ * A number from a file, or null when it is missing or not a real number. Kotlin's `toDoubleOrNull` accepts "NaN" and
+ * "Infinity"; such a value used to slip into an activity and break every sum, chart and JSON export after it.
+ */
+internal fun finiteNumber(text: String?): Double? = text?.trim()?.toDoubleOrNull()?.takeIf { it.isFinite() }
+
+/** A coordinate pair that can exist on Earth. */
+internal fun validLatLon(lat: Double, lon: Double): Boolean = lat in -90.0..90.0 && lon in -180.0..180.0
+
 /** `2026-11-10T07:30:00Z`, the form GPX and TCX use. */
 fun isoZ(instant: Instant): String = ISO_SECONDS.format(instant)
 
