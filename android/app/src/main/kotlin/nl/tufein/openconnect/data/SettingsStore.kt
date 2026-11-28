@@ -120,6 +120,16 @@ class SettingsStore(
         get() = prefs.getString(KEY_SIGNALS, "soft")?.takeIf { it == "soft" || it == "clear" } ?: "soft"
         set(value) = prefs.edit().putString(KEY_SIGNALS, if (value == "clear") "clear" else "soft").apply()
 
+    /** Scanlines over the Retro style, like an old CRT screen (v1.15.0); off by default. */
+    var scanlines: Boolean
+        get() = prefs.getBoolean(KEY_SCANLINES, false)
+        set(value) = prefs.edit().putBoolean(KEY_SCANLINES, value).apply()
+
+    /** A short 8-bit tune when a sync brings something new in, while the app is open (v1.15.0); off by default. */
+    var retroSounds: Boolean
+        get() = prefs.getBoolean(KEY_RETRO_SOUNDS, false)
+        set(value) = prefs.edit().putBoolean(KEY_RETRO_SOUNDS, value).apply()
+
     /** The thickness of the metric rings: "thin" (the default) or "bold". */
     var rings: String
         get() = prefs.getString(KEY_RINGS, "thin")?.takeIf { it == "thin" || it == "bold" } ?: "thin"
@@ -506,6 +516,8 @@ class SettingsStore(
         private const val KEY_APP_LANGUAGE = "app_language"
         private const val KEY_PALETTE = "theme_palette"
         private const val KEY_LETTERS = "theme_letters"
+        private const val KEY_SCANLINES = "retro_scanlines"
+        private const val KEY_RETRO_SOUNDS = "retro_sounds"
         private const val KEY_STYLE = "theme_style"
         private const val KEY_SIGNALS = "theme_signals"
         private const val KEY_RINGS = "theme_rings"

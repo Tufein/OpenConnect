@@ -146,6 +146,8 @@ class AppContainer(
     updateHttp: UpdateHttp = UrlConnectionUpdateHttp(),
     /** Whether a downloaded APK carries the installed app's signature. Tests pass a fake; the app asks Android. */
     updateSigner: (File) -> Boolean = { true },
+    /** Plays the 8-bit tunes of the retro pack. Tests pass a fake; the app passes AudioTrack. */
+    val chiptune: nl.tufein.openconnect.ui.ChiptunePlayer = nl.tufein.openconnect.ui.AudioTrackChiptunePlayer(),
 ) {
     val stats = StatsService(repository)
 

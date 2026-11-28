@@ -719,6 +719,10 @@
     <string name="letters_pixel">Pixelletters</string>
     <string name="letters_clear">Duidelijke letters</string>
     <string name="letters_note">Pixelletters passen bij het uiterlijk van de app. Duidelijke letters zijn gewoon en iets groter, en makkelijker te lezen.</string>
+    <string name="look_scanlines">Scanlijnen (CRT-look)</string>
+    <string name="look_sounds">8-bit-geluidjes</string>
+    <string name="look_sounds_note">Een kort deuntje als een sync iets nieuws binnenhaalt, terwijl Cercis open is. Op de telefoon zelf gemaakt, zonder geluidsbestanden; staat uit tot je het aanzet.</string>
+    <string name="look_sounds_play">Deuntje afspelen</string>
     <string name="palette_group_sport">Sport</string>
     <string name="palette_graphite">Graphite</string>
     <string name="palette_track">Baan</string>
@@ -734,6 +738,7 @@
     <string name="palette_atari">Atari</string>
     <string name="palette_terminal">Terminal</string>
     <string name="palette_contrast">Hoog contrast</string>
+    <string name="palette_lcd">LCD-groen</string>
     <string name="palette_mono">Grijs</string>
     <string name="palette_slate">Leisteen</string>
     <string name="palette_sand">Zand</string>

@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.15.0: retro, deel 1: LCD-groen, scanlijnen en 8-bit-deuntjes
+
+Het eerste deel van het retro-pakket uit de nieuwe roadmap (spoor G). Drie dingen die je zelf aanzet: een kleurenthema in vier tinten groen zoals een oud handheld-scherm, scanlijnen van een beeldbuis over de stijl Retro, en een kort 8-bit-deuntje als een sync iets nieuws binnenhaalt. Alles is eigen ontwerp, staat standaard uit en voegt geen enkel beeld- of geluidsbestand toe aan de APK.
+
+[Release notes](docs/releases/v1.15.0.md)
+
 ## v1.14.0: schoon fundament, een half zo grote APK en een nieuwe roadmap
 
 De tweede release van de grote opruimronde (na v1.13.13). Er komt geen nieuwe functie bij; dit is onderhoud dat je wel merkt: de download is **half zo groot**, de tests zijn stabieler, fouten worden eerder gevangen en de code is beter te onderhouden. Daarnaast is de roadmap opnieuw geschreven: twaalf sporen met genummerde onderdelen, een ladder naar 2.0 en een richting voor 3.0.

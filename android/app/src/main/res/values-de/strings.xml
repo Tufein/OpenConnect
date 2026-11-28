@@ -716,6 +716,10 @@
     <string name="letters_pixel">Pixel-Schrift</string>
     <string name="letters_clear">Klare Schrift</string>
     <string name="letters_note">Die Pixel-Schrift passt zum Look der App. Klare Schrift ist schlicht und etwas größer und leichter zu lesen.</string>
+    <string name="look_scanlines">Scanlines (Röhren-Look)</string>
+    <string name="look_sounds">8-Bit-Töne</string>
+    <string name="look_sounds_note">Eine kurze Melodie, wenn eine Synchronisierung etwas Neues bringt, während Cercis geöffnet ist. Auf dem Telefon selbst erzeugt, ohne Tondateien; aus, bis du sie einschaltest.</string>
+    <string name="look_sounds_play">Melodie abspielen</string>
     <string name="palette_group_sport">Sport</string>
     <string name="palette_graphite">Graphit</string>
     <string name="palette_track">Bahn</string>
@@ -731,6 +735,7 @@
     <string name="palette_atari">Atari</string>
     <string name="palette_terminal">Terminal</string>
     <string name="palette_contrast">Hoher Kontrast</string>
+    <string name="palette_lcd">LCD-Grün</string>
     <string name="palette_mono">Grau</string>
     <string name="palette_slate">Schiefer</string>
     <string name="palette_sand">Sand</string>

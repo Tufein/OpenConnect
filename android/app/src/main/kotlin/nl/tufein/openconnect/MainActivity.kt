@@ -23,6 +23,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.launch
 import nl.tufein.openconnect.data.SettingsStore
 import nl.tufein.openconnect.i18n.AppLocale
 import nl.tufein.openconnect.ui.AppViewModel
@@ -51,6 +55,12 @@ class MainActivity : AppCompatActivity() {
         unlocker = (application as OpenConnectApp).unlockerOverride?.invoke(this) ?: nl.tufein.openconnect.lock.DeviceUnlocker(this)
         enableEdgeToEdge()
         if (savedInstanceState == null) handleIncoming(intent)
+        // The retro pack's tunes play only while the app is on screen; a tune for a sync in the background is dropped.
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.jingles.collect { (application as OpenConnectApp).container.chiptune.play(it) }
+            }
+        }
         setContent {
             val mode by viewModel.theme.collectAsState()
             val look by viewModel.look.collectAsState()
@@ -75,7 +85,7 @@ class MainActivity : AppCompatActivity() {
                 )
                 onDispose { }
             }
-            OpenConnectTheme(mode, look.palette, look.letters, look.style, look.signals, look.rings, look.hero) {
+            OpenConnectTheme(mode, look.palette, look.letters, look.style, look.signals, look.rings, look.hero, look.scanlines) {
                 var pendingExport by remember { mutableStateOf<Pair<String, String>?>(null) }
                 var pendingCsv by remember { mutableStateOf<String?>(null) }
                 val importPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->

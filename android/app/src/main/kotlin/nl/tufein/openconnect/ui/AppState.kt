@@ -166,7 +166,10 @@ data class ReportsState(
     val efforts: List<Effort> = emptyList(),
 )
 
-/** The colour theme ([Palette] key), the letters ([Letters] key), the style ([Style] key), signal colours, ring weight and photo tone. */
+/**
+ * The colour theme ([Palette] key), the letters ([Letters] key), the style ([Style] key), signal colours, ring weight
+ * and photo tone; since v1.15.0 also the retro pack: [scanlines] over the Retro style and 8-bit [sounds].
+ */
 data class Look(
     val palette: String = "olive",
     val letters: String = "clear",
@@ -174,6 +177,8 @@ data class Look(
     val signals: String = "soft",
     val rings: String = "thin",
     val hero: String = "auto",
+    val scanlines: Boolean = false,
+    val sounds: Boolean = false,
 )
 
 /**

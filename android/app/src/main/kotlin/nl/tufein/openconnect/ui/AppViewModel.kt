@@ -6,8 +6,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -52,6 +55,7 @@ import nl.tufein.openconnect.core.ExportAll
 import nl.tufein.openconnect.core.Csv
 import nl.tufein.openconnect.core.DataOverview
 import nl.tufein.openconnect.core.SyncLog
+import nl.tufein.openconnect.core.retro.Chiptune
 import nl.tufein.openconnect.core.SyncLogEntry
 import nl.tufein.openconnect.core.ArchiveImport
 import nl.tufein.openconnect.health.HealthUi
@@ -208,6 +212,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         container.settings.signals,
         RingWeight.of(container.settings.rings).key,
         container.settings.hero,
+        container.settings.scanlines,
+        container.settings.retroSounds,
     )
 
     private val _look = MutableStateFlow(lookNow())
@@ -282,6 +288,30 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         container.settings.rings = RingWeight.of(rings).key
         _look.value = lookNow()
     }
+
+    /** Scanlines over the Retro style, on or off. */
+    fun setScanlines(on: Boolean) {
+        container.settings.scanlines = on
+        _look.value = lookNow()
+    }
+
+    /** 8-bit tunes after a sync that brought something new, on or off. */
+    fun setRetroSounds(on: Boolean) {
+        container.settings.retroSounds = on
+        _look.value = lookNow()
+    }
+
+    /** Plays the sync tune once, so the switch can be heard before it is trusted. */
+    fun playTune() = container.chiptune.play(Chiptune.SYNC)
+
+    private val _jingles = MutableSharedFlow<Chiptune.Tune>(extraBufferCapacity = 4)
+
+    /**
+     * A tune each time a sync brings something new while the sounds are on. Nothing is kept for later: MainActivity
+     * listens only while the app is on screen, so a background sync never plays a tune into an empty room, and a tune
+     * missed then does not play when the app comes back.
+     */
+    val jingles: SharedFlow<Chiptune.Tune> = _jingles.asSharedFlow()
 
     /** "auto" follows the hour; "dawn", "day", "dusk" and "night" hold one light. */
     fun setHero(hero: String) {
@@ -426,6 +456,20 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         container.health.refresh()
         refreshAll()
         viewModelScope.launch { container.dataChanged.collect { refreshAll() } }
+        // The retro pack: a sync that brought something new plays a tune, if the sounds are on. The log only ever grows
+        // at the front, so what is new is everything before the entry that was on top last time (conflated updates
+        // included); a cleared log has nothing new.
+        viewModelScope.launch {
+            var top = container.syncLog.entries.value.firstOrNull()
+            container.syncLog.entries.collect { log ->
+                val fresh = when (val last = top) {
+                    null -> log
+                    else -> log.indexOfFirst { it === last }.let { if (it < 0) emptyList() else log.take(it) }
+                }
+                top = log.firstOrNull()
+                if (container.settings.retroSounds && fresh.any { it.ok && it.added > 0 }) _jingles.tryEmit(Chiptune.SYNC)
+            }
+        }
         // A sync starting or ending moves the clock "last synced" is measured against.
         viewModelScope.launch { container.garmin.state.collect { _now.value = Instant.now() } }
         // A key added or removed changes whether the coach can answer.
