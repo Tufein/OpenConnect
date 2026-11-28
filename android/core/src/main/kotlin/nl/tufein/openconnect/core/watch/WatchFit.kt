@@ -78,6 +78,13 @@ object WatchFit {
         else -> value >= 0.0
     }
 
+    /**
+     * The difference between the watch's local time and UTC, when it is one a clock can have (UTC-12 to UTC+14). A
+     * damaged or odd file can hold anything here, and an offset beyond 18 hours made [ZoneOffset] throw and the whole
+     * file fail; such a value is now ignored and the phone's zone is used, as for a file without one.
+     */
+    internal fun plausibleOffset(seconds: Long): Int? = seconds.takeIf { it in -12 * 3600L..14 * 3600L }?.toInt()
+
     fun parse(data: ByteArray, fallbackZone: ZoneId = ZoneOffset.UTC): WatchFileData {
         val raws = ArrayList<Raw>()
         val sleepLevels = ArrayList<Pair<Long, Long>>()
@@ -102,11 +109,11 @@ object WatchFit {
             when (global) {
                 MONITORING_INFO -> {
                     val local = v[0]
-                    if (ts != null && local != null) offset = (local - ts).toInt()
+                    if (ts != null && local != null) plausibleOffset(local - ts)?.let { offset = it }
                 }
                 MONITORING -> {
                     val local = v[11]
-                    if (ts != null && local != null) offset = (local - ts).toInt()
+                    if (ts != null && local != null) plausibleOffset(local - ts)?.let { offset = it }
                     val type = v[5]
                     val cycles = v[3]
                     // the profile's "steps" subfield of cycles: one cycle is one step for walking and running

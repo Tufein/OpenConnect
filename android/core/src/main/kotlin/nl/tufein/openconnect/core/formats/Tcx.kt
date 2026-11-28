@@ -62,7 +62,7 @@ internal object Tcx {
         val node = el.path(*path) ?: return null
         val text = node.textContent?.trim().orEmpty()
         if (text.isEmpty()) return null
-        return text.toDoubleOrNull() ?: throw FormatError("Invalid number in <${path.last()}>: '$text'")
+        return finiteNumber(text) ?: throw FormatError("Invalid number in <${path.last()}>: '$text'")
     }
 
     private fun time(text: String): Instant = parseTime(text)
@@ -92,11 +92,14 @@ internal object Tcx {
             hrWeighted += (num(lap, "AverageHeartRateBpm", "Value") ?: 0.0) * lapTime
             for (tp in lap.descendantsAndSelf().filter { it.local == "Trackpoint" }) {
                 val timeText = tp.child("Time")?.textContent?.takeIf { it.isNotBlank() } ?: continue
+                val lat = num(tp, "Position", "LatitudeDegrees")
+                val lon = num(tp, "Position", "LongitudeDegrees")
+                if (lat != null && lon != null && !validLatLon(lat, lon)) throw FormatError("Invalid position in a track point: $lat, $lon")
                 track.add(
                     TrackPoint(
                         time = time(timeText),
-                        lat = num(tp, "Position", "LatitudeDegrees"),
-                        lon = num(tp, "Position", "LongitudeDegrees"),
+                        lat = lat,
+                        lon = lon,
                         ele = num(tp, "AltitudeMeters"),
                         hr = num(tp, "HeartRateBpm", "Value")?.toInt(),
                         cadence = num(tp, "Cadence")?.toInt(),

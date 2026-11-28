@@ -47,17 +47,17 @@ internal object Gpx {
             sportText = sportText ?: trk.childText("type")
             for (pt in trk.descendantsAndSelf().filter { it.local == "trkpt" }) {
                 val timeText = pt.childText("time") ?: continue
-                val lat = pt.getAttribute("lat").toDoubleOrNull()
-                val lon = pt.getAttribute("lon").toDoubleOrNull()
-                if (lat == null || lon == null) throw FormatError("Malformed track point: missing or invalid lat/lon")
+                val lat = finiteNumber(pt.getAttribute("lat"))
+                val lon = finiteNumber(pt.getAttribute("lon"))
+                if (lat == null || lon == null || !validLatLon(lat, lon)) throw FormatError("Malformed track point: missing or invalid lat/lon")
                 track.add(
                     TrackPoint(
                         time = parseTime(timeText),
                         lat = lat,
                         lon = lon,
-                        ele = pt.childText("ele")?.toDoubleOrNull(),
-                        hr = pt.descendantText("hr")?.toDoubleOrNull()?.toInt(),
-                        cadence = pt.descendantText("cad")?.toDoubleOrNull()?.toInt(),
+                        ele = finiteNumber(pt.childText("ele")),
+                        hr = finiteNumber(pt.descendantText("hr"))?.toInt(),
+                        cadence = finiteNumber(pt.descendantText("cad"))?.toInt(),
                     ),
                 )
             }
