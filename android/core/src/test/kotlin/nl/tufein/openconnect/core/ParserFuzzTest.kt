@@ -204,4 +204,73 @@ class ParserFuzzTest {
         }
         assertClean()
     }
+
+    // ------------------------------------------------------------------------------------------ archives and backups
+
+    private fun zip(stored: Boolean, vararg entries: Pair<String, ByteArray>): ByteArray {
+        val out = java.io.ByteArrayOutputStream()
+        java.util.zip.ZipOutputStream(out).use { z ->
+            for ((name, bytes) in entries) {
+                val entry = java.util.zip.ZipEntry(name)
+                if (stored) {
+                    entry.method = java.util.zip.ZipEntry.STORED
+                    entry.size = bytes.size.toLong()
+                    entry.crc = java.util.zip.CRC32().apply { update(bytes) }.value
+                }
+                z.putNextEntry(entry)
+                z.write(bytes)
+                z.closeEntry()
+            }
+        }
+        return out.toByteArray()
+    }
+
+    private fun gz(bytes: ByteArray): ByteArray = java.io.ByteArrayOutputStream().also { o -> java.util.zip.GZIPOutputStream(o).use { it.write(bytes) } }.toByteArray()
+
+    @Test
+    fun `a damaged export archive is reported file by file, never thrown`() {
+        val rnd = Random(5)
+        val csv = "Activity ID,Activity Date,Activity Name,Activity Type,Filename\r\n111,\"Mar 2, 2026, 6:00:00 AM\",Lunch run,Run,activities/111.fit.gz\r\n"
+        val json = """[{"summarizedActivitiesExport": [{"activityId": 1, "name": "Heuvels", "startTimeGmt": 1772431200000, "distance": 900.0}]}]"""
+        val files = arrayOf(
+            "activities/111.fit.gz" to gz(fixture("/fixtures/python-run.fit")),
+            "activities/222.gpx" to fixture("/fixtures/python-run.gpx"),
+            "activities/333.tcx" to fixture("/fixtures/python-run.tcx"),
+            "activities.csv" to csv.toByteArray(),
+            "DI_CONNECT/x_summarizedActivities.json" to json.toByteArray(),
+            "DI_CONNECT/other.json" to """{"a": {"b": [1, 2]}}""".toByteArray(),
+        )
+        for (stored in listOf(true, false)) {
+            val inner = zip(stored, "inner/1_ACTIVITY.fit" to fixture("/fixtures/python-run.fit"))
+            val archive = zip(stored, *files, "nested.zip" to inner)
+            for (m in mutants(archive, rnd, 700)) {
+                probe("ArchiveImport (stored=$stored)", { false }) {
+                    ArchiveImport.import(java.io.ByteArrayInputStream(m), "export.zip", InMemoryRepository())
+                }
+            }
+            for (cut in (0 until 200).map { rnd.nextInt(archive.size) }) {
+                probe("ArchiveImport cut (stored=$stored)", { false }) {
+                    ArchiveImport.import(java.io.ByteArrayInputStream(archive.copyOf(cut)), "export.zip", InMemoryRepository())
+                }
+            }
+        }
+        assertClean()
+    }
+
+    @Test
+    fun `a damaged backup is refused whole with a BackupException`() {
+        val rnd = Random(6)
+        val repo = InMemoryRepository()
+        repo.upsertActivity(Formats.import(fixture("/fixtures/python-run.fit"), "run.fit"))
+        repo.upsertDaily(DailySummary(date = java.time.LocalDate.parse("2026-06-10"), steps = 9000, restingHr = 52, respirationAvg = 14.5))
+        repo.upsertSleep(SleepSummary(date = java.time.LocalDate.parse("2026-06-10"), durationS = 27000, score = 84))
+        val good = Backup.write(repo, java.time.Instant.parse("2026-11-28T09:00:00Z"))
+        val text = String(java.util.zip.GZIPInputStream(good.inputStream()).readBytes(), Charsets.UTF_8)
+        val allowed = { e: Throwable -> e is BackupException }
+        for (m in textMutants(text, rnd, 1500)) {
+            probe("Backup.restore", allowed) { Backup.restore(gz(m.toByteArray()), InMemoryRepository()) }
+        }
+        for (m in mutants(good, rnd, 300)) probe("Backup.restore raw", allowed) { Backup.restore(m, InMemoryRepository()) }
+        assertClean()
+    }
 }

@@ -9,7 +9,13 @@ from defusedxml import ElementTree as SafeET
 from defusedxml.common import DefusedXmlException
 
 from openconnect.domain import Activity, Sport, TrackPoint, ensure_utc, finalize_activity
-from openconnect.formats.common import FormatError, default_name, import_id
+from openconnect.formats.common import (
+    FormatError,
+    check_position,
+    default_name,
+    finite_number,
+    import_id,
+)
 
 TCX_NS = "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2"
 
@@ -82,8 +88,8 @@ def _num(el: ET.Element, *path: str) -> float | None:
     if node is None or not (node.text or "").strip():
         return None
     try:
-        return float(node.text.strip())  # type: ignore[union-attr]
-    except ValueError as exc:
+        return finite_number(node.text)
+    except FormatError as exc:
         raise FormatError(f"Invalid number in <{path[-1]}>: {node.text!r}") from exc
 
 
@@ -97,7 +103,11 @@ def _time(text: str) -> datetime:
 def parse_tcx(data: bytes) -> Activity:
     try:
         root = SafeET.fromstring(data)
-    except (ET.ParseError, DefusedXmlException) as exc:
+    except (
+        ET.ParseError,
+        DefusedXmlException,
+        LookupError,
+    ) as exc:  # LookupError: unknown encoding
         raise FormatError(f"Not a valid TCX file: {exc}") from exc
     act_el = _find(root, "Activities", "Activity")
     if _local(root.tag) != "TrainingCenterDatabase" or act_el is None:
@@ -125,6 +135,7 @@ def parse_tcx(data: bytes) -> Activity:
                 continue
             lat = _num(tp, "Position", "LatitudeDegrees")
             lon = _num(tp, "Position", "LongitudeDegrees")
+            check_position(lat, lon)
             hr = _num(tp, "HeartRateBpm", "Value")
             cad = _num(tp, "Cadence")
             track.append(
