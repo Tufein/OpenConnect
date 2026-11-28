@@ -33,15 +33,24 @@ a shadow. A `tint` washes a little of a signal colour into a panel.
 
 ## Colour themes, letters and the launcher icon
 
-**Colour themes** (*Settings, Appearance*) come in three calm groups, six in all, each with a dark and a light version:
+**Colour themes** (*Settings, Appearance*) come in four groups, seven in all, each with a dark and a light version:
 
 - **Calm**: Olive (the default; warm cream and deep olive in light mode, warm charcoal-green and soft sage in dark
   mode) and Sand (the same warmth with clay and straw). Forest goes a shade deeper green.
 - **Neutral**: Graphite (cool neutrals with one blue accent) and High contrast (pure black and white).
+- **Retro screens** (v1.15.0): LCD green, four shades of green like an old handheld screen (our own tints, not copied
+  from any console). Dark is the unlit screen with light-green pixels, light the pale green glass with dark pixels.
 - **Phone**: Wallpaper, the phone's own colours on Android 12 and newer.
 
 A key from an older version that is no theme any more opens as Olive, so an old setting never crashes and never brings
 back a look that is no longer offered.
+
+**The retro pack** (v1.15.0, all off until chosen, all our own design): in the Retro style a switch draws **scanlines**
+over the whole app (`Modifier.scanlines()` in `Retro.kt`: one 1 dp line of 10 % black every 3 dp, so text keeps its
+contrast). The content always sits in the same `Box`, lines or not, so switching them never rebuilds the screen. In every
+style a switch plays a short **8-bit tune** when a sync brings something new while the app is on screen
+(`core/retro/Chiptune.kt` computes a 25 % pulse wave with soft note edges; `AudioTrackChiptunePlayer` plays it as a
+system sound). No image or sound file is added to the APK.
 
 Shapes and layout are the same in all of them. A theme is a pair of `Keys` in `PaletteKeys` (`Theme.kt`): primary,
 secondary, tertiary, background, panel and text colour, and from them `scheme()` builds the whole Material colour scheme.

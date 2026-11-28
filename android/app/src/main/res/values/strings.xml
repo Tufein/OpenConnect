@@ -719,6 +719,10 @@
     <string name="letters_pixel">Pixel letters</string>
     <string name="letters_clear">Clear letters</string>
     <string name="letters_note">Pixel letters go with the look of the app. Clear letters are plain and a little larger, and easier to read.</string>
+    <string name="look_scanlines">Scanlines (CRT look)</string>
+    <string name="look_sounds">8-bit sounds</string>
+    <string name="look_sounds_note">A short tune when a sync brings in something new, while Cercis is open. Made on the phone itself, no sound files; off until you switch it on.</string>
+    <string name="look_sounds_play">Play tune</string>
     <string name="palette_group_sport">Sport</string>
     <string name="palette_graphite">Graphite</string>
     <string name="palette_track">Track</string>
@@ -734,6 +738,7 @@
     <string name="palette_atari">Atari</string>
     <string name="palette_terminal">Terminal</string>
     <string name="palette_contrast">High contrast</string>
+    <string name="palette_lcd">LCD green</string>
     <string name="palette_mono">Grey</string>
     <string name="palette_slate">Slate</string>
     <string name="palette_sand">Sand</string>

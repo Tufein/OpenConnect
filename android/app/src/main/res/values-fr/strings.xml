@@ -717,6 +717,10 @@
     <string name="letters_pixel">Lettres pixel</string>
     <string name="letters_clear">Lettres nettes</string>
     <string name="letters_note">Les lettres pixel vont avec l\'aspect de l\'application. Les lettres nettes sont sobres et un peu plus grandes, et plus faciles à lire.</string>
+    <string name="look_scanlines">Lignes de balayage (look CRT)</string>
+    <string name="look_sounds">Sons 8 bits</string>
+    <string name="look_sounds_note">Un court air quand une synchronisation apporte du nouveau, pendant que Cercis est ouvert. Créé sur le téléphone même, sans fichier son ; désactivé tant que vous ne l\'activez pas.</string>
+    <string name="look_sounds_play">Écouter l\'air</string>
     <string name="palette_group_sport">Sport</string>
     <string name="palette_graphite">Graphite</string>
     <string name="palette_track">Piste</string>
@@ -732,6 +736,7 @@
     <string name="palette_atari">Atari</string>
     <string name="palette_terminal">Terminal</string>
     <string name="palette_contrast">Contraste élevé</string>
+    <string name="palette_lcd">Vert LCD</string>
     <string name="palette_mono">Gris</string>
     <string name="palette_slate">Ardoise</string>
     <string name="palette_sand">Sable</string>

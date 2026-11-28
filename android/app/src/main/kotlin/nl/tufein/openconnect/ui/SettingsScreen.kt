@@ -127,6 +127,12 @@ fun SettingsScreen(
     onLook: (palette: String) -> Unit = {},
     /** The letters were switched between pixel and clear. */
     onLetters: (letters: String) -> Unit = {},
+    /** Scanlines over the Retro style were switched on or off. */
+    onScanlines: (on: Boolean) -> Unit = {},
+    /** The 8-bit tunes were switched on or off. */
+    onSounds: (on: Boolean) -> Unit = {},
+    /** Play the sync tune once. */
+    onPlayTune: () -> Unit = {},
     /** The style was switched between editorial, sleek, retro and classic. */
     onStyle: (style: String) -> Unit = {},
     /** The signals were switched between the theme's soft colours and one clear colour each. */
@@ -242,6 +248,17 @@ fun SettingsScreen(
                         }
                     }
                     Text(stringResource(R.string.letters_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    SwitchRow(checked = ui.look.scanlines, onCheckedChange = onScanlines) {
+                        Text(stringResource(R.string.look_scanlines), style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+                // 8-bit tunes work in every style: they are a sound, not a look. Off until chosen.
+                SwitchRow(checked = ui.look.sounds, onCheckedChange = onSounds) {
+                    Text(stringResource(R.string.look_sounds), style = MaterialTheme.typography.bodyMedium)
+                }
+                Text(stringResource(R.string.look_sounds_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (ui.look.sounds) {
+                    PixelChip(selected = false, onClick = onPlayTune, label = { Text(stringResource(R.string.look_sounds_play)) })
                 }
                 // Each signal can keep the theme's quiet family or get its own clear colour; the dots show the result at once.
                 Text(stringResource(R.string.look_signals), style = MaterialTheme.typography.titleMedium)

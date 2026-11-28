@@ -64,13 +64,15 @@ internal val PlexMono = FontFamily(Font(R.font.plex_mono_medium, FontWeight.Medi
 
 /** How the themes are grouped in Settings. */
 enum class PaletteGroup(@StringRes val label: Int) {
-    CALM(R.string.palette_group_calm), NEUTRAL(R.string.palette_group_neutral), PHONE(R.string.palette_group_phone),
+    CALM(R.string.palette_group_calm), NEUTRAL(R.string.palette_group_neutral), RETRO(R.string.palette_group_retro),
+    PHONE(R.string.palette_group_phone),
 }
 
 /**
  * The colour themes to choose from. "olive" is the Oura-inspired editorial default; Sand is the same warmth with clay
  * and straw, Forest goes a shade deeper green, Graphite is the dark neutral, High contrast is there for readability and
- * "dynamic" takes the phone's wallpaper colours on Android 12 and newer. The many older screens and bright colour
+ * "dynamic" takes the phone's wallpaper colours on Android 12 and newer. "lcd" (v1.15.0) is four shades of green like an
+ * old handheld screen, our own tints, for the retro pack. The many older screens and bright colour
  * themes are gone, so the picker stays calm. A key from an older version that is no theme any more opens as Olive.
  */
 enum class Palette(val key: String, @StringRes val label: Int, val group: PaletteGroup) {
@@ -79,6 +81,7 @@ enum class Palette(val key: String, @StringRes val label: Int, val group: Palett
     FOREST("forest", R.string.palette_forest, PaletteGroup.CALM),
     GRAPHITE("graphite", R.string.palette_graphite, PaletteGroup.NEUTRAL),
     CONTRAST("contrast", R.string.palette_contrast, PaletteGroup.NEUTRAL),
+    LCD("lcd", R.string.palette_lcd, PaletteGroup.RETRO),
     DYNAMIC("dynamic", R.string.palette_dynamic, PaletteGroup.PHONE);
 
     companion object {
@@ -199,6 +202,10 @@ private val PaletteKeys: Map<Palette, Pair<Keys, Keys>> = mapOf(
     // Graphite: the quiet dark neutral, with a soft sage-grey main colour instead of an electric sports blue.
     Palette.GRAPHITE to (Keys(Color(0xFF9FB9B2), Color(0xFFC0B39E), Color(0xFFA6A9C2), Color(0xFF111315), Color(0xFF1A1D1F), Color(0xFFECEFEE), Color(0xFF111315)) to
         Keys(Color(0xFF4E6059), Color(0xFF665D4E), Color(0xFF565A78), Color(0xFFF0F1EF), Color(0xFFFAFAF8), Color(0xFF1D2220))),
+    // LCD (v1.15.0): four shades of green like an old handheld screen, our own tints. Dark is the unlit screen with
+    // light-green pixels; light is the pale green glass with dark-green pixels. Same contrast rules as every theme.
+    Palette.LCD to (Keys(Color(0xFFA6CF6A), Color(0xFFC9DE96), Color(0xFF8FC48C), Color(0xFF0B1608), Color(0xFF13230E), Color(0xFFD4E8A8), Color(0xFF0B1608)) to
+        Keys(Color(0xFF2B4A1C), Color(0xFF3F5A14), Color(0xFF285237), Color(0xFFCFE0A2), Color(0xFFDCEAB4), Color(0xFF0E1D09))),
     // The most readable one: pure black and white with a yellow (dark) or blue (light) accent.
     Palette.CONTRAST to (Keys(Color(0xFFFFD60A), Color(0xFF5EEBFF), Color(0xFFFF9EC4), Color(0xFF000000), Color(0xFF141414), Color(0xFFFFFFFF)) to
         Keys(Color(0xFF0033CC), Color(0xFF7A3E00), Color(0xFF006B3C), Color(0xFFFFFFFF), Color(0xFFF2F2F2), Color(0xFF000000))),
@@ -515,6 +522,8 @@ fun OpenConnectTheme(
     signals: String = "soft",
     rings: String = "thin",
     hero: String = "auto",
+    /** Scanlines over everything; drawn only in the retro style, where they belong (v1.15.0). */
+    scanlines: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val dark = when (mode) {
@@ -559,7 +568,14 @@ fun OpenConnectTheme(
                 Style.CLEAN -> ModernShapes
                 Style.CLASSIC -> ClassicShapes
             },
-            content = content,
+            // The content always sits in the same Box, with or without lines: switching them must not rebuild the
+            // screen (that would drop the open tab). Passing the parent's limits on unchanged keeps every layout as before.
+            content = {
+                androidx.compose.foundation.layout.Box(
+                    if (scanlines && chosenStyle == Style.RETRO) androidx.compose.ui.Modifier.scanlines() else androidx.compose.ui.Modifier,
+                    propagateMinConstraints = true,
+                ) { content() }
+            },
         )
     }
 }
