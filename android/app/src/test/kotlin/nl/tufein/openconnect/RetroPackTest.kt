@@ -180,4 +180,19 @@ class RetroPackTest : AppTestBase() {
         rule.waitUntil(5_000) { played.size == 2 }
         assertEquals(listOf("record", "goal"), played.toList())
     }
+    @Test
+    fun openingTheAppShowsNoErrorMessage() {
+        // v1.16.0 before release: the lock for the trophy count was declared below the view model's init block, so the
+        // first count (started from init on a background thread) could find it still null and show "Cannot enter
+        // synchronized block" as a message. The lock now sits next to the trophies it guards, above init. The message is
+        // on screen for a few seconds only, so watch from the first frame.
+        launchFresh { app -> app.containerOverride = container(app) }
+        val until = System.currentTimeMillis() + 4_000
+        while (System.currentTimeMillis() < until) {
+            rule.waitForIdle()
+            assertTrue(!hasText("synchronized", substring = true), "no internal error reaches the screen")
+            Thread.sleep(25)
+        }
+        waitForText("Load demo data")
+    }
 }

@@ -161,6 +161,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val reports: StateFlow<ReportsState> = _reports.asStateFlow()
 
     private val _trophies = MutableStateFlow(TrophiesState())
+
+    // Guards the before-and-after of the trophy count (level-up messages). It must be declared above init: init starts the
+    // first count on a background thread, and a property declared further down is still null at that moment.
+    private val trophyLock = Any()
+
+    // One automatic live start per process ([autoStartLive]). Above init for the same reason: init calls autoStartLive, and
+    // an initialiser further down would set this back to false afterwards (the watch controller has its own guard too).
+    private var autoLiveTried = false
     val trophies: StateFlow<TrophiesState> = _trophies.asStateFlow()
 
     /** What the last syncs did, newest first. */
@@ -492,8 +500,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
      * The app opened: continue the live heart rate without a tap when a sensor was remembered, or look for one. It is
      * deliberately one attempt per process; a person who stops the recording is not overruled on the next resume.
      */
-    private var autoLiveTried = false
-
     private fun autoStartLive() {
         if (autoLiveTried) return
         val settings = container.settings
@@ -695,8 +701,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             ),
         )
     }
-
-    private val trophyLock = Any()
 
     fun loadTrophies() = io {
         val change = synchronized(trophyLock) {
