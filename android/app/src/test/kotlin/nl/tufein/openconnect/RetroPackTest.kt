@@ -4,7 +4,10 @@ import android.content.Context
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
+import nl.tufein.openconnect.core.ManualActivity
+import nl.tufein.openconnect.core.Sport
 import nl.tufein.openconnect.core.SyncLog
+import nl.tufein.openconnect.core.TrophyKey
 import nl.tufein.openconnect.core.SyncLogEntry
 import nl.tufein.openconnect.data.SettingsStore
 import nl.tufein.openconnect.data.SqliteRepository
@@ -20,6 +23,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.time.Instant
+import java.time.LocalDate
 import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -27,7 +31,8 @@ import kotlin.test.assertTrue
 /**
  * v1.15.0, the first part of the retro pack: an LCD palette in four shades of green, scanlines for the Retro style and
  * 8-bit tunes when a sync brings something new. Everything is our own design and off until chosen; the contrast of
- * every palette, the LCD one included, is checked by [ThemesLettersAndIconTest].
+ * every palette, the LCD one included, is checked by [ThemesLettersAndIconTest]. v1.16.0 adds level-up messages: a trophy
+ * or a level that new data unlocks is announced, with its own tune when the sounds are on.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], qualifiers = "w411dp-h891dp-night-xxhdpi", application = OpenConnectApp::class)
@@ -127,5 +132,67 @@ class RetroPackTest : AppTestBase() {
         Thread.sleep(300)
         rule.waitForIdle()
         assertEquals(2, played.size, "a sync with nothing new, or a failed one, stays quiet")
+    }
+    private fun unlocked(key: TrophyKey): Boolean {
+        var yes = false
+        scenario.onActivity { yes = it.viewModel.trophies.value.achievements?.trophies?.any { t -> t.key == key && t.unlocked } == true }
+        return yes
+    }
+
+    private fun level(): Int {
+        var level = 0
+        scenario.onActivity { level = it.viewModel.trophies.value.achievements?.player?.level ?: 0 }
+        return level
+    }
+
+    private fun add(activity: ManualActivity) = scenario.onActivity { it.viewModel.addManualActivity(activity) }
+
+    @Test
+    fun aNewTrophyOrLevelIsAnnouncedOnlyWhenChosen() {
+        launchFresh { app -> app.containerOverride = container(app) }
+        tab("Settings").performClick()
+        openAppearance()
+        assertEquals(false, settings().levelUps, "off on a fresh install")
+        val today = LocalDate.now()
+
+        // Off: the first run unlocks Press Start (and level 2) without a word or a sound.
+        add(ManualActivity(Sport.RUNNING, today, minutes = 8, distanceKm = 1.0))
+        rule.waitUntil(15_000) { unlocked(TrophyKey.FIRST_ACTIVITY) }
+        rule.waitForIdle()
+        assertTrue(!hasText("Trophy unlocked", substring = true), "no message while the switch is off")
+        assertTrue(played.isEmpty(), "no sound while the switch is off")
+
+        clickText("8-bit sounds")
+        rule.waitUntil(5_000) { settings().retroSounds }
+        clickText("Level-up messages")
+        rule.waitUntil(5_000) { settings().levelUps }
+
+        // A 6 km run unlocks 5K Boss: the message names it and the record tune plays.
+        add(ManualActivity(Sport.RUNNING, today, minutes = 33, distanceKm = 6.0))
+        waitForText("Trophy unlocked: 5K Boss")
+        rule.waitUntil(5_000) { played.isNotEmpty() }
+        assertEquals(listOf("record"), played.toList())
+
+        // A long ride brings no trophy but a new level (685 xp, level 3): that is announced with the goal tune.
+        assertEquals(2, level())
+        add(ManualActivity(Sport.CYCLING, today, minutes = 90, distanceKm = 40.0))
+        waitForText("Level up! You reached level 3")
+        rule.waitUntil(5_000) { played.size == 2 }
+        assertEquals(listOf("record", "goal"), played.toList())
+    }
+    @Test
+    fun openingTheAppShowsNoErrorMessage() {
+        // v1.16.0 before release: the lock for the trophy count was declared below the view model's init block, so the
+        // first count (started from init on a background thread) could find it still null and show "Cannot enter
+        // synchronized block" as a message. The lock now sits next to the trophies it guards, above init. The message is
+        // on screen for a few seconds only, so watch from the first frame.
+        launchFresh { app -> app.containerOverride = container(app) }
+        val until = System.currentTimeMillis() + 4_000
+        while (System.currentTimeMillis() < until) {
+            rule.waitForIdle()
+            assertTrue(!hasText("synchronized", substring = true), "no internal error reaches the screen")
+            Thread.sleep(25)
+        }
+        waitForText("Load demo data")
     }
 }

@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.16.0: retro, deel 2: level-up
+
+Het tweede deel van het retro-pakket (spoor G, onderdeel G4). Speelt nieuwe data een trofee of een nieuw level vrij, dan zegt de app dat meteen, zoals een oud spel dat doet: *Trofee vrijgespeeld: 5K-baas* of *Level up! Je bent nu level 3*. Staan de 8-bit-geluidjes uit v1.15.0 aan, dan hoort er een eigen deuntje bij. Standaard uit, eigen ontwerp, geen enkel bestand erbij.
+
+[Release notes](docs/releases/v1.16.0.md)
+
 ## v1.15.0: retro, deel 1: LCD-groen, scanlijnen en 8-bit-deuntjes
 
 Het eerste deel van het retro-pakket uit de nieuwe roadmap (spoor G). Drie dingen die je zelf aanzet: een kleurenthema in vier tinten groen zoals een oud handheld-scherm, scanlijnen van een beeldbuis over de stijl Retro, en een kort 8-bit-deuntje als een sync iets nieuws binnenhaalt. Alles is eigen ontwerp, staat standaard uit en voegt geen enkel beeld- of geluidsbestand toe aan de APK.

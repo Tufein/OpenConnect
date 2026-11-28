@@ -56,6 +56,7 @@ import nl.tufein.openconnect.core.Csv
 import nl.tufein.openconnect.core.DataOverview
 import nl.tufein.openconnect.core.SyncLog
 import nl.tufein.openconnect.core.retro.Chiptune
+import nl.tufein.openconnect.core.retro.LevelUp
 import nl.tufein.openconnect.core.SyncLogEntry
 import nl.tufein.openconnect.core.ArchiveImport
 import nl.tufein.openconnect.health.HealthUi
@@ -160,6 +161,14 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     val reports: StateFlow<ReportsState> = _reports.asStateFlow()
 
     private val _trophies = MutableStateFlow(TrophiesState())
+
+    // Guards the before-and-after of the trophy count (level-up messages). It must be declared above init: init starts the
+    // first count on a background thread, and a property declared further down is still null at that moment.
+    private val trophyLock = Any()
+
+    // One automatic live start per process ([autoStartLive]). Above init for the same reason: init calls autoStartLive, and
+    // an initialiser further down would set this back to false afterwards (the watch controller has its own guard too).
+    private var autoLiveTried = false
     val trophies: StateFlow<TrophiesState> = _trophies.asStateFlow()
 
     /** What the last syncs did, newest first. */
@@ -214,6 +223,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         container.settings.hero,
         container.settings.scanlines,
         container.settings.retroSounds,
+        container.settings.levelUps,
     )
 
     private val _look = MutableStateFlow(lookNow())
@@ -298,6 +308,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     /** 8-bit tunes after a sync that brought something new, on or off. */
     fun setRetroSounds(on: Boolean) {
         container.settings.retroSounds = on
+        _look.value = lookNow()
+    }
+
+    /** Level-up messages (and their tunes, with the sounds on) after new data, on or off. */
+    fun setLevelUps(on: Boolean) {
+        container.settings.levelUps = on
         _look.value = lookNow()
     }
 
@@ -484,8 +500,6 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
      * The app opened: continue the live heart rate without a tap when a sensor was remembered, or look for one. It is
      * deliberately one attempt per process; a person who stops the recording is not overruled on the next resume.
      */
-    private var autoLiveTried = false
-
     private fun autoStartLive() {
         if (autoLiveTried) return
         val settings = container.settings
@@ -689,7 +703,26 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loadTrophies() = io {
-        _trophies.value = TrophiesState(loaded = true, achievements = AchievementsCalculator.compute(repo, ZoneId.systemDefault()))
+        val change = synchronized(trophyLock) {
+            val after = AchievementsCalculator.compute(repo, ZoneId.systemDefault())
+            val before = _trophies.value.achievements
+            _trophies.value = TrophiesState(loaded = true, achievements = after)
+            LevelUp.between(before, after)
+        }
+        if (change != null && container.settings.levelUps) celebrate(change)
+    }
+
+    /** The retro pack's level-up: a message everyone can read (TalkBack too) and, with the sounds on, its own tune. */
+    private fun celebrate(change: LevelUp) {
+        tell(
+            when (change) {
+                is LevelUp.Trophies ->
+                    if (change.keys.size == 1) text(R.string.levelup_trophy, text(trophyTitle(change.keys.first())))
+                    else text(R.string.levelup_trophies, change.keys.size)
+                is LevelUp.Level -> text(R.string.levelup_level, change.level)
+            },
+        )
+        if (container.settings.retroSounds) _jingles.tryEmit(change.tune)
     }
 
     fun loadActivities(sport: Sport?) = io {

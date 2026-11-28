@@ -723,6 +723,11 @@
     <string name="look_sounds">8-bit sounds</string>
     <string name="look_sounds_note">A short tune when a sync brings in something new, while Cercis is open. Made on the phone itself, no sound files; off until you switch it on.</string>
     <string name="look_sounds_play">Play tune</string>
+    <string name="levelup_switch">Level-up messages</string>
+    <string name="levelup_note">A short message when new data unlocks a trophy or a new level, with its own tune if the 8-bit sounds are on. A big import stays quiet.</string>
+    <string name="levelup_trophy">Trophy unlocked: %1$s</string>
+    <string name="levelup_trophies">%1$d trophies unlocked</string>
+    <string name="levelup_level">Level up! You reached level %1$d</string>
     <string name="palette_group_sport">Sport</string>
     <string name="palette_graphite">Graphite</string>
     <string name="palette_track">Track</string>

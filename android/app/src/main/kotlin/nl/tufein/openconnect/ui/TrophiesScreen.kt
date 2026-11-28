@@ -26,7 +26,7 @@ import nl.tufein.openconnect.core.Trophy
 import nl.tufein.openconnect.core.TrophyKey
 import nl.tufein.openconnect.core.TrophyUnit
 
-private fun trophyTitle(key: TrophyKey): Int = when (key) {
+internal fun trophyTitle(key: TrophyKey): Int = when (key) {
     TrophyKey.FIRST_ACTIVITY -> R.string.trophy_first_activity
     TrophyKey.RUN_5K -> R.string.trophy_run_5k
     TrophyKey.RUN_10K -> R.string.trophy_run_10k

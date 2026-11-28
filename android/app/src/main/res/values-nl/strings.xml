@@ -723,6 +723,11 @@
     <string name="look_sounds">8-bit-geluidjes</string>
     <string name="look_sounds_note">Een kort deuntje als een sync iets nieuws binnenhaalt, terwijl Cercis open is. Op de telefoon zelf gemaakt, zonder geluidsbestanden; staat uit tot je het aanzet.</string>
     <string name="look_sounds_play">Deuntje afspelen</string>
+    <string name="levelup_switch">Level-up-meldingen</string>
+    <string name="levelup_note">Een kort bericht als nieuwe gegevens een trofee of een nieuw level vrijspelen, met een eigen deuntje als de 8-bit-geluidjes aan staan. Een grote import blijft stil.</string>
+    <string name="levelup_trophy">Trofee vrijgespeeld: %1$s</string>
+    <string name="levelup_trophies">%1$d trofeeën vrijgespeeld</string>
+    <string name="levelup_level">Level up! Je bent nu level %1$d</string>
     <string name="palette_group_sport">Sport</string>
     <string name="palette_graphite">Graphite</string>
     <string name="palette_track">Baan</string>

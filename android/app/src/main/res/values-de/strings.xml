@@ -720,6 +720,11 @@
     <string name="look_sounds">8-Bit-Töne</string>
     <string name="look_sounds_note">Eine kurze Melodie, wenn eine Synchronisierung etwas Neues bringt, während Cercis geöffnet ist. Auf dem Telefon selbst erzeugt, ohne Tondateien; aus, bis du sie einschaltest.</string>
     <string name="look_sounds_play">Melodie abspielen</string>
+    <string name="levelup_switch">Level-up-Meldungen</string>
+    <string name="levelup_note">Eine kurze Meldung, wenn neue Daten eine Trophäe oder ein neues Level freischalten, mit eigener Melodie, wenn die 8-Bit-Töne an sind. Ein großer Import bleibt still.</string>
+    <string name="levelup_trophy">Trophäe freigeschaltet: %1$s</string>
+    <string name="levelup_trophies">%1$d Trophäen freigeschaltet</string>
+    <string name="levelup_level">Level up! Du bist jetzt Level %1$d</string>
     <string name="palette_group_sport">Sport</string>
     <string name="palette_graphite">Graphit</string>
     <string name="palette_track">Bahn</string>
