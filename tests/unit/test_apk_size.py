@@ -21,7 +21,8 @@ spec.loader.exec_module(tool)
 
 MIB = 1024 * 1024
 V1_13_11_APK_BYTES = 13_156_021  # the published openconnect-v1.13.11.apk
-V1_14_0_APK_BYTES = 6_439_365  # the release build of v1.14.0 with compressed dex (local build, debug signature)
+# The release build of v1.14.0 with compressed dex (local build, debug signature).
+V1_14_0_APK_BYTES = 6_439_365
 
 
 def make_apk(path: Path, **sizes: int) -> Path:
@@ -47,7 +48,7 @@ def test_the_budget_leaves_room_above_the_latest_release():
 
 
 def test_an_apk_without_compressed_dex_no_longer_fits():
-    # v1.13.11 stored its dex uncompressed; losing the compression must fail the build, not slip through
+    # v1.13.11 stored its dex uncompressed; losing the compression must fail the build
     assert tool.BUDGET_BYTES < V1_13_11_APK_BYTES
 
 

@@ -7,7 +7,7 @@ from tests.fakes import FakeAnthropic
 
 
 def test_healthz(app):
-    assert app.client.get("/healthz").json() == {"status": "ok", "version": "1.13.13"}
+    assert app.client.get("/healthz").json() == {"status": "ok", "version": "1.14.0"}
 
 
 def test_password_protects_pages_and_api(make_app):

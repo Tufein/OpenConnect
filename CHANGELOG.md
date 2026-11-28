@@ -2,6 +2,12 @@
 
 Generated from [docs/releases](docs/releases) by `python tools/changelog.py`; do not edit by hand. Each entry is the title and the first paragraph of that release's notes (the notes are in Dutch from v0.43.0).
 
+## v1.14.0: schoon fundament, een half zo grote APK en een nieuwe roadmap
+
+De tweede release van de grote opruimronde (na v1.13.13). Er komt geen nieuwe functie bij; dit is onderhoud dat je wel merkt: de download is **half zo groot**, de tests zijn stabieler, fouten worden eerder gevangen en de code is beter te onderhouden. Daarnaast is de roadmap opnieuw geschreven: twaalf sporen met genummerde onderdelen, een ladder naar 2.0 en een richting voor 3.0.
+
+[Release notes](docs/releases/v1.14.0.md)
+
 ## v1.13.13: bevestigd op de Fenix 8, en zeven fouten uit de fuzz-tests
 
 Stefan meldde op 2026-11-28 dat Cercis op zijn fenix 8 en zijn eigen telefoon "allemaal heel goed" werkt: Bluetooth-sync, de horlogebatterij, meldingen op het horloge en de live hartslag uit de eigen Garmin-dienst. Dat staat nu in de app en in de documentatie als getest op echte hardware. Daarnaast zijn alle bestandslezers van app en server met duizenden beschadigde bestanden bestookt; dat vond …
